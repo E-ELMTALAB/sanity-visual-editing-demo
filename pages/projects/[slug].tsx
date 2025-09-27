@@ -69,7 +69,7 @@ export const getStaticProps: GetStaticProps<PageProps, Query> = async (ctx) => {
     props: {
       project,
       settings: settings ?? {},
-      homePageTitle: homePageTitle ?? undefined,
+      homePageTitle: homePageTitle ?? null,
       draftMode,
       token: draftMode ? readToken : null,
     },
