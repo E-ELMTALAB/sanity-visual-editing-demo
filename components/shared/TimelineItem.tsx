@@ -19,7 +19,7 @@ export function TimelineItem({
       <div className="flex flex-col">
         {/* Thumbnail */}
         <div
-          className="relative overflow-hidden rounded-md bg-black"
+          className="relative overflow-hidden rounded-md bg-gray-800 ring-1 ring-white/10"
           style={{ width: '65px', height: '65px' }}
         >
           <ImageBox
@@ -31,13 +31,13 @@ export function TimelineItem({
           />
         </div>
         {/* Vertical line */}
-        {!isLast && <div className="mt-2 w-px grow self-center bg-gray-200" />}
+        {!isLast && <div className="mt-2 w-px grow self-center bg-white/10" />}
       </div>
       <div className="flex-initial pl-4">
         {/* Title */}
-        <div className="font-bold text-black">{title}</div>
+        <div className="font-bold text-white">{title}</div>
         {/* Tags */}
-        <div className="text-sm text-gray-600 ">
+        <div className="text-sm text-gray-400 ">
           {tags?.map((tag, key) => (
             <span key={key}>
               {tag}
@@ -47,7 +47,7 @@ export function TimelineItem({
           {startYear} - {endYear}
         </div>
         {/* Description */}
-        <div className="pb-5 pt-3 font-serif text-gray-600">{description}</div>
+        <div className="pb-5 pt-3 font-serif text-gray-300">{description}</div>
       </div>
     </div>
   )

@@ -16,14 +16,18 @@ export function CustomPortableText({
   const components: PortableTextComponents = {
     block: {
       normal: ({ children }) => {
-        return <p className={paragraphClasses}>{children}</p>
+        return (
+          <p className={paragraphClasses || 'text-gray-300 leading-relaxed'}>
+            {children}
+          </p>
+        )
       },
     },
     marks: {
       link: ({ children, value }) => {
         return (
           <a
-            className="underline transition hover:opacity-50"
+            className="text-sky-400 underline underline-offset-4 transition-colors hover:text-sky-300"
             href={value?.href}
             rel="noreferrer noopener"
           >
@@ -46,7 +50,7 @@ export function CustomPortableText({
               classesWrapper="relative aspect-[16/9]"
             />
             {value?.caption && (
-              <div className="font-sans text-sm text-gray-600">
+              <div className="font-sans text-sm text-gray-400">
                 {value.caption}
               </div>
             )}

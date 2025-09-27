@@ -23,11 +23,11 @@ export default function ImageBox({
 
   return (
     <div
-      className={`w-full overflow-hidden rounded-[3px] bg-gray-50 ${classesWrapper}`}
+      className={`group relative w-full overflow-hidden rounded-xl bg-gray-800/50 ring-1 ring-white/10 ${classesWrapper}`}
     >
       {imageUrl && (
         <Image
-          className="absolute h-full w-full"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
           alt={alt}
           width={width}
           height={height}
@@ -35,6 +35,7 @@ export default function ImageBox({
           src={imageUrl}
         />
       )}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
     </div>
   )
 }

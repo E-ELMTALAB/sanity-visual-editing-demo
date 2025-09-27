@@ -19,9 +19,11 @@ export default function Layout({
   settings = fallbackSettings,
 }: LayoutProps) {
   return (
-    <div className="flex min-h-screen flex-col bg-white text-black">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-gray-900 via-gray-900 to-black text-gray-100">
       <Navbar menuItems={settings?.menuItems} />
-      <div className="mt-20 flex-grow px-4 md:px-16 lg:px-32">{children}</div>
+      <div className="mt-20 flex-grow px-4 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
+        <div className="mx-auto w-full max-w-7xl">{children}</div>
+      </div>
       <Footer footer={settings?.footer} />
       <IntroTemplate />
     </div>

@@ -11,14 +11,14 @@ export function Header(props: HeaderProps) {
     return null
   }
   return (
-    <div className={`${centered ? 'text-center' : 'w-5/6 lg:w-3/5'}`}>
+    <div className={`${centered ? 'text-center' : 'w-full lg:w-3/4'}`}>
       {/* Title */}
-      <div className="text-3xl font-extrabold tracking-tight md:text-5xl">
+      <div className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent md:text-5xl">
         {title}
       </div>
       {/* Description */}
       {description && (
-        <div className="mt-4 font-serif text-xl text-gray-600 md:text-2xl">
+        <div className="mt-4 font-serif text-xl text-gray-300 md:text-2xl">
           <CustomPortableText value={description} />
         </div>
       )}
