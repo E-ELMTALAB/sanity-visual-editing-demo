@@ -13,11 +13,14 @@ export default async function BlogPage() {
   const params = {}
   const initial = await fetchWithFallback(client, blogListQuery, params, defaultPostList)
   const hasRealData = Array.isArray(initial) && initial.length > 0 && !!(initial as any)[0]?._id
-  return (
-    <LiveQuery enabled={isDraft && hasRealData} query={blogListQuery} params={params} initialData={initial}>
-      <BlogIndex posts={initial} />
-    </LiveQuery>
-  )
+  if (isDraft && hasRealData) {
+    return (
+      <LiveQuery enabled query={blogListQuery} params={params} initialData={initial}>
+        <BlogIndex posts={initial} />
+      </LiveQuery>
+    )
+  }
+  return <BlogIndex posts={initial} />
 }
 
 

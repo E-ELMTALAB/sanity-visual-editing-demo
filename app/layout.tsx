@@ -1,7 +1,6 @@
 import 'tailwindcss/tailwind.css'
 
 import { IBM_Plex_Mono, Inter, PT_Serif } from 'next/font/google'
-import { VisualEditing } from 'next-sanity'
 
 const serif = PT_Serif({
   variable: '--font-serif',
@@ -31,10 +30,7 @@ export default async function RootLayout({
       lang="en"
       className={`${mono.variable} ${sans.variable} ${serif.variable}`}
     >
-      <body>
-        {children}
-        <VisualEditing />
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

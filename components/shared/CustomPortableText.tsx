@@ -1,3 +1,5 @@
+"use client"
+import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css'
 import { PortableText, PortableTextComponents } from '@portabletext/react'
 import type { PortableTextBlock } from '@portabletext/types'
 import ImageBox from 'components/shared/ImageBox'

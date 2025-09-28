@@ -12,11 +12,14 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   const client = getClient(isDraft ? { token: readToken } : undefined)
   const initial = await fetchWithFallback(client, postBySlugQuery, { slug: params.slug }, defaultPost)
   const hasRealData = !!(initial as any)?._id
-  return (
-    <LiveQuery enabled={isDraft && hasRealData} query={postBySlugQuery} params={{ slug: params.slug }} initialData={initial}>
-      <BlogPost post={initial as any} />
-    </LiveQuery>
-  )
+  if (isDraft && hasRealData) {
+    return (
+      <LiveQuery enabled query={postBySlugQuery} params={{ slug: params.slug }} initialData={initial}>
+        <BlogPost post={initial as any} />
+      </LiveQuery>
+    )
+  }
+  return <BlogPost post={initial as any} />
 }
 
 
