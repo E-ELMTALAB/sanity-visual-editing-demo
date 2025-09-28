@@ -32,6 +32,19 @@ export interface ShowcaseProject {
 export interface HomePagePayload {
   footer?: PortableTextBlock[]
   overview?: PortableTextBlock[]
+  heroSlides?: Array<{
+    title?: string
+    subtitle?: string
+    buttonText?: string
+    link?: string
+    image?: Image
+  }>
+  promoCards?: Array<{
+    title?: string
+    subtitle?: string
+    link?: string
+    image?: Image
+  }>
   showcaseProjects?: ShowcaseProject[]
   title?: string
 }
