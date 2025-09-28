@@ -71,20 +71,6 @@ export default defineType({
         }),
       ],
     }),
-    defineField({
-      name: 'heroSlides',
-      title: 'Hero Slides',
-      type: 'array',
-      of: [{ type: 'heroSlide' }],
-    }),
-    defineField({
-      name: 'promoCards',
-      title: 'Promo Cards',
-      description: 'Cards displayed next to the hero slider (max 2).',
-      type: 'array',
-      validation: (Rule) => Rule.max(2),
-      of: [{ type: 'promoCard' }],
-    }),
   ],
   preview: {
     select: {

@@ -5,19 +5,6 @@ export const homePageQuery = groq`
     _id,
     footer,
     overview,
-    heroSlides[]{
-      title,
-      subtitle,
-      buttonText,
-      link,
-      image,
-    },
-    promoCards[]{
-      title,
-      subtitle,
-      link,
-      image,
-    },
     showcaseProjects[]->{
       _type,
       coverImage,

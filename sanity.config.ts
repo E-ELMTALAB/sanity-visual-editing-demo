@@ -16,8 +16,6 @@ import project from 'schemas/documents/project'
 import duration from 'schemas/objects/duration'
 import milestone from 'schemas/objects/milestone'
 import timeline from 'schemas/objects/timeline'
-import heroSlide from 'schemas/objects/heroSlide'
-import promoCard from 'schemas/objects/promoCard'
 import youtube from 'schemas/objects/youtube'
 import home from 'schemas/singletons/home'
 import settings from 'schemas/singletons/settings'
@@ -45,8 +43,6 @@ export default defineConfig({
       milestone,
       timeline,
       youtube,
-      heroSlide,
-      promoCard,
     ],
   },
   plugins: [
