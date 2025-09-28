@@ -11,6 +11,7 @@ import { presentationTool } from 'sanity/presentation'
 import { structureTool } from 'sanity/structure'
 import { unsplashImageAsset } from 'sanity-plugin-asset-source-unsplash'
 import page from 'schemas/documents/page'
+import post from 'schemas/documents/post'
 import project from 'schemas/documents/project'
 import duration from 'schemas/objects/duration'
 import milestone from 'schemas/objects/milestone'
@@ -37,6 +38,7 @@ export default defineConfig({
       duration,
       page,
       project,
+      post,
       // Objects
       milestone,
       timeline,

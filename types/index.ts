@@ -64,3 +64,18 @@ export interface SettingsPayload {
   menuItems?: MenuItem[]
   ogImage?: Image
 }
+
+export interface PostListItemPayload {
+  _id?: string
+  title?: string
+  slug?: string
+  excerpt?: PortableTextBlock[]
+  coverImage?: Image
+  tags?: string[]
+  publishedAt?: string
+}
+
+export interface PostPayload extends PostListItemPayload {
+  author?: string
+  body?: PortableTextBlock[]
+}

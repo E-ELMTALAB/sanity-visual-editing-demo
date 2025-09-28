@@ -1,0 +1,1395 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { useCart } from "../../../contexts/cart-context"
+import CartDropdown from "../../../components/cart-dropdown"
+
+interface ProductPageProps {
+  params: { id: string }
+}
+
+export default function ProductPage({ params }: ProductPageProps) {
+  const { id } = params
+  const [selectedTab, setSelectedTab] = useState("description")
+  const [quantity, setQuantity] = useState(1)
+  const [selectedOption, setSelectedOption] = useState("1-month")
+  const [selectedImage, setSelectedImage] = useState(0)
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+  const [user, setUser] = useState({ name: "مهدی", email: "mehdi@example.com" })
+
+  const { state: cartState, addItem } = useCart()
+  const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false)
+  const [showAddedToCart, setShowAddedToCart] = useState(false)
+
+  const handleProfileClick = () => {
+    if (isAuthenticated) {
+      setIsProfileDropdownOpen(!isProfileDropdownOpen)
+    } else {
+      window.location.href = "/login"
+    }
+  }
+
+  const handleLogout = () => {
+    setIsAuthenticated(false)
+    setIsProfileDropdownOpen(false)
+    setUser({ name: "", email: "" })
+  }
+
+  const handleAddToCart = () => {
+    const selectedProductOption = product.options.find((opt) => opt.id === selectedOption)
+    addItem({
+      id: product.id,
+      title: product.title,
+      price: selectedProductOption?.price || product.price,
+      image: product.image,
+      selectedOption: selectedProductOption?.name,
+      quantity,
+    })
+
+    setShowAddedToCart(true)
+    setTimeout(() => setShowAddedToCart(false), 3000)
+  }
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const profileContainer = document.getElementById("profileContainer")
+      if (profileContainer && !profileContainer.contains(event.target as Node)) {
+        setIsProfileDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
+
+  const product = {
+    id: Number.parseInt(id),
+    title: "اکانت اسپاتیفای پریمیوم",
+    description:
+      "اسپاتیفای یکی از محبوب‌ترین سرویس‌های پخش موسیقی در جهان است که دسترسی به میلیون‌ها آهنگ، پادکست و محتوای صوتی را فراهم می‌کند. با خرید اکانت اسپاتیفای از فروشگاه ما، به دنیایی از موسیقی بی‌نظیر موسیقی دسترسی خواهید داشت.",
+    price: 250000,
+    originalPrice: 350000,
+    discount: 30,
+    rating: 4.5,
+    reviews: 16,
+    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
+    gallery: [
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
+      "https://placehold.co/600x400/1DB954/FFFFFF?text=Spotify+2",
+      "https://placehold.co/600x400/1DB954/FFFFFF?text=Spotify+3",
+    ],
+    features: [
+      "دسترسی به میلیون‌ها آهنگ و پادکست محلی و بین‌المللی",
+      "پادکست‌های متنوع: از سرگرمی و آموزشی تا سیاستمندی و دانستنی، همه در اسپاتیفای موجود است",
+      "پلی‌لیست‌های شخصی‌سازی شده: بر اساس سلیقه موسیقایی شما، پلی‌لیست‌های اختصاصی ایجاد می‌شوند",
+      "کیفیت صدای بالا: با کیفیت صدای بی‌نظیر اسپاتیفای، تجربه‌ای فوق‌العاده از گوش دادن به موسیقی خواهید داشت",
+      "دسترسی آفلاین: با دانلود آهنگ‌ها، در هر زمان و مکانی بدون نیاز به اینترنت به موسیقی گوش دهید",
+    ],
+    options: [
+      { id: "1-month", name: "1 ماهه", price: 250000 },
+      { id: "3-month", name: "3 ماهه", price: 650000 },
+      { id: "6-month", name: "6 ماهه", price: 1200000 },
+      { id: "12-month", name: "12 ماهه", price: 2200000 },
+    ],
+  }
+
+  const reviews = [
+    {
+      id: 1,
+      user: "علی محمدی",
+      rating: 5,
+      date: "2 روز پیش",
+      comment: "عالی بود، سریع فعال شد و بدون مشکل کار می‌کنه. قیمتش هم خیلی مناسب بود.",
+      helpful: 12,
+    },
+    {
+      id: 2,
+      user: "سارا احمدی",
+      rating: 4,
+      date: "1 هفته پیش",
+      comment: "کیفیت خوبی داره ولی یکم دیر فعال شد. در کل راضی هستم.",
+      helpful: 8,
+    },
+    {
+      id: 3,
+      user: "محمد رضایی",
+      rating: 5,
+      date: "2 هفته پیش",
+      comment: "بهترین قیمت بازار رو داشت. پشتیبانی هم عالی بود.",
+      helpful: 15,
+    },
+  ]
+
+  const faqs = [
+    {
+      question: "چطور اکانت خود را انتخاب کنید؟",
+      answer: "مدت زمان اکانت خود را انتخاب کنید",
+    },
+    {
+      question: "نوع اشتراک اکانت خود را انتخاب کنید",
+      answer: "تک کاربره (عضو فعلی)",
+    },
+    {
+      question: "اگر قبلاً دارید اطلاعات اکانت خود وارد کنید (اختیاری) و برید",
+      answer: "اکانت نداریم پس به اکانت جدید بسیار",
+    },
+  ]
+
+  const relatedProducts = [
+    {
+      id: 2,
+      title: "اکانت یوتیوب پریمیوم",
+      price: 180000,
+      originalPrice: 250000,
+      discount: 28,
+      rating: 4.3,
+      reviews: 24,
+      image: "https://placehold.co/300x200/FF0000/FFFFFF?text=YouTube+Premium",
+    },
+    {
+      id: 3,
+      title: "اکانت نتفلیکس پریمیوم",
+      price: 320000,
+      originalPrice: 450000,
+      discount: 29,
+      rating: 4.7,
+      reviews: 31,
+      image: "https://placehold.co/300x200/E50914/FFFFFF?text=Netflix",
+    },
+    {
+      id: 4,
+      title: "اکانت اپل موزیک",
+      price: 200000,
+      originalPrice: 280000,
+      discount: 29,
+      rating: 4.4,
+      reviews: 18,
+      image: "https://placehold.co/300x200/FA243C/FFFFFF?text=Apple+Music",
+    },
+    {
+      id: 5,
+      title: "اکانت آمازون پرایم",
+      price: 280000,
+      originalPrice: 380000,
+      discount: 26,
+      rating: 4.6,
+      reviews: 22,
+      image: "https://placehold.co/300x200/FF9900/FFFFFF?text=Amazon+Prime",
+    },
+  ]
+
+  const relatedArticles = [
+    {
+      id: 1,
+      title: "راهنمای کامل استفاده از اسپاتیفای پریمیوم",
+      category: "spotify",
+      readTime: "5 دقیقه",
+    },
+    {
+      id: 2,
+      title: "مقایسه سرویس‌های پخش موسیقی: اسپاتیفای vs اپل موزیک",
+      category: "مقایسه",
+      readTime: "8 دقیقه",
+    },
+    {
+      id: 3,
+      title: "نحوه ایجاد پلی‌لیست‌های حرفه‌ای در اسپاتیفای",
+      category: "آموزش",
+      readTime: "6 دقیقه",
+    },
+    {
+      id: 4,
+      title: "بهترین پادکست‌های فارسی در اسپاتیفای",
+      category: "پادکست",
+      readTime: "4 دقیقه",
+    },
+  ]
+
+  const selectedPrice = product.options.find((opt) => opt.id === selectedOption)?.price || product.price
+
+  return (
+    <div className="bg-gray-50 min-h-screen" dir="rtl">
+      <header className="sticky top-0 z-50 glassmorphism">
+        <div className="container mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 sm:h-20">
+            {/* Logo and Name */}
+            <div className="relative flex items-center space-x-2 sm:space-x-4 space-x-reverse cursor-pointer">
+              <Link href="/" className="flex items-center space-x-2 sm:space-x-4 space-x-reverse">
+                <img
+                  src="/images/design-mode/Group%201(1).png"
+                  alt="SharifGPT Logo"
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+                />
+                <h1 className="text-lg sm:text-xl font-bold text-gray-800">SharifGPT</h1>
+              </Link>
+            </div>
+
+            {/* Navigation */}
+            <nav className="hidden lg:flex items-center space-x-2 space-x-reverse">
+              <div className="h-8 border-l border-gray-300"></div>
+              <div className="relative group">
+                <Link
+                  href="/products"
+                  className="flex items-center text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)]"
+                >
+                  <span>محصولات</span>
+                  <svg
+                    className="w-4 h-4 mr-1 transition-transform duration-200 group-hover:rotate-180"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </Link>
+              </div>
+
+              <div className="relative group">
+                <Link
+                  href="/courses"
+                  className="flex items-center text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)]"
+                >
+                  <span>دوره‌ها</span>
+                  <svg
+                    className="w-4 h-4 mr-1 transition-transform duration-200 group-hover:rotate-180"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </Link>
+              </div>
+              <Link
+                href="/enterprise"
+                className="flex items-center text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)] whitespace-nowrap"
+              >
+                <span>فروش سازمانی</span>
+              </Link>
+              <Link
+                href="/blog"
+                className="text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)]"
+              >
+                بلاگ
+              </Link>
+            </nav>
+
+            {/* Actions: Search, Contact, Cart, Profile */}
+            <div className="flex items-center space-x-3 sm:space-x-5 space-x-reverse">
+              {/* Search Box */}
+              <div className="relative hidden xl:block">
+                <input
+                  type="text"
+                  placeholder="جستجو..."
+                  className="w-40 xl:w-48 bg-gray-100 border border-[#3092BE] rounded-full py-2 pr-4 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3092BE] transition-all duration-300 ease-in-out hover:w-48 xl:hover:w-60 focus:w-48 xl:focus:w-60"
+                />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg
+                    className="h-5 w-5 text-gray-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Contact */}
+              <div className="hidden md:flex items-center space-x-2 space-x-reverse border-l border-gray-300 pl-3 sm:pl-5">
+                <div className="text-right">
+                  <div className="flex items-center justify-end">
+                    <a
+                      href="/contact"
+                      className="text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#3092BE] transition-colors cursor-pointer"
+                    >
+                      تماس با ما
+                    </a>
+                    <span className="relative flex h-2 w-2 sm:h-3 sm:w-3 mr-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 sm:h-3 sm:w-3 bg-green-500"></span>
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">وضعیت: آنلاین</p>
+                </div>
+              </div>
+
+              <div className="relative" id="profileContainer">
+                {/* Cart Icon - Separate Circle */}
+                <div className="flex items-center space-x-3 space-x-reverse">
+                  <div
+                    className="relative cursor-pointer transition-transform duration-300 transform hover:scale-110"
+                    onClick={() => setIsCartDropdownOpen(!isCartDropdownOpen)}
+                  >
+                    <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2 border-[#3092BE] flex items-center justify-center bg-white shadow-sm">
+                      <svg
+                        className="h-4 w-4 sm:h-5 sm:w-5 text-[#3092BE]"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                      </svg>
+                    </div>
+                    {cartState.itemCount > 0 && (
+                      <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                        {cartState.itemCount}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Profile Icon - Separate Circle */}
+                  <div className="cursor-pointer" onClick={handleProfileClick}>
+                    {isAuthenticated ? (
+                      <img
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-md object-cover"
+                        src="/images/design-mode/3Y1Z0Qj(2).png"
+                        alt="آواتار کاربر"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-md bg-white flex items-center justify-center">
+                        <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path
+                            fillRule="evenodd"
+                            d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Profile Dropdown for Authenticated Users */}
+                {isAuthenticated && isProfileDropdownOpen && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
+                    <div className="p-4">
+                      {/* User Info */}
+                      <div className="flex items-center space-x-3 space-x-reverse pb-4 border-b border-gray-100">
+                        <img
+                          className="w-12 h-12 rounded-full object-cover"
+                          src="/images/design-mode/3Y1Z0Qj(1).png"
+                          alt="آواتار کاربر"
+                        />
+                        <div className="text-right">
+                          <p className="font-semibold text-gray-800">{user.name}</p>
+                          <p className="text-sm text-gray-500">{user.email}</p>
+                        </div>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="py-2">
+                        <a
+                          href="#"
+                          className="flex items-center space-x-3 space-x-reverse px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM5 9h14l1 12H4L5 9z"
+                            />
+                          </svg>
+                          <span>پروفایل من</span>
+                        </a>
+                        <a
+                          href="#"
+                          className="flex items-center space-x-3 space-x-reverse px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                            />
+                          </svg>
+                          <span>سفارشات من</span>
+                        </a>
+                      </div>
+
+                      {/* Logout */}
+                      <div className="pt-2 border-t border-gray-100">
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center space-x-3 space-x-reverse px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors w-full"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                            />
+                          </svg>
+                          <span>خروج</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Cart Dropdown */}
+              <CartDropdown isOpen={isCartDropdownOpen} onClose={() => setIsCartDropdownOpen(false)} />
+            </div>
+          </div>
+          <div className="w-full h-px bg-gray-200"></div>
+        </div>
+      </header>
+
+      {/* Breadcrumb */}
+      <div className="bg-white shadow-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center space-x-2 space-x-reverse text-sm text-gray-500">
+            <Link href="/" className="hover:text-blue-600">
+              خانه
+            </Link>
+            <span>/</span>
+            <Link href="/products" className="hover:text-blue-600">
+              محصولات
+            </Link>
+            <span>/</span>
+            <span className="text-gray-800">اسپاتیفای</span>
+            <span>/</span>
+            <span className="text-gray-800">اکانت اسپاتیفای</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Product Images */}
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl overflow-hidden shadow-lg group">
+              <img
+                src="/spotify-premium-banner.png"
+                alt={product.title}
+                className="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+
+            <div className="lg:hidden">
+              {/* Product Info - Mobile Only */}
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white/80 via-white/60 to-blue-50/80 backdrop-blur-xl border border-white/30 shadow-xl mb-6">
+                {/* Background decorative elements */}
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-2xl"></div>
+                <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-green-400/20 to-blue-400/20 rounded-full blur-xl"></div>
+
+                <div className="relative p-4">
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-800 via-blue-800 to-purple-800 bg-clip-text text-transparent mb-4">
+                    {product.title}
+                  </h1>
+
+                  <div className="flex items-center justify-between mb-4 p-3 bg-white/40 backdrop-blur-sm border border-white/40 rounded-xl shadow-md">
+                    <div className="flex items-center space-x-4 space-x-reverse">
+                      {/* Rating stars with smaller size */}
+                      <div className="flex items-center space-x-1 space-x-reverse bg-gradient-to-r from-yellow-50/80 to-orange-50/80 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-yellow-200/50">
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <svg
+                              key={i}
+                              className={`w-4 h-4 ${i < Math.floor(product.rating) ? "text-yellow-400 drop-shadow-sm" : "text-gray-300"}`}
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
+                          <span className="text-gray-800 mr-2 font-bold text-sm">{product.rating}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2 space-x-reverse">
+                        <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-blue-200/50">
+                          <span className="text-blue-700 font-semibold text-xs">({product.reviews} نظر)</span>
+                        </div>
+                        <div className="bg-gradient-to-r from-green-50/80 to-emerald-50/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-green-200/50 flex items-center space-x-1 space-x-reverse">
+                          <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          <span className="text-green-700 font-semibold text-xs">تایید شده</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50/60 via-white/50 to-green-50/60 backdrop-blur-xl border border-white/40 shadow-lg p-4 mb-4">
+                    {/* Smaller decorative background elements */}
+                    <div className="absolute top-0 left-0 w-12 h-12 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-xl"></div>
+                    <div className="absolute bottom-0 right-0 w-10 h-10 bg-gradient-to-tl from-green-400/10 to-blue-400/10 rounded-full blur-lg"></div>
+
+                    <div className="relative flex items-center justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-3 space-x-reverse">
+                          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 bg-clip-text text-transparent">
+                            {selectedPrice.toLocaleString()} تومان
+                          </span>
+                          {product.originalPrice > selectedPrice && (
+                            <div className="bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full shadow-md border border-white/20">
+                              <span className="font-bold text-xs">{product.discount}% تخفیف</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Original price with smaller styling */}
+                        {product.originalPrice > selectedPrice && (
+                          <div className="flex items-center space-x-2 space-x-reverse">
+                            <span className="text-sm text-gray-500 line-through bg-gray-100/60 backdrop-blur-sm px-2 py-0.5 rounded-md">
+                              {product.originalPrice.toLocaleString()} تومان
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="text-left bg-gradient-to-br from-green-50/80 to-emerald-50/80 backdrop-blur-sm border border-green-200/50 rounded-xl p-3 shadow-md">
+                        <div className="flex items-center space-x-1 space-x-reverse mb-1">
+                          <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          <span className="text-xs font-medium text-green-700">صرفه‌جویی شما:</span>
+                        </div>
+                        <div className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                          {(product.originalPrice - selectedPrice).toLocaleString()} تومان
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg p-6 space-y-6">
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                  <svg className="w-6 h-6 text-blue-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  درباره اسپاتیفای پریمیوم
+                </h3>
+                <p className="text-gray-700 leading-relaxed mb-4">
+                  اسپاتیفای یکی از بزرگ‌ترین و محبوب‌ترین پلتفرم‌های پخش موسیقی در جهان است که بیش از 400 میلیون کاربر فعال
+                  دارد. این سرویس سوئدی که در سال 2006 تأسیس شد، امروزه دسترسی به بیش از 100 میلیون آهنگ، 5 میلیون
+                  پادکست و هزاران کتاب صوتی را فراهم می‌کند.
+                </p>
+                <p className="text-gray-700 leading-relaxed">
+                  با خرید اکانت اسپاتیفای پریمیوم از فروشگاه ما، شما به تمامی امکانات حرفه‌ای این پلتفرم دسترسی خواهید
+                  داشت و تجربه‌ای بی‌نظیر از گوش دادن به موسیقی خواهید داشت.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                  <svg className="w-5 h-5 text-green-600 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  مزایای اسپاتیفای پریمیوم
+                </h4>
+                <ul className="space-y-2 text-gray-700">
+                  <li className="flex items-start space-x-2 space-x-reverse">
+                    <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
+                    <span>گوش دادن آفلاین: دانلود آهنگ‌ها و گوش دادن بدون اتصال به اینترنت</span>
+                  </li>
+                  <li className="flex items-start space-x-2 space-x-reverse">
+                    <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
+                    <span>بدون تبلیغات: تجربه گوش دادن بدون وقفه و آزاردهنده</span>
+                  </li>
+                  <li className="flex items-start space-x-2 space-x-reverse">
+                    <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
+                    <span>کیفیت صدای بالا: تا 320 kbps برای بهترین تجربه صوتی</span>
+                  </li>
+                  <li className="flex items-start space-x-2 space-x-reverse">
+                    <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
+                    <span>پخش نامحدود: بدون محدودیت در تعداد آهنگ‌های قابل پخش</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                  <svg className="w-5 h-5 text-purple-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                    />
+                  </svg>
+                  ویژگی‌های هوشمند
+                </h4>
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
+                    <h5 className="font-semibold text-gray-800 mb-2">Discover Weekly</h5>
+                    <p className="text-sm text-gray-600">هر هفته پلی‌لیست شخصی‌سازی شده بر اساس سلیقه موسیقایی شما</p>
+                  </div>
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg">
+                    <h5 className="font-semibold text-gray-800 mb-2">Daily Mix</h5>
+                    <p className="text-sm text-gray-600">ترکیبی از آهنگ‌های مورد علاقه و پیشنهادات جدید</p>
+                  </div>
+                  <div className="bg-gradient-to-r from-yellow-50 to-green-50 p-4 rounded-lg">
+                    <h5 className="font-semibold text-gray-800 mb-2">Spotify Wrapped</h5>
+                    <p className="text-sm text-gray-600">گزارش سالانه از عادات گوش دادن شما</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                  <svg className="w-5 h-5 text-red-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    />
+                  </svg>
+                  سازگاری با دستگاه‌ها
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 mx-auto mb-2 bg-gray-800 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-gray-700">کامپیوتر</span>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 mx-auto mb-2 bg-gray-800 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-gray-700">موبایل</span>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 mx-auto mb-2 bg-gray-800 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-gray-700">تبلت</span>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 mx-auto mb-2 bg-gray-800 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-gray-700">اسپیکر</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg border border-green-200">
+                <h4 className="text-lg font-bold text-gray-800 mb-2 flex items-center">
+                  <svg className="w-5 h-5 text-green-600 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 01.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  تضمین کیفیت
+                </h4>
+                <p className="text-sm text-gray-700">
+                  تمامی اکانت‌های ارائه شده توسط ما کاملاً اصل و قانونی هستند. ما تضمین می‌کنیم که اکانت شما تا پایان مدت
+                  اشتراک فعال باقی خواهد ماند و در صورت بروز هرگونه مشکل، پشتیبانی کامل ارائه خواهیم داد.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Product Info */}
+          <div className="space-y-6">
+            <div className="hidden lg:block">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white/80 via-white/60 to-blue-50/80 backdrop-blur-xl border border-white/30 shadow-xl">
+                {/* Background decorative elements */}
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-2xl"></div>
+                <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-green-400/20 to-blue-400/20 rounded-full blur-xl"></div>
+
+                <div className="relative p-4">
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-800 via-blue-800 to-purple-800 bg-clip-text text-transparent mb-4">
+                    {product.title}
+                  </h1>
+
+                  <div className="flex items-center justify-between mb-4 p-3 bg-white/40 backdrop-blur-sm border border-white/40 rounded-xl shadow-md">
+                    <div className="flex items-center space-x-4 space-x-reverse">
+                      {/* Rating stars with smaller size */}
+                      <div className="flex items-center space-x-1 space-x-reverse bg-gradient-to-r from-yellow-50/80 to-orange-50/80 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-yellow-200/50">
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <svg
+                              key={i}
+                              className={`w-4 h-4 ${i < Math.floor(product.rating) ? "text-yellow-400 drop-shadow-sm" : "text-gray-300"}`}
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
+                          <span className="text-gray-800 mr-2 font-bold text-sm">{product.rating}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2 space-x-reverse">
+                        <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-blue-200/50">
+                          <span className="text-blue-700 font-semibold text-xs">({product.reviews} نظر)</span>
+                        </div>
+                        <div className="bg-gradient-to-r from-green-50/80 to-emerald-50/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-green-200/50 flex items-center space-x-1 space-x-reverse">
+                          <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          <span className="text-green-700 font-semibold text-xs">تایید شده</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50/60 via-white/50 to-green-50/60 backdrop-blur-xl border border-white/40 shadow-lg p-4 mb-4">
+                    {/* Smaller decorative background elements */}
+                    <div className="absolute top-0 left-0 w-12 h-12 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-xl"></div>
+                    <div className="absolute bottom-0 right-0 w-10 h-10 bg-gradient-to-tl from-green-400/10 to-blue-400/10 rounded-full blur-lg"></div>
+
+                    <div className="relative flex items-center justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-3 space-x-reverse">
+                          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 bg-clip-text text-transparent">
+                            {selectedPrice.toLocaleString()} تومان
+                          </span>
+                          {product.originalPrice > selectedPrice && (
+                            <div className="bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full shadow-md border border-white/20">
+                              <span className="font-bold text-xs">{product.discount}% تخفیف</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Original price with smaller styling */}
+                        {product.originalPrice > selectedPrice && (
+                          <div className="flex items-center space-x-2 space-x-reverse">
+                            <span className="text-sm text-gray-500 line-through bg-gray-100/60 backdrop-blur-sm px-2 py-0.5 rounded-md">
+                              {product.originalPrice.toLocaleString()} تومان
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="text-left bg-gradient-to-br from-green-50/80 to-emerald-50/80 backdrop-blur-sm border border-green-200/50 rounded-xl p-3 shadow-md">
+                        <div className="flex items-center space-x-1 space-x-reverse mb-1">
+                          <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          <span className="text-xs font-medium text-green-700">صرفه‌جویی شما:</span>
+                        </div>
+                        <div className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                          {(product.originalPrice - selectedPrice).toLocaleString()} تومان
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg p-6 space-y-6">
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                  <svg className="w-6 h-6 text-blue-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  درباره اسپاتیفای پریمیوم
+                </h3>
+                <p className="text-gray-700 leading-relaxed mb-4">
+                  اسپاتیفای یکی از بزرگ‌ترین و محبوب‌ترین پلتفرم‌های پخش موسیقی در جهان است که بیش از 400 میلیون کاربر فعال
+                  دارد. این سرویس سوئدی که در سال 2006 تأسیس شد، امروزه دسترسی به بیش از 100 میلیون آهنگ، 5 میلیون
+                  پادکست و هزاران کتاب صوتی را فراهم می‌کند.
+                </p>
+                <p className="text-gray-700 leading-relaxed">
+                  با خرید اکانت اسپاتیفای پریمیوم از فروشگاه ما، شما به تمامی امکانات حرفه‌ای این پلتفرم دسترسی خواهید
+                  داشت و تجربه‌ای بی‌نظیر از گوش دادن به موسیقی خواهید داشت.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                  <svg className="w-5 h-5 text-green-600 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  مزایای اسپاتیفای پریمیوم
+                </h4>
+                <ul className="space-y-2 text-gray-700">
+                  <li className="flex items-start space-x-2 space-x-reverse">
+                    <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
+                    <span>گوش دادن آفلاین: دانلود آهنگ‌ها و گوش دادن بدون اتصال به اینترنت</span>
+                  </li>
+                  <li className="flex items-start space-x-2 space-x-reverse">
+                    <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
+                    <span>بدون تبلیغات: تجربه گوش دادن بدون وقفه و آزاردهنده</span>
+                  </li>
+                  <li className="flex items-start space-x-2 space-x-reverse">
+                    <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
+                    <span>کیفیت صدای بالا: تا 320 kbps برای بهترین تجربه صوتی</span>
+                  </li>
+                  <li className="flex items-start space-x-2 space-x-reverse">
+                    <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
+                    <span>پخش نامحدود: بدون محدودیت در تعداد آهنگ‌های قابل پخش</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                  <svg className="w-5 h-5 text-purple-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                    />
+                  </svg>
+                  ویژگی‌های هوشمند
+                </h4>
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
+                    <h5 className="font-semibold text-gray-800 mb-2">Discover Weekly</h5>
+                    <p className="text-sm text-gray-600">هر هفته پلی‌لیست شخصی‌سازی شده بر اساس سلیقه موسیقایی شما</p>
+                  </div>
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg">
+                    <h5 className="font-semibold text-gray-800 mb-2">Daily Mix</h5>
+                    <p className="text-sm text-gray-600">ترکیبی از آهنگ‌های مورد علاقه و پیشنهادات جدید</p>
+                  </div>
+                  <div className="bg-gradient-to-r from-yellow-50 to-green-50 p-4 rounded-lg">
+                    <h5 className="font-semibold text-gray-800 mb-2">Spotify Wrapped</h5>
+                    <p className="text-sm text-gray-600">گزارش سالانه از عادات گوش دادن شما</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                  <svg className="w-5 h-5 text-red-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    />
+                  </svg>
+                  سازگاری با دستگاه‌ها
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 mx-auto mb-2 bg-gray-800 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-gray-700">کامپیوتر</span>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 mx-auto mb-2 bg-gray-800 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-gray-700">موبایل</span>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 mx-auto mb-2 bg-gray-800 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-gray-700">تبلت</span>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 mx-auto mb-2 bg-gray-800 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-gray-700">اسپیکر</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg border border-green-200">
+                <h4 className="text-lg font-bold text-gray-800 mb-2 flex items-center">
+                  <svg className="w-5 h-5 text-green-600 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 01.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  تضمین کیفیت
+                </h4>
+                <p className="text-sm text-gray-700">
+                  تمامی اکانت‌های ارائه شده توسط ما کاملاً اصل و قانونی هستند. ما تضمین می‌کنیم که اکانت شما تا پایان مدت
+                  اشتراک فعال باقی خواهد ماند و در صورت بروز هرگونه مشکل، پشتیبانی کامل ارائه خواهیم داد.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs Section */}
+        <div className="mt-16">
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            {/* Tab Headers */}
+            <div className="border-b border-gray-200">
+              <div className="flex">
+                {[
+                  { id: "description", name: "توضیحات" },
+                  { id: "features", name: "ویژگی‌های اسپاتیفای" },
+                  { id: "reviews", name: "نظرات کاربران" },
+                  { id: "faq", name: "پرسش و پاسخ" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setSelectedTab(tab.id)}
+                    className={`px-6 py-4 font-medium transition-colors ${
+                      selectedTab === tab.id
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-600 hover:text-gray-800"
+                    }`}
+                  >
+                    {tab.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Tab Content */}
+            <div className="p-8">
+              {selectedTab === "description" && (
+                <div className="prose max-w-none">
+                  <p className="text-gray-700 leading-relaxed">{product.description}</p>
+                </div>
+              )}
+
+              {selectedTab === "features" && (
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-6">ویژگی‌های اسپاتیفای</h3>
+                  <ul className="space-y-4">
+                    {product.features.map((feature, index) => (
+                      <li key={index} className="flex items-start space-x-3 space-x-reverse">
+                        <svg
+                          className="w-6 h-6 text-green-500 mt-0.5 flex-shrink-0"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <span className="text-gray-700">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {selectedTab === "reviews" && (
+                <div>
+                  <div className="flex items-center justify-between mb-8">
+                    <h3 className="text-xl font-bold text-gray-800">نظرات کاربران</h3>
+                    <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                      ثبت نظر
+                    </button>
+                  </div>
+
+                  <div className="space-y-6">
+                    {reviews.map((review) => (
+                      <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-3 space-x-reverse">
+                            <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                              <span className="text-gray-600 font-medium">{review.user[0]}</span>
+                            </div>
+                            <div>
+                              <div className="font-medium text-gray-800">{review.user}</div>
+                              <div className="text-sm text-gray-500">{review.date}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <svg
+                                key={i}
+                                className={`w-4 h-4 ${i < review.rating ? "text-yellow-400" : "text-gray-300"}`}
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-gray-700 mb-3">{review.comment}</p>
+                        <div className="flex items-center space-x-4 space-x-reverse text-sm text-gray-500">
+                          <button className="hover:text-blue-600">مفید ({review.helpful})</button>
+                          <button className="hover:text-blue-600">پاسخ</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedTab === "faq" && (
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-6">پرسش و پاسخ</h3>
+                  <div className="space-y-4">
+                    {faqs.map((faq, index) => (
+                      <div key={index} className="border border-gray-200 rounded-lg p-4">
+                        <h4 className="font-medium text-gray-800 mb-2">{faq.question}</h4>
+                        <p className="text-gray-600">{faq.answer}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Related Products Section */}
+        <div className="mt-16">
+          <div className="bg-white rounded-xl shadow-sm p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-8">محصولات مرتبط</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedProducts.map((relatedProduct) => (
+                <Link
+                  key={relatedProduct.id}
+                  href={`/products/${relatedProduct.id}`}
+                  className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-blue-300"
+                >
+                  <div className="relative">
+                    <img
+                      src={relatedProduct.image || "/placeholder.svg"}
+                      alt={relatedProduct.title}
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    {relatedProduct.discount > 0 && (
+                      <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                        {relatedProduct.discount}% تخفیف
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-bold text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                      {relatedProduct.title}
+                    </h3>
+                    <div className="flex items-center mb-3">
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <svg
+                            key={i}
+                            className={`w-4 h-4 ${i < Math.floor(relatedProduct.rating) ? "text-yellow-400" : "text-gray-300"}`}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                        <span className="text-gray-600 text-sm mr-2">({relatedProduct.reviews})</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2 space-x-reverse">
+                        <span className="text-lg font-bold text-blue-600">
+                          {relatedProduct.price.toLocaleString()} تومان
+                        </span>
+                        {relatedProduct.originalPrice > relatedProduct.price && (
+                          <span className="text-sm text-gray-500 line-through">
+                            {relatedProduct.originalPrice.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <div className="mt-8 text-center">
+              <Link href="/products" className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
+                مشاهده همه محصولات
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Related Articles Section */}
+        <div className="mt-8">
+          <div className="bg-white rounded-xl shadow-sm p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-8">مقالات مرتبط</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedArticles.map((article) => (
+                <Link
+                  key={article.id}
+                  href={`/blog/${article.id}`}
+                  className="block p-6 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-300 group"
+                >
+                  <h3 className="font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                    {article.title}
+                  </h3>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span className="bg-gray-100 px-3 py-1 rounded-full text-xs font-medium">{article.category}</span>
+                    <span className="flex items-center">
+                      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      {article.readTime}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <div className="mt-8 text-center">
+              <Link href="/blog" className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
+                مشاهده همه مقالات
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-40 backdrop-blur-md bg-white/90 border-t border-gray-200/50 shadow-2xl">
+        <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between space-x-2 space-x-reverse">
+            {/* Product info section - optimized for mobile */}
+            <div className="flex items-center space-x-2 space-x-reverse bg-white/70 backdrop-blur-sm rounded-xl px-3 py-2 sm:px-4 sm:py-3 border border-white/30 shadow-lg min-w-0 flex-1 max-w-[45%]">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-bold text-gray-800 text-xs sm:text-sm truncate">{product.title}</h3>
+                <div className="flex items-center space-x-1 space-x-reverse">
+                  <p className="text-blue-600 font-bold text-sm sm:text-base whitespace-nowrap">
+                    {selectedPrice.toLocaleString()}
+                  </p>
+                  <span className="text-blue-600 font-bold text-xs sm:text-sm">تومان</span>
+                  {product.originalPrice > selectedPrice && (
+                    <span className="text-xs text-gray-500 line-through ml-1">
+                      {product.originalPrice.toLocaleString()}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Controls section - optimized spacing */}
+            <div className="flex items-center space-x-3 space-x-reverse">
+              {/* Quantity controls - smaller for mobile */}
+              <div className="flex items-center bg-white/70 backdrop-blur-sm border border-white/30 rounded-xl shadow-lg overflow-hidden">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="px-2 sm:px-3 py-2 text-gray-700 hover:bg-white/60 transition-all duration-300 font-bold text-sm sm:text-base"
+                >
+                  −
+                </button>
+                <div className="px-2 sm:px-3 py-2 border-x border-white/30 bg-white/40 font-bold text-gray-800 min-w-[35px] sm:min-w-[40px] text-center text-sm sm:text-base">
+                  {quantity}
+                </div>
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="px-2 sm:px-3 py-2 text-gray-700 hover:bg-white/60 transition-all duration-300 font-bold text-sm sm:text-base"
+                >
+                  +
+                </button>
+              </div>
+
+              {/* Add to cart button - responsive sizing */}
+              <button
+                onClick={handleAddToCart}
+                className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-xs sm:text-sm transition-all duration-500 transform hover:scale-105 shadow-xl flex items-center space-x-1 space-x-reverse backdrop-blur-md border border-white/30 ${
+                  showAddedToCart
+                    ? "bg-gradient-to-r from-green-500/90 to-green-600/90 text-white shadow-green-500/25"
+                    : "bg-gradient-to-r from-blue-600/90 to-blue-700/90 text-white hover:from-blue-700/90 hover:to-blue-800/90 shadow-blue-500/25"
+                } hover:shadow-2xl whitespace-nowrap`}
+                style={{
+                  boxShadow: showAddedToCart
+                    ? "0 15px 30px -8px rgba(34, 197, 94, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset"
+                    : "0 15px 30px -8px rgba(59, 130, 246, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset",
+                }}
+              >
+                <div className="relative">
+                  <svg
+                    className={`w-3 h-3 sm:w-4 sm:h-4 transition-all duration-300 ${showAddedToCart ? "scale-110" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d={showAddedToCart ? "M5 13l4 4L19 7" : "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"}
+                    />
+                  </svg>
+                  {showAddedToCart && <div className="absolute inset-0 bg-white/20 rounded-full animate-ping"></div>}
+                </div>
+                <span className="relative hidden sm:inline">{showAddedToCart ? "✨ اضافه شد!" : "افزودن به سبد"}</span>
+                <span className="relative sm:hidden">{showAddedToCart ? "✓" : "+"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="pb-24">
+        {/* Footer Section */}
+        <footer style={{ backgroundColor: "#3092BE" }}>
+          <div className="container mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 text-white">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 text-center md:text-right">
+              <div>
+                <div className="flex items-center justify-center md:justify-start space-x-2 space-x-reverse mb-4">
+                  <img
+                    src="/images/design-mode/Group%201(1).png"
+                    alt="SharifGPT Logo"
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                  <h3 className="text-lg font-bold">SharifGPT</h3>
+                </div>
+                <p className="text-sm text-blue-100 leading-relaxed">
+                  ارائه‌دهنده بهترین خدمات هوش مصنوعی و محصولات دیجیتال با کیفیت بالا و قیمت مناسب
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-4">لینک‌های مفید</h4>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <a href="#" className="text-blue-100 hover:text-white transition-colors">
+                      شرایط و قوانین
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-blue-100 hover:text-white transition-colors">
+                      حریم خصوصی
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-blue-100 hover:text-white transition-colors">
+                      درباره ما
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-4">نماد اعتماد</h4>
+                <div className="flex justify-center md:justify-start">
+                  <div className="w-16 h-16 bg-white/10 rounded-lg flex items-center justify-center">
+                    <span className="text-xs text-center">
+                      نماد
+                      <br />
+                      اعتماد
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  )
+}

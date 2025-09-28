@@ -65,3 +65,34 @@ export const settingsQuery = groq`
     ogImage,
   }
 `
+
+// Blog
+export const blogListQuery = groq`
+  *[_type == "post"]|order(publishedAt desc){
+    _id,
+    title,
+    "slug": slug.current,
+    excerpt,
+    coverImage,
+    tags,
+    publishedAt,
+  }
+`
+
+export const postBySlugQuery = groq`
+  *[_type == "post" && slug.current == $slug][0]{
+    _id,
+    title,
+    "slug": slug.current,
+    excerpt,
+    coverImage,
+    author,
+    publishedAt,
+    tags,
+    body,
+  }
+`
+
+export const postPaths = groq`
+  *[_type == "post" && slug.current != null].slug.current
+`
