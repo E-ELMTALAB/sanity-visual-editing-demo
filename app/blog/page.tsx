@@ -16,7 +16,7 @@ export default async function BlogPage() {
   if (isDraft && hasRealData) {
     return (
       <LiveQuery enabled query={blogListQuery} params={params} initialData={initial}>
-        <BlogIndex posts={initial} />
+        {(data: any) => <BlogIndex posts={data} />}
       </LiveQuery>
     )
   }

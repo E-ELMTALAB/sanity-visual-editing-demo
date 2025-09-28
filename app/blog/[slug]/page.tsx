@@ -15,7 +15,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   if (isDraft && hasRealData) {
     return (
       <LiveQuery enabled query={postBySlugQuery} params={{ slug: params.slug }} initialData={initial}>
-        <BlogPost post={initial as any} />
+        {(data: any) => <BlogPost post={data as any} />}
       </LiveQuery>
     )
   }

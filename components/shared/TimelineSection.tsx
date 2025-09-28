@@ -1,3 +1,4 @@
+"use client"
 import { TimelineItem } from 'components/shared/TimelineItem'
 import type { MilestoneItem } from 'types'
 
