@@ -1,3 +1,4 @@
+"use client"
 import ImageBox from 'components/shared/ImageBox'
 import Link from 'next/link'
 import { CustomPortableText } from 'components/shared/CustomPortableText'

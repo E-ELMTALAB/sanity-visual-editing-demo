@@ -1,3 +1,4 @@
+"use client"
 import ImageBox from 'components/shared/ImageBox'
 import { CustomPortableText } from 'components/shared/CustomPortableText'
 import type { PostPayload } from 'types'
