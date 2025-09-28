@@ -34,7 +34,8 @@ export default async function RootLayout({
 }) {
   return (
     <html
-      lang="en"
+      lang="fa"
+      dir="rtl"
       className={`${mono.variable} ${sans.variable} ${serif.variable}`}
     >
       <body>
