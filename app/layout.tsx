@@ -1,7 +1,7 @@
 import 'tailwindcss/tailwind.css'
 
 import { IBM_Plex_Mono, Inter, PT_Serif } from 'next/font/google'
-import { VisualEditing } from '@sanity/visual-editing/next/app-router'
+import { VisualEditing } from '@sanity/visual-editing/next'
 
 const serif = PT_Serif({
   variable: '--font-serif',
