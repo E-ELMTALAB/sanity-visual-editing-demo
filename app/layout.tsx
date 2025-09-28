@@ -5,6 +5,9 @@ import dynamic from 'next/dynamic'
 const AppVisualEditing = dynamic(() => import('components/visual-editing/AppVisualEditing'), { ssr: false })
 const AppSharifProviders = dynamic(() => import('components/visual-editing/AppSharifProviders'), { ssr: false })
 import '../styles/sharifgpt.css'
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
 
 const serif = PT_Serif({
   variable: '--font-serif',

@@ -6,6 +6,7 @@ module.exports = {
     './app/**/*.{js,ts,jsx,tsx}',
     './components/**/*.{js,ts,jsx,tsx}',
     './intro-template/**/*.{js,ts,jsx,tsx}',
+    './sharifgpt-website/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     ...theme,
@@ -16,5 +17,5 @@ module.exports = {
       serif: 'var(--font-serif)',
     },
   },
-  plugins: [require('@tailwindcss/typography')],
+  plugins: [require('@tailwindcss/typography'), require('tailwindcss-animate')],
 }
