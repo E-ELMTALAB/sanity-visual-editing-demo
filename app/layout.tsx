@@ -1,6 +1,7 @@
 import 'tailwindcss/tailwind.css'
 
 import { IBM_Plex_Mono, Inter, PT_Serif } from 'next/font/google'
+import { Geist, Geist_Mono } from 'geist/font'
 import dynamic from 'next/dynamic'
 const AppVisualEditing = dynamic(() => import('components/visual-editing/AppVisualEditing'), { ssr: false })
 const AppSharifProviders = dynamic(() => import('components/visual-editing/AppSharifProviders'), { ssr: false })
@@ -36,7 +37,7 @@ export default async function RootLayout({
     <html
       lang="fa"
       dir="rtl"
-      className={`${mono.variable} ${sans.variable} ${serif.variable}`}
+      className={`${Geist.variable} ${Geist_Mono.variable} ${mono.variable} ${sans.variable} ${serif.variable}`}
     >
       <body>
         <AppSharifProviders>{children}</AppSharifProviders>
