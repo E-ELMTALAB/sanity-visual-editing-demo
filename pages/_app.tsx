@@ -5,6 +5,8 @@ import { VisualEditing } from '@sanity/visual-editing/next-pages-router'
 import { AppProps } from 'next/app'
 import { IBM_Plex_Mono, Inter, PT_Serif } from 'next/font/google'
 import { lazy, useSyncExternalStore } from 'react'
+import dynamic from 'next/dynamic'
+const AppSharifProviders = dynamic(() => import('components/visual-editing/AppSharifProviders'), { ssr: false })
 
 export interface SharedPageProps {
   draftMode: boolean
@@ -61,10 +63,14 @@ export default function App({
 
       {draftMode ? (
         <PreviewProvider token={token}>
-          <Component {...pageProps} />
+          <AppSharifProviders>
+            <Component {...pageProps} />
+          </AppSharifProviders>
         </PreviewProvider>
       ) : (
-        <Component {...pageProps} />
+        <AppSharifProviders>
+          <Component {...pageProps} />
+        </AppSharifProviders>
       )}
 
       {isMaybeInsidePresentation && <VisualEditing />}

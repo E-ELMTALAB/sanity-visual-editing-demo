@@ -7,6 +7,7 @@ import MobileMenu from "../components/mobile-menu"
 import RobotAssistant from "../components/robot-assistant"
 import ProductCard from "@/components/product-card"
 import { useSanityHero } from "../../components/site/home/SanityHeroContext"
+import HeroPromoServer from "../../components/site/home/HeroPromoServer"
 import CartDropdown from "@/components/cart-dropdown" // Assuming CartDropdown component exists
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Navigation, Pagination, Autoplay } from "swiper/modules"
@@ -780,6 +781,9 @@ export default function HomePage() {
 
   return (
     <div className="bg-gray-50 min-h-screen" dir="rtl">
+      {/* Server-rendered hidden anchors for Visual Editing overlays */}
+      {/* @ts-expect-error Async Server Component */}
+      <HeroPromoServer />
       <div className="hidden lg:block">
         <RobotAssistant />
       </div>
