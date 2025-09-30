@@ -1,6 +1,5 @@
 import { HomeIcon } from '@sanity/icons'
 import { defineArrayMember, defineField, defineType } from 'sanity'
-import discountedProduct from 'schemas/objects/discountedProduct'
 
 export default defineType({
   name: 'home',
@@ -113,9 +112,15 @@ export default defineType({
     }),
     defineField({
       name: 'discountedProducts',
-      title: 'Discounted products',
+      title: 'Discounted Products',
+      description: 'Special offer products displayed in the "تخفیفات ویژه" section',
       type: 'array',
-      of: [{ type: discountedProduct.name }],
+      validation: (Rule) => Rule.max(8),
+      of: [
+        defineArrayMember({
+          type: 'discountedProduct',
+        }),
+      ],
     }),
   ],
   preview: {

@@ -31,16 +31,17 @@ export default function HeroPromoOverlay({ slides, promoCards, discountedProduct
           <span>{p?.buttonText}</span>
         </div>
       ))}
-      {discountedProducts?.map((product, i) => (
+      {discountedProducts?.map((dp, i) => (
         <div
           key={`discounted-${i}`}
-          data-sanity-id={product?._id || `discountedProducts-${product?._key}`}
+          data-sanity-id={dp?._id || `discountedProducts-${dp?._key}`}
           data-sanity-type="home.discountedProducts"
           data-sanity-index={i}
         >
-          <span>{product?.title}</span>
-          <span>{product?.description}</span>
-          <span>{product?.ctaText}</span>
+          <span>{dp?.name}</span>
+          <span>{dp?.description}</span>
+          <span>{dp?.originalPrice}</span>
+          <span>{dp?.discountedPrice}</span>
         </div>
       ))}
     </div>

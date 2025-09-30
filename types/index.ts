@@ -84,14 +84,13 @@ export interface PromoCard {
 export interface DiscountedProduct {
   _key?: string
   _type?: string
-  title?: string
+  name?: string
   description?: string
-  price?: number
+  category?: string
   originalPrice?: number
+  discountedPrice?: number
   discountPercentage?: number
   image?: Image
-  ctaText?: string
-  ctaHref?: string
 }
 
 export interface PostListItemPayload {

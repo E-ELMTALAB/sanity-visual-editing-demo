@@ -2,18 +2,18 @@
 
 import type React from "react"
 import Link from "next/link"
-import { useEffect, useState, useCallback, useMemo } from "react"
+import { useEffect, useState, useCallback } from "react"
 import MobileMenu from "../components/mobile-menu"
 import RobotAssistant from "../components/robot-assistant"
 import ProductCard from "@/components/product-card"
 import CartDropdown from "@/components/cart-dropdown" // Assuming CartDropdown component exists
-import DiscountedProducts from "../components/DiscountedProducts"
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Navigation, Pagination, Autoplay } from "swiper/modules"
 import "swiper/css"
 import "swiper/css/navigation"
 import "swiper/css/pagination"
 import Footer from "@/components/footer"
+import type { HeroSlide, PromoCard, DiscountedProduct } from "types"
 
 const IndependentSlider = ({ className, items = [], autoplayInterval = 5000 }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -166,16 +166,10 @@ const PromoCard = ({ item }) => {
   )
 }
 
-interface HomeData {
-  heroSlides?: HeroSlide[]
-  promoCards?: PromoCard[]
-  discountedProducts?: DiscountedProduct[]
-}
-
-export default function HomePage({ heroData }: { heroData?: HomeData }) {
+export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroSlide[]; promoCards?: PromoCard[]; discountedProducts?: DiscountedProduct[] } }) {
   const heroSlides = heroData?.heroSlides || []
   const promoCards = heroData?.promoCards || []
-  const discountedProducts = heroData?.discountedProducts || []
+  const discountedProductsFromSanity = heroData?.discountedProducts || []
   const [isStoryViewerOpen, setIsStoryViewerOpen] = useState(false)
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -197,12 +191,23 @@ export default function HomePage({ heroData }: { heroData?: HomeData }) {
     setIsCartDropdownOpen(!isCartDropdownOpen)
   }
 
-  const sliderData = useMemo(() => ({
+  const sliderData = {
     topBanner: heroSlides.slice(0, 1),
     mainSlider: heroSlides,
     sideBannerLeft: promoCards[0],
     sideBannerRight: promoCards[1],
-  }), [heroSlides, promoCards])
+  }
+
+  const discountedProducts = discountedProductsFromSanity.map((dp, i) => ({
+    id: i + 1,
+    name: dp.name || '',
+    category: dp.category || 'applied-ai',
+    originalPrice: dp.originalPrice || 0,
+    discountedPrice: dp.discountedPrice || 0,
+    discountPercentage: dp.discountPercentage || 0,
+    image: (dp as any)?.image?.asset?.url || `https://placehold.co/400x300/10B981/FFFFFF?text=${encodeURIComponent(dp.name || 'Product')}`,
+    description: dp.description || '',
+  }))
 
   const socialMediaProducts = [
     {
@@ -1741,27 +1746,29 @@ export default function HomePage({ heroData }: { heroData?: HomeData }) {
           ></div>
         </section>
 
-        <section className="mb-16 sm:mb-20 relative">
-          <div className="backdrop-blur-md bg-red-500/15 border border-red-300/30 rounded-3xl sm:rounded-[2rem] p-8 sm:p-10 shadow-xl">
-            <h2 className="text-lg sm:text-xl font-bold text-red-700 mb-6 sm:mb-8">تخفیفات ویژه</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 px-2 py-4">
-              {discountedProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  title={product.name}
-                  description={product.description}
-                  price={product.discountedPrice}
-                  originalPrice={product.originalPrice}
-                  discountPercentage={product.discountPercentage}
-                  image={product.image}
-                  category={product.category}
-                  href={`/products?category=${product.category}&highlight=${product.id}`}
-                />
-              ))}
+        {discountedProducts.length > 0 && (
+          <section className="mb-16 sm:mb-20 relative">
+            <div className="backdrop-blur-md bg-red-500/15 border border-red-300/30 rounded-3xl sm:rounded-[2rem] p-8 sm:p-10 shadow-xl">
+              <h2 className="text-lg sm:text-xl font-bold text-red-700 mb-6 sm:mb-8">تخفیفات ویژه</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 px-2 py-4">
+                {discountedProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    title={product.name}
+                    description={product.description}
+                    price={product.discountedPrice}
+                    originalPrice={product.originalPrice}
+                    discountPercentage={product.discountPercentage}
+                    image={product.image}
+                    category={product.category}
+                    href={`/products?category=${product.category}&highlight=${product.id}`}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         <section className="mb-16 sm:mb-20 relative" id="social-media-products">
           <div className="backdrop-blur-md bg-[#b52492]/15 border rounded-3xl sm:rounded-[2rem] p-6 sm:p-8 shadow-xl overflow-hidden border-[rgba(255,149,0,0.3)]">
