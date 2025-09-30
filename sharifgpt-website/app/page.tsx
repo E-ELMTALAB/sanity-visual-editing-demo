@@ -6,6 +6,7 @@ import { useEffect, useState, useCallback } from "react"
 import MobileMenu from "../components/mobile-menu"
 import RobotAssistant from "../components/robot-assistant"
 import ProductCard from "@/components/product-card"
+import { useSanityHero } from "@/components/site/home/SanityHeroContext"
 import CartDropdown from "@/components/cart-dropdown" // Assuming CartDropdown component exists
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Navigation, Pagination, Autoplay } from "swiper/modules"
@@ -166,6 +167,7 @@ const PromoCard = ({ item }) => {
 }
 
 export default function HomePage() {
+  const sanityHero = useSanityHero()
   const [isStoryViewerOpen, setIsStoryViewerOpen] = useState(false)
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -189,43 +191,56 @@ export default function HomePage() {
 
   const sliderData = {
     topBanner: [
-      {
-        id: 20,
-        title: "چت جی پی تی اختصاصی ۳ ماهه",
-        subtitle: "۲۳۹ هزار تومان",
-        imageUrl: "https://placehold.co/1200x300/0891b2/ffffff?text=ChatGPT+Plus",
-        buttonText: "خرید",
-      },
-      {
-        id: 21,
-        title: "اشتراک ویژه میدجرنی",
-        subtitle: "بهترین هوش مصنوعی ساخت تصویر",
-        imageUrl: "https://placehold.co/1200x300/4f46e5/ffffff?text=Midjourney",
-        buttonText: "مشاهده",
-      },
+      ...(sanityHero?.slides?.slice(0, 1).map((s, i) => ({
+        id: 200 + i,
+        title: s.title,
+        subtitle: s.subtitle,
+        imageUrl: (s as any)?.image?.asset?.url || "/placeholder.svg",
+        buttonText: s.buttonText,
+      })) || []),
+      // fallback banner if no sanity
+      ...(!sanityHero?.slides?.length
+        ? [
+            {
+              id: 20,
+              title: "چت جی پی تی اختصاصی ۳ ماهه",
+              subtitle: "۲۳۹ هزار تومان",
+              imageUrl: "https://placehold.co/1200x300/0891b2/ffffff?text=ChatGPT+Plus",
+              buttonText: "خرید",
+            },
+          ]
+        : []),
     ],
     mainSlider: [
-      {
-        id: 1,
-        title: "کالکشن جدید پاییزه",
-        subtitle: "تا ۳۰٪ تخفیف ویژه",
-        imageUrl: "https://placehold.co/800x500/f97316/ffffff?text=Fall+Collection",
-        buttonText: "خرید الان",
-      },
-      {
-        id: 2,
-        title: "لوازم الکترونیکی",
-        subtitle: "جدیدترین گجت‌های روز دنیا",
-        imageUrl: "https://placehold.co/800x500/3b82f6/ffffff?text=Electronics",
-        buttonText: "بیشتر ببین",
-      },
-      {
-        id: 3,
-        title: "خرید شگفت‌انگیز",
-        subtitle: "فرصت رو از دست نده!",
-        imageUrl: "https://placehold.co/800x500/be185d/ffffff?text=Super+Sale",
-        buttonText: "خرید",
-      },
+      ...(sanityHero?.slides?.map((s, i) => ({
+        id: 1 + i,
+        title: s.title,
+        subtitle: s.subtitle,
+        imageUrl: (s as any)?.image?.asset?.url || "/placeholder.svg",
+        buttonText: s.buttonText,
+      })) || [
+        {
+          id: 1,
+          title: "کالکشن جدید پاییزه",
+          subtitle: "تا ۳۰٪ تخفیف ویژه",
+          imageUrl: "https://placehold.co/800x500/f97316/ffffff?text=Fall+Collection",
+          buttonText: "خرید الان",
+        },
+        {
+          id: 2,
+          title: "لوازم الکترونیکی",
+          subtitle: "جدیدترین گجت‌های روز دنیا",
+          imageUrl: "https://placehold.co/800x500/3b82f6/ffffff?text=Electronics",
+          buttonText: "بیشتر ببین",
+        },
+        {
+          id: 3,
+          title: "خرید شگفت‌انگیز",
+          subtitle: "فرصت رو از دست نده!",
+          imageUrl: "https://placehold.co/800x500/be185d/ffffff?text=Super+Sale",
+          buttonText: "خرید",
+        },
+      ]),
     ],
     sideBannerLeft: {
       id: 10,
