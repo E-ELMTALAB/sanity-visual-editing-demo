@@ -76,7 +76,7 @@ export const homeQuery = groq`
 `
 ```
 
-**Note**: `_type` is optional but can be useful for debugging. The critical field is `_key` for array items.
+**Note**: Both `_key` and `_type` are recommended for Visual Editing overlays. The critical field is `_key` for array item identification.
 
 ### 3. Define TypeScript Types
 
@@ -86,6 +86,7 @@ import type { Image } from 'sanity'
 
 export interface DiscountedProduct {
   _key?: string
+  _type?: string
   name?: string
   description?: string
   category?: string
@@ -370,3 +371,149 @@ When adding Sanity to existing components, follow these steps in order:
 - ✅ No hardcoded fallback content
 
 This pattern ensures Visual Editing works reliably while maintaining existing UI/UX.
+
+## Safe Schema and Component Modifications
+
+When modifying existing Sanity schemas or components, follow these safety guidelines:
+
+### ⚠️ **Risk Assessment**
+
+**High Risk Changes** (Require careful planning):
+- Renaming fields
+- Changing field types
+- Removing fields
+- Modifying validation rules that affect existing data
+
+**Low Risk Changes** (Generally safe):
+- Adding new optional fields
+- Adding validation rules that don't break existing data
+- Updating field descriptions/help text
+
+### 🛡️ **Safe Modification Process**
+
+#### 1. **Backup Strategy**
+```typescript
+// Always backup data before schema changes
+// Use Sanity's export functionality or GROQ queries
+export const backupQuery = groq`
+  *[_type == "home"][0]{
+    heroSlides[]{ ... },
+    promoCards[]{ ... },
+    discountedProducts[]{ ... }
+  }
+`
+```
+
+#### 2. **Schema Changes**
+
+**Adding New Fields** ✅ Safe:
+```typescript
+// schemas/objects/discountedProduct.ts
+defineField({
+  name: 'newField', // NEW FIELD
+  title: 'New Field',
+  type: 'string',
+  description: 'This is a new optional field',
+  // No validation = safe for existing data
+})
+```
+
+**Adding Validation** ⚠️ Careful:
+```typescript
+// Only add validation if you're sure existing data complies
+defineField({
+  name: 'requiredField',
+  type: 'string',
+  validation: (Rule) => Rule.required(), // ⚠️ DANGEROUS if existing data is missing
+})
+```
+
+**Field Type Changes** ❌ Avoid:
+```typescript
+// DON'T change string to number without migration
+// OLD: type: 'string'
+// NEW: type: 'number' // ❌ Can break existing string data
+```
+
+#### 3. **Component Changes**
+
+**Adding New Props** ✅ Safe:
+```typescript
+// sharifgpt-website/app/page.tsx
+export default function HomePage({ heroData }: {
+  heroData?: {
+    heroSlides?: HeroSlide[];
+    promoCards?: PromoCard[];
+    discountedProducts?: DiscountedProduct[];
+    newField?: string; // ✅ NEW OPTIONAL PROP
+  }
+}) {
+  const newField = heroData?.newField; // Safe - optional chaining
+```
+
+**Modifying Data Transformation** ⚠️ Careful:
+```typescript
+// Always use fallbacks for new fields
+const discountedProducts = discountedProductsFromSanity.map((dp, i) => ({
+  id: i + 1,
+  name: dp.name || '',
+  category: dp.category || 'default',
+  // NEW FIELD - safe with fallback
+  newField: dp.newField || 'default-value',
+}))
+```
+
+#### 4. **Testing Strategy**
+
+**Development Testing**:
+1. Make changes in development environment
+2. Test with existing data in Sanity Studio
+3. Verify Visual Editing still works
+4. Check no TypeScript/build errors
+
+**Staging Testing**:
+1. Deploy to staging with real data
+2. Test content editing in Studio
+3. Verify all overlays work correctly
+4. Check performance and user experience
+
+**Production Rollout**:
+1. Deploy during low-traffic period
+2. Monitor for errors or user issues
+3. Have rollback plan ready
+
+### 🚨 **Emergency Rollback**
+
+If changes cause issues:
+
+```typescript
+// Temporarily revert schema changes
+// schemas/objects/discountedProduct.ts
+defineField({
+  name: 'problematicField',
+  type: 'string',
+  // Temporarily comment out or revert to previous state
+})
+```
+
+### 📋 **Modification Checklist**
+
+- [ ] **Assess Risk**: Determine if change is high/low risk
+- [ ] **Backup Data**: Export existing content before changes
+- [ ] **Test Locally**: Verify changes work in development
+- [ ] **Schema Changes**: Make schema modifications
+- [ ] **Component Updates**: Update components with backward compatibility
+- [ ] **Type Updates**: Update TypeScript interfaces
+- [ ] **Test in Studio**: Verify Visual Editing works
+- [ ] **Deploy to Staging**: Test with real data
+- [ ] **Monitor Production**: Watch for issues after deployment
+- [ ] **Rollback Plan**: Be ready to revert if needed
+
+### 🎯 **Best Practices**
+
+1. **Always use optional chaining** (`?.`) for new fields
+2. **Provide sensible defaults** for new properties
+3. **Test in development** before production
+4. **Document changes** for team awareness
+5. **Use feature flags** for experimental features
+6. **Monitor performance** after changes

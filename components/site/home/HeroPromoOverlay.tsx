@@ -45,6 +45,7 @@ export default function HeroPromoOverlay({ slides, promoCards, discountedProduct
           <span>{dp?.description}</span>
           <span>{dp?.originalPrice}</span>
           <span>{dp?.discountedPrice}</span>
+          <span>{dp?.slug}</span>
         </div>
       ))}
       {socialMediaProducts?.map((smp, i) => (

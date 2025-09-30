@@ -91,6 +91,7 @@ export interface DiscountedProduct {
   discountedPrice?: number
   discountPercentage?: number
   image?: Image
+  slug?: string
 }
 
 export interface SocialMediaProduct {

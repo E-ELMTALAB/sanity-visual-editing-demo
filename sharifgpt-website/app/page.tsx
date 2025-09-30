@@ -210,6 +210,7 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
     discountPercentage: dp.discountPercentage || 0,
     image: (dp as any)?.image?.asset?.url || `https://placehold.co/400x300/10B981/FFFFFF?text=${encodeURIComponent(dp.name || 'Product')}`,
     description: dp.description || '',
+    slug: dp.slug || '',
   }))
 
   const socialMediaProducts = socialMediaProductsFromSanity.map((smp, i) => ({
@@ -1635,66 +1636,132 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
         </section>
 
         {discountedProducts.length > 0 && (
-          <section className="mb-16 sm:mb-20 relative">
-            <div className="backdrop-blur-md bg-red-500/15 border border-red-300/30 rounded-3xl sm:rounded-[2rem] p-8 sm:p-10 shadow-xl">
-              <h2 className="text-lg sm:text-xl font-bold text-red-700 mb-6 sm:mb-8">تخفیفات ویژه</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 px-2 py-4">
-                {discountedProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    id={product.id}
-                    title={product.name}
-                    description={product.description}
-                    price={product.discountedPrice}
-                    originalPrice={product.originalPrice}
-                    discountPercentage={product.discountPercentage}
-                    image={product.image}
-                    category={product.category}
-                    href={`/products?category=${product.category}&highlight=${product.id}`}
-                  />
-                ))}
-              </div>
+        <section className="mb-16 sm:mb-20 relative">
+          <div className="backdrop-blur-md bg-red-500/15 border border-red-300/30 rounded-3xl sm:rounded-[2rem] p-8 sm:p-10 shadow-xl">
+            <h2 className="text-lg sm:text-xl font-bold text-red-700 mb-6 sm:mb-8">تخفیفات ویژه</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 px-2 py-4">
+              {discountedProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  title={product.name}
+                  description={product.description}
+                  price={product.discountedPrice}
+                  originalPrice={product.originalPrice}
+                  discountPercentage={product.discountPercentage}
+                  image={product.image}
+                  category={product.category}
+                  href={`/products?category=${product.category}&highlight=${product.id}`}
+                />
+              ))}
             </div>
-          </section>
+          </div>
+        </section>
         )}
 
         {socialMediaProducts.length > 0 && (
-          <section className="mb-16 sm:mb-20 relative" id="social-media-products">
-            <div className="backdrop-blur-md bg-[#b52492]/15 border rounded-3xl sm:rounded-[2rem] p-6 sm:p-8 shadow-xl overflow-hidden border-[rgba(255,149,0,0.3)]">
-              <h2 className="text-lg sm:text-xl font-bold text-pink-800 mb-6 sm:mb-8">پرفروش‌ترین محصولات سوشیال مدیا</h2>
-              <div className="relative px-2 py-2">
-                <Swiper
-                  modules={[Navigation, Pagination, Autoplay]}
-                  spaceBetween={8}
-                  slidesPerView={1.1}
-                  navigation={{
-                    nextEl: ".swiper-button-next-social",
-                    prevEl: ".swiper-button-prev-social",
-                  }}
-                  pagination={{
-                    clickable: true,
-                    el: ".swiper-pagination-social",
-                  }}
-                  autoplay={{
-                    delay: 3000,
-                    disableOnInteraction: false,
-                    pauseOnMouseEnter: true,
-                  }}
-                  breakpoints={{
-                    640: {
-                      slidesPerView: 1.8,
-                      spaceBetween: 10,
-                    },
-                    1024: {
-                      slidesPerView: 3.2,
-                      spaceBetween: 12,
-                    },
-                  }}
-                  dir="rtl"
-                  className="!pb-12"
-                >
-                  {socialMediaProducts.map((product) => (
-                    <SwiperSlide key={product.id} className="!h-auto">
+        <section className="mb-16 sm:mb-20 relative" id="social-media-products">
+          <div className="backdrop-blur-md bg-[#b52492]/15 border rounded-3xl sm:rounded-[2rem] p-6 sm:p-8 shadow-xl overflow-hidden border-[rgba(255,149,0,0.3)]">
+            <h2 className="text-lg sm:text-xl font-bold text-pink-800 mb-6 sm:mb-8">پرفروش‌ترین محصولات سوشیال مدیا</h2>
+            <div className="relative px-2 py-2">
+              <Swiper
+                modules={[Navigation, Pagination, Autoplay]}
+                spaceBetween={8}
+                slidesPerView={1.1}
+                navigation={{
+                  nextEl: ".swiper-button-next-social",
+                  prevEl: ".swiper-button-prev-social",
+                }}
+                pagination={{
+                  clickable: true,
+                  el: ".swiper-pagination-social",
+                }}
+                autoplay={{
+                  delay: 3000,
+                  disableOnInteraction: false,
+                  pauseOnMouseEnter: true,
+                }}
+                breakpoints={{
+                  640: {
+                    slidesPerView: 1.8,
+                    spaceBetween: 10,
+                  },
+                  1024: {
+                    slidesPerView: 3.2,
+                    spaceBetween: 12,
+                  },
+                }}
+                dir="rtl"
+                className="!pb-12"
+              >
+                {socialMediaProducts.map((product) => (
+                  <SwiperSlide key={product.id} className="!h-auto">
+                    <ProductCard
+                      id={product.id}
+                      title={product.name}
+                      description={product.description}
+                      price={product.price}
+                      originalPrice={product.originalPrice}
+                      discountPercentage={product.discountPercentage}
+                      image={product.image}
+                      category={product.category}
+                      href={`/products?category=${product.category}&highlight=${product.id}`}
+                    />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+
+              <div className="swiper-button-next-social absolute top-1/2 -right-2 transform -translate-y-1/2 w-8 h-8 bg-pink-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-pink-700 transition-colors z-10 text-sm">
+                ←
+              </div>
+              <div className="swiper-button-prev-social absolute top-1/2 -left-2 transform -translate-y-1/2 w-8 h-8 bg-pink-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-pink-700 transition-colors z-10 text-sm">
+                →
+              </div>
+
+              <div className="swiper-pagination-social !bottom-0 !relative mt-4 text-center"></div>
+            </div>
+          </div>
+        </section>
+        )}
+
+        {educationalProducts.length > 0 && (
+        <section className="mb-16 sm:mb-20 relative" id="educational-products">
+          <div className="backdrop-blur-md bg-[#5ea500]/15 border border-green-400/30 rounded-3xl sm:rounded-[2rem] p-6 sm:p-8 shadow-xl overflow-hidden">
+            <h2 className="text-lg sm:text-xl font-bold text-green-800 mb-6 sm:mb-8">پرفروش‌ترین محصولات آموزشی</h2>
+            <div className="relative px-4 py-2">
+              <Swiper
+                modules={[Navigation, Pagination, Autoplay]}
+                spaceBetween={16}
+                slidesPerView={1.1}
+                navigation={{
+                  nextEl: ".swiper-button-next-edu",
+                  prevEl: ".swiper-button-prev-edu",
+                }}
+                pagination={{
+                  clickable: true,
+                  el: ".swiper-pagination-edu",
+                }}
+                autoplay={{
+                  delay: 4000,
+                  disableOnInteraction: false,
+                  pauseOnMouseEnter: true,
+                }}
+                breakpoints={{
+                  640: {
+                    slidesPerView: 1.8,
+                    spaceBetween: 20,
+                  },
+                  1024: {
+                    slidesPerView: 3.2,
+                    spaceBetween: 24,
+                  },
+                }}
+                dir="rtl"
+                className="!pb-12"
+              >
+                {educationalProducts.map((product) => (
+                  <SwiperSlide key={product.id} className="!h-auto">
+                    <div className="p-2">
                       <ProductCard
                         id={product.id}
                         title={product.name}
@@ -1706,118 +1773,52 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
                         category={product.category}
                         href={`/products?category=${product.category}&highlight=${product.id}`}
                       />
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
 
-                <div className="swiper-button-next-social absolute top-1/2 -right-2 transform -translate-y-1/2 w-8 h-8 bg-pink-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-pink-700 transition-colors z-10 text-sm">
-                  ←
-                </div>
-                <div className="swiper-button-prev-social absolute top-1/2 -left-2 transform -translate-y-1/2 w-8 h-8 bg-pink-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-pink-700 transition-colors z-10 text-sm">
-                  →
-                </div>
-
-                <div className="swiper-pagination-social !bottom-0 !relative mt-4 text-center"></div>
+              <div className="swiper-button-next-edu absolute top-1/2 -right-2 transform -translate-y-1/2 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-green-700 transition-colors z-10 text-sm">
+                ←
               </div>
-            </div>
-          </section>
-        )}
-
-        {educationalProducts.length > 0 && (
-          <section className="mb-16 sm:mb-20 relative" id="educational-products">
-            <div className="backdrop-blur-md bg-[#5ea500]/15 border border-green-400/30 rounded-3xl sm:rounded-[2rem] p-6 sm:p-8 shadow-xl overflow-hidden">
-              <h2 className="text-lg sm:text-xl font-bold text-green-800 mb-6 sm:mb-8">پرفروش‌ترین محصولات آموزشی</h2>
-              <div className="relative px-4 py-2">
-                <Swiper
-                  modules={[Navigation, Pagination, Autoplay]}
-                  spaceBetween={16}
-                  slidesPerView={1.1}
-                  navigation={{
-                    nextEl: ".swiper-button-next-edu",
-                    prevEl: ".swiper-button-prev-edu",
-                  }}
-                  pagination={{
-                    clickable: true,
-                    el: ".swiper-pagination-edu",
-                  }}
-                  autoplay={{
-                    delay: 4000,
-                    disableOnInteraction: false,
-                    pauseOnMouseEnter: true,
-                  }}
-                  breakpoints={{
-                    640: {
-                      slidesPerView: 1.8,
-                      spaceBetween: 20,
-                    },
-                    1024: {
-                      slidesPerView: 3.2,
-                      spaceBetween: 24,
-                    },
-                  }}
-                  dir="rtl"
-                  className="!pb-12"
-                >
-                  {educationalProducts.map((product) => (
-                    <SwiperSlide key={product.id} className="!h-auto">
-                      <div className="p-2">
-                        <ProductCard
-                          id={product.id}
-                          title={product.name}
-                          description={product.description}
-                          price={product.price}
-                          originalPrice={product.originalPrice}
-                          discountPercentage={product.discountPercentage}
-                          image={product.image}
-                          category={product.category}
-                          href={`/products?category=${product.category}&highlight=${product.id}`}
-                        />
-                      </div>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-
-                <div className="swiper-button-next-edu absolute top-1/2 -right-2 transform -translate-y-1/2 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-green-700 transition-colors z-10 text-sm">
-                  ←
-                </div>
-                <div className="swiper-button-prev-edu absolute top-1/2 -left-2 transform -translate-y-1/2 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-green-700 transition-colors z-10 text-sm">
-                  →
-                </div>
-
-                <div className="swiper-pagination-edu !bottom-0 !relative mt-4 text-center"></div>
+              <div className="swiper-button-prev-edu absolute top-1/2 -left-2 transform -translate-y-1/2 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-green-700 transition-colors z-10 text-sm">
+                →
               </div>
+
+              <div className="swiper-pagination-edu !bottom-0 !relative mt-4 text-center"></div>
             </div>
-          </section>
+          </div>
+        </section>
         )}
 
         {bestsellingCourses.length > 0 && (
-          <section className="mb-16 sm:mb-20">
-            <div className="backdrop-blur-md bg-blue-500/15 border border-blue-200/30 rounded-3xl sm:rounded-[2rem] p-8 sm:p-10 shadow-xl">
-              <h2 className="text-lg sm:text-xl font-bold text-blue-800 mb-6 sm:mb-8">پرفروش‌ترین دوره‌ها</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-2 py-4">
-                {bestsellingCourses.map((course) => (
-                  <ProductCard
-                    key={course.id}
-                    id={course.id}
-                    title={course.title}
-                    description={course.description}
-                    price={course.price}
-                    originalPrice={course.originalPrice > course.price ? course.originalPrice : undefined}
-                    discountPercentage={
-                      course.originalPrice > course.price
-                        ? Math.round(((course.originalPrice - course.price) / course.originalPrice) * 100)
-                        : undefined
-                    }
-                    rating={course.rating}
-                    reviewCount={course.reviewCount}
-                    image={course.image}
-                    category={course.category}
-                    href={`/products?category=${course.category}&highlight=${course.id}`}
-                  />
-                ))}
-              </div>
+        <section className="mb-16 sm:mb-20">
+          <div className="backdrop-blur-md bg-blue-500/15 border border-blue-200/30 rounded-3xl sm:rounded-[2rem] p-8 sm:p-10 shadow-xl">
+            <h2 className="text-lg sm:text-xl font-bold text-blue-800 mb-6 sm:mb-8">پرفروش‌ترین دوره‌ها</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-2 py-4">
+              {bestsellingCourses.map((course) => (
+                <ProductCard
+                  key={course.id}
+                  id={course.id}
+                  title={course.title}
+                  description={course.description}
+                  price={course.price}
+                  originalPrice={course.originalPrice > course.price ? course.originalPrice : undefined}
+                  discountPercentage={
+                    course.originalPrice > course.price
+                      ? Math.round(((course.originalPrice - course.price) / course.originalPrice) * 100)
+                      : undefined
+                  }
+                  rating={course.rating}
+                  reviewCount={course.reviewCount}
+                  image={course.image}
+                  category={course.category}
+                  href={`/products?category=${course.category}&highlight=${course.id}`}
+                />
+              ))}
             </div>
-          </section>
+          </div>
+        </section>
         )}
 
         {/* SharifGPT Magazine section with top 3 articles */}
