@@ -7,7 +7,6 @@ import MobileMenu from "../components/mobile-menu"
 import RobotAssistant from "../components/robot-assistant"
 import ProductCard from "@/components/product-card"
 import { useSanityHero } from "../../components/site/home/SanityHeroContext"
-import HeroPromoServer from "../../components/site/home/HeroPromoServer"
 import CartDropdown from "@/components/cart-dropdown" // Assuming CartDropdown component exists
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Navigation, Pagination, Autoplay } from "swiper/modules"
@@ -244,12 +243,12 @@ export default function HomePage() {
       ]),
     ],
     sideBannerLeft:
-      (sanityHero?.slides && sanityHero.slides[1]
+      (sanityHero?.promoCards && sanityHero.promoCards[0]
         ? {
             id: 10,
-            title: sanityHero.slides[1].title,
-            subtitle: sanityHero.slides[1].subtitle,
-            imageUrl: (sanityHero.slides[1] as any)?.image?.asset?.url || "https://placehold.co/400x500/10b981/ffffff?text=Gaming",
+            title: sanityHero.promoCards[0].title,
+            subtitle: sanityHero.promoCards[0].subtitle,
+            imageUrl: (sanityHero.promoCards[0] as any)?.image?.asset?.url || "https://placehold.co/400x500/10b981/ffffff?text=Gaming",
           }
         : {
             id: 10,
@@ -258,12 +257,12 @@ export default function HomePage() {
             imageUrl: "https://placehold.co/400x500/10b981/ffffff?text=Gaming",
           }),
     sideBannerRight:
-      (sanityHero?.slides && sanityHero.slides[2]
+      (sanityHero?.promoCards && sanityHero.promoCards[1]
         ? {
             id: 11,
-            title: sanityHero.slides[2].title,
-            subtitle: sanityHero.slides[2].subtitle,
-            imageUrl: (sanityHero.slides[2] as any)?.image?.asset?.url || "https://placehold.co/400x500/8b5cf6/ffffff?text=Fashion",
+            title: sanityHero.promoCards[1].title,
+            subtitle: sanityHero.promoCards[1].subtitle,
+            imageUrl: (sanityHero.promoCards[1] as any)?.image?.asset?.url || "https://placehold.co/400x500/8b5cf6/ffffff?text=Fashion",
           }
         : {
             id: 11,
@@ -781,9 +780,6 @@ export default function HomePage() {
 
   return (
     <div className="bg-gray-50 min-h-screen" dir="rtl">
-      {/* Server-rendered hidden anchors for Visual Editing overlays */}
-      {/* @ts-expect-error Async Server Component */}
-      <HeroPromoServer />
       <div className="hidden lg:block">
         <RobotAssistant />
       </div>

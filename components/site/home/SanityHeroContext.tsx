@@ -1,13 +1,25 @@
 "use client"
 import { createContext, useContext } from 'react'
-import type { HeroSlide } from 'types'
+import type { HeroSlide, PromoCard } from 'types'
 
-type Ctx = { slides: HeroSlide[] }
+type Ctx = { slides: HeroSlide[]; promoCards: PromoCard[] }
 
 const SanityHeroContext = createContext<Ctx | null>(null)
 
-export function SanityHeroProvider({ slides, children }: { slides: HeroSlide[]; children: React.ReactNode }) {
-  return <SanityHeroContext.Provider value={{ slides }}>{children}</SanityHeroContext.Provider>
+export function SanityHeroProvider({
+  slides,
+  promoCards,
+  children,
+}: {
+  slides: HeroSlide[]
+  promoCards: PromoCard[]
+  children: React.ReactNode
+}) {
+  return (
+    <SanityHeroContext.Provider value={{ slides, promoCards }}>
+      {children}
+    </SanityHeroContext.Provider>
+  )
 }
 
 export function useSanityHero() {

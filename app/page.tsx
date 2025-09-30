@@ -13,7 +13,7 @@ export default async function RootPage() {
   const slides = data?.heroSlides?.length ? data.heroSlides : defaultHeroSlides
   const promoCards = data?.promoCards?.length ? data.promoCards : defaultPromoCards
   return (
-    <SanityHeroProvider slides={slides}>
+    <SanityHeroProvider slides={slides} promoCards={promoCards}>
       <SharifHome />
     </SanityHeroProvider>
   )
