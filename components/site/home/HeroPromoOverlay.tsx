@@ -10,8 +10,9 @@ export default function HeroPromoOverlay({ slides, promoCards, discountedProduct
       {slides?.map((s, i) => (
         <div
           key={`slide-${i}`}
-          data-sanity-type="home"
-          data-sanity-path={`heroSlides[${i}]`}
+          data-sanity-id={s?._id || `heroSlides-${s?._key}`}
+          data-sanity-type="home.heroSlides"
+          data-sanity-index={i}
         >
           <span>{s?.title}</span>
           <span>{s?.subtitle}</span>
@@ -21,23 +22,25 @@ export default function HeroPromoOverlay({ slides, promoCards, discountedProduct
       {promoCards?.map((p, i) => (
         <div
           key={`promo-${i}`}
-          data-sanity-type="home"
-          data-sanity-path={`promoCards[${i}]`}
+          data-sanity-id={p?._id || `promoCards-${p?._key}`}
+          data-sanity-type="home.promoCards"
+          data-sanity-index={i}
         >
           <span>{p?.title}</span>
           <span>{p?.subtitle}</span>
           <span>{p?.buttonText}</span>
         </div>
       ))}
-      {discountedProducts?.map((p, i) => (
+      {discountedProducts?.map((product, i) => (
         <div
-          key={`discount-${i}`}
-          data-sanity-type="home"
-          data-sanity-path={`discountedProducts[${i}]`}
+          key={`discounted-${i}`}
+          data-sanity-id={product?._id || `discountedProducts-${product?._key}`}
+          data-sanity-type="home.discountedProducts"
+          data-sanity-index={i}
         >
-          <span>{p?.title}</span>
-          <span>{p?.description}</span>
-          <span>{p?.buttonText}</span>
+          <span>{product?.title}</span>
+          <span>{product?.description}</span>
+          <span>{product?.ctaText}</span>
         </div>
       ))}
     </div>

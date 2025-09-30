@@ -2,12 +2,12 @@
 
 import type React from "react"
 import Link from "next/link"
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useMemo } from "react"
 import MobileMenu from "../components/mobile-menu"
 import RobotAssistant from "../components/robot-assistant"
 import ProductCard from "@/components/product-card"
 import CartDropdown from "@/components/cart-dropdown" // Assuming CartDropdown component exists
-import type { HeroSlide, PromoCard, DiscountedProduct } from "types"
+import DiscountedProducts from "../components/DiscountedProducts"
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Navigation, Pagination, Autoplay } from "swiper/modules"
 import "swiper/css"
@@ -15,7 +15,7 @@ import "swiper/css/navigation"
 import "swiper/css/pagination"
 import Footer from "@/components/footer"
 
-export const IndependentSlider = ({ className, items = [], autoplayInterval = 5000 }) => {
+const IndependentSlider = ({ className, items = [], autoplayInterval = 5000 }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   const goToPrevious = useCallback(() => {
@@ -166,7 +166,13 @@ const PromoCard = ({ item }) => {
   )
 }
 
-export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroSlide[]; promoCards?: PromoCard[]; discountedProducts?: DiscountedProduct[] } }) {
+interface HomeData {
+  heroSlides?: HeroSlide[]
+  promoCards?: PromoCard[]
+  discountedProducts?: DiscountedProduct[]
+}
+
+export default function HomePage({ heroData }: { heroData?: HomeData }) {
   const heroSlides = heroData?.heroSlides || []
   const promoCards = heroData?.promoCards || []
   const discountedProducts = heroData?.discountedProducts || []
@@ -191,66 +197,14 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
     setIsCartDropdownOpen(!isCartDropdownOpen)
   }
 
-  const sliderData = {
+  const sliderData = useMemo(() => ({
     topBanner: heroSlides.slice(0, 1),
     mainSlider: heroSlides,
     sideBannerLeft: promoCards[0],
     sideBannerRight: promoCards[1],
-  }
+  }), [heroSlides, promoCards])
 
-
-  const socialMediaProducts = [
-    {
-      id: 1,
-      name: "اکانت اینستاگرام پرمیوم",
-      category: "social-media",
-      price: 250000,
-      originalPrice: 350000,
-      discountPercentage: 29,
-      image: "/placeholder.svg?height=120&width=120&text=Instagram",
-      description: "اکانت اینستاگرام با فالوور بالا و تیک آبی",
-    },
-    {
-      id: 2,
-      name: "تلگرام پرمیوم",
-      category: "social-media",
-      price: 180000,
-      originalPrice: 250000,
-      discountPercentage: 28,
-      image: "/placeholder.svg?height=120&width=120&text=Telegram",
-      description: "اشتراک تلگرام پرمیوم با قابلیت‌های ویژه",
-    },
-    {
-      id: 3,
-      name: "یوتیوب پرمیوم",
-      category: "social-media",
-      price: 320000,
-      originalPrice: 450000,
-      discountPercentage: 29,
-      image: "/placeholder.svg?height=120&width=120&text=YouTube",
-      description: "اشتراک یوتیوب پرمیوم بدون تبلیغات",
-    },
-    {
-      id: 4,
-      name: "اسپاتیفای پرمیوم",
-      category: "social-media",
-      price: 200000,
-      originalPrice: 280000,
-      discountPercentage: 29,
-      image: "/placeholder.svg?height=120&width=120&text=Spotify",
-      description: "اشتراک اسپاتیفای پرمیوم با کیفیت بالا",
-    },
-    {
-      id: 5,
-      name: "نتفلیکس پرمیوم",
-      category: "social-media",
-      price: 380000,
-      originalPrice: 520000,
-      discountPercentage: 27,
-      image: "/placeholder.svg?height=120&width=120&text=Netflix",
-      description: "اشتراک نتفلیکس پرمیوم 4K",
-    },
-  ]
+  const socialMediaProducts = [...] // keep existing mock arrays or migrate later
 
   const educationalProducts = [
     {

@@ -94,9 +94,9 @@ export const sharifHeroQuery = groq`
       price,
       originalPrice,
       discountPercentage,
-      buttonText,
-      buttonHref,
-      image
+      image,
+      ctaText,
+      ctaHref
     }
   }
 `

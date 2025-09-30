@@ -1,5 +1,6 @@
 import { HomeIcon } from '@sanity/icons'
 import { defineArrayMember, defineField, defineType } from 'sanity'
+import discountedProduct from 'schemas/objects/discountedProduct'
 
 export default defineType({
   name: 'home',
@@ -114,23 +115,7 @@ export default defineType({
       name: 'discountedProducts',
       title: 'Discounted products',
       type: 'array',
-      of: [
-        defineArrayMember({
-          type: 'object',
-          name: 'discountedProduct',
-          title: 'Product',
-          fields: [
-            defineField({ name: 'title', type: 'string', title: 'Title' }),
-            defineField({ name: 'description', type: 'text', title: 'Description' }),
-            defineField({ name: 'price', type: 'number', title: 'Price' }),
-            defineField({ name: 'originalPrice', type: 'number', title: 'Original price' }),
-            defineField({ name: 'discountPercentage', type: 'number', title: 'Discount %' }),
-            defineField({ name: 'image', type: 'image', title: 'Image', options: { hotspot: true } }),
-            defineField({ name: 'buttonText', type: 'string', title: 'Button text' }),
-            defineField({ name: 'buttonHref', type: 'string', title: 'Button link' }),
-          ],
-        }),
-      ],
+      of: [{ type: discountedProduct.name }],
     }),
   ],
   preview: {

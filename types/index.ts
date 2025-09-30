@@ -89,9 +89,9 @@ export interface DiscountedProduct {
   price?: number
   originalPrice?: number
   discountPercentage?: number
-  buttonText?: string
-  buttonHref?: string
   image?: Image
+  ctaText?: string
+  ctaHref?: string
 }
 
 export interface PostListItemPayload {
