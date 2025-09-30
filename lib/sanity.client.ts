@@ -15,9 +15,7 @@ export function getClient(preview?: { token: string }) {
       studioUrl: basePath,
       logger: console,
       filter: (props) => {
-        if (typeof props.sourcePath.at(-1) === 'number') {
-          return false
-        }
+        // Allow arrays (e.g., heroSlides[]) to carry stega so Visual Editing can map overlays
         if (props.sourcePath.at(0) === 'duration') {
           return false
         }
