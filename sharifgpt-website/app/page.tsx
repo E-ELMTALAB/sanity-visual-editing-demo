@@ -7,6 +7,7 @@ import MobileMenu from "../components/mobile-menu"
 import RobotAssistant from "../components/robot-assistant"
 import ProductCard from "@/components/product-card"
 import CartDropdown from "@/components/cart-dropdown" // Assuming CartDropdown component exists
+import type { HeroSlide, PromoCard, DiscountedProduct } from "types"
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Navigation, Pagination, Autoplay } from "swiper/modules"
 import "swiper/css"
@@ -14,7 +15,7 @@ import "swiper/css/navigation"
 import "swiper/css/pagination"
 import Footer from "@/components/footer"
 
-const IndependentSlider = ({ className, items = [], autoplayInterval = 5000 }) => {
+export const IndependentSlider = ({ className, items = [], autoplayInterval = 5000 }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   const goToPrevious = useCallback(() => {
@@ -165,9 +166,10 @@ const PromoCard = ({ item }) => {
   )
 }
 
-export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroSlide[]; promoCards?: PromoCard[] } }) {
+export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroSlide[]; promoCards?: PromoCard[]; discountedProducts?: DiscountedProduct[] } }) {
   const heroSlides = heroData?.heroSlides || []
   const promoCards = heroData?.promoCards || []
+  const discountedProducts = heroData?.discountedProducts || []
   const [isStoryViewerOpen, setIsStoryViewerOpen] = useState(false)
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -196,48 +198,6 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
     sideBannerRight: promoCards[1],
   }
 
-  const discountedProducts = [
-    {
-      id: 1,
-      name: "ChatGPT Plus",
-      category: "applied-ai",
-      originalPrice: 450000,
-      discountedPrice: 299000,
-      discountPercentage: 34,
-      image: "https://placehold.co/400x300/10B981/FFFFFF?text=ChatGPT+Plus",
-      description: "اشتراک پرمیوم ChatGPT با قابلیت‌های پیشرفته",
-    },
-    {
-      id: 2,
-      name: "Midjourney Pro",
-      category: "text-to-image",
-      originalPrice: 380000,
-      discountedPrice: 199000,
-      discountPercentage: 48,
-      image: "https://placehold.co/400x300/EC4899/FFFFFF?text=Midjourney+Pro",
-      description: "ابزار قدرتمند تولید تصاویر با هوش مصنوعی",
-    },
-    {
-      id: 3,
-      name: "GitHub Copilot",
-      category: "programming-ai",
-      originalPrice: 320000,
-      discountedPrice: 179000,
-      discountPercentage: 44,
-      image: "https://placehold.co/400x300/3B82F6/FFFFFF?text=GitHub+Copilot",
-      description: "دستیار هوش مصنوعی برای برنامه‌نویسی",
-    },
-    {
-      id: 4,
-      name: "ElevenLabs Pro",
-      category: "text-to-audio",
-      originalPrice: 280000,
-      discountedPrice: 149000,
-      discountPercentage: 47,
-      image: "https://placehold.co/400x300/F59E0B/FFFFFF?text=ElevenLabs+Pro",
-      description: "تبدیل متن به صدای طبیعی با کیفیت بالا",
-    },
-  ]
 
   const socialMediaProducts = [
     {

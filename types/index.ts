@@ -81,6 +81,19 @@ export interface PromoCard {
   image?: Image
 }
 
+export interface DiscountedProduct {
+  _key?: string
+  _type?: string
+  title?: string
+  description?: string
+  price?: number
+  originalPrice?: number
+  discountPercentage?: number
+  buttonText?: string
+  buttonHref?: string
+  image?: Image
+}
+
 export interface PostListItemPayload {
   _id?: string
   title?: string

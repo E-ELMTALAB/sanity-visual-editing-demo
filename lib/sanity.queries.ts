@@ -85,6 +85,18 @@ export const sharifHeroQuery = groq`
       buttonText,
       buttonHref,
       image
+    },
+    discountedProducts[]{
+      _key,
+      _type,
+      title,
+      description,
+      price,
+      originalPrice,
+      discountPercentage,
+      buttonText,
+      buttonHref,
+      image
     }
   }
 `

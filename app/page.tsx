@@ -11,10 +11,11 @@ export default async function RootPage() {
   const data = await client.fetch<any | null>(sharifHeroQuery)
   const heroSlides = data?.heroSlides || []
   const promoCards = data?.promoCards || []
+  const discountedProducts = data?.discountedProducts || []
   return (
     <>
-      <HeroPromoOverlay slides={heroSlides} promoCards={promoCards} />
-      <SharifHome heroData={{ heroSlides, promoCards }} />
+      <HeroPromoOverlay slides={heroSlides} promoCards={promoCards} discountedProducts={discountedProducts} />
+      <SharifHome heroData={{ heroSlides, promoCards, discountedProducts }} />
     </>
   )
 }
