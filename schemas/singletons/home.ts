@@ -71,6 +71,25 @@ export default defineType({
         }),
       ],
     }),
+    defineField({
+      name: 'heroSlides',
+      title: 'Hero slides',
+      type: 'array',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          name: 'heroSlide',
+          title: 'Slide',
+          fields: [
+            defineField({ name: 'title', type: 'string', title: 'Title' }),
+            defineField({ name: 'subtitle', type: 'string', title: 'Subtitle' }),
+            defineField({ name: 'buttonText', type: 'string', title: 'Button text' }),
+            defineField({ name: 'buttonHref', type: 'string', title: 'Button link (href)' }),
+            defineField({ name: 'image', type: 'image', title: 'Image', options: { hotspot: true } }),
+          ],
+        }),
+      ],
+    }),
   ],
   preview: {
     select: {

@@ -65,6 +65,14 @@ export interface SettingsPayload {
   ogImage?: Image
 }
 
+export interface HeroSlide {
+  title?: string
+  subtitle?: string
+  buttonText?: string
+  buttonHref?: string
+  image?: Image
+}
+
 export interface PostListItemPayload {
   _id?: string
   title?: string

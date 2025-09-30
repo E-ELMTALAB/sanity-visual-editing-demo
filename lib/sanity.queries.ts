@@ -66,6 +66,18 @@ export const settingsQuery = groq`
   }
 `
 
+export const sharifHeroQuery = groq`
+  *[_type=="home"][0]{
+    heroSlides[]{
+      title,
+      subtitle,
+      buttonText,
+      buttonHref,
+      image
+    }
+  }
+`
+
 // Blog
 export const blogListQuery = groq`
   *[_type == "post"]|order(publishedAt desc){
