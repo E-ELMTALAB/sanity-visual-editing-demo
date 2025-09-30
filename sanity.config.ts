@@ -20,6 +20,7 @@ import youtube from 'schemas/objects/youtube'
 import discountedProduct from 'schemas/objects/discountedProduct'
 import socialMediaProduct from 'schemas/objects/socialMediaProduct'
 import educationalProduct from 'schemas/objects/educationalProduct'
+import bestsellingCourse from 'schemas/objects/bestsellingCourse'
 import home from 'schemas/singletons/home'
 import settings from 'schemas/singletons/settings'
 import { debugSecrets } from '@sanity/preview-url-secret/sanity-plugin-debug-secrets'
@@ -49,6 +50,7 @@ export default defineConfig({
       discountedProduct,
       socialMediaProduct,
       educationalProduct,
+      bestsellingCourse,
     ],
   },
   plugins: [

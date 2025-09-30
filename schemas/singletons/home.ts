@@ -146,6 +146,18 @@ export default defineType({
         }),
       ],
     }),
+    defineField({
+      name: 'bestsellingCourses',
+      title: 'Bestselling Courses',
+      description: 'Top courses displayed in the "پرفروش‌ترین دوره‌ها" section',
+      type: 'array',
+      validation: (Rule) => Rule.max(6),
+      of: [
+        defineArrayMember({
+          type: 'bestsellingCourse',
+        }),
+      ],
+    }),
   ],
   preview: {
     select: {

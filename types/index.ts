@@ -117,6 +117,23 @@ export interface EducationalProduct {
   image?: Image
 }
 
+export interface BestsellingCourse {
+  _key?: string
+  _type?: string
+  title?: string
+  description?: string
+  price?: number
+  originalPrice?: number
+  instructor?: string
+  duration?: string
+  students?: number
+  rating?: number
+  reviewCount?: number
+  category?: string
+  level?: string
+  image?: Image
+}
+
 export interface PostListItemPayload {
   _id?: string
   title?: string

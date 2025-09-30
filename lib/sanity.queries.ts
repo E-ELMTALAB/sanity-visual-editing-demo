@@ -118,6 +118,22 @@ export const sharifHeroQuery = groq`
       originalPrice,
       discountPercentage,
       image
+    },
+    bestsellingCourses[]{
+      _key,
+      _type,
+      title,
+      description,
+      price,
+      originalPrice,
+      instructor,
+      duration,
+      students,
+      rating,
+      reviewCount,
+      category,
+      level,
+      image
     }
   }
 `

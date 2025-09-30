@@ -13,7 +13,7 @@ import "swiper/css"
 import "swiper/css/navigation"
 import "swiper/css/pagination"
 import Footer from "@/components/footer"
-import type { HeroSlide, PromoCard, DiscountedProduct, SocialMediaProduct, EducationalProduct } from "types"
+import type { HeroSlide, PromoCard, DiscountedProduct, SocialMediaProduct, EducationalProduct, BestsellingCourse } from "types"
 
 const IndependentSlider = ({ className, items = [], autoplayInterval = 5000 }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -166,12 +166,13 @@ const PromoCard = ({ item }) => {
   )
 }
 
-export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroSlide[]; promoCards?: PromoCard[]; discountedProducts?: DiscountedProduct[]; socialMediaProducts?: SocialMediaProduct[]; educationalProducts?: EducationalProduct[] } }) {
+export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroSlide[]; promoCards?: PromoCard[]; discountedProducts?: DiscountedProduct[]; socialMediaProducts?: SocialMediaProduct[]; educationalProducts?: EducationalProduct[]; bestsellingCourses?: BestsellingCourse[] } }) {
   const heroSlides = heroData?.heroSlides || []
   const promoCards = heroData?.promoCards || []
   const discountedProductsFromSanity = heroData?.discountedProducts || []
   const socialMediaProductsFromSanity = heroData?.socialMediaProducts || []
   const educationalProductsFromSanity = heroData?.educationalProducts || []
+  const bestsellingCoursesFromSanity = heroData?.bestsellingCourses || []
   const [isStoryViewerOpen, setIsStoryViewerOpen] = useState(false)
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -233,53 +234,22 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
     description: edp.description || '',
   }))
 
-  const bestsellingCourses = [
-    {
-      id: 1,
-      title: "دوره جامع هوش مصنوعی",
-      description: "از مقدماتی تا پیشرفته، هرآنچه برای متخصص شدن در AI نیاز دارید",
-      price: 1200000,
-      originalPrice: 1800000,
-      image: "https://placehold.co/600x400/E0F2FE/0891b2?text=AI+Course",
-      instructor: "دکتر احمد محمدی",
-      duration: "40 ساعت",
-      students: 1250,
-      rating: 4.9,
-      category: "ai-fundamentals",
-      level: "مقدماتی تا پیشرفته",
-      reviewCount: 150, // Added reviewCount
-    },
-    {
-      id: 2,
-      title: "آموزش طراحی وب با React",
-      description: "پروژه‌محور و کاربردی، برای ورود سریع به بازار کار فرانت‌اند",
-      price: 950000,
-      originalPrice: 1400000,
-      image: "https://placehold.co/600x400/E0F2FE/0891b2?text=React+Course",
-      instructor: "مهندس سارا احمدی",
-      duration: "35 ساعت",
-      students: 890,
-      rating: 4.8,
-      category: "web-development",
-      level: "مقدماتی تا متوسط",
-      reviewCount: 120, // Added reviewCount
-    },
-    {
-      id: 3,
-      title: "دوره تخصصی Python",
-      description: "یادگیری پایتون برای تحلیل داده، هوش مصنوعی و توسعه وب",
-      price: 800000,
-      originalPrice: 1200000,
-      image: "https://placehold.co/600x400/E0F2FE/0891b2?text=Python+Course",
-      instructor: "دکتر علی رضایی",
-      duration: "45 ساعت",
-      students: 1580,
-      rating: 4.9,
-      category: "programming",
-      level: "مقدماتی تا پیشرفته",
-      reviewCount: 200, // Added reviewCount
-    },
-  ]
+  const bestsellingCourses = bestsellingCoursesFromSanity.map((course, i) => ({
+    id: i + 1,
+    title: course.title || '',
+    description: course.description || '',
+    price: course.price || 0,
+    originalPrice: course.originalPrice || 0,
+    image: (course as any)?.image?.asset?.url || `https://placehold.co/600x400/E0F2FE/0891b2?text=${encodeURIComponent(course.title || 'Course')}`,
+    instructor: course.instructor || '',
+    duration: course.duration || '',
+    students: course.students || 0,
+    rating: course.rating || 0,
+    category: course.category || 'programming',
+    level: course.level || 'beginner',
+    reviewCount: course.reviewCount || 0,
+  }))
+
 
   const [storiesData, setStoriesData] = useState([
     {
@@ -1820,33 +1790,35 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
           </section>
         )}
 
-        <section className="mb-16 sm:mb-20">
-          <div className="backdrop-blur-md bg-blue-500/15 border border-blue-200/30 rounded-3xl sm:rounded-[2rem] p-8 sm:p-10 shadow-xl">
-            <h2 className="text-lg sm:text-xl font-bold text-blue-800 mb-6 sm:mb-8">پرفروش‌ترین دوره‌ها</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-2 py-4">
-              {bestsellingCourses.map((course) => (
-                <ProductCard
-                  key={course.id}
-                  id={course.id}
-                  title={course.title}
-                  description={course.description}
-                  price={course.price}
-                  originalPrice={course.originalPrice > course.price ? course.originalPrice : undefined}
-                  discountPercentage={
-                    course.originalPrice > course.price
-                      ? Math.round(((course.originalPrice - course.price) / course.originalPrice) * 100)
-                      : undefined
-                  }
-                  rating={course.rating}
-                  reviewCount={course.reviewCount}
-                  image={course.image}
-                  category={course.category}
-                  href={`/products?category=${course.category}&highlight=${course.id}`}
-                />
-              ))}
+        {bestsellingCourses.length > 0 && (
+          <section className="mb-16 sm:mb-20">
+            <div className="backdrop-blur-md bg-blue-500/15 border border-blue-200/30 rounded-3xl sm:rounded-[2rem] p-8 sm:p-10 shadow-xl">
+              <h2 className="text-lg sm:text-xl font-bold text-blue-800 mb-6 sm:mb-8">پرفروش‌ترین دوره‌ها</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-2 py-4">
+                {bestsellingCourses.map((course) => (
+                  <ProductCard
+                    key={course.id}
+                    id={course.id}
+                    title={course.title}
+                    description={course.description}
+                    price={course.price}
+                    originalPrice={course.originalPrice > course.price ? course.originalPrice : undefined}
+                    discountPercentage={
+                      course.originalPrice > course.price
+                        ? Math.round(((course.originalPrice - course.price) / course.originalPrice) * 100)
+                        : undefined
+                    }
+                    rating={course.rating}
+                    reviewCount={course.reviewCount}
+                    image={course.image}
+                    category={course.category}
+                    href={`/products?category=${course.category}&highlight=${course.id}`}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* SharifGPT Magazine section with top 3 articles */}
         <section className="mb-16 sm:mb-20">
