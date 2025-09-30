@@ -1651,7 +1651,7 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
                   discountPercentage={product.discountPercentage}
                   image={product.image}
                   category={product.category}
-                  href={`/products?category=${product.category}&highlight=${product.id}`}
+                  href={`/products/${product.slug}`}
                 />
               ))}
             </div>

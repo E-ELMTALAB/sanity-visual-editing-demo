@@ -18,7 +18,7 @@ interface ProductCardProps {
   reviews?: number
   features?: string[]
   badge?: string
-  href: string
+  href?: string
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -40,7 +40,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
     return price.toLocaleString("fa-IR")
   }
 
-  const productPageHref = `/products/${id}`
+  // Use the provided href prop, or fallback to /products/{id} if not provided
+  const productPageHref = href || `/products/${id}`
 
   return (
     <div className="relative group w-full bg-white rounded-2xl shadow-lg overflow-hidden transform-gpu transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1 cursor-pointer">
