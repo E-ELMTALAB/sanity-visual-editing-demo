@@ -222,6 +222,7 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
     discountPercentage: smp.discountPercentage || 0,
     image: (smp as any)?.image?.asset?.url || `/placeholder.svg?height=120&width=120&text=${encodeURIComponent(smp.name || 'Product')}`,
     description: smp.description || '',
+    slug: smp.slug || '',
   }))
 
   const educationalProducts = educationalProductsFromSanity.map((edp, i) => ({
@@ -233,6 +234,7 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
     discountPercentage: edp.discountPercentage || 0,
     image: (edp as any)?.image?.asset?.url || `/placeholder.svg?height=120&width=120&text=${encodeURIComponent(edp.name || 'Product')}`,
     description: edp.description || '',
+    slug: edp.slug || '',
   }))
 
   const bestsellingCourses = bestsellingCoursesFromSanity.map((course, i) => ({
@@ -249,6 +251,7 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
     category: course.category || 'programming',
     level: course.level || 'beginner',
     reviewCount: course.reviewCount || 0,
+    slug: course.slug || '',
   }))
 
 
@@ -1705,7 +1708,7 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
                       discountPercentage={product.discountPercentage}
                       image={product.image}
                       category={product.category}
-                      href={`/products?category=${product.category}&highlight=${product.id}`}
+                      href={`/products/${product.slug}`}
                     />
                   </SwiperSlide>
                 ))}
@@ -1771,7 +1774,7 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
                         discountPercentage={product.discountPercentage}
                         image={product.image}
                         category={product.category}
-                        href={`/products?category=${product.category}&highlight=${product.id}`}
+                        href={`/products/${product.slug}`}
                       />
                     </div>
                   </SwiperSlide>
@@ -1813,7 +1816,7 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
                   reviewCount={course.reviewCount}
                   image={course.image}
                   category={course.category}
-                  href={`/products?category=${course.category}&highlight=${course.id}`}
+                  href={`/courses/${course.slug}`}
                 />
               ))}
             </div>

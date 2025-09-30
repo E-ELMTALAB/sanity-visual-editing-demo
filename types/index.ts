@@ -104,6 +104,7 @@ export interface SocialMediaProduct {
   originalPrice?: number
   discountPercentage?: number
   image?: Image
+  slug?: string
 }
 
 export interface EducationalProduct {
@@ -116,6 +117,7 @@ export interface EducationalProduct {
   originalPrice?: number
   discountPercentage?: number
   image?: Image
+  slug?: string
 }
 
 export interface BestsellingCourse {
@@ -133,6 +135,7 @@ export interface BestsellingCourse {
   category?: string
   level?: string
   image?: Image
+  slug?: string
 }
 
 export interface PostListItemPayload {

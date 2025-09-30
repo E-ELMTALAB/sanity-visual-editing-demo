@@ -107,7 +107,8 @@ export const sharifHeroQuery = groq`
       price,
       originalPrice,
       discountPercentage,
-      image
+      image,
+      "slug": slug.current
     },
     educationalProducts[]{
       _key,
@@ -118,7 +119,8 @@ export const sharifHeroQuery = groq`
       price,
       originalPrice,
       discountPercentage,
-      image
+      image,
+      "slug": slug.current
     },
     bestsellingCourses[]{
       _key,
@@ -134,7 +136,8 @@ export const sharifHeroQuery = groq`
       reviewCount,
       category,
       level,
-      image
+      image,
+      "slug": slug.current
     }
   }
 `

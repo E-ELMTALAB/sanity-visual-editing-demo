@@ -59,6 +59,7 @@ export default function HeroPromoOverlay({ slides, promoCards, discountedProduct
           <span>{smp?.description}</span>
           <span>{smp?.price}</span>
           <span>{smp?.originalPrice}</span>
+          <span>{smp?.slug}</span>
         </div>
       ))}
       {educationalProducts?.map((edp, i) => (
@@ -72,6 +73,7 @@ export default function HeroPromoOverlay({ slides, promoCards, discountedProduct
           <span>{edp?.description}</span>
           <span>{edp?.price}</span>
           <span>{edp?.originalPrice}</span>
+          <span>{edp?.slug}</span>
         </div>
       ))}
       {bestsellingCourses?.map((course, i) => (
@@ -88,6 +90,7 @@ export default function HeroPromoOverlay({ slides, promoCards, discountedProduct
           <span>{course?.originalPrice}</span>
           <span>{course?.duration}</span>
           <span>{course?.rating}</span>
+          <span>{course?.slug}</span>
         </div>
       ))}
     </div>
