@@ -90,6 +90,26 @@ export default defineType({
         }),
       ],
     }),
+    defineField({
+      name: 'promoCards',
+      title: 'Promo cards (side banners)',
+      type: 'array',
+      validation: (Rule) => Rule.max(2),
+      of: [
+        defineArrayMember({
+          type: 'object',
+          name: 'promoCard',
+          title: 'Card',
+          fields: [
+            defineField({ name: 'title', type: 'string', title: 'Title' }),
+            defineField({ name: 'subtitle', type: 'string', title: 'Subtitle' }),
+            defineField({ name: 'buttonText', type: 'string', title: 'Button text' }),
+            defineField({ name: 'buttonHref', type: 'string', title: 'Button link (href)' }),
+            defineField({ name: 'image', type: 'image', title: 'Image', options: { hotspot: true } }),
+          ],
+        }),
+      ],
+    }),
   ],
   preview: {
     select: {

@@ -73,6 +73,14 @@ export interface HeroSlide {
   image?: Image
 }
 
+export interface PromoCard {
+  title?: string
+  subtitle?: string
+  buttonText?: string
+  buttonHref?: string
+  image?: Image
+}
+
 export interface PostListItemPayload {
   _id?: string
   title?: string

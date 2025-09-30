@@ -74,6 +74,13 @@ export const sharifHeroQuery = groq`
       buttonText,
       buttonHref,
       image
+    },
+    promoCards[]{
+      title,
+      subtitle,
+      buttonText,
+      buttonHref,
+      image
     }
   }
 `

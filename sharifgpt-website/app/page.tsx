@@ -242,18 +242,34 @@ export default function HomePage() {
         },
       ]),
     ],
-    sideBannerLeft: {
-      id: 10,
-      title: "بازی‌های جدید",
-      subtitle: "اکانت قانونی بازی‌ها",
-      imageUrl: "https://placehold.co/400x500/10b981/ffffff?text=Gaming",
-    },
-    sideBannerRight: {
-      id: 11,
-      title: "مد و پوشاک",
-      subtitle: "استایل خودتو بساز",
-      imageUrl: "https://placehold.co/400x500/8b5cf6/ffffff?text=Fashion",
-    },
+    sideBannerLeft:
+      (sanityHero?.slides && sanityHero.slides[1]
+        ? {
+            id: 10,
+            title: sanityHero.slides[1].title,
+            subtitle: sanityHero.slides[1].subtitle,
+            imageUrl: (sanityHero.slides[1] as any)?.image?.asset?.url || "https://placehold.co/400x500/10b981/ffffff?text=Gaming",
+          }
+        : {
+            id: 10,
+            title: "بازی‌های جدید",
+            subtitle: "اکانت قانونی بازی‌ها",
+            imageUrl: "https://placehold.co/400x500/10b981/ffffff?text=Gaming",
+          }),
+    sideBannerRight:
+      (sanityHero?.slides && sanityHero.slides[2]
+        ? {
+            id: 11,
+            title: sanityHero.slides[2].title,
+            subtitle: sanityHero.slides[2].subtitle,
+            imageUrl: (sanityHero.slides[2] as any)?.image?.asset?.url || "https://placehold.co/400x500/8b5cf6/ffffff?text=Fashion",
+          }
+        : {
+            id: 11,
+            title: "مد و پوشاک",
+            subtitle: "استایل خودتو بساز",
+            imageUrl: "https://placehold.co/400x500/8b5cf6/ffffff?text=Fashion",
+          }),
   }
 
   const discountedProducts = [

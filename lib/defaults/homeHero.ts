@@ -1,4 +1,4 @@
-import { type HeroSlide } from 'types'
+import { type HeroSlide, type PromoCard } from 'types'
 
 export const defaultHeroSlides: HeroSlide[] = [
   {
@@ -12,6 +12,17 @@ export const defaultHeroSlides: HeroSlide[] = [
     subtitle: 'جدیدترین گجت‌های روز دنیا',
     buttonText: 'بیشتر ببین',
     buttonHref: '/products',
+  },
+]
+
+export const defaultPromoCards: PromoCard[] = [
+  {
+    title: 'بازی‌های جدید',
+    subtitle: 'اکانت قانونی بازی‌ها',
+  },
+  {
+    title: 'مد و پوشاک',
+    subtitle: 'استایل خودتو بساز',
   },
 ]
 
