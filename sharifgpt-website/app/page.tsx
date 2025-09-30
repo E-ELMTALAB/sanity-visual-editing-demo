@@ -204,7 +204,58 @@ export default function HomePage({ heroData }: { heroData?: HomeData }) {
     sideBannerRight: promoCards[1],
   }), [heroSlides, promoCards])
 
-  const socialMediaProducts = [...] // keep existing mock arrays or migrate later
+  const socialMediaProducts = [
+    {
+      id: 1,
+      name: "اکانت اینستاگرام پرمیوم",
+      category: "social-media",
+      price: 250000,
+      originalPrice: 350000,
+      discountPercentage: 29,
+      image: "/placeholder.svg?height=120&width=120&text=Instagram",
+      description: "اکانت اینستاگرام با فالوور بالا و تیک آبی",
+    },
+    {
+      id: 2,
+      name: "تلگرام پرمیوم",
+      category: "social-media",
+      price: 180000,
+      originalPrice: 250000,
+      discountPercentage: 28,
+      image: "/placeholder.svg?height=120&width=120&text=Telegram",
+      description: "اشتراک تلگرام پرمیوم با قابلیت‌های ویژه",
+    },
+    {
+      id: 3,
+      name: "یوتیوب پرمیوم",
+      category: "social-media",
+      price: 320000,
+      originalPrice: 450000,
+      discountPercentage: 29,
+      image: "/placeholder.svg?height=120&width=120&text=YouTube",
+      description: "اشتراک یوتیوب پرمیوم بدون تبلیغات",
+    },
+    {
+      id: 4,
+      name: "اسپاتیفای پرمیوم",
+      category: "social-media",
+      price: 200000,
+      originalPrice: 280000,
+      discountPercentage: 29,
+      image: "/placeholder.svg?height=120&width=120&text=Spotify",
+      description: "اشتراک اسپاتیفای پرمیوم با کیفیت بالا",
+    },
+    {
+      id: 5,
+      name: "نتفلیکس پرمیوم",
+      category: "social-media",
+      price: 380000,
+      originalPrice: 520000,
+      discountPercentage: 27,
+      image: "/placeholder.svg?height=120&width=120&text=Netflix",
+      description: "اشتراک نتفلیکس پرمیوم 4K",
+    },
+  ]
 
   const educationalProducts = [
     {
