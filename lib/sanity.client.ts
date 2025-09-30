@@ -10,6 +10,7 @@ export function getClient(preview?: { token: string }) {
     perspective: 'published',
     stega: {
       enabled:
+        process.env.NEXT_PUBLIC_SANITY_VISUAL_EDITING === 'true' ||
         process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview' ||
         typeof preview?.token === 'string',
       studioUrl: basePath,
