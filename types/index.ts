@@ -93,6 +93,18 @@ export interface DiscountedProduct {
   image?: Image
 }
 
+export interface SocialMediaProduct {
+  _key?: string
+  _type?: string
+  name?: string
+  description?: string
+  category?: string
+  price?: number
+  originalPrice?: number
+  discountPercentage?: number
+  image?: Image
+}
+
 export interface PostListItemPayload {
   _id?: string
   title?: string

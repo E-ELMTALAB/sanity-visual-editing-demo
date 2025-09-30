@@ -13,7 +13,7 @@ import "swiper/css"
 import "swiper/css/navigation"
 import "swiper/css/pagination"
 import Footer from "@/components/footer"
-import type { HeroSlide, PromoCard, DiscountedProduct } from "types"
+import type { HeroSlide, PromoCard, DiscountedProduct, SocialMediaProduct } from "types"
 
 const IndependentSlider = ({ className, items = [], autoplayInterval = 5000 }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -166,10 +166,11 @@ const PromoCard = ({ item }) => {
   )
 }
 
-export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroSlide[]; promoCards?: PromoCard[]; discountedProducts?: DiscountedProduct[] } }) {
+export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroSlide[]; promoCards?: PromoCard[]; discountedProducts?: DiscountedProduct[]; socialMediaProducts?: SocialMediaProduct[] } }) {
   const heroSlides = heroData?.heroSlides || []
   const promoCards = heroData?.promoCards || []
   const discountedProductsFromSanity = heroData?.discountedProducts || []
+  const socialMediaProductsFromSanity = heroData?.socialMediaProducts || []
   const [isStoryViewerOpen, setIsStoryViewerOpen] = useState(false)
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -209,58 +210,16 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
     description: dp.description || '',
   }))
 
-  const socialMediaProducts = [
-    {
-      id: 1,
-      name: "اکانت اینستاگرام پرمیوم",
-      category: "social-media",
-      price: 250000,
-      originalPrice: 350000,
-      discountPercentage: 29,
-      image: "/placeholder.svg?height=120&width=120&text=Instagram",
-      description: "اکانت اینستاگرام با فالوور بالا و تیک آبی",
-    },
-    {
-      id: 2,
-      name: "تلگرام پرمیوم",
-      category: "social-media",
-      price: 180000,
-      originalPrice: 250000,
-      discountPercentage: 28,
-      image: "/placeholder.svg?height=120&width=120&text=Telegram",
-      description: "اشتراک تلگرام پرمیوم با قابلیت‌های ویژه",
-    },
-    {
-      id: 3,
-      name: "یوتیوب پرمیوم",
-      category: "social-media",
-      price: 320000,
-      originalPrice: 450000,
-      discountPercentage: 29,
-      image: "/placeholder.svg?height=120&width=120&text=YouTube",
-      description: "اشتراک یوتیوب پرمیوم بدون تبلیغات",
-    },
-    {
-      id: 4,
-      name: "اسپاتیفای پرمیوم",
-      category: "social-media",
-      price: 200000,
-      originalPrice: 280000,
-      discountPercentage: 29,
-      image: "/placeholder.svg?height=120&width=120&text=Spotify",
-      description: "اشتراک اسپاتیفای پرمیوم با کیفیت بالا",
-    },
-    {
-      id: 5,
-      name: "نتفلیکس پرمیوم",
-      category: "social-media",
-      price: 380000,
-      originalPrice: 520000,
-      discountPercentage: 27,
-      image: "/placeholder.svg?height=120&width=120&text=Netflix",
-      description: "اشتراک نتفلیکس پرمیوم 4K",
-    },
-  ]
+  const socialMediaProducts = socialMediaProductsFromSanity.map((smp, i) => ({
+    id: i + 1,
+    name: smp.name || '',
+    category: smp.category || 'social-media',
+    price: smp.price || 0,
+    originalPrice: smp.originalPrice || 0,
+    discountPercentage: smp.discountPercentage || 0,
+    image: (smp as any)?.image?.asset?.url || `/placeholder.svg?height=120&width=120&text=${encodeURIComponent(smp.name || 'Product')}`,
+    description: smp.description || '',
+  }))
 
   const educationalProducts = [
     {
@@ -1770,68 +1729,70 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
           </section>
         )}
 
-        <section className="mb-16 sm:mb-20 relative" id="social-media-products">
-          <div className="backdrop-blur-md bg-[#b52492]/15 border rounded-3xl sm:rounded-[2rem] p-6 sm:p-8 shadow-xl overflow-hidden border-[rgba(255,149,0,0.3)]">
-            <h2 className="text-lg sm:text-xl font-bold text-pink-800 mb-6 sm:mb-8">پرفروش‌ترین محصولات سوشیال مدیا</h2>
-            <div className="relative px-2 py-2">
-              <Swiper
-                modules={[Navigation, Pagination, Autoplay]}
-                spaceBetween={8}
-                slidesPerView={1.1}
-                navigation={{
-                  nextEl: ".swiper-button-next-social",
-                  prevEl: ".swiper-button-prev-social",
-                }}
-                pagination={{
-                  clickable: true,
-                  el: ".swiper-pagination-social",
-                }}
-                autoplay={{
-                  delay: 3000,
-                  disableOnInteraction: false,
-                  pauseOnMouseEnter: true,
-                }}
-                breakpoints={{
-                  640: {
-                    slidesPerView: 1.8,
-                    spaceBetween: 10,
-                  },
-                  1024: {
-                    slidesPerView: 3.2,
-                    spaceBetween: 12,
-                  },
-                }}
-                dir="rtl"
-                className="!pb-12"
-              >
-                {socialMediaProducts.map((product) => (
-                  <SwiperSlide key={product.id} className="!h-auto">
-                    <ProductCard
-                      id={product.id}
-                      title={product.name}
-                      description={product.description}
-                      price={product.price}
-                      originalPrice={product.originalPrice}
-                      discountPercentage={product.discountPercentage}
-                      image={product.image}
-                      category={product.category}
-                      href={`/products?category=${product.category}&highlight=${product.id}`}
-                    />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+        {socialMediaProducts.length > 0 && (
+          <section className="mb-16 sm:mb-20 relative" id="social-media-products">
+            <div className="backdrop-blur-md bg-[#b52492]/15 border rounded-3xl sm:rounded-[2rem] p-6 sm:p-8 shadow-xl overflow-hidden border-[rgba(255,149,0,0.3)]">
+              <h2 className="text-lg sm:text-xl font-bold text-pink-800 mb-6 sm:mb-8">پرفروش‌ترین محصولات سوشیال مدیا</h2>
+              <div className="relative px-2 py-2">
+                <Swiper
+                  modules={[Navigation, Pagination, Autoplay]}
+                  spaceBetween={8}
+                  slidesPerView={1.1}
+                  navigation={{
+                    nextEl: ".swiper-button-next-social",
+                    prevEl: ".swiper-button-prev-social",
+                  }}
+                  pagination={{
+                    clickable: true,
+                    el: ".swiper-pagination-social",
+                  }}
+                  autoplay={{
+                    delay: 3000,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true,
+                  }}
+                  breakpoints={{
+                    640: {
+                      slidesPerView: 1.8,
+                      spaceBetween: 10,
+                    },
+                    1024: {
+                      slidesPerView: 3.2,
+                      spaceBetween: 12,
+                    },
+                  }}
+                  dir="rtl"
+                  className="!pb-12"
+                >
+                  {socialMediaProducts.map((product) => (
+                    <SwiperSlide key={product.id} className="!h-auto">
+                      <ProductCard
+                        id={product.id}
+                        title={product.name}
+                        description={product.description}
+                        price={product.price}
+                        originalPrice={product.originalPrice}
+                        discountPercentage={product.discountPercentage}
+                        image={product.image}
+                        category={product.category}
+                        href={`/products?category=${product.category}&highlight=${product.id}`}
+                      />
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
 
-              <div className="swiper-button-next-social absolute top-1/2 -right-2 transform -translate-y-1/2 w-8 h-8 bg-pink-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-pink-700 transition-colors z-10 text-sm">
-                ←
-              </div>
-              <div className="swiper-button-prev-social absolute top-1/2 -left-2 transform -translate-y-1/2 w-8 h-8 bg-pink-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-pink-700 transition-colors z-10 text-sm">
-                →
-              </div>
+                <div className="swiper-button-next-social absolute top-1/2 -right-2 transform -translate-y-1/2 w-8 h-8 bg-pink-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-pink-700 transition-colors z-10 text-sm">
+                  ←
+                </div>
+                <div className="swiper-button-prev-social absolute top-1/2 -left-2 transform -translate-y-1/2 w-8 h-8 bg-pink-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-pink-700 transition-colors z-10 text-sm">
+                  →
+                </div>
 
-              <div className="swiper-pagination-social !bottom-0 !relative mt-4 text-center"></div>
+                <div className="swiper-pagination-social !bottom-0 !relative mt-4 text-center"></div>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         <section className="mb-16 sm:mb-20 relative" id="educational-products">
           <div className="backdrop-blur-md bg-[#5ea500]/15 border border-green-400/30 rounded-3xl sm:rounded-[2rem] p-6 sm:p-8 shadow-xl overflow-hidden">

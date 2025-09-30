@@ -122,6 +122,18 @@ export default defineType({
         }),
       ],
     }),
+    defineField({
+      name: 'socialMediaProducts',
+      title: 'Social Media Products',
+      description: 'Popular social media subscriptions displayed in the "پرفروش‌ترین محصولات سوشیال مدیا" section',
+      type: 'array',
+      validation: (Rule) => Rule.max(10),
+      of: [
+        defineArrayMember({
+          type: 'socialMediaProduct',
+        }),
+      ],
+    }),
   ],
   preview: {
     select: {

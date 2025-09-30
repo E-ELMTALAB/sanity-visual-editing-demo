@@ -96,6 +96,17 @@ export const sharifHeroQuery = groq`
       discountedPrice,
       discountPercentage,
       image
+    },
+    socialMediaProducts[]{
+      _key,
+      _type,
+      name,
+      description,
+      category,
+      price,
+      originalPrice,
+      discountPercentage,
+      image
     }
   }
 `
