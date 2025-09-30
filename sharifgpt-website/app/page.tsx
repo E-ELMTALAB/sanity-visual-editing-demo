@@ -5,8 +5,8 @@ import Link from "next/link"
 import { useEffect, useState, useCallback } from "react"
 import MobileMenu from "../components/mobile-menu"
 import RobotAssistant from "../components/robot-assistant"
+"use client"
 import ProductCard from "@/components/product-card"
-import { useSanityHero } from "../../components/site/home/SanityHeroContext"
 import CartDropdown from "@/components/cart-dropdown" // Assuming CartDropdown component exists
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Navigation, Pagination, Autoplay } from "swiper/modules"
@@ -166,8 +166,9 @@ const PromoCard = ({ item }) => {
   )
 }
 
-export default function HomePage() {
-  const sanityHero = useSanityHero()
+export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroSlide[]; promoCards?: PromoCard[] } }) {
+  const heroSlides = heroData?.heroSlides || []
+  const promoCards = heroData?.promoCards || []
   const [isStoryViewerOpen, setIsStoryViewerOpen] = useState(false)
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -191,85 +192,41 @@ export default function HomePage() {
 
   const sliderData = {
     topBanner: [
-      ...(sanityHero?.slides?.slice(0, 1).map((s, i) => ({
+      ...heroSlides.slice(0, 1).map((s, i) => ({
         id: 200 + i,
         title: s.title,
         subtitle: s.subtitle,
-        imageUrl: (s as any)?.image?.asset?.url || "/placeholder.svg",
+        imageUrl: (s as any)?.image?.asset?.url,
         buttonText: s.buttonText,
-      })) || []),
-      // fallback banner if no sanity
-      ...(!sanityHero?.slides?.length
-        ? [
-            {
-              id: 20,
-              title: "چت جی پی تی اختصاصی ۳ ماهه",
-              subtitle: "۲۳۹ هزار تومان",
-              imageUrl: "https://placehold.co/1200x300/0891b2/ffffff?text=ChatGPT+Plus",
-              buttonText: "خرید",
-            },
-          ]
-        : []),
+      })),
     ],
     mainSlider: [
-      ...(sanityHero?.slides?.map((s, i) => ({
+      ...heroSlides.map((s, i) => ({
         id: 1 + i,
         title: s.title,
         subtitle: s.subtitle,
-        imageUrl: (s as any)?.image?.asset?.url || "/placeholder.svg",
+        imageUrl: (s as any)?.image?.asset?.url,
         buttonText: s.buttonText,
-      })) || [
-        {
-          id: 1,
-          title: "کالکشن جدید پاییزه",
-          subtitle: "تا ۳۰٪ تخفیف ویژه",
-          imageUrl: "https://placehold.co/800x500/f97316/ffffff?text=Fall+Collection",
-          buttonText: "خرید الان",
-        },
-        {
-          id: 2,
-          title: "لوازم الکترونیکی",
-          subtitle: "جدیدترین گجت‌های روز دنیا",
-          imageUrl: "https://placehold.co/800x500/3b82f6/ffffff?text=Electronics",
-          buttonText: "بیشتر ببین",
-        },
-        {
-          id: 3,
-          title: "خرید شگفت‌انگیز",
-          subtitle: "فرصت رو از دست نده!",
-          imageUrl: "https://placehold.co/800x500/be185d/ffffff?text=Super+Sale",
-          buttonText: "خرید",
-        },
-      ]),
+      })),
     ],
     sideBannerLeft:
-      (sanityHero?.promoCards && sanityHero.promoCards[0]
+      promoCards[0]
         ? {
             id: 10,
-            title: sanityHero.promoCards[0].title,
-            subtitle: sanityHero.promoCards[0].subtitle,
-            imageUrl: (sanityHero.promoCards[0] as any)?.image?.asset?.url || "https://placehold.co/400x500/10b981/ffffff?text=Gaming",
+            title: promoCards[0].title,
+            subtitle: promoCards[0].subtitle,
+            imageUrl: (promoCards[0] as any)?.image?.asset?.url,
           }
-        : {
-            id: 10,
-            title: "بازی‌های جدید",
-            subtitle: "اکانت قانونی بازی‌ها",
-            imageUrl: "https://placehold.co/400x500/10b981/ffffff?text=Gaming",
-          }),
+        : undefined,
     sideBannerRight:
-      (sanityHero?.promoCards && sanityHero.promoCards[1]
+      promoCards[1]
         ? {
             id: 11,
-            title: sanityHero.promoCards[1].title,
-            subtitle: sanityHero.promoCards[1].subtitle,
-            imageUrl: (sanityHero.promoCards[1] as any)?.image?.asset?.url || "https://placehold.co/400x500/8b5cf6/ffffff?text=Fashion",
+            title: promoCards[1].title,
+            subtitle: promoCards[1].subtitle,
+            imageUrl: (promoCards[1] as any)?.image?.asset?.url,
           }
-        : {
-            id: 11,
-            title: "مد و پوشاک",
-            subtitle: "استایل خودتو بساز",
-            imageUrl: "https://placehold.co/400x500/8b5cf6/ffffff?text=Fashion",
-          }),
+        : undefined,
   }
 
   const discountedProducts = [
