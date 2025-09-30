@@ -69,6 +69,8 @@ export const settingsQuery = groq`
 export const sharifHeroQuery = groq`
   *[_type=="home"][0]{
     heroSlides[]{
+      _key,
+      _type,
       title,
       subtitle,
       buttonText,
@@ -76,6 +78,8 @@ export const sharifHeroQuery = groq`
       image
     },
     promoCards[]{
+      _key,
+      _type,
       title,
       subtitle,
       buttonText,

@@ -9,8 +9,8 @@ export default function HeroPromoOverlay({ slides, promoCards }: HeroPromoOverla
       {slides?.map((s, i) => (
         <div
           key={`slide-${i}`}
-          data-sanity-id={s?._id || s?._key}
-          data-sanity-type="heroSlide"
+          data-sanity-id={s?._id || `heroSlides-${s?._key}`}
+          data-sanity-type="home.heroSlides"
           data-sanity-index={i}
         >
           <span>{s?.title}</span>
@@ -21,8 +21,8 @@ export default function HeroPromoOverlay({ slides, promoCards }: HeroPromoOverla
       {promoCards?.map((p, i) => (
         <div
           key={`promo-${i}`}
-          data-sanity-id={p?._id || p?._key}
-          data-sanity-type="promoCard"
+          data-sanity-id={p?._id || `promoCards-${p?._key}`}
+          data-sanity-type="home.promoCards"
           data-sanity-index={i}
         >
           <span>{p?.title}</span>
