@@ -5,7 +5,6 @@ import Link from "next/link"
 import { useEffect, useState, useCallback } from "react"
 import MobileMenu from "../components/mobile-menu"
 import RobotAssistant from "../components/robot-assistant"
-"use client"
 import ProductCard from "@/components/product-card"
 import CartDropdown from "@/components/cart-dropdown" // Assuming CartDropdown component exists
 import { Swiper, SwiperSlide } from "swiper/react"
