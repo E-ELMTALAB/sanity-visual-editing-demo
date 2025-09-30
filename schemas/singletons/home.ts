@@ -134,6 +134,18 @@ export default defineType({
         }),
       ],
     }),
+    defineField({
+      name: 'educationalProducts',
+      title: 'Educational Products',
+      description: 'Educational subscriptions and courses displayed in the "پرفروش‌ترین محصولات آموزشی" section',
+      type: 'array',
+      validation: (Rule) => Rule.max(10),
+      of: [
+        defineArrayMember({
+          type: 'educationalProduct',
+        }),
+      ],
+    }),
   ],
   preview: {
     select: {

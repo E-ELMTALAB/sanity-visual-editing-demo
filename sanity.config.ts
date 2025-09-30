@@ -19,6 +19,7 @@ import timeline from 'schemas/objects/timeline'
 import youtube from 'schemas/objects/youtube'
 import discountedProduct from 'schemas/objects/discountedProduct'
 import socialMediaProduct from 'schemas/objects/socialMediaProduct'
+import educationalProduct from 'schemas/objects/educationalProduct'
 import home from 'schemas/singletons/home'
 import settings from 'schemas/singletons/settings'
 import { debugSecrets } from '@sanity/preview-url-secret/sanity-plugin-debug-secrets'
@@ -47,6 +48,7 @@ export default defineConfig({
       youtube,
       discountedProduct,
       socialMediaProduct,
+      educationalProduct,
     ],
   },
   plugins: [

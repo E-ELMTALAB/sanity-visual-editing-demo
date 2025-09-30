@@ -3,9 +3,10 @@ interface HeroPromoOverlayProps {
   promoCards: any[]
   discountedProducts: any[]
   socialMediaProducts: any[]
+  educationalProducts: any[]
 }
 
-export default function HeroPromoOverlay({ slides, promoCards, discountedProducts, socialMediaProducts }: HeroPromoOverlayProps) {
+export default function HeroPromoOverlay({ slides, promoCards, discountedProducts, socialMediaProducts, educationalProducts }: HeroPromoOverlayProps) {
   return (
     <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0 }}>
       {slides?.map((s, i) => (
@@ -56,6 +57,19 @@ export default function HeroPromoOverlay({ slides, promoCards, discountedProduct
           <span>{smp?.description}</span>
           <span>{smp?.price}</span>
           <span>{smp?.originalPrice}</span>
+        </div>
+      ))}
+      {educationalProducts?.map((edp, i) => (
+        <div
+          key={`edu-${i}`}
+          data-sanity-id={edp?._id || `educationalProducts-${edp?._key}`}
+          data-sanity-type="home.educationalProducts"
+          data-sanity-index={i}
+        >
+          <span>{edp?.name}</span>
+          <span>{edp?.description}</span>
+          <span>{edp?.price}</span>
+          <span>{edp?.originalPrice}</span>
         </div>
       ))}
     </div>

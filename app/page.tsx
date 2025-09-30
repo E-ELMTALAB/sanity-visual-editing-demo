@@ -13,10 +13,11 @@ export default async function RootPage() {
   const promoCards = data?.promoCards || []
   const discountedProducts = data?.discountedProducts || []
   const socialMediaProducts = data?.socialMediaProducts || []
+  const educationalProducts = data?.educationalProducts || []
   return (
     <>
-      <HeroPromoOverlay slides={heroSlides} promoCards={promoCards} discountedProducts={discountedProducts} socialMediaProducts={socialMediaProducts} />
-      <SharifHome heroData={{ heroSlides, promoCards, discountedProducts, socialMediaProducts }} />
+      <HeroPromoOverlay slides={heroSlides} promoCards={promoCards} discountedProducts={discountedProducts} socialMediaProducts={socialMediaProducts} educationalProducts={educationalProducts} />
+      <SharifHome heroData={{ heroSlides, promoCards, discountedProducts, socialMediaProducts, educationalProducts }} />
     </>
   )
 }

@@ -105,6 +105,18 @@ export interface SocialMediaProduct {
   image?: Image
 }
 
+export interface EducationalProduct {
+  _key?: string
+  _type?: string
+  name?: string
+  description?: string
+  category?: string
+  price?: number
+  originalPrice?: number
+  discountPercentage?: number
+  image?: Image
+}
+
 export interface PostListItemPayload {
   _id?: string
   title?: string
