@@ -14,7 +14,7 @@ import "swiper/css/navigation"
 import "swiper/css/pagination"
 import Footer from "@/components/footer"
 
-const IndependentSlider = ({ className, items, autoplayInterval = 5000 }) => {
+const IndependentSlider = ({ className, items = [], autoplayInterval = 5000 }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   const goToPrevious = useCallback(() => {
@@ -190,42 +190,10 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
   }
 
   const sliderData = {
-    topBanner: [
-      ...heroSlides.slice(0, 1).map((s, i) => ({
-        id: 200 + i,
-        title: s.title,
-        subtitle: s.subtitle,
-        imageUrl: (s as any)?.image?.asset?.url,
-        buttonText: s.buttonText,
-      })),
-    ],
-    mainSlider: [
-      ...heroSlides.map((s, i) => ({
-        id: 1 + i,
-        title: s.title,
-        subtitle: s.subtitle,
-        imageUrl: (s as any)?.image?.asset?.url,
-        buttonText: s.buttonText,
-      })),
-    ],
-    sideBannerLeft:
-      promoCards[0]
-        ? {
-            id: 10,
-            title: promoCards[0].title,
-            subtitle: promoCards[0].subtitle,
-            imageUrl: (promoCards[0] as any)?.image?.asset?.url,
-          }
-        : undefined,
-    sideBannerRight:
-      promoCards[1]
-        ? {
-            id: 11,
-            title: promoCards[1].title,
-            subtitle: promoCards[1].subtitle,
-            imageUrl: (promoCards[1] as any)?.image?.asset?.url,
-          }
-        : undefined,
+    topBanner: heroSlides.slice(0, 1),
+    mainSlider: heroSlides,
+    sideBannerLeft: promoCards[0],
+    sideBannerRight: promoCards[1],
   }
 
   const discountedProducts = [
