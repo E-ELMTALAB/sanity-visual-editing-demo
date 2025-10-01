@@ -6,7 +6,7 @@ export default function HeroFromSanity({ slides }: { slides: HeroSlide[] }) {
   const items = (slides || []).map((s) => ({
     title: s.title || '',
     subtitle: s.subtitle || '',
-    imageUrl: (s as any)?.image?.asset?.url, // ImageBox not used in original hero
+    imageUrl: (s as any)?.imageUrl, // URL already generated server-side
     buttonText: s.buttonText,
     buttonHref: s.buttonHref,
   }))

@@ -208,7 +208,7 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
     originalPrice: dp.originalPrice || 0,
     discountedPrice: dp.discountedPrice || 0,
     discountPercentage: dp.discountPercentage || 0,
-    image: (dp as any)?.image?.asset?.url || `https://placehold.co/400x300/10B981/FFFFFF?text=${encodeURIComponent(dp.name || 'Product')}`,
+    image: (dp as any)?.imageUrl || `https://placehold.co/400x300/10B981/FFFFFF?text=${encodeURIComponent(dp.name || 'Product')}`,
     description: dp.description || '',
     slug: dp.slug || '',
   }))
@@ -220,7 +220,7 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
     price: smp.price || 0,
     originalPrice: smp.originalPrice || 0,
     discountPercentage: smp.discountPercentage || 0,
-    image: (smp as any)?.image?.asset?.url || `/placeholder.svg?height=120&width=120&text=${encodeURIComponent(smp.name || 'Product')}`,
+    image: (smp as any)?.imageUrl || `/placeholder.svg?height=120&width=120&text=${encodeURIComponent(smp.name || 'Product')}`,
     description: smp.description || '',
     slug: smp.slug || '',
   }))
@@ -232,7 +232,7 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
     price: edp.price || 0,
     originalPrice: edp.originalPrice || 0,
     discountPercentage: edp.discountPercentage || 0,
-    image: (edp as any)?.image?.asset?.url || `/placeholder.svg?height=120&width=120&text=${encodeURIComponent(edp.name || 'Product')}`,
+    image: (edp as any)?.imageUrl || `/placeholder.svg?height=120&width=120&text=${encodeURIComponent(edp.name || 'Product')}`,
     description: edp.description || '',
     slug: edp.slug || '',
   }))
@@ -243,7 +243,7 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
     description: course.description || '',
     price: course.price || 0,
     originalPrice: course.originalPrice || 0,
-    image: (course as any)?.image?.asset?.url || `https://placehold.co/600x400/E0F2FE/0891b2?text=${encodeURIComponent(course.title || 'Course')}`,
+    image: (course as any)?.imageUrl || `https://placehold.co/600x400/E0F2FE/0891b2?text=${encodeURIComponent(course.title || 'Course')}`,
     instructor: course.instructor || '',
     duration: course.duration || '',
     students: course.students || 0,
