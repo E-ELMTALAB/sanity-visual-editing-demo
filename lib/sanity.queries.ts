@@ -208,6 +208,7 @@ export const productDocBySlugQuery = groq`
     options[]{ id, name, price },
     "relatedProducts": relatedProducts[]->{
       _id,
+      _type,
       name,
       "slug": slug.current,
       price,
@@ -220,6 +221,7 @@ export const productDocBySlugQuery = groq`
     },
     "relatedBlogs": relatedBlogs[]->{
       _id,
+      _type,
       title,
       "slug": slug.current,
       excerpt,
