@@ -94,6 +94,8 @@ export default function ProductPage({ productData }: ProductPageProps) {
     options: Array.isArray(productData?.options) ? productData.options : [],
     badges: Array.isArray(productData?.badges) ? productData.badges : [],
     inStock: productData?.inStock !== false,
+    relatedProducts: Array.isArray(productData?.relatedProducts) ? productData.relatedProducts : [],
+    relatedBlogs: Array.isArray(productData?.relatedBlogs) ? productData.relatedBlogs : [],
   }
 
   const reviews = [
@@ -138,75 +140,9 @@ export default function ProductPage({ productData }: ProductPageProps) {
     },
   ]
 
-  const relatedProducts = [
-    {
-      id: 2,
-      title: "اکانت یوتیوب پریمیوم",
-      price: 180000,
-      originalPrice: 250000,
-      discount: 28,
-      rating: 4.3,
-      reviews: 24,
-      image: "https://placehold.co/300x200/FF0000/FFFFFF?text=YouTube+Premium",
-    },
-    {
-      id: 3,
-      title: "اکانت نتفلیکس پریمیوم",
-      price: 320000,
-      originalPrice: 450000,
-      discount: 29,
-      rating: 4.7,
-      reviews: 31,
-      image: "https://placehold.co/300x200/E50914/FFFFFF?text=Netflix",
-    },
-    {
-      id: 4,
-      title: "اکانت اپل موزیک",
-      price: 200000,
-      originalPrice: 280000,
-      discount: 29,
-      rating: 4.4,
-      reviews: 18,
-      image: "https://placehold.co/300x200/FA243C/FFFFFF?text=Apple+Music",
-    },
-    {
-      id: 5,
-      title: "اکانت آمازون پرایم",
-      price: 280000,
-      originalPrice: 380000,
-      discount: 26,
-      rating: 4.6,
-      reviews: 22,
-      image: "https://placehold.co/300x200/FF9900/FFFFFF?text=Amazon+Prime",
-    },
-  ]
-
-  const relatedArticles = [
-    {
-      id: 1,
-      title: "راهنمای کامل استفاده از اسپاتیفای پریمیوم",
-      category: "spotify",
-      readTime: "5 دقیقه",
-    },
-    {
-      id: 2,
-      title: "مقایسه سرویس‌های پخش موسیقی: اسپاتیفای vs اپل موزیک",
-      category: "مقایسه",
-      readTime: "8 دقیقه",
-    },
-    {
-      id: 3,
-      title: "نحوه ایجاد پلی‌لیست‌های حرفه‌ای در اسپاتیفای",
-      category: "آموزش",
-      readTime: "6 دقیقه",
-    },
-    {
-      id: 4,
-      title: "بهترین پادکست‌های فارسی در اسپاتیفای",
-      category: "پادکست",
-      readTime: "4 دقیقه",
-    },
-  ]
+  // Use related content from Sanity (server-provided via productData)
+  const relatedProducts = product.relatedProducts
+  const relatedArticles = product.relatedBlogs
 
   const selectedPrice = product.options.find((opt) => opt.id === selectedOption)?.price || product.price
 
@@ -830,7 +766,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
               {relatedProducts.map((relatedProduct) => (
                 <Link
                   key={relatedProduct.id}
-                  href={`/products/${relatedProduct.id}`}
+                  href={`/products/${relatedProduct.slug}`}
                   className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-blue-300"
                 >
                   <div className="relative">
@@ -839,9 +775,9 @@ export default function ProductPage({ productData }: ProductPageProps) {
                       alt={relatedProduct.title}
                       className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    {relatedProduct.discount > 0 && (
+                    {relatedProduct.discountPercentage > 0 && (
                       <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                        {relatedProduct.discount}% تخفیف
+                        {relatedProduct.discountPercentage}% تخفیف
                       </div>
                     )}
                   </div>
@@ -854,14 +790,14 @@ export default function ProductPage({ productData }: ProductPageProps) {
                         {[...Array(5)].map((_, i) => (
                           <svg
                             key={i}
-                            className={`w-4 h-4 ${i < Math.floor(relatedProduct.rating) ? "text-yellow-400" : "text-gray-300"}`}
+                            className={`w-4 h-4 ${i < Math.floor(relatedProduct.rating || 0) ? "text-yellow-400" : "text-gray-300"}`}
                             fill="currentColor"
                             viewBox="0 0 20 20"
                           >
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                           </svg>
                         ))}
-                        <span className="text-gray-600 text-sm mr-2">({relatedProduct.reviews})</span>
+                        <span className="text-gray-600 text-sm mr-2">({relatedProduct.reviewCount || 0})</span>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
@@ -899,14 +835,16 @@ export default function ProductPage({ productData }: ProductPageProps) {
               {relatedArticles.map((article) => (
                 <Link
                   key={article.id}
-                  href={`/blog/${article.id}`}
+                  href={`/blog/${article.slug}`}
                   className="block p-6 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-300 group"
                 >
                   <h3 className="font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
                     {article.title}
                   </h3>
                   <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span className="bg-gray-100 px-3 py-1 rounded-full text-xs font-medium">{article.category}</span>
+                    <span className="bg-gray-100 px-3 py-1 rounded-full text-xs font-medium">
+                      {Array.isArray(article.tags) && article.tags.length > 0 ? article.tags[0] : 'مقاله'}
+                    </span>
                     <span className="flex items-center">
                       <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
@@ -916,7 +854,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
-                      {article.readTime}
+                      5 دقیقه
                     </span>
                   </div>
                 </Link>

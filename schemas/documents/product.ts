@@ -19,6 +19,32 @@ export default defineType({
     defineField({ name: 'features', title: 'Features', type: 'array', of: [{ type: 'string' }] }),
     defineField({ name: 'badges', title: 'Badges', type: 'array', of: [{ type: 'string' }] }),
     defineField({ name: 'inStock', title: 'In Stock', type: 'boolean', initialValue: true }),
+    defineField({
+      name: 'relatedProducts',
+      title: 'Related Products',
+      type: 'array',
+      of: [{
+        type: 'reference',
+        to: [{ type: 'product' }],
+        options: {
+          disableNew: true, // Only allow selecting existing products
+        }
+      }],
+      description: 'Select related products to display on this product page'
+    }),
+    defineField({
+      name: 'relatedBlogs',
+      title: 'Related Blog Posts',
+      type: 'array',
+      of: [{
+        type: 'reference',
+        to: [{ type: 'post' }],
+        options: {
+          disableNew: true, // Only allow selecting existing blog posts
+        }
+      }],
+      description: 'Select related blog posts to display on this product page'
+    }),
     defineField({ name: 'rating', title: 'Rating (0-5)', type: 'number' }),
     defineField({ name: 'reviewCount', title: 'Review Count', type: 'number' }),
     defineField({ name: 'options', title: 'Purchase Options', type: 'array', of: [{ type: productOption.name }] }),

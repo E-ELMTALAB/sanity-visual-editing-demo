@@ -206,6 +206,27 @@ export const productDocBySlugQuery = groq`
     rating,
     reviewCount,
     options[]{ id, name, price },
+    "relatedProducts": relatedProducts[]->{
+      _id,
+      name,
+      "slug": slug.current,
+      price,
+      originalPrice,
+      discountPercentage,
+      image,
+      category,
+      rating,
+      reviewCount
+    },
+    "relatedBlogs": relatedBlogs[]->{
+      _id,
+      title,
+      "slug": slug.current,
+      excerpt,
+      coverImage,
+      publishedAt,
+      tags
+    },
     "slug": slug.current,
   }
 `

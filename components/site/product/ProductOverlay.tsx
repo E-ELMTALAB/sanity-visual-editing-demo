@@ -20,6 +20,8 @@ export default function ProductOverlay({ product }: ProductOverlayProps) {
         <span>{product?.discountPercentage}</span>
         <span>{product?.rating}</span>
         <span>{product?.reviewCount}</span>
+        <span>{product?.relatedProducts?.length || 0}</span>
+        <span>{product?.relatedBlogs?.length || 0}</span>
       </div>
     </div>
   )
