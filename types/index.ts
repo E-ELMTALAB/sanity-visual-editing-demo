@@ -152,6 +152,24 @@ export interface BestsellingCourse {
   slug?: string
 }
 
+export interface ProductDoc {
+  _id?: string
+  _type?: string
+  name?: string
+  description?: string
+  longDescription?: string
+  category?: string
+  price?: number
+  originalPrice?: number
+  discountPercentage?: number
+  image?: Image
+  gallery?: Image[]
+  features?: string[]
+  badges?: string[]
+  inStock?: boolean
+  slug?: string
+}
+
 export interface PostListItemPayload {
   _id?: string
   title?: string

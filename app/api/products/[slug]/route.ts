@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getClient } from 'lib/sanity.client'
-import { productBySlugQuery } from 'lib/sanity.queries'
+import { productDocBySlugQuery } from 'lib/sanity.queries'
 import { urlForImage } from 'lib/sanity.image'
 
 export async function GET(
@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const client = getClient()
-    const product = await client.fetch(productBySlugQuery, { slug: params.slug })
+    const product = await client.fetch(productDocBySlugQuery, { slug: params.slug })
     
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
@@ -17,16 +17,23 @@ export async function GET(
     
     // Transform Sanity data to API response
     return NextResponse.json({
-      _key: product._key,
+      _id: product._id,
       _type: product._type,
       name: product.name,
       description: product.description,
+      longDescription: product.longDescription,
       category: product.category,
-      price: product.discountedPrice || product.price,
-      discountedPrice: product.discountedPrice,
+      price: product.price,
+      discountedPrice: product.discountPercentage && product.originalPrice && product.price
+        ? product.price
+        : undefined,
       originalPrice: product.originalPrice,
       discountPercentage: product.discountPercentage,
       imageUrl: product.image ? urlForImage(product.image)?.url() : null,
+      galleryUrls: Array.isArray(product.gallery) ? product.gallery.map((img: any) => (img ? urlForImage(img)?.url() : null)) : [],
+      features: product.features || [],
+      badges: product.badges || [],
+      inStock: product.inStock,
       slug: product.slug,
     })
   } catch (error) {

@@ -182,6 +182,31 @@ export const postPaths = groq`
   *[_type == "post" && slug.current != null].slug.current
 `
 
+// Product document queries (first-class products)
+export const productDocPaths = groq`
+  *[_type == "product" && slug.current != null].slug.current
+`
+
+export const productDocBySlugQuery = groq`
+  *[_type == "product" && slug.current == $slug][0]{
+    _id,
+    _type,
+    name,
+    description,
+    longDescription,
+    category,
+    price,
+    originalPrice,
+    discountPercentage,
+    image,
+    gallery,
+    features,
+    badges,
+    inStock,
+    "slug": slug.current,
+  }
+`
+
 // Product queries (for products from all arrays)
 export const productBySlugQuery = groq`
   *[_type == "home"][0]{
