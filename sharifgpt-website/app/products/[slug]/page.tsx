@@ -6,15 +6,13 @@ import { useCart } from "../../../contexts/cart-context"
 import CartDropdown from "../../../components/cart-dropdown"
 
 interface ProductPageProps {
-  params?: { slug: string }
-  productData?: any
+  productData: any
 }
 
-export default function ProductPage({ params, productData }: ProductPageProps) {
-  const slug = params?.slug as string | undefined
+export default function ProductPage({ productData }: ProductPageProps) {
   const [selectedTab, setSelectedTab] = useState("description")
   const [quantity, setQuantity] = useState(1)
-  const [selectedOption, setSelectedOption] = useState("1-month")
+  const [selectedOption, setSelectedOption] = useState(productData?.options?.[0]?.id || "1-month")
   const [selectedImage, setSelectedImage] = useState(0)
 
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -25,19 +23,7 @@ export default function ProductPage({ params, productData }: ProductPageProps) {
   const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false)
   const [showAddedToCart, setShowAddedToCart] = useState(false)
 
-  // Prefer server-provided data; fallback to client fetch only if needed
-  const [sanityProduct, setSanityProduct] = useState<any>(productData || null)
-  const [loading, setLoading] = useState(!productData)
-
-  useEffect(() => {
-    if (productData || !slug) return
-    fetch(`/api/products/${slug}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data.error) setSanityProduct(data)
-      })
-      .finally(() => setLoading(false))
-  }, [slug, productData])
+  // Server-first: productData is provided by server wrapper
 
   const handleProfileClick = () => {
     if (isAuthenticated) {
@@ -85,37 +71,29 @@ export default function ProductPage({ params, productData }: ProductPageProps) {
   // Merge Sanity data with hardcoded defaults
   const product = {
     id: 1,
-    title: sanityProduct?.name || "اکانت اسپاتیفای پریمیوم",
-    description: sanityProduct?.description ||
+    title: productData?.name || "اکانت اسپاتیفای پریمیوم",
+    description: productData?.description ||
       "اسپاتیفای یکی از محبوب‌ترین سرویس‌های پخش موسیقی در جهان است که دسترسی به میلیون‌ها آهنگ، پادکست و محتوای صوتی را فراهم می‌کند. با خرید اکانت اسپاتیفای از فروشگاه ما، به دنیایی از موسیقی بی‌نظیر موسیقی دسترسی خواهید داشت.",
-    price: sanityProduct?.discountedPrice ?? sanityProduct?.price ?? 250000,
-    originalPrice: sanityProduct?.originalPrice || 350000,
-    discount: sanityProduct?.discountPercentage ?? (sanityProduct?.originalPrice && sanityProduct?.price
-      ? Math.round(((sanityProduct.originalPrice - sanityProduct.price) / sanityProduct.originalPrice) * 100)
+    longDescription: productData?.longDescription || "",
+    price: productData?.discountedPrice ?? productData?.price ?? 250000,
+    originalPrice: productData?.originalPrice || 350000,
+    discount: productData?.discountPercentage ?? (productData?.originalPrice && productData?.price
+      ? Math.round(((productData.originalPrice - productData.price) / productData.originalPrice) * 100)
       : 30),
-    rating: 4.5,
-    reviews: 16,
-    image: sanityProduct?.imageUrl || "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
-    gallery: Array.isArray(sanityProduct?.galleryUrls) && sanityProduct?.galleryUrls?.length
-      ? sanityProduct.galleryUrls.filter(Boolean)
+    rating: typeof productData?.rating === 'number' ? productData.rating : 0,
+    reviews: typeof productData?.reviewCount === 'number' ? productData.reviewCount : 0,
+    image: productData?.imageUrl || "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
+    gallery: Array.isArray(productData?.galleryUrls) && productData?.galleryUrls?.length
+      ? productData.galleryUrls.filter(Boolean)
       : [
           "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
           "https://placehold.co/600x400/1DB954/FFFFFF?text=Spotify+2",
           "https://placehold.co/600x400/1DB954/FFFFFF?text=Spotify+3",
         ],
-    features: [
-      "دسترسی به میلیون‌ها آهنگ و پادکست محلی و بین‌المللی",
-      "پادکست‌های متنوع: از سرگرمی و آموزشی تا سیاستمندی و دانستنی، همه در اسپاتیفای موجود است",
-      "پلی‌لیست‌های شخصی‌سازی شده: بر اساس سلیقه موسیقایی شما، پلی‌لیست‌های اختصاصی ایجاد می‌شوند",
-      "کیفیت صدای بالا: با کیفیت صدای بی‌نظیر اسپاتیفای، تجربه‌ای فوق‌العاده از گوش دادن به موسیقی خواهید داشت",
-      "دسترسی آفلاین: با دانلود آهنگ‌ها، در هر زمان و مکانی بدون نیاز به اینترنت به موسیقی گوش دهید",
-    ],
-    options: [
-      { id: "1-month", name: "1 ماهه", price: 250000 },
-      { id: "3-month", name: "3 ماهه", price: 650000 },
-      { id: "6-month", name: "6 ماهه", price: 1200000 },
-      { id: "12-month", name: "12 ماهه", price: 2200000 },
-    ],
+    features: Array.isArray(productData?.features) ? productData.features : [],
+    options: Array.isArray(productData?.options) ? productData.options : [],
+    badges: Array.isArray(productData?.badges) ? productData.badges : [],
+    inStock: productData?.inStock !== false,
   }
 
   const reviews = [
@@ -232,16 +210,7 @@ export default function ProductPage({ params, productData }: ProductPageProps) {
 
   const selectedPrice = product.options.find((opt) => opt.id === selectedOption)?.price || product.price
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50" dir="rtl">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">در حال بارگذاری محصول...</p>
-        </div>
-      </div>
-    )
-  }
+  // No loading state required; server ensures data exists
 
   return (
     <div className="bg-gray-50 min-h-screen" dir="rtl">
