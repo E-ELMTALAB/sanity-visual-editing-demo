@@ -72,8 +72,21 @@ export default defineType({
       ],
     }),
     defineField({
+      name: 'topBannerSlides',
+      title: 'Top Banner Slides',
+      description: 'Slides displayed in the top banner section (above main hero)',
+      type: 'array',
+      validation: (Rule) => Rule.max(5),
+      of: [
+        defineArrayMember({
+          type: 'topBannerSlide',
+        }),
+      ],
+    }),
+    defineField({
       name: 'heroSlides',
-      title: 'Hero slides',
+      title: 'Hero Slides (Main Slider)',
+      description: 'Main hero slides displayed in the center section',
       type: 'array',
       of: [
         defineArrayMember({

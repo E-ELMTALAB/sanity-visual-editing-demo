@@ -68,6 +68,15 @@ export const settingsQuery = groq`
 
 export const sharifHeroQuery = groq`
   *[_type=="home"][0]{
+    topBannerSlides[]{
+      _key,
+      _type,
+      title,
+      subtitle,
+      buttonText,
+      buttonHref,
+      image
+    },
     heroSlides[]{
       _key,
       _type,

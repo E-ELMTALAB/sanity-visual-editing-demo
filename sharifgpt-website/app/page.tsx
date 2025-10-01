@@ -166,7 +166,8 @@ const PromoCard = ({ item }) => {
   )
 }
 
-export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroSlide[]; promoCards?: PromoCard[]; discountedProducts?: DiscountedProduct[]; socialMediaProducts?: SocialMediaProduct[]; educationalProducts?: EducationalProduct[]; bestsellingCourses?: BestsellingCourse[] } }) {
+export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: HeroSlide[]; heroSlides?: HeroSlide[]; promoCards?: PromoCard[]; discountedProducts?: DiscountedProduct[]; socialMediaProducts?: SocialMediaProduct[]; educationalProducts?: EducationalProduct[]; bestsellingCourses?: BestsellingCourse[] } }) {
+  const topBannerSlides = heroData?.topBannerSlides || []
   const heroSlides = heroData?.heroSlides || []
   const promoCards = heroData?.promoCards || []
   const discountedProductsFromSanity = heroData?.discountedProducts || []
@@ -195,7 +196,7 @@ export default function HomePage({ heroData }: { heroData?: { heroSlides?: HeroS
   }
 
   const sliderData = {
-    topBanner: heroSlides.slice(0, 1),
+    topBanner: topBannerSlides,
     mainSlider: heroSlides,
     sideBannerLeft: promoCards[0],
     sideBannerRight: promoCards[1],

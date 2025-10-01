@@ -65,7 +65,19 @@ export interface SettingsPayload {
   ogImage?: Image
 }
 
+export interface TopBannerSlide {
+  _key?: string
+  _type?: string
+  title?: string
+  subtitle?: string
+  buttonText?: string
+  buttonHref?: string
+  image?: Image
+}
+
 export interface HeroSlide {
+  _key?: string
+  _type?: string
   title?: string
   subtitle?: string
   buttonText?: string
@@ -74,6 +86,8 @@ export interface HeroSlide {
 }
 
 export interface PromoCard {
+  _key?: string
+  _type?: string
   title?: string
   subtitle?: string
   buttonText?: string

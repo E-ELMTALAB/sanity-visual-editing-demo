@@ -12,6 +12,11 @@ export default async function RootPage() {
   const data = await client.fetch<any | null>(sharifHeroQuery)
   
   // Convert Sanity image objects to URLs
+  const topBannerSlides = (data?.topBannerSlides || []).map((slide: any) => ({
+    ...slide,
+    imageUrl: slide.image ? urlForImage(slide.image)?.url() : null,
+  }))
+  
   const heroSlides = (data?.heroSlides || []).map((slide: any) => ({
     ...slide,
     imageUrl: slide.image ? urlForImage(slide.image)?.url() : null,
@@ -44,8 +49,8 @@ export default async function RootPage() {
   
   return (
     <>
-      <HeroPromoOverlay slides={heroSlides} promoCards={promoCards} discountedProducts={discountedProducts} socialMediaProducts={socialMediaProducts} educationalProducts={educationalProducts} bestsellingCourses={bestsellingCourses} />
-      <SharifHome heroData={{ heroSlides, promoCards, discountedProducts, socialMediaProducts, educationalProducts, bestsellingCourses }} />
+      <HeroPromoOverlay topBannerSlides={topBannerSlides} heroSlides={heroSlides} promoCards={promoCards} discountedProducts={discountedProducts} socialMediaProducts={socialMediaProducts} educationalProducts={educationalProducts} bestsellingCourses={bestsellingCourses} />
+      <SharifHome heroData={{ topBannerSlides, heroSlides, promoCards, discountedProducts, socialMediaProducts, educationalProducts, bestsellingCourses }} />
     </>
   )
 }

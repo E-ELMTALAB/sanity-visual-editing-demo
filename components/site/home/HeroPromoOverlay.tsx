@@ -1,5 +1,6 @@
 interface HeroPromoOverlayProps {
-  slides: any[]
+  topBannerSlides: any[]
+  heroSlides: any[]
   promoCards: any[]
   discountedProducts: any[]
   socialMediaProducts: any[]
@@ -7,10 +8,22 @@ interface HeroPromoOverlayProps {
   bestsellingCourses: any[]
 }
 
-export default function HeroPromoOverlay({ slides, promoCards, discountedProducts, socialMediaProducts, educationalProducts, bestsellingCourses }: HeroPromoOverlayProps) {
+export default function HeroPromoOverlay({ topBannerSlides, heroSlides, promoCards, discountedProducts, socialMediaProducts, educationalProducts, bestsellingCourses }: HeroPromoOverlayProps) {
   return (
     <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0 }}>
-      {slides?.map((s, i) => (
+      {topBannerSlides?.map((s, i) => (
+        <div
+          key={`topbanner-${i}`}
+          data-sanity-id={s?._id || `topBannerSlides-${s?._key}`}
+          data-sanity-type="home.topBannerSlides"
+          data-sanity-index={i}
+        >
+          <span>{s?.title}</span>
+          <span>{s?.subtitle}</span>
+          <span>{s?.buttonText}</span>
+        </div>
+      ))}
+      {heroSlides?.map((s, i) => (
         <div
           key={`slide-${i}`}
           data-sanity-id={s?._id || `heroSlides-${s?._key}`}
