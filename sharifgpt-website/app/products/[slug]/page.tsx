@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { useCart } from "../../../contexts/cart-context"
 import CartDropdown from "../../../components/cart-dropdown"
