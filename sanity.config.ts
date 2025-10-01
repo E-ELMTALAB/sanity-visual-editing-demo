@@ -15,6 +15,7 @@ import post from 'schemas/documents/post'
 import project from 'schemas/documents/project'
 import duration from 'schemas/objects/duration'
 import product from 'schemas/documents/product'
+import productOption from 'schemas/objects/productOption'
 import milestone from 'schemas/objects/milestone'
 import timeline from 'schemas/objects/timeline'
 import youtube from 'schemas/objects/youtube'
@@ -47,6 +48,7 @@ export default defineConfig({
       post,
       product,
       // Objects
+      productOption,
       milestone,
       timeline,
       youtube,

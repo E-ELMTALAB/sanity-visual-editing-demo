@@ -203,6 +203,9 @@ export const productDocBySlugQuery = groq`
     features,
     badges,
     inStock,
+    rating,
+    reviewCount,
+    options[]{ id, name, price },
     "slug": slug.current,
   }
 `

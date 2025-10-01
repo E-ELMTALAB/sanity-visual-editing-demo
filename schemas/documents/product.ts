@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import productOption from 'schemas/objects/productOption'
 
 export default defineType({
   name: 'product',
@@ -18,6 +19,9 @@ export default defineType({
     defineField({ name: 'features', title: 'Features', type: 'array', of: [{ type: 'string' }] }),
     defineField({ name: 'badges', title: 'Badges', type: 'array', of: [{ type: 'string' }] }),
     defineField({ name: 'inStock', title: 'In Stock', type: 'boolean', initialValue: true }),
+    defineField({ name: 'rating', title: 'Rating (0-5)', type: 'number' }),
+    defineField({ name: 'reviewCount', title: 'Review Count', type: 'number' }),
+    defineField({ name: 'options', title: 'Purchase Options', type: 'array', of: [{ type: productOption.name }] }),
   ],
   preview: {
     select: { title: 'name', subtitle: 'category', media: 'image' },

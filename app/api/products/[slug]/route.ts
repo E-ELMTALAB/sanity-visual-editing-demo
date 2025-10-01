@@ -34,6 +34,9 @@ export async function GET(
       features: product.features || [],
       badges: product.badges || [],
       inStock: product.inStock,
+      rating: product.rating ?? null,
+      reviewCount: product.reviewCount ?? 0,
+      options: Array.isArray(product.options) ? product.options : [],
       slug: product.slug,
     })
   } catch (error) {
