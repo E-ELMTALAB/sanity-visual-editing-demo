@@ -6,11 +6,11 @@ import { useCart } from "../../../contexts/cart-context"
 import CartDropdown from "../../../components/cart-dropdown"
 
 interface ProductPageProps {
-  params: { id: string }
+  params: { slug: string }
 }
 
 export default function ProductPage({ params }: ProductPageProps) {
-  const { id } = params
+  const { slug } = params
   const [selectedTab, setSelectedTab] = useState("description")
   const [quantity, setQuantity] = useState(1)
   const [selectedOption, setSelectedOption] = useState("1-month")
@@ -23,6 +23,22 @@ export default function ProductPage({ params }: ProductPageProps) {
   const { state: cartState, addItem } = useCart()
   const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false)
   const [showAddedToCart, setShowAddedToCart] = useState(false)
+
+  // Fetch product data from Sanity
+  const [sanityProduct, setSanityProduct] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch(`/api/products/${slug}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error) {
+          setSanityProduct(data)
+        }
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [slug])
 
   const handleProfileClick = () => {
     if (isAuthenticated) {
@@ -67,17 +83,18 @@ export default function ProductPage({ params }: ProductPageProps) {
     }
   }, [])
 
+  // Merge Sanity data with hardcoded defaults
   const product = {
-    id: Number.parseInt(id),
-    title: "اکانت اسپاتیفای پریمیوم",
-    description:
+    id: 1,
+    title: sanityProduct?.name || "اکانت اسپاتیفای پریمیوم",
+    description: sanityProduct?.description ||
       "اسپاتیفای یکی از محبوب‌ترین سرویس‌های پخش موسیقی در جهان است که دسترسی به میلیون‌ها آهنگ، پادکست و محتوای صوتی را فراهم می‌کند. با خرید اکانت اسپاتیفای از فروشگاه ما، به دنیایی از موسیقی بی‌نظیر موسیقی دسترسی خواهید داشت.",
-    price: 250000,
-    originalPrice: 350000,
-    discount: 30,
+    price: sanityProduct?.discountedPrice || sanityProduct?.price || 250000,
+    originalPrice: sanityProduct?.originalPrice || 350000,
+    discount: sanityProduct?.discountPercentage || 30,
     rating: 4.5,
     reviews: 16,
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
+    image: sanityProduct?.imageUrl || "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
     gallery: [
       "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
       "https://placehold.co/600x400/1DB954/FFFFFF?text=Spotify+2",
@@ -211,6 +228,17 @@ export default function ProductPage({ params }: ProductPageProps) {
   ]
 
   const selectedPrice = product.options.find((opt) => opt.id === selectedOption)?.price || product.price
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50" dir="rtl">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">در حال بارگذاری محصول...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen" dir="rtl">

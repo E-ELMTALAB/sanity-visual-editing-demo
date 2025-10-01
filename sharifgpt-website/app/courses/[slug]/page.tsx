@@ -7,7 +7,7 @@ import { useParams } from "next/navigation"
 
 export default function CourseDetailPage() {
   const params = useParams()
-  const courseId = params.id as string
+  const courseSlug = params.slug as string
 
   const [activeTab, setActiveTab] = useState("overview")
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null)
@@ -16,6 +16,22 @@ export default function CourseDetailPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const [user, setUser] = useState({ name: "مهدی", email: "mehdi@example.com" })
+
+  // Fetch course data from Sanity
+  const [sanityCourse, setSanityCourse] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch(`/api/courses/${courseSlug}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error) {
+          setSanityCourse(data)
+        }
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [courseSlug])
 
   const handleProfileClick = () => {
     if (isAuthenticated) {
@@ -45,33 +61,35 @@ export default function CourseDetailPage() {
     }
   }, [])
 
-  // Sample course data - in real app, this would be fetched based on courseId
+  // Merge Sanity data with hardcoded defaults
   const course = {
-    id: Number.parseInt(courseId) || 1,
-    title: "دوره جامع ChatGPT و هوش مصنوعی",
-    description: "آموزش کامل استفاده از ChatGPT و ابزارهای هوش مصنوعی برای افزایش بهره‌وری در کار و زندگی",
+    id: 1,
+    title: sanityCourse?.title || "دوره جامع ChatGPT و هوش مصنوعی",
+    description: sanityCourse?.description || "آموزش کامل استفاده از ChatGPT و ابزارهای هوش مصنوعی برای افزایش بهره‌وری در کار و زندگی",
     longDescription: `این دوره جامع شما را با دنیای شگفت‌انگیز هوش مصنوعی آشنا می‌کند. از مبانی ChatGPT گرفته تا تکنیک‌های پیشرفته Prompt Engineering، همه چیز را یاد خواهید گرفت. 
 
     در این دوره، شما یاد می‌گیرید چگونه از هوش مصنوعی برای بهبود کسب و کارتان، افزایش بهره‌وری شخصی، و حل مسائل پیچیده استفاده کنید. با پروژه‌های عملی و مثال‌های واقعی، مهارت‌های لازم برای موفقیت در عصر هوش مصنوعی را کسب خواهید کرد.`,
-    price: 890000,
-    originalPrice: 1200000,
-    discount: 26,
-    rating: 4.8,
-    reviews: 156,
-    image: "/ai-course-special-offer-banner-persian-text.jpg",
-    category: "ai",
-    duration: "12 ساعت",
+    price: sanityCourse?.price || 890000,
+    originalPrice: sanityCourse?.originalPrice || 1200000,
+    discount: sanityCourse?.originalPrice && sanityCourse?.price 
+      ? Math.round(((sanityCourse.originalPrice - sanityCourse.price) / sanityCourse.originalPrice) * 100)
+      : 26,
+    rating: sanityCourse?.rating || 4.8,
+    reviews: sanityCourse?.reviewCount || 156,
+    image: sanityCourse?.imageUrl || "/ai-course-special-offer-banner-persian-text.jpg",
+    category: sanityCourse?.category || "ai",
+    duration: sanityCourse?.duration || "12 ساعت",
     sessions: 24,
-    level: "مقدماتی تا پیشرفته",
+    level: sanityCourse?.level || "مقدماتی تا پیشرفته",
     instructor: {
-      name: "دکتر احمد محمدی",
+      name: sanityCourse?.instructor || "دکتر احمد محمدی",
       bio: "دکترای هوش مصنوعی از دانشگاه تهران با بیش از 10 سال تجربه در صنعت فناوری",
       image: "/placeholder.svg?height=100&width=100&text=استاد",
       experience: "10+ سال",
       students: 15000,
       courses: 25,
     },
-    students: 2847,
+    students: sanityCourse?.students || 2847,
     features: [
       "آموزش کامل ChatGPT و GPT-4",
       "ابزارهای هوش مصنوعی برای کسب و کار",
@@ -192,6 +210,17 @@ export default function CourseDetailPage() {
   const handlePurchase = () => {
     // Handle course purchase
     console.log("Purchasing course:", course.id)
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50" dir="rtl">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">در حال بارگذاری دوره...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

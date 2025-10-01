@@ -181,3 +181,70 @@ export const postBySlugQuery = groq`
 export const postPaths = groq`
   *[_type == "post" && slug.current != null].slug.current
 `
+
+// Product queries (for products from all arrays)
+export const productBySlugQuery = groq`
+  *[_type == "home"][0]{
+    "product": (
+      discountedProducts[slug.current == $slug][0]{
+        _key,
+        _type,
+        name,
+        description,
+        category,
+        originalPrice,
+        discountedPrice,
+        discountPercentage,
+        image,
+        "slug": slug.current
+      } ??
+      socialMediaProducts[slug.current == $slug][0]{
+        _key,
+        _type,
+        name,
+        description,
+        category,
+        price,
+        originalPrice,
+        discountPercentage,
+        image,
+        "slug": slug.current
+      } ??
+      educationalProducts[slug.current == $slug][0]{
+        _key,
+        _type,
+        name,
+        description,
+        category,
+        price,
+        originalPrice,
+        discountPercentage,
+        image,
+        "slug": slug.current
+      }
+    )
+  }.product
+`
+
+// Course by slug query
+export const courseBySlugQuery = groq`
+  *[_type == "home"][0]{
+    "course": bestsellingCourses[slug.current == $slug][0]{
+      _key,
+      _type,
+      title,
+      description,
+      price,
+      originalPrice,
+      instructor,
+      duration,
+      students,
+      rating,
+      reviewCount,
+      category,
+      level,
+      image,
+      "slug": slug.current
+    }
+  }.course
+`
