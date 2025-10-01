@@ -22,16 +22,16 @@ export default async function Page({ params }: { params: { slug: string } }) {
         price: product.price || 0,
         originalPrice: product.originalPrice || 0,
         discountPercentage: product.discountPercentage || 0,
-        rating: product.rating || 0,
-        reviewCount: product.reviewCount || 0,
         imageUrl: product.image ? urlForImage(product.image)?.url() : null,
         galleryUrls: Array.isArray(product.gallery)
           ? product.gallery.map((img: any) => (img ? urlForImage(img)?.url() : null))
           : [],
         features: product.features || [],
         badges: product.badges || [],
-        options: product.options || [],
         inStock: product.inStock !== false,
+        rating: product.rating || 0,
+        reviewCount: product.reviewCount || 0,
+        options: product.options || [],
         relatedProducts: Array.isArray(product.relatedProducts) ? product.relatedProducts.map((related: any) => ({
           id: related._id,
           title: related.name,
