@@ -6,11 +6,12 @@ import { useCart } from "../../../contexts/cart-context"
 import CartDropdown from "../../../components/cart-dropdown"
 
 interface ProductPageProps {
-  params: { slug: string }
+  params?: { slug: string }
+  productData?: any
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
-  const { slug } = params
+export default function ProductPage({ params, productData }: ProductPageProps) {
+  const slug = params?.slug as string | undefined
   const [selectedTab, setSelectedTab] = useState("description")
   const [quantity, setQuantity] = useState(1)
   const [selectedOption, setSelectedOption] = useState("1-month")
@@ -24,21 +25,19 @@ export default function ProductPage({ params }: ProductPageProps) {
   const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false)
   const [showAddedToCart, setShowAddedToCart] = useState(false)
 
-  // Fetch product data from Sanity
-  const [sanityProduct, setSanityProduct] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  // Prefer server-provided data; fallback to client fetch only if needed
+  const [sanityProduct, setSanityProduct] = useState<any>(productData || null)
+  const [loading, setLoading] = useState(!productData)
 
   useEffect(() => {
+    if (productData || !slug) return
     fetch(`/api/products/${slug}`)
       .then((res) => res.json())
       .then((data) => {
-        if (!data.error) {
-          setSanityProduct(data)
-        }
-        setLoading(false)
+        if (!data.error) setSanityProduct(data)
       })
-      .catch(() => setLoading(false))
-  }, [slug])
+      .finally(() => setLoading(false))
+  }, [slug, productData])
 
   const handleProfileClick = () => {
     if (isAuthenticated) {
@@ -89,17 +88,21 @@ export default function ProductPage({ params }: ProductPageProps) {
     title: sanityProduct?.name || "اکانت اسپاتیفای پریمیوم",
     description: sanityProduct?.description ||
       "اسپاتیفای یکی از محبوب‌ترین سرویس‌های پخش موسیقی در جهان است که دسترسی به میلیون‌ها آهنگ، پادکست و محتوای صوتی را فراهم می‌کند. با خرید اکانت اسپاتیفای از فروشگاه ما، به دنیایی از موسیقی بی‌نظیر موسیقی دسترسی خواهید داشت.",
-    price: sanityProduct?.discountedPrice || sanityProduct?.price || 250000,
+    price: sanityProduct?.discountedPrice ?? sanityProduct?.price ?? 250000,
     originalPrice: sanityProduct?.originalPrice || 350000,
-    discount: sanityProduct?.discountPercentage || 30,
+    discount: sanityProduct?.discountPercentage ?? (sanityProduct?.originalPrice && sanityProduct?.price
+      ? Math.round(((sanityProduct.originalPrice - sanityProduct.price) / sanityProduct.originalPrice) * 100)
+      : 30),
     rating: 4.5,
     reviews: 16,
     image: sanityProduct?.imageUrl || "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
-    gallery: [
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
-      "https://placehold.co/600x400/1DB954/FFFFFF?text=Spotify+2",
-      "https://placehold.co/600x400/1DB954/FFFFFF?text=Spotify+3",
-    ],
+    gallery: Array.isArray(sanityProduct?.galleryUrls) && sanityProduct?.galleryUrls?.length
+      ? sanityProduct.galleryUrls.filter(Boolean)
+      : [
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
+          "https://placehold.co/600x400/1DB954/FFFFFF?text=Spotify+2",
+          "https://placehold.co/600x400/1DB954/FFFFFF?text=Spotify+3",
+        ],
     features: [
       "دسترسی به میلیون‌ها آهنگ و پادکست محلی و بین‌المللی",
       "پادکست‌های متنوع: از سرگرمی و آموزشی تا سیاستمندی و دانستنی، همه در اسپاتیفای موجود است",

@@ -1,10 +1,11 @@
 import { draftMode } from 'next/headers'
 import { getClient } from 'lib/sanity.client'
 import { readToken } from 'lib/sanity.api'
-import { productDocBySlugQuery } from 'lib/sanity.queries'
+import { productDocBySlugQuery, productDocPaths } from 'lib/sanity.queries'
 import { urlForImage } from 'lib/sanity.image'
 import ProductOverlay from 'components/site/product/ProductOverlay'
 import ProductPageClient from '../../../sharifgpt-website/app/products/[slug]/page'
+import { notFound } from 'next/navigation'
 
 export default async function Page({ params }: { params: { slug: string } }) {
   const isDraft = draftMode().isEnabled
@@ -32,10 +33,20 @@ export default async function Page({ params }: { params: { slug: string } }) {
       }
     : null
 
+  if (!productForClient) {
+    notFound()
+  }
+
   return (
     <>
       <ProductOverlay product={product} />
-      <ProductPageClient params={params} />
+      <ProductPageClient productData={productForClient} />
     </>
   )
+}
+
+export async function generateStaticParams() {
+  const client = getClient()
+  const slugs: string[] = await client.fetch(productDocPaths)
+  return slugs.map((slug) => ({ slug }))
 }
