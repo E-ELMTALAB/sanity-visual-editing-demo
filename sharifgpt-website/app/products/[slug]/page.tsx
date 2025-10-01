@@ -96,7 +96,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
     inStock: productData?.inStock !== false,
     relatedProducts: Array.isArray(productData?.relatedProducts) ? productData.relatedProducts : [],
     relatedBlogs: Array.isArray(productData?.relatedBlogs) ? productData.relatedBlogs : [],
-  };
+  }
 
   const reviews = [
     {

@@ -22,13 +22,37 @@ export default async function Page({ params }: { params: { slug: string } }) {
         price: product.price || 0,
         originalPrice: product.originalPrice || 0,
         discountPercentage: product.discountPercentage || 0,
+        rating: product.rating || 0,
+        reviewCount: product.reviewCount || 0,
         imageUrl: product.image ? urlForImage(product.image)?.url() : null,
         galleryUrls: Array.isArray(product.gallery)
           ? product.gallery.map((img: any) => (img ? urlForImage(img)?.url() : null))
           : [],
         features: product.features || [],
         badges: product.badges || [],
+        options: product.options || [],
         inStock: product.inStock !== false,
+        relatedProducts: Array.isArray(product.relatedProducts) ? product.relatedProducts.map((related: any) => ({
+          id: related._id,
+          title: related.name,
+          slug: related.slug,
+          price: related.price,
+          originalPrice: related.originalPrice,
+          discountPercentage: related.discountPercentage,
+          image: related.image ? urlForImage(related.image)?.url() : null,
+          category: related.category,
+          rating: related.rating,
+          reviewCount: related.reviewCount
+        })) : [],
+        relatedBlogs: Array.isArray(product.relatedBlogs) ? product.relatedBlogs.map((blog: any) => ({
+          id: blog._id,
+          title: blog.title,
+          slug: blog.slug,
+          excerpt: blog.excerpt,
+          coverImage: blog.coverImage ? urlForImage(blog.coverImage)?.url() : null,
+          publishedAt: blog.publishedAt,
+          tags: blog.tags || []
+        })) : [],
         slug: product.slug,
       }
     : null
