@@ -171,6 +171,22 @@ export default defineType({
         }),
       ],
     }),
+    defineField({
+      name: 'magazinePosts',
+      title: 'Magazine Featured Posts',
+      description: 'Select blog posts to display in the SharifGPT Magazine section (max 3 posts)',
+      type: 'array',
+      validation: (Rule) => Rule.max(3),
+      of: [
+        defineArrayMember({
+          type: 'reference',
+          to: [{ type: 'post' }],
+          options: {
+            disableNew: true, // Only allow selecting existing blog posts
+          }
+        }),
+      ],
+    }),
   ],
   preview: {
     select: {

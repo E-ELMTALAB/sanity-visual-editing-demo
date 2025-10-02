@@ -47,10 +47,15 @@ export default async function RootPage() {
     imageUrl: course.image ? urlForImage(course.image)?.url() : null,
   }))
   
+  const magazinePosts = (data?.magazinePosts || []).map((post: any) => ({
+    ...post,
+    coverImageUrl: post.coverImage ? urlForImage(post.coverImage)?.url() : null,
+  }))
+  
   return (
     <>
-      <HeroPromoOverlay topBannerSlides={topBannerSlides} heroSlides={heroSlides} promoCards={promoCards} discountedProducts={discountedProducts} socialMediaProducts={socialMediaProducts} educationalProducts={educationalProducts} bestsellingCourses={bestsellingCourses} />
-      <SharifHome heroData={{ topBannerSlides, heroSlides, promoCards, discountedProducts, socialMediaProducts, educationalProducts, bestsellingCourses }} />
+      <HeroPromoOverlay topBannerSlides={topBannerSlides} heroSlides={heroSlides} promoCards={promoCards} discountedProducts={discountedProducts} socialMediaProducts={socialMediaProducts} educationalProducts={educationalProducts} bestsellingCourses={bestsellingCourses} magazinePosts={magazinePosts} />
+      <SharifHome heroData={{ topBannerSlides, heroSlides, promoCards, discountedProducts, socialMediaProducts, educationalProducts, bestsellingCourses, magazinePosts }} />
     </>
   )
 }

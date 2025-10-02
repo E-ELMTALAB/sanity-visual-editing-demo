@@ -6,9 +6,10 @@ interface HeroPromoOverlayProps {
   socialMediaProducts: any[]
   educationalProducts: any[]
   bestsellingCourses: any[]
+  magazinePosts: any[]
 }
 
-export default function HeroPromoOverlay({ topBannerSlides, heroSlides, promoCards, discountedProducts, socialMediaProducts, educationalProducts, bestsellingCourses }: HeroPromoOverlayProps) {
+export default function HeroPromoOverlay({ topBannerSlides, heroSlides, promoCards, discountedProducts, socialMediaProducts, educationalProducts, bestsellingCourses, magazinePosts }: HeroPromoOverlayProps) {
   return (
     <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0 }}>
       {topBannerSlides?.map((s, i) => (
@@ -104,6 +105,21 @@ export default function HeroPromoOverlay({ topBannerSlides, heroSlides, promoCar
           <span>{course?.duration}</span>
           <span>{course?.rating}</span>
           <span>{course?.slug}</span>
+        </div>
+      ))}
+      {magazinePosts?.map((post, i) => (
+        <div
+          key={`magazine-${i}`}
+          data-sanity-id={post?._id}
+          data-sanity-type="home.magazinePosts"
+          data-sanity-index={i}
+        >
+          <span>{post?.title}</span>
+          <span>{post?.excerpt}</span>
+          <span>{post?.slug}</span>
+          <span>{post?.tags?.length || 0}</span>
+          <span>{post?.rating || 0}</span>
+          <span>{post?.reviewCount || 0}</span>
         </div>
       ))}
     </div>

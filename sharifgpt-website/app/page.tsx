@@ -166,7 +166,7 @@ const PromoCard = ({ item }) => {
   )
 }
 
-export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: HeroSlide[]; heroSlides?: HeroSlide[]; promoCards?: PromoCard[]; discountedProducts?: DiscountedProduct[]; socialMediaProducts?: SocialMediaProduct[]; educationalProducts?: EducationalProduct[]; bestsellingCourses?: BestsellingCourse[] } }) {
+export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: HeroSlide[]; heroSlides?: HeroSlide[]; promoCards?: PromoCard[]; discountedProducts?: DiscountedProduct[]; socialMediaProducts?: SocialMediaProduct[]; educationalProducts?: EducationalProduct[]; bestsellingCourses?: BestsellingCourse[]; magazinePosts?: any[] } }) {
   const topBannerSlides = heroData?.topBannerSlides || []
   const heroSlides = heroData?.heroSlides || []
   const promoCards = heroData?.promoCards || []
@@ -174,6 +174,7 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
   const socialMediaProductsFromSanity = heroData?.socialMediaProducts || []
   const educationalProductsFromSanity = heroData?.educationalProducts || []
   const bestsellingCoursesFromSanity = heroData?.bestsellingCourses || []
+  const magazinePostsFromSanity = heroData?.magazinePosts || []
   const [isStoryViewerOpen, setIsStoryViewerOpen] = useState(false)
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -1825,122 +1826,66 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
         </section>
         )}
 
-        {/* SharifGPT Magazine section with top 3 articles */}
-        <section className="mb-16 sm:mb-20">
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-3">مجله شریف جی پی تی</h2>
-            <p className="text-gray-500 text-sm sm:text-base max-w-2xl mx-auto">
-              بهترین پرامپت ها و آموزش ها و اخبار جدید رو تو مجله شریف پیدا کن!
-            </p>
-          </div>
+        {/* SharifGPT Magazine section with selected blog posts */}
+        {magazinePostsFromSanity.length > 0 && (
+          <section className="mb-16 sm:mb-20">
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-3">مجله شریف جی پی تی</h2>
+              <p className="text-gray-500 text-sm sm:text-base max-w-2xl mx-auto">
+                بهترین پرامپت ها و آموزش ها و اخبار جدید رو تو مجله شریف پیدا کن!
+              </p>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 text-right">
-            {/* Article 1 - Photo Design Prompts */}
-            <Link
-              href="/blog/1"
-              className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
-            >
-              <div className="relative">
-                <img
-                  src="/photo-editing-design-interface-colorful-creative-t.jpg"
-                  alt="پرامپت طراحی عکس"
-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-4 left-4">
-                  <div className="bg-gradient-to-r from-green-400 to-green-600 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                    <span>#</span>
-                    <span>1</span>
-                  </div>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors">
-                  پرامپت طراحی عکس
-                </h3>
-                <p className="text-gray-600 text-sm mb-4">بیشترین بازدید در هفته اخیر</p>
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-1">
-                    <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                    </svg>
-                    <span className="text-gray-700 font-medium">4.9</span>
-                  </div>
-                  <span className="text-gray-500">2.1K بازدید</span>
-                </div>
-              </div>
-            </Link>
-
-            {/* Article 2 - Advanced ChatGPT Tutorial */}
-            <Link
-              href="/blog/2"
-              className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
-            >
-              <div className="relative">
-                <img
-                  src="/chatgpt-interface-ai-chat-conversation-modern-blue.jpg"
-                  alt="پیشرفته ChatGPT آموزش"
-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-gradient-to-r from-cyan-400 to-blue-600 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                    <span>#</span>
-                    <span>2</span>
-                  </div>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">
-                  پیشرفته ChatGPT آموزش
-                </h3>
-                <p className="text-gray-600 text-sm mb-4">تکنیک‌های حرفه‌ای پرامپت نویسی</p>
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-1">
-                    <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                    </svg>
-                    <span className="text-gray-700 font-medium">4.8</span>
-                  </div>
-                  <span className="text-gray-500">1.8K بازدید</span>
-                </div>
-              </div>
-            </Link>
-
-            {/* Article 3 - AI in Business */}
-            <Link
-              href="/blog/3"
-              className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
-            >
-              <div className="relative">
-                <img
-                  src="/business-analytics-dashboard-charts-graphs-data-vi.jpg"
-                  alt="هوش مصنوعی در کسب و کار"
-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-4 right-4">
-                  <div className="bg-gradient-to-r from-purple-500 to-purple-700 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                    <span>#</span>
-                    <span>3</span>
-                  </div>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors">
-                  هوش مصنوعی در کسب و کار
-                </h3>
-                <p className="text-gray-600 text-sm mb-4">راهکارهای عملی برای شرکت‌ها</p>
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-1">
-                    <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                    </svg>
-                    <span className="text-gray-700 font-medium">4.7</span>
-                  </div>
-                  <span className="text-gray-500">1.5K بازدید</span>
-                </div>
-              </div>
-            </Link>
-          </div>
-        </section>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 text-right">
+              {magazinePostsFromSanity.map((post, index) => {
+                const colors = [
+                  { bg: 'from-green-400 to-green-600', hover: 'text-green-600' },
+                  { bg: 'from-cyan-400 to-blue-600', hover: 'text-blue-600' },
+                  { bg: 'from-purple-500 to-purple-700', hover: 'text-purple-600' }
+                ]
+                const color = colors[index % colors.length]
+                const position = index === 0 ? 'left-4' : index === 1 ? 'left-1/2 transform -translate-x-1/2' : 'right-4'
+                
+                return (
+                  <Link
+                    key={post._id}
+                    href={`/blog/${post.slug}`}
+                    className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
+                  >
+                    <div className="relative">
+                      <img
+                        src={post.coverImageUrl || "/placeholder.svg"}
+                        alt={post.title}
+                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className={`absolute top-4 ${position}`}>
+                        <div className={`bg-gradient-to-r ${color.bg} text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1`}>
+                          <span>#</span>
+                          <span>{index + 1}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <h3 className={`text-lg font-bold text-gray-800 mb-2 group-hover:${color.hover} transition-colors`}>
+                        {post.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-4">{post.excerpt || 'مقاله جذاب و کاربردی'}</p>
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-1">
+                          <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                          </svg>
+                          <span className="text-gray-700 font-medium">{post.rating || 4.5}</span>
+                        </div>
+                        <span className="text-gray-500">{post.reviewCount || 0} بازدید</span>
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </section>
+        )}
 
         <section className="mb-16 sm:mb-20 text-center">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800">ما رو دنبال کنید</h2>

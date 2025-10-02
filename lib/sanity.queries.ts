@@ -147,6 +147,17 @@ export const sharifHeroQuery = groq`
       level,
       image,
       "slug": slug.current
+    },
+    "magazinePosts": magazinePosts[]->{
+      _id,
+      title,
+      "slug": slug.current,
+      excerpt,
+      coverImage,
+      tags,
+      publishedAt,
+      rating,
+      reviewCount
     }
   }
 `
