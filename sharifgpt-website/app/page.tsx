@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback } from "react"
 import MobileMenu from "../components/mobile-menu"
 import RobotAssistant from "../components/robot-assistant"
 import ProductCard from "@/components/product-card"
-import CartDropdown from "@/components/cart-dropdown" // Assuming CartDropdown component exists
+import CartDropdown from "@/components/cart-dropdown" // Assuming CartDropdown omponent exists
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Navigation, Pagination, Autoplay } from "swiper/modules"
 import "swiper/css"
