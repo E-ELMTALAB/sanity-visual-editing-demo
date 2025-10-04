@@ -1,7 +1,7 @@
 "use client"
 import Link from "next/link"
 import { useState } from "react"
-import MobileMenu from "../../components/mobile-menu"
+import MobileMenu from "@/components/mobile-menu"
 import Footer from "@/components/footer"
 
 export default function AboutPage() {

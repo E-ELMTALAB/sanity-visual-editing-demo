@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
-import MobileMenu from "../../components/mobile-menu" // Fixed import path to correct location
+import MobileMenu from "@/components/mobile-menu" // Fixed import path to correct location
 
 export default function Enterprise() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
