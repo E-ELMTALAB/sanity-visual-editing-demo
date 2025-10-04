@@ -45,7 +45,6 @@
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
     "@sanity/client": "6.15.1",
-    "@sanity/demo": "2.0.0",
     "@sanity/icons": "2.10.3",
     "@sanity/image-url": "1.0.2",
     "@sanity/preview-url-secret": "1.6.4",
