@@ -73,6 +73,20 @@ export default defineType({
       options: { layout: 'tags' },
     }),
     defineField({
+      name: 'rating',
+      title: 'Rating',
+      type: 'number',
+      description: 'Rating out of 5 (e.g., 4.5)',
+      validation: (rule) => rule.min(0).max(5),
+    }),
+    defineField({
+      name: 'reviewCount',
+      title: 'Review Count',
+      type: 'number',
+      description: 'Number of reviews or views',
+      validation: (rule) => rule.min(0),
+    }),
+    defineField({
       name: 'body',
       title: 'Body',
       type: 'array',

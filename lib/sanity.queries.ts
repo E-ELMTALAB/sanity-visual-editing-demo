@@ -152,7 +152,7 @@ export const sharifHeroQuery = groq`
       _id,
       title,
       "slug": slug.current,
-      excerpt,
+      "excerpt": pt::text(excerpt),
       coverImage,
       tags,
       publishedAt,
@@ -233,7 +233,7 @@ export const productDocBySlugQuery = groq`
       _id,
       title,
       "slug": slug.current,
-      excerpt,
+      "excerpt": pt::text(excerpt),
       coverImage,
       publishedAt,
       tags
