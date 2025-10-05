@@ -69,6 +69,27 @@ export default defineType({
         hotspot: true,
       },
     }),
+    defineField({
+      name: 'robotsTxt',
+      title: 'Robots.txt Content',
+      type: 'text',
+      rows: 10,
+      description: 'Custom robots.txt content. Leave empty to use default robots.txt directives.',
+      placeholder: `User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://sharifgpt.com/sitemap.xml
+
+# Disallow common sensitive paths
+Disallow: /api/
+Disallow: /studio/
+Disallow: /_next/
+Disallow: /admin/
+Disallow: /login
+Disallow: /cart
+Disallow: /checkout`,
+    }),
   ],
   preview: {
     prepare() {
