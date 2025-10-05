@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       title: seo.openGraphTitle || product.name || '',
       description: seo.openGraphDescription || product.description || '',
       images: ogImageUrl ? [{ url: ogImageUrl }] : [],
-      type: 'product',
+      type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
