@@ -6,6 +6,48 @@ import { urlForImage } from 'lib/sanity.image'
 import ProductOverlay from 'components/site/product/ProductOverlay'
 import ProductPageClient from '../../../sharifgpt-website/app/products/[slug]/page'
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const isDraft = draftMode().isEnabled
+  const client = getClient(isDraft ? { token: readToken } : undefined)
+  const product = await client.fetch<any | null>(productDocBySlugQuery, { slug: params.slug })
+
+  if (!product) {
+    return {
+      title: 'محصول یافت نشد',
+      description: 'محصول مورد نظر یافت نشد',
+    }
+  }
+
+  const seo = product.seo || {}
+  const imageUrl = product.image ? urlForImage(product.image)?.url() : undefined
+  const ogImageUrl = seo.openGraphImage ? urlForImage(seo.openGraphImage)?.url() : imageUrl
+
+  return {
+    title: seo.metaTitle || product.name || 'محصول',
+    description: seo.metaDescription || product.description || '',
+    openGraph: {
+      title: seo.openGraphTitle || product.name || '',
+      description: seo.openGraphDescription || product.description || '',
+      images: ogImageUrl ? [{ url: ogImageUrl }] : [],
+      type: 'product',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seo.openGraphTitle || product.name || '',
+      description: seo.openGraphDescription || product.description || '',
+      images: ogImageUrl ? [ogImageUrl] : [],
+    },
+    alternates: {
+      canonical: seo.canonicalUrl || `https://sharifgpt.com/products/${params.slug}`,
+    },
+    robots: {
+      index: seo.robotsMeta?.includes('noindex') ? false : true,
+      follow: seo.robotsMeta?.includes('nofollow') ? false : true,
+    },
+  }
+}
 
 export default async function Page({ params }: { params: { slug: string } }) {
   const isDraft = draftMode().isEnabled

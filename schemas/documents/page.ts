@@ -6,12 +6,17 @@ export default defineType({
   name: 'page',
   title: 'Page',
   icon: DocumentIcon,
+  groups: [
+    { name: 'content', title: 'Content', default: true },
+    { name: 'seo', title: 'SEO' },
+  ],
   fields: [
     defineField({
       type: 'string',
       name: 'title',
       title: 'Title',
       validation: (rule) => rule.required(),
+      group: 'content',
     }),
     defineField({
       type: 'slug',
@@ -21,6 +26,7 @@ export default defineType({
         source: 'title',
       },
       validation: (rule) => rule.required(),
+      group: 'content',
     }),
     defineField({
       name: 'overview',
@@ -50,6 +56,7 @@ export default defineType({
         }),
       ],
       validation: (rule) => rule.max(155).required(),
+      group: 'content',
     }),
     defineField({
       type: 'array',
@@ -114,6 +121,79 @@ export default defineType({
           ],
         }),
         defineField({ type: 'youtube' as any }),
+      ],
+      group: 'content',
+    }),
+
+    // SEO Fields
+    defineField({
+      name: 'seo',
+      title: 'SEO Settings',
+      type: 'object',
+      group: 'seo',
+      fields: [
+        defineField({
+          name: 'metaTitle',
+          title: 'Meta Title',
+          type: 'string',
+          description: 'SEO title for this page (recommended: 50-60 characters). Leave empty to use page title.',
+          validation: (Rule) => Rule.max(60).warning('Should be under 60 characters for optimal display'),
+        }),
+        defineField({
+          name: 'metaDescription',
+          title: 'Meta Description',
+          type: 'text',
+          rows: 3,
+          description: 'SEO description for this page (recommended: 150-160 characters). Leave empty to use overview.',
+          validation: (Rule) => Rule.max(160).warning('Should be under 160 characters for optimal display'),
+        }),
+        defineField({
+          name: 'canonicalUrl',
+          title: 'Canonical URL',
+          type: 'url',
+          description: 'The canonical URL for this page (leave empty to use default)',
+        }),
+        defineField({
+          name: 'robotsMeta',
+          title: 'Meta Robots',
+          type: 'string',
+          options: {
+            list: [
+              { title: 'index, follow (default)', value: 'index,follow' },
+              { title: 'noindex, nofollow', value: 'noindex,nofollow' },
+              { title: 'index, nofollow', value: 'index,nofollow' },
+              { title: 'noindex, follow', value: 'noindex,follow' },
+            ],
+          },
+          initialValue: 'index,follow',
+        }),
+        defineField({
+          name: 'openGraphTitle',
+          title: 'Open Graph Title',
+          type: 'string',
+          description: 'Title for social media sharing (recommended: 60-90 characters)',
+        }),
+        defineField({
+          name: 'openGraphDescription',
+          title: 'Open Graph Description',
+          type: 'text',
+          rows: 2,
+          description: 'Description for social media sharing (recommended: 100-200 characters)',
+        }),
+        defineField({
+          name: 'openGraphImage',
+          title: 'Open Graph Image',
+          type: 'image',
+          description: 'Image for social media sharing (recommended: 1200x630px)',
+          options: { hotspot: true },
+        }),
+        defineField({
+          name: 'structuredData',
+          title: 'Structured Data (JSON-LD)',
+          type: 'text',
+          rows: 8,
+          description: 'Add custom Schema.org structured data for rich snippets',
+        }),
       ],
     }),
   ],
