@@ -17,9 +17,13 @@ import duration from 'schemas/objects/duration'
 import product from 'schemas/documents/product'
 import productOption from 'schemas/objects/productOption'
 import faq from 'schemas/documents/faq'
+import course from 'schemas/documents/course'
+import instructor from 'schemas/documents/instructor'
 import milestone from 'schemas/objects/milestone'
 import timeline from 'schemas/objects/timeline'
 import youtube from 'schemas/objects/youtube'
+import syllabusModule from 'schemas/objects/syllabusModule'
+import lesson from 'schemas/objects/lesson'
 import discountedProduct from 'schemas/objects/discountedProduct'
 import socialMediaProduct from 'schemas/objects/socialMediaProduct'
 import educationalProduct from 'schemas/objects/educationalProduct'
@@ -49,6 +53,8 @@ export default defineConfig({
       post,
       product,
       faq,
+      course,
+      instructor,
       // Objects
       productOption,
       milestone,
@@ -59,6 +65,8 @@ export default defineConfig({
       educationalProduct,
       bestsellingCourse,
       topBannerSlide,
+      syllabusModule,
+      lesson,
     ],
   },
   plugins: [

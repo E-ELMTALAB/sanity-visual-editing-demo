@@ -214,3 +214,95 @@ export interface FAQ {
     keywords?: string[]
   }
 }
+
+export interface Lesson {
+  title?: string
+  duration?: string
+  description?: string
+  isPreview?: boolean
+  videoUrl?: string
+}
+
+export interface SyllabusModule {
+  title?: string
+  description?: string
+  duration?: string
+  order?: number
+  lessons?: Lesson[]
+  isLocked?: boolean
+}
+
+export interface Instructor {
+  _id?: string
+  name?: string
+  slug?: {
+    current?: string
+  }
+  title?: string
+  bio?: string
+  image?: Image
+  experience?: string
+  expertise?: string[]
+  totalStudents?: number
+  totalCourses?: number
+  rating?: number
+  email?: string
+  website?: string
+  socialMedia?: {
+    linkedin?: string
+    twitter?: string
+    instagram?: string
+    github?: string
+    telegram?: string
+  }
+  seo?: {
+    metaTitle?: string
+    metaDescription?: string
+  }
+}
+
+export interface CoursePayload {
+  _id?: string
+  title?: string
+  slug?: {
+    current?: string
+  }
+  shortDescription?: string
+  longDescription?: string
+  price?: number
+  originalPrice?: number
+  discountPercentage?: number
+  category?: string
+  level?: string
+  language?: string
+  duration?: string
+  totalSessions?: number
+  rating?: number
+  reviewCount?: number
+  totalStudents?: number
+  features?: string[]
+  requirements?: string[]
+  learningOutcomes?: string[]
+  targetAudience?: string[]
+  syllabus?: SyllabusModule[]
+  featuredImage?: Image
+  videoPreview?: string
+  gallery?: Image[]
+  isPublished?: boolean
+  isFeatured?: boolean
+  badge?: string
+  instructor?: Instructor
+  relatedCourses?: CoursePayload[]
+  relatedPosts?: PostListItemPayload[]
+  seo?: {
+    metaTitle?: string
+    metaDescription?: string
+    canonicalUrl?: string
+    robotsMeta?: string
+    structuredData?: string
+    keywords?: string[]
+    openGraphTitle?: string
+    openGraphDescription?: string
+    openGraphImage?: Image
+  }
+}

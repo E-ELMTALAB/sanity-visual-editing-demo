@@ -346,25 +346,143 @@ export const allFaqsQuery = groq`
   }
 `
 
-// Course by slug query
+// Course queries
 export const courseBySlugQuery = groq`
-  *[_type == "home"][0]{
-    "course": bestsellingCourses[slug.current == $slug][0]{
-      _key,
-      _type,
+  *[_type == "course" && slug.current == $slug][0]{
+    _id,
+    title,
+    slug,
+    shortDescription,
+    longDescription,
+    price,
+    originalPrice,
+    discountPercentage,
+    category,
+    level,
+    language,
+    duration,
+    totalSessions,
+    rating,
+    reviewCount,
+    totalStudents,
+    features,
+    requirements,
+    learningOutcomes,
+    targetAudience,
+    syllabus[]{
       title,
       description,
+      duration,
+      order,
+      lessons[]{
+        title,
+        duration,
+        description,
+        isPreview,
+        videoUrl
+      },
+      isLocked
+    },
+    featuredImage,
+    videoPreview,
+    gallery,
+    isPublished,
+    isFeatured,
+    badge,
+    instructor->{
+      _id,
+      name,
+      slug,
+      title,
+      bio,
+      image,
+      experience,
+      expertise,
+      totalStudents,
+      totalCourses,
+      rating,
+      socialMedia
+    },
+    relatedCourses[]->{
+      _id,
+      title,
+      slug,
+      shortDescription,
       price,
       originalPrice,
-      instructor,
-      duration,
-      students,
       rating,
       reviewCount,
+      featuredImage,
       category,
-      level,
-      image,
-      "slug": slug.current
+      level
+    },
+    relatedPosts[]->{
+      _id,
+      title,
+      slug,
+      excerpt,
+      coverImage,
+      publishedAt
+    },
+    seo
+  }
+`
+
+// All courses query
+export const allCoursesQuery = groq`
+  *[_type == "course" && isPublished == true] | order(_createdAt desc) {
+    _id,
+    title,
+    slug,
+    shortDescription,
+    price,
+    originalPrice,
+    discountPercentage,
+    rating,
+    reviewCount,
+    totalStudents,
+    featuredImage,
+    category,
+    level,
+    badge,
+    instructor->{
+      name
     }
-  }.course
+  }
+`
+
+// Featured courses query
+export const featuredCoursesQuery = groq`
+  *[_type == "course" && isPublished == true && isFeatured == true] | order(_createdAt desc) {
+    _id,
+    title,
+    slug,
+    shortDescription,
+    price,
+    originalPrice,
+    featuredImage,
+    rating,
+    reviewCount
+  }
+`
+
+// Instructor by ID query
+export const instructorByIdQuery = groq`
+  *[_type == "instructor" && _id == $instructorId][0]{
+    _id,
+    name,
+    slug,
+    title,
+    bio,
+    image,
+    experience,
+    expertise,
+    totalStudents,
+    totalCourses,
+    rating,
+    email,
+    website,
+    socialMedia,
+    seo
+  }
 `
