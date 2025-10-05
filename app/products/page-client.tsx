@@ -3,9 +3,9 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import ProductCard from "@/components/product-card"
+import ProductCard from "components/product-card"
 import type { ProductDoc } from "types"
-import { urlForImage } from "@/lib/sanity.image"
+import { urlForImage } from "lib/sanity.image"
 
 interface ProductsPageClientProps {
   productsData?: ProductDoc[]

@@ -1,9 +1,9 @@
 import { draftMode } from 'next/headers'
-import { getClient } from '@/lib/sanity.client'
-import { readToken } from '@/lib/sanity.api'
-import { productsListQuery } from '@/lib/sanity.queries'
+import { getClient } from 'lib/sanity.client'
+import { readToken } from 'lib/sanity.api'
+import { productsListQuery } from 'lib/sanity.queries'
 import type { ProductDoc } from 'types'
-import ProductsOverlay from '@/components/site/product/ProductsOverlay'
+import ProductsOverlay from 'components/site/product/ProductsOverlay'
 import ProductsPageClient from './page-client'
 
 export const metadata = {
