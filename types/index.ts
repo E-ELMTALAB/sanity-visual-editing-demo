@@ -197,3 +197,20 @@ export interface PostPayload extends PostListItemPayload {
   author?: string
   body?: PortableTextBlock[]
 }
+
+export interface FAQ {
+  _id?: string
+  _key?: string
+  _type?: string
+  question?: string
+  answer?: string
+  category?: string
+  order?: number
+  pageLocations?: string[]
+  isActive?: boolean
+  tags?: string[]
+  seo?: {
+    includeInStructuredData?: boolean
+    keywords?: string[]
+  }
+}

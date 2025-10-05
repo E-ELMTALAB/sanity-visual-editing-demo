@@ -4,14 +4,15 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import ProductCard from "components/product-card"
-import type { ProductDoc } from "types"
+import type { ProductDoc, FAQ } from "types"
 import { urlForImage } from "lib/sanity.image"
 
 interface ProductsPageClientProps {
   productsData?: ProductDoc[]
+  faqsData?: FAQ[]
 }
 
-export default function ProductsPageClient({ productsData = [] }: ProductsPageClientProps) {
+export default function ProductsPageClient({ productsData = [], faqsData = [] }: ProductsPageClientProps) {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [sortBy, setSortBy] = useState("popular")
   const [showFilters, setShowFilters] = useState(false)
@@ -69,31 +70,13 @@ export default function ProductsPageClient({ productsData = [] }: ProductsPageCl
     { id: "sim-card", name: "سیمکارت", count: categoryCounts['sim-card'] || 0 },
   ]
 
-  const faqs = [
-    {
-      id: 1,
-      question: "اسپاتیفای چیست؟",
-      answer:
-        "اسپاتیفای یکی از بزرگ‌ترین پلتفرم‌های پخش موسیقی آنلاین در جهان است که دسترسی به میلیون‌ها آهنگ، پادکست و محتوای صوتی را فراهم می‌کند.",
-    },
-    {
-      id: 2,
-      question: "فرق پلن فعلی و اندیویجوال در اسپاتیفای چیست؟",
-      answer:
-        "پلن اندیویجوال برای یک کاربر طراحی شده و شامل تمام قابلیت‌های پریمیوم است، در حالی که پلن فعلی ممکن است محدودیت‌هایی داشته باشد.",
-    },
-    {
-      id: 3,
-      question: "زمان فعالسازی سفارشات چقدر است؟",
-      answer: "معمولاً سفارشات در کمتر از 24 ساعت فعال می‌شوند. در مواردی ممکن است تا 48 ساعت زمان ببرد.",
-    },
-    {
-      id: 4,
-      question: "نحوه وارد شدن به اکانت اسپاتیفای؟",
-      answer:
-        "پس از خرید، اطلاعات لاگین شامل ایمیل و رمز عبور برای شما ارسال می‌شود. با این اطلاعات می‌توانید وارد اکانت شوید.",
-    },
-  ]
+  // Transform FAQ data from Sanity
+  const faqs = faqsData.map((faq, i) => ({
+    id: faq._id || String(i + 1),
+    question: faq.question || '',
+    answer: faq.answer || '',
+    category: faq.category,
+  }))
 
   const relatedArticles = [
     {
@@ -452,37 +435,39 @@ export default function ProductsPageClient({ productsData = [] }: ProductsPageCl
               ))}
             </div>
 
-            {/* FAQ Section */}
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">سوالات متداول</h2>
-              <div className="space-y-4">
-                {faqs.map((faq) => (
-                  <div key={faq.id} className="border border-gray-200 rounded-lg">
-                    <button
-                      onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
-                      className="w-full text-right p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="font-medium text-gray-800">{faq.question}</span>
-                      <svg
-                        className={`w-5 h-5 text-gray-500 transition-transform ${
-                          expandedFaq === faq.id ? "rotate-180" : ""
-                        }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+            {/* FAQ Section - Only show if FAQs exist */}
+            {faqs.length > 0 && (
+              <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">سوالات متداول</h2>
+                <div className="space-y-4">
+                  {faqs.map((faq) => (
+                    <div key={faq.id} className="border border-gray-200 rounded-lg">
+                      <button
+                        onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
+                        className="w-full text-right p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    {expandedFaq === faq.id && (
-                      <div className="px-4 pb-4 text-gray-600 border-t border-gray-100">
-                        <p className="pt-3">{faq.answer}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                        <span className="font-medium text-gray-800">{faq.question}</span>
+                        <svg
+                          className={`w-5 h-5 text-gray-500 transition-transform ${
+                            expandedFaq === faq.id ? "rotate-180" : ""
+                          }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      {expandedFaq === faq.id && (
+                        <div className="px-4 pb-4 text-gray-600 border-t border-gray-100">
+                          <p className="pt-3">{faq.answer}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Related Articles Section */}
             <div className="bg-white rounded-xl shadow-sm p-6 mb-8">

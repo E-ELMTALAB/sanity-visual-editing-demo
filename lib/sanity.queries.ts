@@ -315,6 +315,37 @@ export const productCategoriesQuery = groq`
   array::unique(*[_type == "product" && defined(category)].category)
 `
 
+// FAQ queries - fetch FAQs by page location
+export const faqsByPageQuery = groq`
+  *[_type == "faq" && $pageLocation in pageLocations && isActive == true] | order(order asc, _createdAt asc) {
+    _id,
+    _key,
+    question,
+    answer,
+    category,
+    order,
+    pageLocations,
+    tags,
+    seo
+  }
+`
+
+// All FAQs query
+export const allFaqsQuery = groq`
+  *[_type == "faq"] | order(order asc, _createdAt asc) {
+    _id,
+    _key,
+    question,
+    answer,
+    category,
+    order,
+    pageLocations,
+    isActive,
+    tags,
+    seo
+  }
+`
+
 // Course by slug query
 export const courseBySlugQuery = groq`
   *[_type == "home"][0]{

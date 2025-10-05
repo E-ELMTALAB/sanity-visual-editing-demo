@@ -1,9 +1,10 @@
 import { draftMode } from 'next/headers'
 import { getClient } from 'lib/sanity.client'
 import { readToken } from 'lib/sanity.api'
-import { productsListQuery } from 'lib/sanity.queries'
-import type { ProductDoc } from 'types'
+import { productsListQuery, faqsByPageQuery } from 'lib/sanity.queries'
+import type { ProductDoc, FAQ } from 'types'
 import ProductsOverlay from 'components/site/product/ProductsOverlay'
+import FAQOverlay from 'components/site/product/FAQOverlay'
 import ProductsPageClient from './page-client'
 
 export const metadata = {
@@ -15,16 +16,21 @@ export default async function ProductsPage() {
   const isDraft = draftMode().isEnabled
   const client = getClient(isDraft ? { token: readToken } : undefined)
   
-  // Fetch all products from Sanity
+  // Fetch all products and FAQs from Sanity
   const products = await client.fetch<ProductDoc[]>(productsListQuery)
-
+  const faqs = await client.fetch<FAQ[]>(faqsByPageQuery, { pageLocation: 'products' })
+  
   return (
     <>
-      {/* Hidden overlay for Visual Editing */}
+      {/* Hidden overlays for Visual Editing */}
       <ProductsOverlay products={products || []} />
+      <FAQOverlay faqs={faqs || []} />
       
       {/* Client component with actual UI */}
-      <ProductsPageClient productsData={products || []} />
+      <ProductsPageClient 
+        productsData={products || []} 
+        faqsData={faqs || []}
+      />
     </>
   )
 }
