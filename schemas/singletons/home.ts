@@ -8,13 +8,93 @@ export default defineType({
   icon: HomeIcon,
   // Uncomment below to have edits publish automatically as you type
   // liveEdit: true,
+  groups: [
+    { name: 'content', title: 'Content', default: true },
+    { name: 'seo', title: 'SEO' },
+    { name: 'settings', title: 'Settings' },
+  ],
   fields: [
+    // SEO Fields Group
+    defineField({
+      name: 'seo',
+      title: 'SEO Settings',
+      type: 'object',
+      group: 'seo',
+      description: 'Homepage SEO optimization settings',
+      fields: [
+        defineField({
+          name: 'metaTitle',
+          title: 'Meta Title',
+          type: 'string',
+          description: 'SEO title for homepage (recommended: 50-60 characters)',
+          validation: (Rule) => Rule.max(60).warning('Should be under 60 characters for optimal display')
+        }),
+        defineField({
+          name: 'metaDescription',
+          title: 'Meta Description',
+          type: 'text',
+          rows: 3,
+          description: 'SEO description for homepage (recommended: 150-160 characters)',
+          validation: (Rule) => Rule.max(160).warning('Should be under 160 characters for optimal display')
+        }),
+        defineField({
+          name: 'canonicalUrl',
+          title: 'Canonical URL',
+          type: 'url',
+          description: 'Canonical URL for homepage (leave empty to use default)',
+        }),
+        defineField({
+          name: 'robotsMeta',
+          title: 'Meta Robots',
+          type: 'string',
+          options: {
+            list: [
+              { title: 'index, follow (default)', value: 'index,follow' },
+              { title: 'noindex, nofollow', value: 'noindex,nofollow' },
+              { title: 'index, nofollow', value: 'index,nofollow' },
+              { title: 'noindex, follow', value: 'noindex,follow' }
+            ]
+          },
+          initialValue: 'index,follow'
+        }),
+        defineField({
+          name: 'structuredData',
+          title: 'Structured Data (JSON-LD)',
+          type: 'text',
+          rows: 8,
+          description: 'Add custom Schema.org structured data for homepage',
+        }),
+        defineField({
+          name: 'openGraphTitle',
+          title: 'Open Graph Title',
+          type: 'string',
+          description: 'Title for social media sharing (recommended: 60-90 characters)',
+        }),
+        defineField({
+          name: 'openGraphDescription',
+          title: 'Open Graph Description',
+          type: 'text',
+          rows: 2,
+          description: 'Description for social media sharing (recommended: 100-200 characters)',
+        }),
+        defineField({
+          name: 'openGraphImage',
+          title: 'Open Graph Image',
+          type: 'image',
+          description: 'Image for social media sharing (recommended: 1200x630px)',
+          options: { hotspot: true },
+        }),
+      ],
+    }),
+
+    // Content Fields Group
     defineField({
       name: 'title',
       description: 'This field is the title of your personal website.',
       title: 'Title',
       type: 'string',
       validation: (rule) => rule.required(),
+      group: 'content',
     }),
     defineField({
       name: 'overview',
@@ -57,6 +137,7 @@ export default defineType({
         }),
       ],
       validation: (rule) => rule.max(155).required(),
+      group: 'content',
     }),
     defineField({
       name: 'showcaseProjects',
@@ -70,6 +151,7 @@ export default defineType({
           to: [{ type: 'project' }],
         }),
       ],
+      group: 'content',
     }),
     defineField({
       name: 'topBannerSlides',
@@ -82,6 +164,7 @@ export default defineType({
           type: 'topBannerSlide',
         }),
       ],
+      group: 'content',
     }),
     defineField({
       name: 'heroSlides',
@@ -102,6 +185,7 @@ export default defineType({
           ],
         }),
       ],
+      group: 'content',
     }),
     defineField({
       name: 'promoCards',
@@ -122,6 +206,7 @@ export default defineType({
           ],
         }),
       ],
+      group: 'content',
     }),
     defineField({
       name: 'discountedProducts',
@@ -134,6 +219,7 @@ export default defineType({
           type: 'discountedProduct',
         }),
       ],
+      group: 'content',
     }),
     defineField({
       name: 'socialMediaProducts',
@@ -146,6 +232,7 @@ export default defineType({
           type: 'socialMediaProduct',
         }),
       ],
+      group: 'content',
     }),
     defineField({
       name: 'educationalProducts',
@@ -158,6 +245,7 @@ export default defineType({
           type: 'educationalProduct',
         }),
       ],
+      group: 'content',
     }),
     defineField({
       name: 'bestsellingCourses',
@@ -170,6 +258,7 @@ export default defineType({
           type: 'bestsellingCourse',
         }),
       ],
+      group: 'content',
     }),
     defineField({
       name: 'magazinePosts',
@@ -186,6 +275,7 @@ export default defineType({
           }
         }),
       ],
+      group: 'content',
     }),
   ],
   preview: {

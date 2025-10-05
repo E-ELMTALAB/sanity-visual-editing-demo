@@ -58,6 +58,46 @@ export default defineType({
       options: {
         hotspot: true,
       },
+      fields: [
+        defineField({
+          name: 'alt',
+          type: 'string',
+          title: 'Alt Text',
+          description: 'SEO-friendly alt text for accessibility',
+          validation: (Rule) => Rule.required(),
+        }),
+        defineField({ name: 'caption', type: 'string', title: 'Caption' }),
+      ],
+    }),
+    defineField({
+      name: 'seo',
+      title: 'SEO Settings',
+      type: 'object',
+      description: 'SEO settings for this product',
+      fields: [
+        defineField({
+          name: 'metaTitle',
+          type: 'string',
+          title: 'Meta Title',
+          description: 'Product-specific meta title (overrides global)',
+          validation: (Rule) => Rule.max(60).warning('Should be under 60 characters'),
+        }),
+        defineField({
+          name: 'metaDescription',
+          type: 'text',
+          title: 'Meta Description',
+          rows: 2,
+          description: 'Product-specific meta description',
+          validation: (Rule) => Rule.max(160).warning('Should be under 160 characters'),
+        }),
+        defineField({
+          name: 'keywords',
+          type: 'array',
+          of: [{ type: 'string' }],
+          title: 'SEO Keywords',
+          description: 'Keywords for this product',
+        }),
+      ],
     }),
     defineField({
       name: 'slug',
