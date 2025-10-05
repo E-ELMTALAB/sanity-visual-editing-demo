@@ -8,7 +8,7 @@ import type { Metadata } from 'next'
 
 // @ts-ignore - TypeScript may not resolve this import correctly due to dynamic route folder naming
 import CoursesPageClient from './page-client'
-import CoursesListOverlay from '@/components/site/course/CoursesListOverlay'
+import CoursesListOverlay from '../../components/site/course/CoursesListOverlay'
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
