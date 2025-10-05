@@ -286,6 +286,35 @@ export const productBySlugQuery = groq`
   }.product
 `
 
+// Products listing query - fetch all product documents
+export const productsListQuery = groq`
+  *[_type == "product"] | order(_createdAt desc) {
+    _id,
+    _key,
+    _type,
+    name,
+    slug,
+    description,
+    category,
+    price,
+    originalPrice,
+    discountPercentage,
+    image,
+    features,
+    badges,
+    inStock,
+    rating,
+    reviewCount,
+    tags,
+    seo
+  }
+`
+
+// Product categories query - get unique categories
+export const productCategoriesQuery = groq`
+  array::unique(*[_type == "product" && defined(category)].category)
+`
+
 // Course by slug query
 export const courseBySlugQuery = groq`
   *[_type == "home"][0]{

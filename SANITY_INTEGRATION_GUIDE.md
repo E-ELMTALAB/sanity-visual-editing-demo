@@ -509,6 +509,127 @@ defineField({
 - [ ] **Monitor Production**: Watch for issues after deployment
 - [ ] **Rollback Plan**: Be ready to revert if needed
 
+## SEO Schema Requirements
+
+For optimal SEO performance, your Sanity schemas should support these essential features:
+
+### Core SEO Fields
+
+**Meta Data** (add to page/post documents):
+```typescript
+defineField({
+  name: 'seo',
+  title: 'SEO Settings',
+  type: 'object',
+  fields: [
+    defineField({ name: 'metaTitle', type: 'string', title: 'Meta Title', validation: (Rule) => Rule.max(60) }),
+    defineField({ name: 'metaDescription', type: 'text', title: 'Meta Description', rows: 3, validation: (Rule) => Rule.max(160) }),
+    defineField({ name: 'canonicalUrl', type: 'url', title: 'Canonical URL' }),
+    defineField({ name: 'robotsMeta', type: 'string', title: 'Meta Robots', options: { list: [
+      { title: 'index, follow', value: 'index,follow' },
+      { title: 'noindex, nofollow', value: 'noindex,nofollow' },
+      { title: 'index, nofollow', value: 'index,nofollow' },
+      { title: 'noindex, follow', value: 'noindex,follow' }
+    ]}}),
+  ],
+})
+```
+
+**URL Structure** (for clean URLs):
+```typescript
+defineField({
+  name: 'slug',
+  title: 'Slug',
+  type: 'slug',
+  options: { source: 'title', maxLength: 96 },
+  validation: (Rule) => Rule.required(),
+})
+```
+
+**Schema.org Markup**:
+```typescript
+defineField({
+  name: 'structuredData',
+  title: 'Structured Data (JSON-LD)',
+  type: 'text',
+  description: 'Add Schema.org structured data for rich snippets',
+})
+```
+
+### Content Optimization
+
+**Headings & Structure**:
+```typescript
+defineField({
+  name: 'headings',
+  title: 'Heading Structure',
+  type: 'array',
+  of: [
+    { type: 'string', name: 'h1', title: 'H1' },
+    { type: 'string', name: 'h2', title: 'H2' },
+    { type: 'string', name: 'h3', title: 'H3' },
+  ],
+})
+```
+
+**Image SEO**:
+```typescript
+defineField({
+  name: 'image',
+  type: 'image',
+  title: 'Featured Image',
+  options: { hotspot: true },
+  fields: [
+    defineField({ name: 'alt', type: 'string', title: 'Alt Text' }),
+    defineField({ name: 'caption', type: 'string', title: 'Caption' }),
+  ],
+})
+```
+
+**Taxonomy Management**:
+```typescript
+defineField({
+  name: 'categories',
+  title: 'Categories',
+  type: 'array',
+  of: [{ type: 'reference', to: [{ type: 'category' }] }],
+}),
+defineField({
+  name: 'tags',
+  title: 'Tags',
+  type: 'array',
+  of: [{ type: 'string' }],
+})
+```
+
+### Technical SEO
+
+**Sitemap & Redirects** (typically handled by plugins):
+- Use `sanity-plugin-sitemap` for automatic XML sitemap generation
+- Use `sanity-plugin-redirects` for 301/302 redirects
+- Configure robots.txt via Sanity Studio settings
+
+**Analytics Integration**:
+```typescript
+defineField({
+  name: 'analytics',
+  title: 'Analytics Settings',
+  type: 'object',
+  fields: [
+    defineField({ name: 'gaTrackingId', type: 'string', title: 'Google Analytics ID' }),
+    defineField({ name: 'gtmId', type: 'string', title: 'GTM Container ID' }),
+  ],
+})
+```
+
+### Implementation Tips
+
+1. **Use validation rules** for meta title/description length limits
+2. **Create reusable SEO object** and reference it in page/post schemas
+3. **Install SEO plugins** for advanced features (sitemap, redirects)
+4. **Add preview URLs** in Next.js config for social media previews
+5. **Implement lazy loading** for images automatically in components
+
 ### 🎯 **Best Practices**
 
 1. **Always use optional chaining** (`?.`) for new fields

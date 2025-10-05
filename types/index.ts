@@ -154,6 +154,7 @@ export interface BestsellingCourse {
 
 export interface ProductDoc {
   _id?: string
+  _key?: string
   _type?: string
   name?: string
   description?: string
@@ -167,7 +168,19 @@ export interface ProductDoc {
   features?: string[]
   badges?: string[]
   inStock?: boolean
-  slug?: string
+  slug?: {
+    current?: string
+  }
+  rating?: number
+  reviewCount?: number
+  tags?: string[]
+  seo?: {
+    metaTitle?: string
+    metaDescription?: string
+    canonicalUrl?: string
+    robotsMeta?: string
+    structuredData?: string
+  }
 }
 
 export interface PostListItemPayload {
