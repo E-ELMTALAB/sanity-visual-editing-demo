@@ -4,7 +4,8 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useCart } from "../../../contexts/cart-context"
 import CartDropdown from "../../../components/cart-dropdown"
-import DynamicHeading from "../../../components/shared/DynamicHeading"
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface ProductPageProps {
   productData: any
@@ -40,7 +41,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
   }
 
   const handleAddToCart = () => {
-    const selectedProductOption = product.options.find((opt) => opt.id === selectedOption)
+    const selectedProductOption = product.options.find((opt: any) => opt.id === selectedOption)
     addItem({
       id: product.id,
       title: product.title,
@@ -74,6 +75,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
     description: productData?.description ||
       "اسپاتیفای یکی از محبوب‌ترین سرویس‌های پخش موسیقی در جهان است که دسترسی به میلیون‌ها آهنگ، پادکست و محتوای صوتی را فراهم می‌کند. با خرید اکانت اسپاتیفای از فروشگاه ما، به دنیایی از موسیقی بی‌نظیر موسیقی دسترسی خواهید داشت.",
     longDescription: productData?.longDescription || "",
+    category: productData?.category || "محصولات",
     price: productData?.discountedPrice ?? productData?.price ?? 250000,
     originalPrice: productData?.originalPrice || 350000,
     discount: productData?.discountPercentage ?? (productData?.originalPrice && productData?.price
@@ -128,7 +130,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
   const relatedProducts = product.relatedProducts
   const relatedArticles = product.relatedBlogs
 
-  const selectedPrice = product.options.find((opt) => opt.id === selectedOption)?.price || product.price
+  const selectedPrice = product.options.find((opt: any) => opt.id === selectedOption)?.price || product.price
 
 
   return (
@@ -648,8 +650,12 @@ export default function ProductPage({ productData }: ProductPageProps) {
             {/* Tab Content */}
             <div className="p-8">
               {selectedTab === "description" && (
-                <div className="prose max-w-none">
-                  <p className="text-gray-700 leading-relaxed">{product.description}</p>
+                <div className="prose max-w-none prose-gray text-gray-700 leading-relaxed">
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                  >
+                    {product.longDescription || product.description}
+                  </ReactMarkdown>
                 </div>
               )}
 
@@ -657,7 +663,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                 <div>
                   <h3 className="text-xl font-bold text-gray-800 mb-6">ویژگی‌های اسپاتیفای</h3>
                   <ul className="space-y-4">
-                    {product.features.map((feature, index) => (
+                    {product.features.map((feature: any, index: number) => (
                       <li key={index} className="flex items-start space-x-3 space-x-reverse">
                         <svg
                           className="w-6 h-6 text-green-500 mt-0.5 flex-shrink-0"
@@ -732,7 +738,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
           <div className="bg-white rounded-xl shadow-sm p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-8">محصولات مرتبط</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((relatedProduct) => (
+              {relatedProducts.map((relatedProduct: any) => (
                 <Link
                   key={relatedProduct.id}
                   href={`/products/${relatedProduct.slug}`}
@@ -801,7 +807,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
           <div className="bg-white rounded-xl shadow-sm p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-8">مقالات مرتبط</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedArticles.map((article) => (
+              {relatedArticles.map((article: any) => (
                 <Link
                   key={article.id}
                   href={`/blog/${article.slug}`}
