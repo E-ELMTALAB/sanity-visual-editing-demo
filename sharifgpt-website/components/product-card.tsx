@@ -50,6 +50,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <img
           src={image || "/placeholder.svg?height=160&width=280&query=product"}
           alt={title}
+          loading="lazy"
           className="w-full h-full object-cover transform-gpu transition-transform duration-500 group-hover:scale-105"
         />
 

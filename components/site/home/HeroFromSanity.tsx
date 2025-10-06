@@ -18,7 +18,7 @@ export default function HeroFromSanity({ slides }: { slides: HeroSlide[] }) {
           <div className="relative group overflow-hidden rounded-2xl shadow-lg w-full h-full">
             {it.imageUrl && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={it.imageUrl} alt={it.title} className="w-full h-full object-cover" />
+              <img src={it.imageUrl} alt={it.title} loading="lazy" className="w-full h-full object-cover" />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
             <div className="absolute bottom-0 left-0 p-4 md:p-6 text-white w-full">

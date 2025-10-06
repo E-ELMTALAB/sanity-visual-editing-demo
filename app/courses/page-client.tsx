@@ -250,6 +250,7 @@ export default function CoursesPageClient({ coursesData, faqsData, categoriesDat
                           <img
                             src={course.imageUrl}
                             alt={course.title || 'Course'}
+                            loading="lazy"
                             className="w-full h-48 object-cover"
                           />
                         ) : (

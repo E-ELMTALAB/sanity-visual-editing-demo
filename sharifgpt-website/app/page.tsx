@@ -59,6 +59,7 @@ const IndependentSlider = ({ className, items = [], autoplayInterval = 5000 }) =
       {/* تصویر پس‌زمینه با انیمیشن */}
       <img
         src={currentItem.imageUrl || "/placeholder.svg"}
+        loading="lazy"
         alt={currentItem.title}
         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
       />
@@ -146,6 +147,7 @@ const PromoCard = ({ item }) => {
     <div className="relative group overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 ease-in-out w-full h-full cursor-pointer">
       <img
         src={item.imageUrl || "/placeholder.svg"}
+        loading="lazy"
         alt={item.title}
         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
       />
@@ -611,6 +613,7 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
             >
               <img
                 src={storiesData[currentStoryIndex].fullImg || "/placeholder.svg"}
+                loading="lazy"
                 alt={storiesData[currentStoryIndex].user}
                 className="w-full h-full object-cover rounded-2xl"
               />
@@ -620,6 +623,7 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
                 <div className="flex items-center space-x-3 space-x-reverse">
                   <img
                     src={storiesData[currentStoryIndex].img || "/placeholder.svg"}
+                    loading="lazy"
                     alt={storiesData[currentStoryIndex].user}
                     className="w-10 h-10 rounded-full border-2 border-white"
                   />

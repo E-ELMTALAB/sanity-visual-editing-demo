@@ -154,6 +154,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                   <img
                     src={course.imageUrl}
                     alt={course.title || 'Course Image'}
+                    loading="lazy"
                     className="w-full h-64 lg:h-80 object-cover rounded-lg"
                   />
                 </div>
@@ -378,6 +379,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                           <img
                             src={course.instructor.imageUrl}
                             alt={course.instructor.name}
+                            loading="lazy"
                             className="w-20 h-20 rounded-full object-cover"
                           />
                         )}
@@ -527,6 +529,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                         <img
                           src={relatedCourse.imageUrl}
                           alt={relatedCourse.title || 'Course'}
+                          loading="lazy"
                           className="w-full h-32 object-cover rounded-lg mb-3"
                         />
                       )}

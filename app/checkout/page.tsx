@@ -581,6 +581,7 @@ export default function CheckoutPage() {
                           <img
                             src={course.image || "/placeholder.svg"}
                             alt={course.title}
+                            loading="lazy"
                             className="w-full h-32 object-cover rounded-lg mb-3"
                           />
                           <h3 className="font-bold text-gray-800 mb-2">{course.title}</h3>
@@ -678,6 +679,7 @@ export default function CheckoutPage() {
                         <img
                           src={item.image || "/placeholder.svg?height=50&width=50&query=product"}
                           alt={item.title}
+                          loading="lazy"
                           className="w-12 h-12 rounded-lg object-cover"
                         />
                         <div className="flex-1">

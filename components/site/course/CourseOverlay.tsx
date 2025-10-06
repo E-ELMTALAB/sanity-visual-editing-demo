@@ -83,3 +83,4 @@ export default function CourseOverlay({ course }: CourseOverlayProps) {
     </div>
   )
 }
+
