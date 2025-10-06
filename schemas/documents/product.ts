@@ -166,6 +166,28 @@ export default defineType({
           rows: 8,
           description: 'Add custom Schema.org structured data for rich snippets (Product schema)',
         }),
+        defineField({
+          name: 'openGraphTitle',
+          title: 'Open Graph Title',
+          type: 'string',
+          description: 'Title for social media sharing (recommended: 40-60 characters)',
+          validation: (Rule) => Rule.max(60).warning('Should be under 60 characters for optimal display')
+        }),
+        defineField({
+          name: 'openGraphDescription',
+          title: 'Open Graph Description',
+          type: 'text',
+          rows: 3,
+          description: 'Description for social media sharing (recommended: 150-160 characters)',
+          validation: (Rule) => Rule.max(160).warning('Should be under 160 characters for optimal display')
+        }),
+        defineField({
+          name: 'openGraphImage',
+          title: 'Open Graph Image',
+          type: 'image',
+          description: 'Image for social media sharing (recommended: 1200x630px). Leave empty to use featured image.',
+          options: { hotspot: true },
+        }),
       ],
     }),
     
