@@ -180,6 +180,8 @@ export interface ProductDoc {
     canonicalUrl?: string
     robotsMeta?: string
     structuredData?: string
+    mainHeadingTag?: string
+    sectionHeadingTag?: string
   }
 }
 
@@ -304,5 +306,7 @@ export interface CoursePayload {
     openGraphTitle?: string
     openGraphDescription?: string
     openGraphImage?: Image
+    mainHeadingTag?: string
+    sectionHeadingTag?: string
   }
 }

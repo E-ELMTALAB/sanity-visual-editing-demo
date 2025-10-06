@@ -17,6 +17,43 @@ export default defineType({
     defineField({ name: 'slug', title: 'Slug', type: 'slug', options: { source: 'name', maxLength: 96 }, validation: (Rule) => Rule.required(), group: 'content' }),
     defineField({ name: 'description', title: 'Short Description', type: 'text', rows: 3, group: 'content' }),
     defineField({ name: 'longDescription', title: 'Long Description', type: 'text', rows: 8, group: 'content' }),
+    
+    // Heading Tag for SEO
+    defineField({
+      name: 'mainHeadingTag',
+      title: 'Main Heading Tag',
+      type: 'string',
+      description: 'HTML heading tag for the product title (H1-H6)',
+      options: {
+        list: [
+          { title: 'H1', value: 'h1' },
+          { title: 'H2', value: 'h2' },
+          { title: 'H3', value: 'h3' },
+          { title: 'H4', value: 'h4' },
+          { title: 'H5', value: 'h5' },
+          { title: 'H6', value: 'h6' },
+        ],
+      },
+      initialValue: 'h1',
+      group: 'seo',
+    }),
+    defineField({
+      name: 'sectionHeadingTag',
+      title: 'Section Heading Tag',
+      type: 'string',
+      description: 'HTML heading tag for product sections (H2-H6)',
+      options: {
+        list: [
+          { title: 'H2', value: 'h2' },
+          { title: 'H3', value: 'h3' },
+          { title: 'H4', value: 'h4' },
+          { title: 'H5', value: 'h5' },
+          { title: 'H6', value: 'h6' },
+        ],
+      },
+      initialValue: 'h2',
+      group: 'seo',
+    }),
     defineField({ name: 'category', title: 'Category', type: 'string', group: 'content' }),
     defineField({ name: 'price', title: 'Price', type: 'number', group: 'content' }),
     defineField({ name: 'originalPrice', title: 'Original Price', type: 'number', group: 'content' }),

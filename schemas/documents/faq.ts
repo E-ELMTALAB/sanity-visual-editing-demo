@@ -48,6 +48,25 @@ export default defineType({
       group: 'content',
     }),
 
+    // Heading Tag for SEO
+    defineField({
+      name: 'mainHeadingTag',
+      title: 'Main Heading Tag',
+      type: 'string',
+      description: 'HTML heading tag for the FAQ question (H2-H6)',
+      options: {
+        list: [
+          { title: 'H2', value: 'h2' },
+          { title: 'H3', value: 'h3' },
+          { title: 'H4', value: 'h4' },
+          { title: 'H5', value: 'h5' },
+          { title: 'H6', value: 'h6' },
+        ],
+      },
+      initialValue: 'h3',
+      group: 'seo',
+    }),
+
     // Settings - Page Location
     defineField({
       name: 'pageLocations',

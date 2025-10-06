@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import type { CoursePayload, FAQ } from "types"
+import DynamicHeading from "components/shared/DynamicHeading"
 import { urlForImage } from "lib/sanity.image"
 
 interface CoursePageClientProps {
@@ -54,7 +55,12 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
             <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">{course.title}</h1>
+                  <DynamicHeading 
+                    tag={course.mainHeadingTag || 'h1'} 
+                    className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2"
+                  >
+                    {course.title}
+                  </DynamicHeading>
                   <p className="text-gray-600 mb-4">{course.shortDescription}</p>
 
                   {/* Course Stats */}
@@ -191,7 +197,12 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                   <div className="space-y-6">
                     {course.longDescription && (
                       <div>
-                        <h3 className="text-lg font-bold text-gray-800 mb-3">درباره این دوره</h3>
+                        <DynamicHeading 
+                          tag={course.sectionHeadingTag || 'h3'} 
+                          className="text-lg font-bold text-gray-800 mb-3"
+                        >
+                          درباره این دوره
+                        </DynamicHeading>
                         <div className="text-gray-600 leading-relaxed whitespace-pre-line">
                           {course.longDescription}
                         </div>
@@ -200,7 +211,12 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
 
                     {course.features && course.features.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-bold text-gray-800 mb-3">ویژگی‌های دوره</h3>
+                        <DynamicHeading 
+                          tag={course.sectionHeadingTag || 'h3'} 
+                          className="text-lg font-bold text-gray-800 mb-3"
+                        >
+                          ویژگی‌های دوره
+                        </DynamicHeading>
                         <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
                           {course.features.map((feature, index) => (
                             <li key={index} className="flex items-center text-gray-600">
@@ -221,7 +237,12 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
 
                     {course.requirements && course.requirements.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-bold text-gray-800 mb-3">پیش‌نیازها</h3>
+                        <DynamicHeading 
+                          tag={course.sectionHeadingTag || 'h3'} 
+                          className="text-lg font-bold text-gray-800 mb-3"
+                        >
+                          پیش‌نیازها
+                        </DynamicHeading>
                         <ul className="space-y-2">
                           {course.requirements.map((requirement, index) => (
                             <li key={index} className="flex items-center text-gray-600">
@@ -247,7 +268,12 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
 
                     {course.learningOutcomes && course.learningOutcomes.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-bold text-gray-800 mb-3">چیزهایی که یاد خواهید گرفت</h3>
+                        <DynamicHeading 
+                          tag={course.sectionHeadingTag || 'h3'} 
+                          className="text-lg font-bold text-gray-800 mb-3"
+                        >
+                          چیزهایی که یاد خواهید گرفت
+                        </DynamicHeading>
                         <ul className="space-y-2">
                           {course.learningOutcomes.map((outcome, index) => (
                             <li key={index} className="flex items-center text-gray-600">
@@ -273,7 +299,12 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
 
                     {course.targetAudience && course.targetAudience.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-bold text-gray-800 mb-3">این دوره برای چه کسانی است</h3>
+                        <DynamicHeading 
+                          tag={course.sectionHeadingTag || 'h3'} 
+                          className="text-lg font-bold text-gray-800 mb-3"
+                        >
+                          این دوره برای چه کسانی است
+                        </DynamicHeading>
                         <ul className="space-y-2">
                           {course.targetAudience.map((audience, index) => (
                             <li key={index} className="flex items-center text-gray-600">
@@ -302,13 +333,23 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                 {/* Curriculum Tab */}
                 {activeTab === "curriculum" && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4">سرفصل‌های دوره</h3>
+                    <DynamicHeading 
+                      tag={course.sectionHeadingTag || 'h3'} 
+                      className="text-lg font-bold text-gray-800 mb-4"
+                    >
+                      سرفصل‌های دوره
+                    </DynamicHeading>
                     {course.syllabus && course.syllabus.length > 0 ? (
                       course.syllabus.map((module, index) => (
                         <div key={index} className="border border-gray-200 rounded-lg">
                           <div className="p-4 bg-gray-50 border-b border-gray-200">
                             <div className="flex items-center justify-between">
-                              <h4 className="font-medium text-gray-800">{module.title}</h4>
+                              <DynamicHeading 
+                                tag="h4" 
+                                className="font-medium text-gray-800"
+                              >
+                                {module.title}
+                              </DynamicHeading>
                               {module.duration && <span className="text-sm text-gray-500">{module.duration}</span>}
                             </div>
                             {module.description && (
@@ -384,7 +425,12 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                           />
                         )}
                         <div className="flex-1 text-right">
-                          <h3 className="text-xl font-bold text-gray-800 mb-1">{course.instructor.name}</h3>
+                          <DynamicHeading 
+                            tag={course.sectionHeadingTag || 'h3'} 
+                            className="text-xl font-bold text-gray-800 mb-1"
+                          >
+                            {course.instructor.name}
+                          </DynamicHeading>
                           {course.instructor.title && (
                             <p className="text-sm text-gray-500 mb-2">{course.instructor.title}</p>
                           )}
@@ -417,7 +463,12 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                           {/* Expertise */}
                           {course.instructor.expertise && course.instructor.expertise.length > 0 && (
                             <div className="mt-4">
-                              <h4 className="font-medium text-gray-800 mb-2">حوزه‌های تخصصی:</h4>
+                              <DynamicHeading 
+                                tag="h4" 
+                                className="font-medium text-gray-800 mb-2"
+                              >
+                                حوزه‌های تخصصی:
+                              </DynamicHeading>
                               <div className="flex flex-wrap gap-2">
                                 {course.instructor.expertise.map((skill, idx) => (
                                   <span
@@ -485,7 +536,12 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
             {/* FAQ Section */}
             {faqsData && faqsData.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">سوالات متداول</h3>
+                <DynamicHeading 
+                  tag={course.sectionHeadingTag || 'h3'} 
+                  className="text-lg font-bold text-gray-800 mb-4"
+                >
+                  سوالات متداول
+                </DynamicHeading>
                 <div className="space-y-4">
                   {faqsData.map((faq, idx) => (
                     <div key={faq._id || idx} className="border border-gray-200 rounded-lg">
@@ -517,7 +573,12 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
             {/* Related Courses */}
             {course.relatedCourses && course.relatedCourses.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">دوره‌های مرتبط</h3>
+                <DynamicHeading 
+                  tag={course.sectionHeadingTag || 'h3'} 
+                  className="text-lg font-bold text-gray-800 mb-4"
+                >
+                  دوره‌های مرتبط
+                </DynamicHeading>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {course.relatedCourses.map((relatedCourse) => (
                     <Link
@@ -533,7 +594,12 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                           className="w-full h-32 object-cover rounded-lg mb-3"
                         />
                       )}
-                      <h4 className="font-medium text-gray-800 mb-2 text-sm">{relatedCourse.title}</h4>
+                      <DynamicHeading 
+                        tag="h4" 
+                        className="font-medium text-gray-800 mb-2 text-sm"
+                      >
+                        {relatedCourse.title}
+                      </DynamicHeading>
                       <div className="flex items-center justify-between">
                         {relatedCourse.rating && (
                           <div className="flex items-center">
@@ -646,7 +712,12 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
             {/* Course Features */}
             {course.features && course.features.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">این دوره شامل:</h3>
+                <DynamicHeading 
+                  tag={course.sectionHeadingTag || 'h3'} 
+                  className="text-lg font-bold text-gray-800 mb-4"
+                >
+                  این دوره شامل:
+                </DynamicHeading>
                 <ul className="space-y-3">
                   {course.features.map((feature, index) => (
                     <li key={index} className="flex items-center text-sm text-gray-600">

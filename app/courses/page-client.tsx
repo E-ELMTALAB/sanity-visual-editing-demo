@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import Link from "next/link"
 import type { CoursePayload, FAQ } from "types"
+import DynamicHeading from "components/shared/DynamicHeading"
 
 interface Category {
   id: string
@@ -86,7 +87,12 @@ export default function CoursesPageClient({ coursesData, faqsData, categoriesDat
     return (
       <div className="bg-gray-50 min-h-screen" dir="rtl">
         <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">دوره‌های آموزشی</h1>
+          <DynamicHeading 
+            tag="h1" 
+            className="text-3xl font-bold text-gray-800 mb-4"
+          >
+            دوره‌های آموزشی
+          </DynamicHeading>
           <p className="text-gray-600">در حال حاضر دوره‌ای موجود نیست.</p>
         </div>
       </div>
@@ -105,7 +111,12 @@ export default function CoursesPageClient({ coursesData, faqsData, categoriesDat
             <span>/</span>
             <span className="text-gray-800">دوره‌ها</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">دوره‌های آموزشی آنلاین</h1>
+          <DynamicHeading 
+            tag="h1" 
+            className="text-3xl font-bold text-gray-800"
+          >
+            دوره‌های آموزشی آنلاین
+          </DynamicHeading>
           <p className="text-gray-600 mt-2">بهترین دوره‌های آموزشی با اساتید مجرب</p>
         </div>
       </div>
@@ -116,7 +127,12 @@ export default function CoursesPageClient({ coursesData, faqsData, categoriesDat
           <div className="lg:w-1/4">
             <div className="bg-white rounded-xl shadow-sm p-6 sticky top-4">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-gray-800">فیلترها</h3>
+                  <DynamicHeading 
+                    tag="h3" 
+                    className="text-lg font-bold text-gray-800"
+                  >
+                    فیلترها
+                  </DynamicHeading>
                 <button onClick={() => setShowFilters(!showFilters)} className="lg:hidden text-blue-600">
                   {showFilters ? "بستن" : "نمایش"}
                 </button>
@@ -125,7 +141,12 @@ export default function CoursesPageClient({ coursesData, faqsData, categoriesDat
               <div className={`space-y-6 ${showFilters ? "block" : "hidden lg:block"}`}>
                 {/* Categories */}
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-4">دسته‌بندی</h4>
+                    <DynamicHeading 
+                      tag="h4" 
+                      className="font-semibold text-gray-800 mb-4"
+                    >
+                      دسته‌بندی
+                    </DynamicHeading>
                   <div className="space-y-2">
                     {categoriesData.map((category) => (
                       <button
@@ -148,7 +169,12 @@ export default function CoursesPageClient({ coursesData, faqsData, categoriesDat
 
                 {/* Price Range */}
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-4">محدوده قیمت</h4>
+                    <DynamicHeading 
+                      tag="h4" 
+                      className="font-semibold text-gray-800 mb-4"
+                    >
+                      محدوده قیمت
+                    </DynamicHeading>
                   <div className="space-y-2">
                     <label className="flex items-center cursor-pointer">
                       <input type="checkbox" className="ml-2" />
@@ -167,7 +193,12 @@ export default function CoursesPageClient({ coursesData, faqsData, categoriesDat
 
                 {/* Level */}
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-4">سطح دوره</h4>
+                    <DynamicHeading 
+                      tag="h4" 
+                      className="font-semibold text-gray-800 mb-4"
+                    >
+                      سطح دوره
+                    </DynamicHeading>
                   <div className="space-y-2">
                     <label className="flex items-center cursor-pointer">
                       <input type="checkbox" className="ml-2" />
@@ -186,7 +217,12 @@ export default function CoursesPageClient({ coursesData, faqsData, categoriesDat
 
                 {/* Duration */}
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-4">مدت زمان</h4>
+                    <DynamicHeading 
+                      tag="h4" 
+                      className="font-semibold text-gray-800 mb-4"
+                    >
+                      مدت زمان
+                    </DynamicHeading>
                   <div className="space-y-2">
                     <label className="flex items-center cursor-pointer">
                       <input type="checkbox" className="ml-2" />
@@ -271,7 +307,12 @@ export default function CoursesPageClient({ coursesData, faqsData, categoriesDat
                       </div>
 
                       <div className="p-6">
-                        <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-2">{course.title}</h3>
+                         <DynamicHeading 
+                           tag="h3" 
+                           className="font-bold text-lg text-gray-800 mb-2 line-clamp-2"
+                         >
+                           {course.title}
+                         </DynamicHeading>
                         <p className="text-gray-600 text-sm mb-4 line-clamp-2">{course.shortDescription}</p>
 
                         {/* Course Info */}
@@ -407,7 +448,12 @@ export default function CoursesPageClient({ coursesData, faqsData, categoriesDat
             {/* FAQ Section */}
             {faqsData && faqsData.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">سوالات متداول</h2>
+                 <DynamicHeading 
+                   tag="h2" 
+                   className="text-2xl font-bold text-gray-800 mb-6"
+                 >
+                   سوالات متداول
+                 </DynamicHeading>
                 <div className="space-y-4">
                   {faqsData.map((faq, idx) => (
                     <div key={faq._id || idx} className="border border-gray-200 rounded-lg">
