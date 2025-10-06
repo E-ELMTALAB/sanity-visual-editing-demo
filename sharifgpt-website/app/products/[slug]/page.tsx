@@ -24,7 +24,6 @@ export default function ProductPage({ productData }: ProductPageProps) {
   const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false)
   const [showAddedToCart, setShowAddedToCart] = useState(false)
 
-  // Server-first: productData is provided by server wrapper
 
   const handleProfileClick = () => {
     if (isAuthenticated) {
@@ -69,7 +68,6 @@ export default function ProductPage({ productData }: ProductPageProps) {
     }
   }, [])
 
-  // Merge Sanity data with hardcoded defaults
   const product = {
     id: 1,
     title: productData?.name || "اکانت اسپاتیفای پریمیوم",
@@ -126,28 +124,12 @@ export default function ProductPage({ productData }: ProductPageProps) {
     },
   ]
 
-  const faqs = [
-    {
-      question: "چطور اکانت خود را انتخاب کنید؟",
-      answer: "مدت زمان اکانت خود را انتخاب کنید",
-    },
-    {
-      question: "نوع اشتراک اکانت خود را انتخاب کنید",
-      answer: "تک کاربره (عضو فعلی)",
-    },
-    {
-      question: "اگر قبلاً دارید اطلاعات اکانت خود وارد کنید (اختیاری) و برید",
-      answer: "اکانت نداریم پس به اکانت جدید بسیار",
-    },
-  ]
 
-  // Use related content from Sanity (server-provided via productData)
   const relatedProducts = product.relatedProducts
   const relatedArticles = product.relatedBlogs
 
   const selectedPrice = product.options.find((opt) => opt.id === selectedOption)?.price || product.price
 
-  // No loading state required; server ensures data exists
 
   return (
     <div className="bg-gray-50 min-h-screen" dir="rtl">
@@ -416,9 +398,9 @@ export default function ProductPage({ productData }: ProductPageProps) {
               محصولات
             </Link>
             <span>/</span>
-            <span className="text-gray-800">اسپاتیفای</span>
+            <span className="text-gray-800">{product.category || 'محصولات'}</span>
             <span>/</span>
-            <span className="text-gray-800">اکانت اسپاتیفای</span>
+            <span className="text-gray-800">{product.title}</span>
           </div>
         </div>
       </div>
@@ -429,7 +411,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
           <div className="space-y-4">
             <div className="bg-white rounded-2xl overflow-hidden shadow-lg group">
               <img
-                src="/spotify-premium-banner.png"
+                src={product.image}
                 alt={product.title}
                 className="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-500"
               />
@@ -645,9 +627,8 @@ export default function ProductPage({ productData }: ProductPageProps) {
               <div className="flex">
                 {[
                   { id: "description", name: "توضیحات" },
-                  { id: "features", name: "ویژگی‌های اسپاتیفای" },
+                  { id: "features", name: "ویژگی‌ها" },
                   { id: "reviews", name: "نظرات کاربران" },
-                  { id: "faq", name: "پرسش و پاسخ" },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -742,19 +723,6 @@ export default function ProductPage({ productData }: ProductPageProps) {
                 </div>
               )}
 
-              {selectedTab === "faq" && (
-                <div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-6">پرسش و پاسخ</h3>
-                  <div className="space-y-4">
-                    {faqs.map((faq, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg p-4">
-                        <h4 className="font-medium text-gray-800 mb-2">{faq.question}</h4>
-                        <p className="text-gray-600">{faq.answer}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -839,6 +807,15 @@ export default function ProductPage({ productData }: ProductPageProps) {
                   href={`/blog/${article.slug}`}
                   className="block p-6 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-300 group"
                 >
+                  {article.coverImage && (
+                    <div className="mb-3">
+                      <img
+                        src={article.coverImage}
+                        alt={article.title}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
                   <h3 className="font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
                     {article.title}
                   </h3>
