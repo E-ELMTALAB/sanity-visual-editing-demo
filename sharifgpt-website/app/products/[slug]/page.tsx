@@ -74,8 +74,8 @@ export default function ProductPage({ productData }: ProductPageProps) {
     title: productData?.name || "محصول",
     description: productData?.description || "توضیحات محصول",
     category: productData?.category || "محصولات",
-    price: productData?.price || 0,
-    originalPrice: productData?.originalPrice || 0,
+    price: productData?.price || null,
+    originalPrice: productData?.originalPrice || null,
     discount: productData?.discountPercentage || 0,
     rating: typeof productData?.rating === 'number' ? productData.rating : 0,
     reviews: typeof productData?.reviewCount === 'number' ? productData.reviewCount : 0,
@@ -130,9 +130,13 @@ export default function ProductPage({ productData }: ProductPageProps) {
     ? (product.options.find((opt: any) => opt.id === selectedOption)?.price || product.options[0]?.price || product.price)
     : product.price
 
+  // If no price data is available, show a message instead of 0
+  const displayPrice = selectedPrice || 0
+  const displayOriginalPrice = product.originalPrice || 0
+
   // Calculate actual discount based on displayed prices
-  const actualDiscount = product.originalPrice > selectedPrice 
-    ? Math.round(((product.originalPrice - selectedPrice) / product.originalPrice) * 100)
+  const actualDiscount = displayOriginalPrice > displayPrice 
+    ? Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100)
     : 0
 
   const displayDiscount = product.discount > 0 ? product.discount : actualDiscount
@@ -142,6 +146,8 @@ export default function ProductPage({ productData }: ProductPageProps) {
     productData: productData,
     product: product,
     selectedPrice: selectedPrice,
+    displayPrice: displayPrice,
+    displayOriginalPrice: displayOriginalPrice,
     actualDiscount: actualDiscount,
     displayDiscount: displayDiscount
   })
@@ -491,7 +497,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                       <div className="space-y-2">
                         <div className="flex items-center space-x-3 space-x-reverse">
                           <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                            {selectedPrice.toLocaleString()} تومان
+                            {displayPrice.toLocaleString()} تومان
                           </span>
                           {product.originalPrice > selectedPrice && (
                             <div className="bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full shadow-md border border-white/20">
@@ -504,7 +510,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                         {product.originalPrice > selectedPrice && (
                           <div className="flex items-center space-x-2 space-x-reverse">
                             <span className="text-sm text-gray-500 line-through bg-gray-100/60 backdrop-blur-sm px-2 py-0.5 rounded-md">
-                              {product.originalPrice.toLocaleString()} تومان
+                              {displayOriginalPrice.toLocaleString()} تومان
                             </span>
                           </div>
                         )}
@@ -522,7 +528,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                           <span className="text-xs font-medium text-green-700">صرفه‌جویی شما:</span>
                         </div>
                         <div className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                          {(product.originalPrice - selectedPrice).toLocaleString()} تومان
+                          {(displayOriginalPrice - displayPrice).toLocaleString()} تومان
                         </div>
                       </div>
                     </div>
@@ -592,7 +598,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                       <div className="space-y-2">
                         <div className="flex items-center space-x-3 space-x-reverse">
                           <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                            {selectedPrice.toLocaleString()} تومان
+                            {displayPrice.toLocaleString()} تومان
                           </span>
                           {product.originalPrice > selectedPrice && (
                             <div className="bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full shadow-md border border-white/20">
@@ -605,7 +611,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                         {product.originalPrice > selectedPrice && (
                           <div className="flex items-center space-x-2 space-x-reverse">
                             <span className="text-sm text-gray-500 line-through bg-gray-100/60 backdrop-blur-sm px-2 py-0.5 rounded-md">
-                              {product.originalPrice.toLocaleString()} تومان
+                              {displayOriginalPrice.toLocaleString()} تومان
                             </span>
                           </div>
                         )}
@@ -623,7 +629,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                           <span className="text-xs font-medium text-green-700">صرفه‌جویی شما:</span>
                         </div>
                         <div className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                          {(product.originalPrice - selectedPrice).toLocaleString()} تومان
+                          {(displayOriginalPrice - displayPrice).toLocaleString()} تومان
                         </div>
                       </div>
                     </div>
@@ -879,12 +885,12 @@ export default function ProductPage({ productData }: ProductPageProps) {
                 <h3 className="font-bold text-gray-800 text-xs sm:text-sm truncate">{product.title}</h3>
                 <div className="flex items-center space-x-1 space-x-reverse">
                   <p className="text-blue-600 font-bold text-sm sm:text-base whitespace-nowrap">
-                    {selectedPrice.toLocaleString()}
+                    {displayPrice.toLocaleString()}
                   </p>
                   <span className="text-blue-600 font-bold text-xs sm:text-sm">تومان</span>
-                  {product.originalPrice > selectedPrice && (
+                  {displayOriginalPrice > displayPrice && (
                     <span className="text-xs text-gray-500 line-through ml-1">
-                      {product.originalPrice.toLocaleString()}
+                      {displayOriginalPrice.toLocaleString()}
                     </span>
                   )}
                 </div>
