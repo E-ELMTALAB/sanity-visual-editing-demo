@@ -14,7 +14,7 @@ interface ProductPageProps {
 export default function ProductPage({ productData }: ProductPageProps) {
   const [selectedTab, setSelectedTab] = useState("description")
   const [quantity, setQuantity] = useState(1)
-  const [selectedOption, setSelectedOption] = useState(productData?.options?.[0]?.id || "1-month")
+  const [selectedOption, setSelectedOption] = useState(productData?.options?.[0]?.id || "")
   const [selectedImage, setSelectedImage] = useState(0)
 
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -76,9 +76,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
     category: productData?.category || "محصولات",
     price: productData?.price || 0,
     originalPrice: productData?.originalPrice || 0,
-    discount: productData?.discountPercentage || (productData?.originalPrice && productData?.price && productData.originalPrice > productData.price
-      ? Math.round(((productData.originalPrice - productData.price) / productData.originalPrice) * 100)
-      : 0),
+    discount: productData?.discountPercentage || 0,
     rating: typeof productData?.rating === 'number' ? productData.rating : 0,
     reviews: typeof productData?.reviewCount === 'number' ? productData.reviewCount : 0,
     image: productData?.imageUrl || "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
@@ -128,7 +126,25 @@ export default function ProductPage({ productData }: ProductPageProps) {
   const relatedProducts = product.relatedProducts
   const relatedArticles = product.relatedBlogs
 
-  const selectedPrice = product.options.find((opt: any) => opt.id === selectedOption)?.price || product.price
+  const selectedPrice = product.options && product.options.length > 0 
+    ? (product.options.find((opt: any) => opt.id === selectedOption)?.price || product.options[0]?.price || product.price)
+    : product.price
+
+  // Calculate actual discount based on displayed prices
+  const actualDiscount = product.originalPrice > selectedPrice 
+    ? Math.round(((product.originalPrice - selectedPrice) / product.originalPrice) * 100)
+    : 0
+
+  const displayDiscount = product.discount > 0 ? product.discount : actualDiscount
+
+  // Debug logging
+  console.log('Product Data Debug:', {
+    productData: productData,
+    product: product,
+    selectedPrice: selectedPrice,
+    actualDiscount: actualDiscount,
+    displayDiscount: displayDiscount
+  })
 
 
   return (
@@ -479,7 +495,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                           </span>
                           {product.originalPrice > selectedPrice && (
                             <div className="bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full shadow-md border border-white/20">
-                              <span className="font-bold text-xs">{product.discount}% تخفیف</span>
+                              <span className="font-bold text-xs">{displayDiscount}% تخفیف</span>
                             </div>
                           )}
                         </div>
@@ -580,7 +596,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                           </span>
                           {product.originalPrice > selectedPrice && (
                             <div className="bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full shadow-md border border-white/20">
-                              <span className="font-bold text-xs">{product.discount}% تخفیف</span>
+                              <span className="font-bold text-xs">{displayDiscount}% تخفیف</span>
                             </div>
                           )}
                         </div>
