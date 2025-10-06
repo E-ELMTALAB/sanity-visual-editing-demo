@@ -71,16 +71,14 @@ export default function ProductPage({ productData }: ProductPageProps) {
 
   const product = {
     id: 1,
-    title: productData?.name || "اکانت اسپاتیفای پریمیوم",
-    description: productData?.description ||
-      "اسپاتیفای یکی از محبوب‌ترین سرویس‌های پخش موسیقی در جهان است که دسترسی به میلیون‌ها آهنگ، پادکست و محتوای صوتی را فراهم می‌کند. با خرید اکانت اسپاتیفای از فروشگاه ما، به دنیایی از موسیقی بی‌نظیر موسیقی دسترسی خواهید داشت.",
-    longDescription: productData?.longDescription || "",
+    title: productData?.name || "محصول",
+    description: productData?.description || "توضیحات محصول",
     category: productData?.category || "محصولات",
-    price: productData?.discountedPrice ?? productData?.price ?? 250000,
-    originalPrice: productData?.originalPrice || 350000,
-    discount: productData?.discountPercentage ?? (productData?.originalPrice && productData?.price
+    price: productData?.price || 0,
+    originalPrice: productData?.originalPrice || 0,
+    discount: productData?.discountPercentage || (productData?.originalPrice && productData?.price && productData.originalPrice > productData.price
       ? Math.round(((productData.originalPrice - productData.price) / productData.originalPrice) * 100)
-      : 30),
+      : 0),
     rating: typeof productData?.rating === 'number' ? productData.rating : 0,
     reviews: typeof productData?.reviewCount === 'number' ? productData.reviewCount : 0,
     image: productData?.imageUrl || "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
@@ -654,7 +652,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                   <ReactMarkdown 
                     remarkPlugins={[remarkGfm]}
                   >
-                    {product.longDescription || product.description}
+                    {product.description}
                   </ReactMarkdown>
                 </div>
               )}

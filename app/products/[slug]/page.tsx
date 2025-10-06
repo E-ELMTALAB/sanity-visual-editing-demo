@@ -59,7 +59,6 @@ export default async function Page({ params }: { params: { slug: string } }) {
         _id: product._id,
         name: product.name || '',
         description: product.description || '',
-        longDescription: product.longDescription || '',
         category: product.category || 'default',
         price: product.price || 0,
         originalPrice: product.originalPrice || 0,
@@ -74,8 +73,6 @@ export default async function Page({ params }: { params: { slug: string } }) {
         rating: product.rating || 0,
         reviewCount: product.reviewCount || 0,
         options: product.options || [],
-        mainHeadingTag: product.mainHeadingTag || 'h1',
-        sectionHeadingTag: product.sectionHeadingTag || 'h2',
         relatedProducts: Array.isArray(product.relatedProducts) ? product.relatedProducts.map((related: any) => ({
           id: related._id,
           title: related.name,
