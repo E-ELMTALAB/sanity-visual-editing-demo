@@ -53,6 +53,23 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const isDraft = draftMode().isEnabled
   const client = getClient(isDraft ? { token: readToken } : undefined)
   const product = await client.fetch<any | null>(productDocBySlugQuery, { slug: params.slug })
+  
+  // Debug: Log the raw product data from Sanity
+  console.log('Raw Sanity Product Data:', {
+    slug: params.slug,
+    product: product,
+    productExists: !!product,
+    price: product?.price,
+    originalPrice: product?.originalPrice,
+    discountPercentage: product?.discountPercentage
+  })
+
+  if (!product) {
+    console.error('Product not found for slug:', params.slug)
+    // Let's also check what products are available
+    const allProducts = await client.fetch(`*[_type == "product"]{name, "slug": slug.current, price, originalPrice}`)
+    console.log('Available products:', allProducts)
+  }
 
   const productForClient = product
     ? {
@@ -97,6 +114,14 @@ export default async function Page({ params }: { params: { slug: string } }) {
         slug: product.slug,
       }
     : null
+
+  // Debug: Log the transformed product data
+  console.log('Transformed Product Data:', {
+    productForClient: productForClient,
+    price: productForClient?.price,
+    originalPrice: productForClient?.originalPrice,
+    discountPercentage: productForClient?.discountPercentage
+  })
 
   if (!productForClient) {
     notFound()

@@ -205,7 +205,6 @@ export const productDocBySlugQuery = groq`
     _type,
     name,
     description,
-    longDescription,
     category,
     price,
     originalPrice,
