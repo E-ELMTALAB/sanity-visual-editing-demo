@@ -113,6 +113,24 @@ export default defineType({
       group: 'content',
     }),
     defineField({
+      name: 'category',
+      title: 'Category',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'هوش مصنوعی', value: 'ai' },
+          { title: 'برنامه‌نویسی', value: 'programming' },
+          { title: 'آموزش', value: 'tutorial' },
+          { title: 'اخبار', value: 'news' },
+          { title: 'تکنولوژی', value: 'technology' },
+          { title: 'محصولات', value: 'products' },
+          { title: 'راهنما', value: 'guide' },
+          { title: 'نقد و بررسی', value: 'review' },
+        ],
+      },
+      group: 'content',
+    }),
+    defineField({
       name: 'tags',
       title: 'Tags',
       type: 'array',
@@ -171,6 +189,19 @@ export default defineType({
         }),
         defineField({ type: 'youtube' as any }),
       ],
+      group: 'content',
+    }),
+    defineField({
+      name: 'relatedPosts',
+      title: 'Related Posts',
+      type: 'array',
+      of: [
+        defineArrayMember({
+          type: 'reference',
+          to: [{ type: 'post' }],
+        }),
+      ],
+      description: 'Select related blog posts to display',
       group: 'content',
     }),
 

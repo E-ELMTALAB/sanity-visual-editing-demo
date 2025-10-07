@@ -171,8 +171,12 @@ export const blogListQuery = groq`
     "slug": slug.current,
     excerpt,
     coverImage,
+    category,
     tags,
     publishedAt,
+    author,
+    rating,
+    reviewCount,
   }
 `
 
@@ -185,8 +189,22 @@ export const postBySlugQuery = groq`
     coverImage,
     author,
     publishedAt,
+    category,
     tags,
     body,
+    rating,
+    reviewCount,
+    seo,
+    relatedPosts[]->{
+      _id,
+      title,
+      "slug": slug.current,
+      excerpt,
+      coverImage,
+      category,
+      publishedAt,
+      author
+    }
   }
 `
 

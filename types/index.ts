@@ -191,13 +191,27 @@ export interface PostListItemPayload {
   slug?: string
   excerpt?: PortableTextBlock[]
   coverImage?: Image
+  category?: string
   tags?: string[]
   publishedAt?: string
+  author?: string
+  rating?: number
+  reviewCount?: number
 }
 
 export interface PostPayload extends PostListItemPayload {
-  author?: string
   body?: PortableTextBlock[]
+  seo?: {
+    metaTitle?: string
+    metaDescription?: string
+    canonicalUrl?: string
+    robotsMeta?: string
+    openGraphTitle?: string
+    openGraphDescription?: string
+    openGraphImage?: Image
+    structuredData?: string
+  }
+  relatedPosts?: PostListItemPayload[]
 }
 
 export interface FAQ {
