@@ -1,6 +1,6 @@
 'use client'
 
-import { BadgeCheck, Filter, Search, SlidersHorizontal, Sparkles, Star } from 'lucide-react'
+import { BadgeCheck, Filter, Search, SlidersHorizontal } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -49,6 +49,7 @@ import { cn } from '@/lib/utils'
 
 import { urlForImage } from 'lib/sanity.image'
 import type { CollectionPayload, ProductDoc } from 'types'
+import ProductCard from 'components/product-card'
 
 const ITEMS_PER_PAGE = 24
 
@@ -214,96 +215,27 @@ type SelectedFacets = Record<FacetKey, string[]>
 
 function CollectionProductCard({
   product,
-  locale,
-  t,
 }: {
   product: ProductDoc
-  locale: 'fa' | 'en'
-  t: Translations
 }) {
-  const price = product.price || 0
-  const originalPrice = product.originalPrice || 0
-  const discountPercentage = product.discountPercentage || 0
-  
-  const priceLabel = price > 0 ? formatPrice(price, locale) : t.priceFree
-  const imageUrl = product.image ? urlForImage(product.image)?.width(600).height(400).url() : '/placeholder.svg'
+  // Transform Sanity product data to match ProductCard component format
+  const transformedProduct = {
+    id: product._id || '',
+    title: product.name || '',
+    description: product.description || '',
+    price: product.price || 0,
+    originalPrice: product.originalPrice || 0,
+    discountPercentage: product.discountPercentage || 0,
+    image: product.image ? urlForImage(product.image)?.width(600).height(400).url() || '/placeholder.svg' : '/placeholder.svg',
+    category: product.category || '',
+    rating: product.rating || 0,
+    reviews: product.reviewCount || 0,
+    features: product.features || [],
+    badge: product.badges?.[0] || undefined,
+    href: `/products/${product.slug?.current || ''}`,
+  }
 
-  return (
-    <article
-      className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-[0_20px_60px_-35px_rgba(15,23,42,0.6)] transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_30px_60px_-30px_rgba(15,23,42,0.55)] dark:border-slate-800/60 dark:bg-slate-900"
-    >
-      <div className="relative h-40 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 opacity-70" />
-        {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt={product.name || 'Product'}
-            fill
-            sizes="(min-width: 1280px) 300px, (min-width: 1024px) 25vw, (min-width: 768px) 40vw, 90vw"
-            className="object-cover opacity-80"
-          />
-        ) : null}
-        <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/60 via-slate-900/20 to-transparent" />
-        <div className="absolute inset-x-5 bottom-5 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="text-white">
-              <p className="text-sm font-medium opacity-80">{product.category || 'محصول'}</p>
-              <h3 className="text-lg font-semibold leading-tight">{product.name}</h3>
-            </div>
-          </div>
-          {discountPercentage > 0 ? (
-            <Badge className="rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-semibold text-white shadow-lg">
-              <Sparkles className="me-1 size-3.5" /> {discountPercentage}%
-            </Badge>
-          ) : null}
-        </div>
-      </div>
-      <div className="flex flex-1 flex-col gap-4 p-6">
-        <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
-          {product.description || ''}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {product.features?.slice(0, 3).map((feature) => (
-            <Badge key={feature} variant="secondary" className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-              {feature}
-            </Badge>
-          ))}
-        </div>
-        <div className="mt-auto flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            {product.rating && product.reviewCount ? (
-              <div>
-                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                  {t.ratingLabel}
-                </p>
-                <div className="flex items-center gap-1 text-slate-800 dark:text-slate-100">
-                  <Star className="size-4 text-amber-400" fill="currentColor" />
-                  <span className="text-sm font-semibold">{product.rating.toFixed(1)}</span>
-                  <span className="text-xs text-slate-400">({product.reviewCount.toLocaleString(locale === 'fa' ? 'fa-IR' : 'en-US')})</span>
-                </div>
-              </div>
-            ) : <div />}
-            <div className="text-right">
-              {originalPrice > price && (
-                <p className="text-xs text-slate-400 line-through">
-                  {formatPrice(originalPrice, locale)}
-                </p>
-              )}
-              <p className="text-lg font-semibold text-slate-900 dark:text-white">{priceLabel}</p>
-            </div>
-          </div>
-          <Button
-            asChild
-            className="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 py-2.5 text-sm font-semibold text-white transition-all group-hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700"
-          >
-            <Link href={`/products/${product.slug?.current || ''}`} aria-label={`${product.name} ${t.viewDetails}`}>
-              <span>{t.viewDetails}</span>
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </article>
-  )
+  return <ProductCard {...transformedProduct} />
 }
 
 function FacetPopover({
@@ -1035,11 +967,11 @@ export default function CollectionPageClient({
             </div>
           ) : (
             <>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {paginatedProducts.map((product) => (
-                  <CollectionProductCard key={product.id} product={product} locale={locale} t={t} />
-                ))}
-              </div>
+               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-2 sm:gap-3">
+                 {paginatedProducts.map((product) => (
+                   <CollectionProductCard key={product._id || product.name} product={product} />
+                 ))}
+               </div>
               <div className="mt-10">
                 <PaginationControls
                   currentPage={currentPage}
@@ -1079,7 +1011,7 @@ export default function CollectionPageClient({
           </section>
         ) : null}
       </div>
-      </main>
+    </main>
 
       {/* Footer */}
       <Footer />
