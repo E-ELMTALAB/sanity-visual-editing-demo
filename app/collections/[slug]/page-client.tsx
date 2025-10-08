@@ -5,6 +5,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
+import Footer from '@/components/footer'
+import MobileMenu from '@/components/mobile-menu'
 
 import {
   Accordion,
@@ -655,8 +657,190 @@ export default function CollectionPageClient({
     setPage(1)
   }
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+  const [user, setUser] = useState({ name: "مهدی", email: "mehdi@example.com" })
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  const handleProfileClick = () => {
+    if (isAuthenticated) {
+      setIsProfileDropdownOpen(!isProfileDropdownOpen)
+    } else {
+      window.location.href = "/login"
+    }
+  }
+
+  const handleLogout = () => {
+    setIsAuthenticated(false)
+    setIsProfileDropdownOpen(false)
+    setUser({ name: "", email: "" })
+  }
+
+  const handleMobileMenuClose = () => {
+    setIsMobileMenuOpen(false)
+  }
+
   return (
-    <main className="bg-gradient-to-b from-slate-50 via-white to-white pb-16 pt-10 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white dark:from-slate-950 dark:via-slate-950 dark:to-slate-950">
+      {/* Header Section */}
+      <header className="sticky top-0 z-50 glassmorphism">
+        <div className="container mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 sm:h-20">
+            <div className="flex items-center">
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors ml-2"
+                aria-label="باز کردن منو"
+              >
+                <div className="w-6 h-6 flex flex-col justify-center items-center space-y-1">
+                  <div className="w-5 h-0.5 bg-gray-600 transition-colors hover:bg-blue-600"></div>
+                  <div className="w-5 h-0.5 bg-gray-600 transition-colors hover:bg-blue-600"></div>
+                  <div className="w-5 h-0.5 bg-gray-600 transition-colors hover:bg-blue-600"></div>
+                </div>
+              </button>
+
+              {/* Logo and Name */}
+              <Link
+                href="/"
+                className="relative flex items-center space-x-2 sm:space-x-4 space-x-reverse cursor-pointer"
+              >
+                <div className="relative flex items-center space-x-2 sm:space-x-4 space-x-reverse">
+                  <img
+                    src="/images/design-mode/Group%201(1).png"
+                    alt="SharifGPT Logo"
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+                  />
+                  <h1 className="text-lg sm:text-xl font-bold text-gray-800">SharifGPT</h1>
+                </div>
+              </Link>
+            </div>
+
+            {/* Navigation */}
+            <nav className="hidden lg:flex items-center space-x-2 space-x-reverse">
+              <div className="h-8 border-l border-gray-300"></div>
+              <Link
+                href="/products"
+                className="text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)]"
+              >
+                محصولات
+              </Link>
+              <Link
+                href="/courses"
+                className="text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)]"
+              >
+                دوره‌ها
+              </Link>
+              <Link
+                href="/enterprise"
+                className="text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)] whitespace-nowrap"
+              >
+                فروش سازمانی
+              </Link>
+              <Link
+                href="/blog"
+                className="text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)]"
+              >
+                بلاگ
+              </Link>
+            </nav>
+
+            {/* Actions */}
+            <div className="flex items-center space-x-3 sm:space-x-5 space-x-reverse">
+              {/* Search Box */}
+              <div className="relative hidden xl:block">
+                <input
+                  type="text"
+                  placeholder="جستجو..."
+                  className="w-40 xl:w-48 bg-gray-100 border border-[#3092BE] rounded-full py-2 pr-4 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3092BE] transition-all duration-300 ease-in-out hover:w-48 xl:hover:w-60 focus:w-48 xl:focus:w-60"
+                />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg
+                    className="h-5 w-5 text-gray-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Contact */}
+              <div className="hidden md:flex items-center space-x-2 space-x-reverse border-l border-gray-300 pl-3 sm:pl-5">
+                <div className="text-right">
+                  <div className="flex items-center justify-end">
+                    <Link
+                      href="/contact"
+                      className="text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#3092BE] transition-colors cursor-pointer"
+                    >
+                      تماس با ما
+                    </Link>
+                    <span className="relative flex h-2 w-2 sm:h-3 sm:w-3 mr-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 sm:h-3 sm:w-3 bg-green-500"></span>
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">وضعیت: آنلاین</p>
+                </div>
+              </div>
+
+              <div className="relative">
+                <div
+                  className="flex items-center space-x-3 space-x-reverse cursor-pointer"
+                  onClick={handleProfileClick}
+                >
+                  <div className="relative transition-transform duration-300 transform hover:scale-110">
+                    <img
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-md object-cover"
+                      src={
+                        isAuthenticated
+                          ? "https://i.imgur.com/3Y1Z0Qj.png"
+                          : "data:image/svg+xml,%3csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='40' height='40' fill='%23E5E7EB' rx='20'/%3e%3cpath d='M20 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 22a8 8 0 1 1 16 0v2H12v-2z' fill='%233B82F6'/%3e%3c/svg%3e"
+                      }
+                      alt="آواتار کاربر"
+                    />
+                  </div>
+                  <div className="relative transition-transform duration-300 transform hover:scale-110">
+                    <Link href="/cart">
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2 border-[#3092BE] flex items-center justify-center bg-white shadow-sm">
+                        <svg
+                          className="h-4 w-4 sm:h-5 sm:w-5 text-[#3092BE]"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <circle cx="9" cy="21" r="1"></circle>
+                          <circle cx="20" cy="21" r="1"></circle>
+                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                      </div>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="w-full h-px bg-gray-200"></div>
+        </div>
+
+        <MobileMenu isOpen={isMobileMenuOpen} onClose={handleMobileMenuClose} />
+      </header>
+
+      <main className="pb-16 pt-10">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-6">
           <Breadcrumb>
@@ -895,6 +1079,10 @@ export default function CollectionPageClient({
           </section>
         ) : null}
       </div>
-    </main>
+      </main>
+
+      {/* Footer */}
+      <Footer />
+    </div>
   )
 }
