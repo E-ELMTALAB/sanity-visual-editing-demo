@@ -504,3 +504,62 @@ export const instructorByIdQuery = groq`
     seo
   }
 `
+
+// Collection queries
+export const collectionBySlugQuery = groq`
+  *[_type == "collection" && slug.current == $slug][0]{
+    _id,
+    _key,
+    title,
+    slug,
+    key,
+    heroTitle,
+    heroSubtitle,
+    coverImage,
+    faq[]{
+      question,
+      answer
+    },
+    seo
+  }
+`
+
+export const collectionPaths = groq`
+  *[_type == "collection" && slug.current != null].slug.current
+`
+
+export const allCollectionsQuery = groq`
+  *[_type == "collection"] | order(_createdAt desc) {
+    _id,
+    title,
+    slug,
+    key,
+    heroTitle,
+    heroSubtitle,
+    coverImage
+  }
+`
+
+// Products by collection type
+export const productsByCollectionTypeQuery = groq`
+  *[_type == "product" && collectionType == $collectionType && inStock == true] | order(_createdAt desc) {
+    _id,
+    _key,
+    _type,
+    name,
+    slug,
+    description,
+    category,
+    collectionType,
+    price,
+    originalPrice,
+    discountPercentage,
+    image,
+    features,
+    badges,
+    inStock,
+    rating,
+    reviewCount,
+    tags
+  }
+`

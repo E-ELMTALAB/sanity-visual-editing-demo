@@ -19,6 +19,7 @@ import productOption from 'schemas/objects/productOption'
 import faq from 'schemas/documents/faq'
 import course from 'schemas/documents/course'
 import instructor from 'schemas/documents/instructor'
+import collection from 'schemas/documents/collection'
 import milestone from 'schemas/objects/milestone'
 import timeline from 'schemas/objects/timeline'
 import youtube from 'schemas/objects/youtube'
@@ -55,6 +56,7 @@ export default defineConfig({
       faq,
       course,
       instructor,
+      collection,
       // Objects
       productOption,
       milestone,

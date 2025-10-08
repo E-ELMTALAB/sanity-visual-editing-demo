@@ -160,6 +160,7 @@ export interface ProductDoc {
   description?: string
   longDescription?: string
   category?: string
+  collectionType?: string
   price?: number
   originalPrice?: number
   discountPercentage?: number
@@ -322,5 +323,33 @@ export interface CoursePayload {
     openGraphImage?: Image
     mainHeadingTag?: string
     sectionHeadingTag?: string
+  }
+}
+
+export interface CollectionFAQItem {
+  question?: string
+  answer?: string
+}
+
+export interface CollectionPayload {
+  _id?: string
+  _key?: string
+  title?: string
+  slug?: {
+    current?: string
+  }
+  key?: string
+  heroTitle?: string
+  heroSubtitle?: string
+  coverImage?: Image
+  faq?: CollectionFAQItem[]
+  seo?: {
+    metaTitle?: string
+    metaDescription?: string
+    canonicalUrl?: string
+    robotsMeta?: string
+    openGraphTitle?: string
+    openGraphDescription?: string
+    openGraphImage?: Image
   }
 }

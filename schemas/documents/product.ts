@@ -18,6 +18,13 @@ export default defineType({
     defineField({ name: 'description', title: 'Description', type: 'text', rows: 8, group: 'content' }),
     
     defineField({ name: 'category', title: 'Category', type: 'string', group: 'content' }),
+    defineField({ 
+      name: 'collectionType', 
+      title: 'Collection Type', 
+      type: 'string',
+      description: 'Collection key this product belongs to (e.g., "chatbot-ai", "ai-tools"). Leave empty if not part of a collection.',
+      group: 'content'
+    }),
     defineField({ name: 'price', title: 'Price', type: 'number', group: 'content' }),
     defineField({ name: 'originalPrice', title: 'Original Price', type: 'number', group: 'content' }),
     defineField({ name: 'discountPercentage', title: 'Discount Percentage', type: 'number', group: 'content' }),

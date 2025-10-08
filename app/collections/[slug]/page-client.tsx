@@ -45,20 +45,18 @@ import {
 } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 
-import type {
-  CollectionDocument,
-  CollectionPlan,
-  CollectionProduct,
-} from '../../../lib/collections.mock'
+import { urlForImage } from '@/lib/sanity.image'
+import type { CollectionPayload, ProductDoc } from 'types'
 
 const ITEMS_PER_PAGE = 24
 
 type SortOption = 'popular' | 'price-low-high' | 'price-high-low' | 'newest'
 
-type FacetKey = 'brand' | 'features' | 'billing' | 'price'
+type FacetKey = 'category' | 'features' | 'tags' | 'price'
 
 type CollectionPageClientProps = {
-  collection: CollectionDocument & { products: CollectionProduct[] }
+  collection: CollectionPayload
+  products: ProductDoc[]
   initialSearchParams?: Record<string, string | string[] | undefined>
 }
 
@@ -90,11 +88,10 @@ type Translations = {
   paginationPrev: string
   paginationNext: string
   productsCount: (count: number) => string
-  brandFacet: string
+  categoryFacet: string
   featureFacet: string
-  billingFacet: string
+  tagsFacet: string
   priceFacet: string
-  billingLabels: Record<CollectionPlan['billing_cycle'], string>
 }
 
 const translations: Record<'fa' | 'en', Translations> = {
@@ -126,16 +123,10 @@ const translations: Record<'fa' | 'en', Translations> = {
     paginationPrev: 'Previous',
     paginationNext: 'Next',
     productsCount: (count: number) => `${count} products`,
-    brandFacet: 'Brand',
+    categoryFacet: 'Category',
     featureFacet: 'Key features',
-    billingFacet: 'Billing',
+    tagsFacet: 'Tags',
     priceFacet: 'Price',
-    billingLabels: {
-      monthly: 'Monthly',
-      annual: 'Annual',
-      student: 'Student / Starter',
-      lifetime: 'Lifetime',
-    },
   },
   fa: {
     home: 'خانه',
@@ -165,32 +156,19 @@ const translations: Record<'fa' | 'en', Translations> = {
     paginationPrev: 'قبلی',
     paginationNext: 'بعدی',
     productsCount: (count: number) => `${count.toLocaleString('fa-IR')} محصول`,
-    brandFacet: 'برند',
+    categoryFacet: 'دسته‌بندی',
     featureFacet: 'ویژگی‌ها',
-    billingFacet: 'نوع پرداخت',
+    tagsFacet: 'برچسب‌ها',
     priceFacet: 'بازه قیمت',
-    billingLabels: {
-      monthly: 'ماهانه',
-      annual: 'سالانه',
-      student: 'دانشجویی/استارتر',
-      lifetime: 'همیشگی',
-    },
   },
 }
 
 const priceBuckets = [
-  { id: 'lt-10', labelEn: '< €10', labelFa: 'کمتر از ۱۰ یورو', min: 0, max: 10 },
-  { id: '10-25', labelEn: '€10 – €25', labelFa: '۱۰ تا ۲۵ یورو', min: 10, max: 25 },
-  { id: '25-50', labelEn: '€25 – €50', labelFa: '۲۵ تا ۵۰ یورو', min: 25, max: 50 },
-  { id: 'gt-50', labelEn: '> €50', labelFa: 'بیش از ۵۰ یورو', min: 50, max: Infinity },
+  { id: 'lt-100000', labelEn: '< 100,000', labelFa: 'کمتر از ۱۰۰,۰۰۰ تومان', min: 0, max: 100000 },
+  { id: '100000-250000', labelEn: '100,000 – 250,000', labelFa: '۱۰۰,۰۰۰ تا ۲۵۰,۰۰۰ تومان', min: 100000, max: 250000 },
+  { id: '250000-500000', labelEn: '250,000 – 500,000', labelFa: '۲۵۰,۰۰۰ تا ۵۰۰,۰۰۰ تومان', min: 250000, max: 500000 },
+  { id: 'gt-500000', labelEn: '> 500,000', labelFa: 'بیش از ۵۰۰,۰۰۰ تومان', min: 500000, max: Infinity },
 ]
-
-const billingTranslations: Record<CollectionPlan['billing_cycle'], keyof Translations> = {
-  monthly: 'perMonth',
-  annual: 'perYear',
-  student: 'perStudent',
-  lifetime: 'perLifetime',
-}
 
 function useLocale(): 'fa' | 'en' {
   const [locale, setLocale] = useState<'fa' | 'en'>(() => 'fa')
@@ -208,37 +186,25 @@ function useLocale(): 'fa' | 'en' {
   return locale
 }
 
-function formatPrice(value: number, currency: string, locale: 'fa' | 'en') {
+function formatPrice(value: number, locale: 'fa' | 'en') {
   if (value === 0) {
     return translations[locale].priceFree
   }
 
   return new Intl.NumberFormat(locale === 'fa' ? 'fa-IR' : 'en-US', {
-    style: 'currency',
-    currency,
     maximumFractionDigits: 0,
   })
     .format(value)
-    .replace(/ /, ' ')
+    .replace(/ /, ' ') + ' تومان'
 }
 
-function getPrimaryPlan(product: CollectionProduct) {
-  if (product.plans.length === 0) return undefined
-  const highlighted = product.plans.find((plan) => plan.highlight)
-  return highlighted || product.plans[0]
-}
-
-function computeProductPrice(product: CollectionProduct) {
-  if (product.price_range) {
-    return product.price_range.min
-  }
-  const plan = getPrimaryPlan(product)
-  return plan ? plan.price : 0
+function computeProductPrice(product: ProductDoc) {
+  return product.price || 0
 }
 
 function countActiveFilters(filters: SelectedFacets) {
   return (
-    filters.brand.length + filters.features.length + filters.billing.length + filters.price.length
+    filters.category.length + filters.features.length + filters.tags.length + filters.price.length
   )
 }
 
@@ -249,20 +215,16 @@ function CollectionProductCard({
   locale,
   t,
 }: {
-  product: CollectionProduct
+  product: ProductDoc
   locale: 'fa' | 'en'
   t: Translations
 }) {
-  const primaryPlan = getPrimaryPlan(product)
-  const priceLabel = primaryPlan
-    ? `${formatPrice(primaryPlan.price, primaryPlan.currency, locale)} / ${t[billingTranslations[primaryPlan.billing_cycle]]}`
-    : product.price_range
-    ? `${formatPrice(product.price_range.min, product.price_range.currency, locale)}${
-        product.price_range.max !== product.price_range.min
-          ? ` – ${formatPrice(product.price_range.max, product.price_range.currency, locale)}`
-          : ''
-      }`
-    : t.priceFree
+  const price = product.price || 0
+  const originalPrice = product.originalPrice || 0
+  const discountPercentage = product.discountPercentage || 0
+  
+  const priceLabel = price > 0 ? formatPrice(price, locale) : t.priceFree
+  const imageUrl = product.image ? urlForImage(product.image)?.width(600).height(400).url() : '/placeholder.svg'
 
   return (
     <article
@@ -270,10 +232,10 @@ function CollectionProductCard({
     >
       <div className="relative h-40 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 opacity-70" />
-        {product.hero_image ? (
+        {imageUrl ? (
           <Image
-            src={product.hero_image}
-            alt={`${product.title} hero`}
+            src={imageUrl}
+            alt={product.name || 'Product'}
             fill
             sizes="(min-width: 1280px) 300px, (min-width: 1024px) 25vw, (min-width: 768px) 40vw, 90vw"
             className="object-cover opacity-80"
@@ -282,27 +244,24 @@ function CollectionProductCard({
         <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/60 via-slate-900/20 to-transparent" />
         <div className="absolute inset-x-5 bottom-5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="relative size-14 overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur">
-              <Image src={product.logo} alt={`${product.brand} logo`} fill className="object-contain p-3" />
-            </div>
             <div className="text-white">
-              <p className="text-sm font-medium opacity-80">{product.brand}</p>
-              <h3 className="text-lg font-semibold leading-tight">{product.title}</h3>
+              <p className="text-sm font-medium opacity-80">{product.category || 'محصول'}</p>
+              <h3 className="text-lg font-semibold leading-tight">{product.name}</h3>
             </div>
           </div>
-          {product.is_new ? (
+          {discountPercentage > 0 ? (
             <Badge className="rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-semibold text-white shadow-lg">
-              <Sparkles className="me-1 size-3.5" /> {t.newBadge}
+              <Sparkles className="me-1 size-3.5" /> {discountPercentage}%
             </Badge>
           ) : null}
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-4 p-6">
         <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
-          {product.short_description}
+          {product.description || ''}
         </p>
         <div className="flex flex-wrap gap-2">
-          {product.badge_features.slice(0, 3).map((feature) => (
+          {product.features?.slice(0, 3).map((feature) => (
             <Badge key={feature} variant="secondary" className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200">
               {feature}
             </Badge>
@@ -310,20 +269,24 @@ function CollectionProductCard({
         </div>
         <div className="mt-auto flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                {t.ratingLabel}
-              </p>
-              <div className="flex items-center gap-1 text-slate-800 dark:text-slate-100">
-                <Star className="size-4 text-amber-400" fill="currentColor" />
-                <span className="text-sm font-semibold">{product.rating_avg.toFixed(1)}</span>
-                <span className="text-xs text-slate-400">({product.rating_count.toLocaleString(locale === 'fa' ? 'fa-IR' : 'en-US')})</span>
+            {product.rating && product.reviewCount ? (
+              <div>
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  {t.ratingLabel}
+                </p>
+                <div className="flex items-center gap-1 text-slate-800 dark:text-slate-100">
+                  <Star className="size-4 text-amber-400" fill="currentColor" />
+                  <span className="text-sm font-semibold">{product.rating.toFixed(1)}</span>
+                  <span className="text-xs text-slate-400">({product.reviewCount.toLocaleString(locale === 'fa' ? 'fa-IR' : 'en-US')})</span>
+                </div>
               </div>
-            </div>
+            ) : <div />}
             <div className="text-right">
-              <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                {t.startingAt}
-              </p>
+              {originalPrice > price && (
+                <p className="text-xs text-slate-400 line-through">
+                  {formatPrice(originalPrice, locale)}
+                </p>
+              )}
               <p className="text-lg font-semibold text-slate-900 dark:text-white">{priceLabel}</p>
             </div>
           </div>
@@ -331,7 +294,7 @@ function CollectionProductCard({
             asChild
             className="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 py-2.5 text-sm font-semibold text-white transition-all group-hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700"
           >
-            <Link href={`/products/${product.slug}`} aria-label={`${product.title} ${t.viewDetails}`}>
+            <Link href={`/products/${product.slug?.current || ''}`} aria-label={`${product.name} ${t.viewDetails}`}>
               <span>{t.viewDetails}</span>
             </Link>
           </Button>
@@ -530,6 +493,7 @@ function PaginationControls({
 
 export default function CollectionPageClient({
   collection,
+  products,
   initialSearchParams,
 }: CollectionPageClientProps) {
   const locale = useLocale()
@@ -537,28 +501,22 @@ export default function CollectionPageClient({
   const router = useRouter()
   const pathname = usePathname()
 
-  const products = collection.products
-
   const availableFacets = useMemo(
     (): Record<FacetKey, { label: string; options: { value: string; label: string }[] }> => {
-      const brandOptions = Array.from(new Set(products.map((product) => product.brand))).map(
-        (value) => ({
-          value,
-          label: value,
-        }),
-      )
+      const categoryOptions = Array.from(
+        new Set(products.map((product) => product.category).filter(Boolean))
+      ).map((value) => ({
+        value: value!,
+        label: value!,
+      }))
 
       const featureOptions = Array.from(
-        new Set(products.flatMap((product) => product.badge_features)),
+        new Set(products.flatMap((product) => product.features || [])),
       ).map((value) => ({ value, label: value }))
 
-      const billingCycles = Array.from(
-        new Set(products.flatMap((product) => product.plans.map((plan) => plan.billing_cycle))),
-      )
-      const billingOptions = billingCycles.map((value) => ({
-        value,
-        label: translations[locale].billingLabels[value],
-      }))
+      const tagOptions = Array.from(
+        new Set(products.flatMap((product) => product.tags || [])),
+      ).map((value) => ({ value, label: value }))
 
       const priceOptions = priceBuckets.map((bucket) => ({
         value: bucket.id,
@@ -566,9 +524,9 @@ export default function CollectionPageClient({
       }))
 
       return {
-        brand: { label: t.brandFacet, options: brandOptions },
+        category: { label: t.categoryFacet, options: categoryOptions },
         features: { label: t.featureFacet, options: featureOptions },
-        billing: { label: t.billingFacet, options: billingOptions },
+        tags: { label: t.tagsFacet, options: tagOptions },
         price: { label: t.priceFacet, options: priceOptions },
       }
     },
@@ -592,9 +550,9 @@ export default function CollectionPageClient({
     return 'popular'
   })
   const [selectedFacets, setSelectedFacets] = useState<SelectedFacets>(() => ({
-    brand: parseArrayParam(initialSearchParams?.brands),
+    category: parseArrayParam(initialSearchParams?.category),
     features: parseArrayParam(initialSearchParams?.features),
-    billing: parseArrayParam(initialSearchParams?.billing),
+    tags: parseArrayParam(initialSearchParams?.tags),
     price: parseArrayParam(initialSearchParams?.price),
   }))
   const [page, setPage] = useState(() => {
@@ -607,9 +565,9 @@ export default function CollectionPageClient({
     const params = new URLSearchParams()
     if (searchTerm) params.set('q', searchTerm)
     if (sort !== 'popular') params.set('sort', sort)
-    if (selectedFacets.brand.length) params.set('brands', selectedFacets.brand.join(','))
+    if (selectedFacets.category.length) params.set('category', selectedFacets.category.join(','))
     if (selectedFacets.features.length) params.set('features', selectedFacets.features.join(','))
-    if (selectedFacets.billing.length) params.set('billing', selectedFacets.billing.join(','))
+    if (selectedFacets.tags.length) params.set('tags', selectedFacets.tags.join(','))
     if (selectedFacets.price.length) params.set('price', selectedFacets.price.join(','))
     if (page > 1) params.set('page', String(page))
 
@@ -621,24 +579,24 @@ export default function CollectionPageClient({
     const normalizedSearch = searchTerm.trim().toLowerCase()
     return products.filter((product) => {
       if (normalizedSearch) {
-        const haystack = `${product.title} ${product.brand}`.toLowerCase()
+        const haystack = `${product.name} ${product.category} ${product.description}`.toLowerCase()
         if (!haystack.includes(normalizedSearch)) return false
       }
 
-      if (selectedFacets.brand.length && !selectedFacets.brand.includes(product.brand)) {
+      if (selectedFacets.category.length && product.category && !selectedFacets.category.includes(product.category)) {
         return false
       }
 
       if (
         selectedFacets.features.length &&
-        !selectedFacets.features.every((feature) => product.badge_features.includes(feature))
+        (!product.features || !selectedFacets.features.every((feature) => product.features?.includes(feature)))
       ) {
         return false
       }
 
       if (
-        selectedFacets.billing.length &&
-        !product.plans.some((plan) => selectedFacets.billing.includes(plan.billing_cycle))
+        selectedFacets.tags.length &&
+        (!product.tags || !selectedFacets.tags.some((tag) => product.tags?.includes(tag)))
       ) {
         return false
       }
@@ -660,7 +618,7 @@ export default function CollectionPageClient({
   const sortedProducts = useMemo(() => {
     return [...filteredProducts].sort((a, b) => {
       if (sort === 'popular') {
-        return b.rating_count - a.rating_count
+        return (b.reviewCount || 0) - (a.reviewCount || 0)
       }
       if (sort === 'price-low-high') {
         return computeProductPrice(a) - computeProductPrice(b)
@@ -669,7 +627,7 @@ export default function CollectionPageClient({
         return computeProductPrice(b) - computeProductPrice(a)
       }
       if (sort === 'newest') {
-        return Number(b.is_new ?? 0) - Number(a.is_new ?? 0)
+        return 0 // Can be based on _createdAt if needed
       }
       return 0
     })
@@ -691,7 +649,7 @@ export default function CollectionPageClient({
   const activeFilterCount = countActiveFilters(selectedFacets)
 
   const resetFilters = () => {
-    setSelectedFacets({ brand: [], features: [], billing: [], price: [] })
+    setSelectedFacets({ category: [], features: [], tags: [], price: [] })
     setSearchTerm('')
     setSort('popular')
     setPage(1)
@@ -721,9 +679,9 @@ export default function CollectionPageClient({
         <section className="relative overflow-hidden rounded-[2.5rem] border border-slate-200/60 bg-slate-950 text-white shadow-[0_40px_80px_-60px_rgba(15,23,42,0.7)]">
           <div className="absolute inset-0">
             <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-900/60 to-slate-950" />
-            {collection.cover_image ? (
+            {collection.coverImage ? (
               <Image
-                src={collection.cover_image}
+                src={urlForImage(collection.coverImage)?.width(1920).height(600).url() || ''}
                 alt={`${collection.title} cover`}
                 fill
                 priority
@@ -740,16 +698,16 @@ export default function CollectionPageClient({
                 {collection.key}
               </Badge>
               <h1 className="text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
-                {collection.hero_title}
+                {collection.heroTitle || collection.title}
               </h1>
               <p className="mt-4 max-w-2xl text-lg leading-7 text-white/80">
-                {collection.hero_subtitle}
+                {collection.heroSubtitle}
               </p>
             </div>
             <div className="flex flex-col items-start gap-2 rounded-3xl border border-white/10 bg-white/10 px-6 py-4 text-white/90 backdrop-blur-lg lg:items-end">
-              <span className="text-sm uppercase tracking-[0.2em] text-white/60">{t.productsCount(collection.products.length)}</span>
+              <span className="text-sm uppercase tracking-[0.2em] text-white/60">{t.productsCount(products.length)}</span>
               <p className="text-3xl font-semibold text-white">
-                {collection.products.length.toLocaleString(locale === 'fa' ? 'fa-IR' : 'en-US')}
+                {products.length.toLocaleString(locale === 'fa' ? 'fa-IR' : 'en-US')}
               </p>
             </div>
           </div>
@@ -773,11 +731,11 @@ export default function CollectionPageClient({
                 </div>
                 <div className="hidden flex-1 flex-wrap items-center gap-2 md:flex">
                   <FacetPopover
-                    label={availableFacets.brand.label}
-                    options={availableFacets.brand.options}
-                    value={selectedFacets.brand}
+                    label={availableFacets.category.label}
+                    options={availableFacets.category.options}
+                    value={selectedFacets.category}
                     onChange={(next) => {
-                      setSelectedFacets((prev) => ({ ...prev, brand: next }))
+                      setSelectedFacets((prev) => ({ ...prev, category: next }))
                       setPage(1)
                     }}
                   />
@@ -791,11 +749,11 @@ export default function CollectionPageClient({
                     }}
                   />
                   <FacetPopover
-                    label={availableFacets.billing.label}
-                    options={availableFacets.billing.options}
-                    value={selectedFacets.billing}
+                    label={availableFacets.tags.label}
+                    options={availableFacets.tags.options}
+                    value={selectedFacets.tags}
                     onChange={(next) => {
-                      setSelectedFacets((prev) => ({ ...prev, billing: next }))
+                      setSelectedFacets((prev) => ({ ...prev, tags: next }))
                       setPage(1)
                     }}
                   />
