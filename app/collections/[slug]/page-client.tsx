@@ -45,7 +45,7 @@ import {
 } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 
-import { urlForImage } from '@/lib/sanity.image'
+import { urlForImage } from 'lib/sanity.image'
 import type { CollectionPayload, ProductDoc } from 'types'
 
 const ITEMS_PER_PAGE = 24

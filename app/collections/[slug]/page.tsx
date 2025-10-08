@@ -2,14 +2,14 @@ import type { Metadata } from 'next'
 import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
 
-import CollectionOverlay from '@/components/site/collection/CollectionOverlay'
-import { getClient } from '@/lib/sanity.client'
-import { readToken } from '@/lib/sanity.api'
+import CollectionOverlay from 'components/site/collection/CollectionOverlay'
+import { getClient } from 'lib/sanity.client'
+import { readToken } from 'lib/sanity.api'
 import {
   collectionBySlugQuery,
   productsByCollectionTypeQuery,
-} from '@/lib/sanity.queries'
-import { urlForImage } from '@/lib/sanity.image'
+} from 'lib/sanity.queries'
+import { urlForImage } from 'lib/sanity.image'
 import type { CollectionPayload, ProductDoc } from 'types'
 import CollectionPageClient from './page-client'
 
