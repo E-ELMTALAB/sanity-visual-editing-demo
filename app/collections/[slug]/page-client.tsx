@@ -898,7 +898,7 @@ export default function CollectionPageClient({
         </section>
 
         <section className="relative mt-10">
-          <div className="sticky top-16 z-20 mb-6 rounded-3xl border border-slate-200/70 bg-white/90 p-4 shadow-lg backdrop-blur md:top-24 dark:border-slate-800 dark:bg-slate-900/90">
+          <div className="mb-6 rounded-3xl border border-slate-200/70 bg-white/90 p-4 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
                 <div className="relative w-full md:max-w-xs">
