@@ -9,10 +9,9 @@ import remarkGfm from 'remark-gfm'
 
 interface ProductPageProps {
   productData: any
-  faqsData?: any[]
 }
 
-export default function ProductPageClient({ productData, faqsData }: ProductPageProps) {
+export default function ProductPage({ productData }: ProductPageProps) {
   const [selectedTab, setSelectedTab] = useState("description")
   const [quantity, setQuantity] = useState(1)
   const [selectedOption, setSelectedOption] = useState(productData?.options?.[0]?.id || "")
@@ -20,8 +19,7 @@ export default function ProductPageClient({ productData, faqsData }: ProductPage
 
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
-  const [user, setUser] = useState({ name: "مهدی", email: "mehdi@example.com" })
-  const [expandedFaq, setExpandedFaq] = useState<number | null>(null)
+  const [user, setUser] = useState({ name: "+�+�+���", email: "mehdi@example.com" })
 
   const { state: cartState, addItem } = useCart()
   const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false)
@@ -97,8 +95,36 @@ export default function ProductPageClient({ productData, faqsData }: ProductPage
     relatedBlogs: Array.isArray(productData?.relatedBlogs) ? productData.relatedBlogs : [],
   }
 
-  const relatedProducts = product.relatedProducts || []
-  const relatedArticles = product.relatedBlogs || []
+  const reviews = [
+    {
+      id: 1,
+      user: "+�+�� +�+�+�+���",
+      rating: 5,
+      date: "2 +�+�+� ++��+�",
+      comment: "+�+�+�� +�+�+�+� +�+���+� +�+�+�+� +�+� +� +�+�+�+� +�+�+�+� +�+�+� +��G��+�+�+�. +��+�+�+� +�+� +���+�� +�+�+�+�+� +�+�+�.",
+      helpful: 12,
+    },
+    {
+      id: 2,
+      user: "+�+�+�+� +�+�+�+���",
+      rating: 4,
+      date: "1 +�+�+�+� ++��+�",
+      comment: "+���+���+� +�+�+��� +�+�+�+� +�+�� ��+�+� +���+� +�+�+�+� +�+�. +�+� +�+� +�+�+��� +�+�+�+�.",
+      helpful: 8,
+    },
+    {
+      id: 3,
+      user: "+�+�+�+� +�+�+����",
+      rating: 5,
+      date: "2 +�+�+�+� ++��+�",
+      comment: "+�+�+�+���+� +��+�+� +�+�+�+�+� +�+� +�+�+�+�. +++�+���+�+�+�� +�+� +�+�+�� +�+�+�.",
+      helpful: 15,
+    },
+  ]
+
+
+  const relatedProducts = product.relatedProducts
+  const relatedArticles = product.relatedBlogs
 
   const selectedPrice = product.options && product.options.length > 0 
     ? (product.options.find((opt: any) => opt.id === selectedOption)?.price || product.options[0]?.price || product.price)
@@ -622,8 +648,9 @@ export default function ProductPageClient({ productData, faqsData }: ProductPage
             <div className="border-b border-gray-200">
               <div className="flex">
                 {[
-                  { id: "description", name: "توضیحات" },
-                  { id: "features", name: "ویژگی‌ها" },
+                  { id: "description", name: "+�+�+���+�+�+�" },
+                  { id: "features", name: "+��+�+���G��+�+�" },
+                  { id: "reviews", name: "+�+++�+�+� +�+�+�+�+�+�+�" },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -676,135 +703,177 @@ export default function ProductPageClient({ productData, faqsData }: ProductPage
                 </div>
               )}
 
+              {selectedTab === "reviews" && (
+                <div>
+                  <div className="flex items-center justify-between mb-8">
+                    <h3 className="text-xl font-bold text-gray-800">+�+++�+�+� +�+�+�+�+�+�+�</h3>
+                    <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                      +�+�+� +�+++�
+                    </button>
+                  </div>
+
+                  <div className="space-y-6">
+                    {reviews.map((review) => (
+                      <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-3 space-x-reverse">
+                            <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                              <span className="text-gray-600 font-medium">{review.user[0]}</span>
+                            </div>
+                            <div>
+                              <div className="font-medium text-gray-800">{review.user}</div>
+                              <div className="text-sm text-gray-500">{review.date}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <svg
+                                key={i}
+                                className={`w-4 h-4 ${i < review.rating ? "text-yellow-400" : "text-gray-300"}`}
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-gray-700 mb-3">{review.comment}</p>
+                        <div className="flex items-center space-x-4 space-x-reverse text-sm text-gray-500">
+                          <button className="hover:text-blue-600">+�+���+� ({review.helpful})</button>
+                          <button className="hover:text-blue-600">+++�+�+�</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
         </div>
 
-        {/* Related Products Section - From Sanity */}
-        {relatedProducts && relatedProducts.length > 0 && (
-          <div className="mt-16">
-            <div className="bg-white rounded-xl shadow-sm p-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-8">محصولات مرتبط</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {relatedProducts.map((relatedProduct: any) => (
-                  <Link
-                    key={relatedProduct._id}
-                    href={`/products/${relatedProduct.slug}`}
-                    className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-blue-300"
-                  >
-                    <div className="relative">
-                      <img
-                        src={relatedProduct.imageUrl || "/placeholder.svg"}
-                        alt={relatedProduct.name}
-                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      {relatedProduct.discountPercentage > 0 && (
-                        <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                          {relatedProduct.discountPercentage}% تخفیف
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-bold text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                        {relatedProduct.name}
-                      </h3>
-                      <div className="flex items-center mb-3">
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <svg
-                              key={i}
-                              className={`w-4 h-4 ${i < Math.floor(relatedProduct.rating || 0) ? "text-yellow-400" : "text-gray-300"}`}
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                          ))}
-                          <span className="text-gray-600 text-sm mr-2">({relatedProduct.reviewCount || 0})</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2 space-x-reverse">
-                          <span className="text-lg font-bold text-blue-600">
-                            {(relatedProduct.price || 0).toLocaleString()} تومان
-                          </span>
-                          {relatedProduct.originalPrice > relatedProduct.price && (
-                            <span className="text-sm text-gray-500 line-through">
-                              {relatedProduct.originalPrice.toLocaleString()}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-              <div className="mt-8 text-center">
-                <Link href="/products" className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
-                  مشاهده همه محصولات
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Related Articles Section */}
-        {relatedArticles && relatedArticles.length > 0 && (
-          <div className="mt-8">
-            <div className="bg-white rounded-xl shadow-sm p-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-8">مقالات مرتبط</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {relatedArticles.map((article: any) => (
-                  <Link
-                    key={article._id}
-                    href={`/blog/${article.slug}`}
-                    className="block p-6 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-300 group"
-                  >
-                    {article.coverImageUrl && (
-                      <div className="mb-3">
-                        <img
-                          src={article.coverImageUrl}
-                          alt={article.title}
-                          className="w-full h-32 object-cover rounded-lg"
-                        />
+        {/* Related Products Section */}
+        <div className="mt-16">
+          <div className="bg-white rounded-xl shadow-sm p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-8">+�+�+�+�+�+�+� +�+�+�+�++</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedProducts.map((relatedProduct: any) => (
+                <Link
+                  key={relatedProduct.id}
+                  href={`/products/${relatedProduct.slug}`}
+                  className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-blue-300"
+                >
+                  <div className="relative">
+                    <img
+                      src={relatedProduct.image || "/placeholder.svg"}
+                      alt={relatedProduct.title}
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    {relatedProduct.discountPercentage > 0 && (
+                      <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                        {relatedProduct.discountPercentage}% +�+�+���+�
                       </div>
                     )}
-                    <h3 className="font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                      {article.title}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-bold text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                      {relatedProduct.title}
                     </h3>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <span className="bg-gray-100 px-3 py-1 rounded-full text-xs font-medium">
-                        {article.category || 'عمومی'}
-                      </span>
-                      <span className="flex items-center">
-                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        5 دقیقه
-                      </span>
+                    <div className="flex items-center mb-3">
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <svg
+                            key={i}
+                            className={`w-4 h-4 ${i < Math.floor(relatedProduct.rating || 0) ? "text-yellow-400" : "text-gray-300"}`}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                        <span className="text-gray-600 text-sm mr-2">({relatedProduct.reviewCount || 0})</span>
+                      </div>
                     </div>
-                  </Link>
-                ))}
-              </div>
-              <div className="mt-8 text-center">
-                <Link href="/blog" className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
-                  مشاهده همه مقالات
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2 space-x-reverse">
+                        <span className="text-lg font-bold text-blue-600">
+                          {relatedProduct.price.toLocaleString()} +�+�+�+�+�
+                        </span>
+                        {relatedProduct.originalPrice > relatedProduct.price && (
+                          <span className="text-sm text-gray-500 line-through">
+                            {relatedProduct.originalPrice.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </Link>
-              </div>
+              ))}
+            </div>
+            <div className="mt-8 text-center">
+              <Link href="/products" className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
+                +�+�+�+�+�+� +�+�+� +�+�+�+�+�+�+�
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </Link>
             </div>
           </div>
-        )}
+        </div>
+
+        {/* Related Articles Section */}
+        <div className="mt-8">
+          <div className="bg-white rounded-xl shadow-sm p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-8">+�+�+�+�+�+� +�+�+�+�++</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedArticles.map((article: any) => (
+                <Link
+                  key={article.id}
+                  href={`/blog/${article.slug}`}
+                  className="block p-6 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-300 group"
+                >
+                  {article.coverImage && (
+                    <div className="mb-3">
+                      <img
+                        src={article.coverImage}
+                        alt={article.title}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
+                  <h3 className="font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                    {article.title}
+                  </h3>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span className="bg-gray-100 px-3 py-1 rounded-full text-xs font-medium">
+                      {Array.isArray(article.tags) && article.tags.length > 0 ? article.tags[0] : '+�+�+�+�+�'}
+                    </span>
+                    <span className="flex items-center">
+                      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      5 +�+��+�+�
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <div className="mt-8 text-center">
+              <Link href="/blog" className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
+                +�+�+�+�+�+� +�+�+� +�+�+�+�+�+�
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-40 backdrop-blur-md bg-white/90 border-t border-gray-200/50 shadow-2xl">
@@ -886,58 +955,6 @@ export default function ProductPageClient({ productData, faqsData }: ProductPage
           </div>
         </div>
       </div>
-
-      {/* Dynamic FAQ Section from Sanity */}
-      {faqsData && faqsData.length > 0 && (
-        <div className="container mx-auto px-4 py-16">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">سوالات متداول</h2>
-            <p className="text-gray-600">پاسخ سوالات رایج درباره این محصول</p>
-          </div>
-          
-          <div className="space-y-4 max-w-4xl mx-auto">
-            {faqsData.map((faq, index) => (
-              <div key={faq._id} className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden">
-                <button
-                  onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
-                  className="w-full flex items-center justify-between p-6 text-right hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-start gap-4 flex-1">
-                    {faq.category && (
-                      <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
-                        {faq.category === 'general' && 'عمومی'}
-                        {faq.category === 'payment' && 'پرداخت'}
-                        {faq.category === 'products' && 'محصولات'}
-                        {faq.category === 'technical' && 'فنی'}
-                        {faq.category === 'services' && 'خدمات'}
-                        {!['general', 'payment', 'products', 'technical', 'services'].includes(faq.category) && faq.category}
-                      </span>
-                    )}
-                    <h3 className="font-semibold text-gray-800 text-lg flex-1">
-                      {faq.question}
-                    </h3>
-                  </div>
-                  <svg
-                    className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 mr-4 ${
-                      expandedFaq === index ? 'rotate-180' : ''
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {expandedFaq === index && (
-                  <div className="px-6 pb-6 text-gray-600 leading-relaxed">
-                    {faq.answer}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div className="pb-24">
         {/* Footer Section */}

@@ -4,13 +4,8 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import ProductCard from "@/components/product-card"
-import type { FAQ } from "../../../types"
 
-interface ProductsPageClientProps {
-  faqsData?: FAQ[]
-}
-
-export default function ProductsPageClient({ faqsData }: ProductsPageClientProps) {
+export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [sortBy, setSortBy] = useState("popular")
   const [showFilters, setShowFilters] = useState(false)
@@ -1409,58 +1404,6 @@ export default function ProductsPageClient({ faqsData }: ProductsPageClientProps
           </div>
         </div>
       </div>
-
-      {/* Dynamic FAQ Section from Sanity */}
-      {faqsData && faqsData.length > 0 && (
-        <div className="container mx-auto px-4 py-16">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">سوالات متداول</h2>
-            <p className="text-gray-600">پاسخ سوالات رایج درباره محصولات را اینجا بیابید</p>
-          </div>
-          
-          <div className="space-y-4 max-w-4xl mx-auto">
-            {faqsData.map((faq, index) => (
-              <div key={faq._id} className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden">
-                <button
-                  onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
-                  className="w-full flex items-center justify-between p-6 text-right hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-start gap-4 flex-1">
-                    {faq.category && (
-                      <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
-                        {faq.category === 'general' && 'عمومی'}
-                        {faq.category === 'payment' && 'پرداخت'}
-                        {faq.category === 'products' && 'محصولات'}
-                        {faq.category === 'technical' && 'فنی'}
-                        {faq.category === 'services' && 'خدمات'}
-                        {!['general', 'payment', 'products', 'technical', 'services'].includes(faq.category) && faq.category}
-                      </span>
-                    )}
-                    <h3 className="font-semibold text-gray-800 text-lg flex-1">
-                      {faq.question}
-                    </h3>
-                  </div>
-                  <svg
-                    className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 mr-4 ${
-                      expandedFaq === index ? 'rotate-180' : ''
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {expandedFaq === index && (
-                  <div className="px-6 pb-6 text-gray-600 leading-relaxed">
-                    {faq.answer}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Footer Section */}
       <footer style={{ backgroundColor: "#3092BE" }}>
