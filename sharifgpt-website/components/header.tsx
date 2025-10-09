@@ -17,6 +17,8 @@ export default function Header({ showProductsDropdown = true, showCoursesDropdow
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false)
   const [cartState, setCartState] = useState({ itemCount: 0 })
+  const [headerVisible, setHeaderVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
   // Fetch products from Sanity
   useEffect(() => {
@@ -110,10 +112,32 @@ export default function Header({ showProductsDropdown = true, showCoursesDropdow
     setIsCartDropdownOpen(!isCartDropdownOpen)
   }
 
+  // Scroll behavior to hide/show header
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      
+      if (currentScrollY < 10) {
+        setHeaderVisible(true)
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down and past 100px
+        setHeaderVisible(false)
+      } else if (currentScrollY < lastScrollY) {
+        // Scrolling up
+        setHeaderVisible(true)
+      }
+      
+      setLastScrollY(currentScrollY)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [lastScrollY])
+
   return (
     <>
       {/* Header Section */}
-      <header className="sticky top-0 z-50 glassmorphism">
+      <header className={`fixed top-0 left-0 right-0 z-50 glassmorphism transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="container mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Mobile Menu Button - Only visible on mobile */}
@@ -265,28 +289,10 @@ export default function Header({ showProductsDropdown = true, showCoursesDropdow
               )}
 
               <Link
-                href="/enterprise"
-                className="flex items-center text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)] whitespace-nowrap"
-              >
-                <span>فروش سازمانی</span>
-                <svg
-                  className="w-4 h-4 mr-1"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </Link>
-              <Link
                 href="/blog"
                 className="text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)]"
               >
-                مجله
+                بلاگ
               </Link>
             </nav>
 
