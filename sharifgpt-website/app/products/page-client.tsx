@@ -4,13 +4,17 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import ProductCard from "@/components/product-card"
+import type { FAQ } from "../../../types"
 
-export default function ProductsPage() {
+interface ProductsPageClientProps {
+  faqsData?: FAQ[]
+}
+
+export default function ProductsPageClient({ faqsData }: ProductsPageClientProps) {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [sortBy, setSortBy] = useState("popular")
   const [showFilters, setShowFilters] = useState(false)
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null)
-  const [newReview, setNewReview] = useState({ name: "", rating: 5, comment: "" })
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const [user, setUser] = useState({ name: "مهدی", email: "mehdi@example.com" })
@@ -242,29 +246,6 @@ export default function ProductsPage() {
     },
   ]
 
-  const userReviews = [
-    {
-      id: 1,
-      name: "مهدی",
-      rating: 5,
-      comment: "خدمات عالی و سریع. اکانت اسپاتیفای خریداری کردم و بلافاصله فعال شد.",
-      date: "1403/01/20",
-    },
-    {
-      id: 2,
-      name: "سارا",
-      rating: 4,
-      comment: "کیفیت خوب و قیمت مناسب. پشتیبانی هم سریع پاسخ می‌دهد.",
-      date: "1403/01/18",
-    },
-    {
-      id: 3,
-      name: "علی",
-      rating: 5,
-      comment: "بهترین سایت برای خرید محصولات دیجیتال. کاملاً راضی هستم.",
-      date: "1403/01/15",
-    },
-  ]
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -326,13 +307,6 @@ export default function ProductsPage() {
         return b.reviews - a.reviews
     }
   })
-
-  const handleReviewSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Here you would typically send the review to your backend
-    console.log("New review:", newReview)
-    setNewReview({ name: "", rating: 5, comment: "" })
-  }
 
   return (
     <div className="bg-gray-50 min-h-screen" dir="rtl">
@@ -1270,114 +1244,60 @@ export default function ProductsPage() {
               </div>
             </div>
 
-            {/* User Reviews Section */}
+            {/* FAQ Section */}
             <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">نظرات کاربران</h2>
-                <div className="flex items-center space-x-2 space-x-reverse">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <svg
-                        key={i}
-                        className={`w-5 h-5 ${i < 4 ? "text-yellow-400" : "text-gray-300"}`}
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    <span className="font-bold">4.5</span>
-                    <span className="mx-1">میانگین امتیاز</span>
-                    <span className="text-blue-600">16</span>
-                    <span>مجموع نظر</span>
-                  </div>
-                </div>
+                <h2 className="text-2xl font-bold text-gray-800">سوالات متداول</h2>
               </div>
-
-              {/* Existing Reviews */}
-              <div className="space-y-4 mb-8">
-                {userReviews.map((review) => (
-                  <div key={review.id} className="border-b border-gray-100 pb-4 last:border-b-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2 space-x-reverse">
-                        <span className="font-medium text-gray-800">{review.name}</span>
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <svg
-                              key={i}
-                              className={`w-4 h-4 ${i < review.rating ? "text-yellow-400" : "text-gray-300"}`}
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                          ))}
+              
+              {/* Dynamic FAQ List from Sanity */}
+              {faqsData && faqsData.length > 0 ? (
+                <div className="space-y-3">
+                  {faqsData.map((faq, index) => (
+                    <div key={faq._id} className="border border-gray-200 rounded-lg overflow-hidden">
+                      <button
+                        onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
+                        className="w-full flex items-center justify-between p-5 text-right hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-start gap-3 flex-1">
+                          {faq.category && (
+                            <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
+                              {faq.category === 'general' && 'عمومی'}
+                              {faq.category === 'payment' && 'پرداخت'}
+                              {faq.category === 'shipping' && 'ارسال'}
+                              {faq.category === 'account' && 'حساب کاربری'}
+                              {faq.category === 'technical' && 'فنی'}
+                              {faq.category === 'products' && 'محصولات'}
+                              {faq.category === 'services' && 'خدمات'}
+                              {faq.category === 'other' && 'سایر'}
+                            </span>
+                          )}
+                          <h3 className="font-semibold text-gray-800 flex-1">{faq.question}</h3>
                         </div>
-                      </div>
-                      <span className="text-sm text-gray-500">{review.date}</span>
+                        <svg
+                          className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 mr-3 ${
+                            expandedFaq === index ? 'rotate-180' : ''
+                          }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      {expandedFaq === index && (
+                        <div className="px-5 pb-5 text-gray-600 leading-relaxed">
+                          {faq.answer}
+                        </div>
+                      )}
                     </div>
-                    <p className="text-gray-600">{review.comment}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Review Submission Form */}
-              <div className="border-t border-gray-200 pt-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">ثبت نظر</h3>
-                <form onSubmit={handleReviewSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">نام</label>
-                      <input
-                        type="text"
-                        value={newReview.name}
-                        onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">امتیاز</label>
-                      <select
-                        value={newReview.rating}
-                        onChange={(e) => setNewReview({ ...newReview, rating: Number.parseInt(e.target.value) })}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        {[5, 4, 3, 2, 1].map((rating) => (
-                          <option key={rating} value={rating}>
-                            {rating} ستاره
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">نظر شما</label>
-                    <textarea
-                      value={newReview.comment}
-                      onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                      rows={4}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="نظر خود را بنویسید..."
-                      required
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                  >
-                    ثبت نظر
-                  </button>
-                </form>
-              </div>
-
-              <div className="mt-6 text-center">
-                <button className="bg-cyan-500 text-white px-6 py-2 rounded-lg hover:bg-cyan-600 transition-colors font-medium">
-                  ورود و ثبت نظر
-                </button>
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>هیچ سوالی یافت نشد</p>
+                </div>
+              )}
             </div>
 
             {/* Pagination */}

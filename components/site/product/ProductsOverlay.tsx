@@ -1,10 +1,11 @@
 import type { ProductDoc } from 'types'
 
 interface ProductsOverlayProps {
-  products: ProductDoc[]
+  products?: ProductDoc[]
+  faqs?: any[]
 }
 
-export default function ProductsOverlay({ products }: ProductsOverlayProps) {
+export default function ProductsOverlay({ products, faqs }: ProductsOverlayProps) {
   return (
     <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0 }}>
       {products?.map((product, i) => (
@@ -33,6 +34,20 @@ export default function ProductsOverlay({ products }: ProductsOverlayProps) {
           ))}
           {product?.seo?.metaTitle && <span>{product.seo.metaTitle}</span>}
           {product?.seo?.metaDescription && <span>{product.seo.metaDescription}</span>}
+        </div>
+      ))}
+      
+      {/* FAQs Overlay */}
+      {faqs?.map((faq, i) => (
+        <div
+          key={faq._id}
+          data-sanity-id={faq._id}
+          data-sanity-type="faq"
+          data-sanity-index={i}
+        >
+          <span>{faq.question}</span>
+          <span>{faq.answer}</span>
+          <span>{faq.category}</span>
         </div>
       ))}
     </div>
