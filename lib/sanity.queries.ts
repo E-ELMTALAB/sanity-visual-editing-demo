@@ -159,7 +159,21 @@ export const sharifHeroQuery = groq`
       publishedAt,
       rating,
       reviewCount
-    }
+    },
+    "featuredBlogs": featuredBlogs[]->{
+      _id,
+      title,
+      "slug": slug.current,
+      "excerpt": pt::text(excerpt),
+      coverImage,
+      tags,
+      publishedAt,
+      author,
+      rating,
+      reviewCount,
+      category
+    },
+    seo
   }
 `
 

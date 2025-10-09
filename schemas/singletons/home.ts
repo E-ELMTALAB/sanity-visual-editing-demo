@@ -277,6 +277,23 @@ export default defineType({
       ],
       group: 'content',
     }),
+    defineField({
+      name: 'featuredBlogs',
+      title: 'Featured Blog Posts',
+      description: 'Select blog posts to display in the Featured Blogs section above social media (max 6 posts)',
+      type: 'array',
+      validation: (Rule) => Rule.max(6),
+      of: [
+        defineArrayMember({
+          type: 'reference',
+          to: [{ type: 'post' }],
+          options: {
+            disableNew: true, // Only allow selecting existing blog posts
+          }
+        }),
+      ],
+      group: 'content',
+    }),
   ],
   preview: {
     select: {

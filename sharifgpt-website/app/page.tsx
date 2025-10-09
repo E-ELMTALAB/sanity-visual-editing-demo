@@ -168,9 +168,10 @@ const PromoCard = ({ item }) => {
   )
 }
 
-export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: HeroSlide[]; heroSlides?: HeroSlide[]; promoCards?: PromoCard[]; discountedProducts?: DiscountedProduct[]; socialMediaProducts?: SocialMediaProduct[]; educationalProducts?: EducationalProduct[]; bestsellingCourses?: BestsellingCourse[]; magazinePosts?: any[] } }) {
+export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: HeroSlide[]; heroSlides?: HeroSlide[]; promoCards?: PromoCard[]; discountedProducts?: DiscountedProduct[]; socialMediaProducts?: SocialMediaProduct[]; educationalProducts?: EducationalProduct[]; bestsellingCourses?: BestsellingCourse[]; magazinePosts?: any[]; featuredBlogs?: any[] } }) {
   const topBannerSlides = heroData?.topBannerSlides || []
   const heroSlides = heroData?.heroSlides || []
+  const featuredBlogsFromSanity = heroData?.featuredBlogs || []
   const [products, setProducts] = useState<any[]>([])
   const [courses, setCourses] = useState<any[]>([])
   
@@ -1619,6 +1620,121 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
                         </div>
                         <span className="text-gray-500">{post.reviewCount || 0} بازدید</span>
                       </div>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Featured Blogs Section */}
+        {featuredBlogsFromSanity.length > 0 && (
+          <section className="mb-16 sm:mb-20">
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-3">مقالات ویژه</h2>
+              <p className="text-gray-500 text-sm sm:text-base max-w-2xl mx-auto">
+                آخرین و بهترین مقالات برای شما انتخاب شده است
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-right">
+              {featuredBlogsFromSanity.map((blog, index) => {
+                const categoryColors = {
+                  ai: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-500' },
+                  programming: { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-500' },
+                  tutorial: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-500' },
+                  news: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-500' },
+                  technology: { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-500' },
+                  products: { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-500' },
+                  guide: { bg: 'bg-teal-100', text: 'text-teal-700', border: 'border-teal-500' },
+                  review: { bg: 'bg-pink-100', text: 'text-pink-700', border: 'border-pink-500' }
+                }
+                const categoryColor = categoryColors[blog.category as keyof typeof categoryColors] || categoryColors.ai
+                
+                return (
+                  <Link
+                    key={blog._id}
+                    href={`/blog/${blog.slug}`}
+                    className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100"
+                  >
+                    {/* Blog Image */}
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={blog.coverImageUrl || "/placeholder.svg"}
+                        alt={blog.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                      
+                      {/* Category Badge */}
+                      {blog.category && (
+                        <div className="absolute top-4 right-4">
+                          <span className={`${categoryColor.bg} ${categoryColor.text} px-3 py-1 rounded-full text-xs font-bold`}>
+                            {blog.category === 'ai' && 'هوش مصنوعی'}
+                            {blog.category === 'programming' && 'برنامه‌نویسی'}
+                            {blog.category === 'tutorial' && 'آموزش'}
+                            {blog.category === 'news' && 'اخبار'}
+                            {blog.category === 'technology' && 'تکنولوژی'}
+                            {blog.category === 'products' && 'محصولات'}
+                            {blog.category === 'guide' && 'راهنما'}
+                            {blog.category === 'review' && 'نقد و بررسی'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Blog Content */}
+                    <div className="p-6">
+                      <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+                        {blog.title}
+                      </h3>
+                      
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                        {blog.excerpt || 'مقاله جذاب و کاربردی'}
+                      </p>
+
+                      {/* Blog Meta */}
+                      <div className="flex items-center justify-between text-sm border-t border-gray-100 pt-4">
+                        <div className="flex items-center gap-2">
+                          {blog.author && (
+                            <>
+                              <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                              </svg>
+                              <span className="text-gray-600">{blog.author}</span>
+                            </>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
+                          {blog.rating && (
+                            <div className="flex items-center gap-1">
+                              <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                                <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                              </svg>
+                              <span className="text-gray-700 font-medium">{blog.rating}</span>
+                            </div>
+                          )}
+                          {blog.reviewCount && (
+                            <span className="text-gray-500">{blog.reviewCount} بازدید</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Tags */}
+                      {blog.tags && blog.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-4">
+                          {blog.tags.slice(0, 3).map((tag: string, tagIndex: number) => (
+                            <span
+                              key={tagIndex}
+                              className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </Link>
                 )

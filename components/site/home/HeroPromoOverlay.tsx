@@ -7,9 +7,10 @@ interface HeroPromoOverlayProps {
   educationalProducts: any[]
   bestsellingCourses: any[]
   magazinePosts: any[]
+  featuredBlogs: any[]
 }
 
-export default function HeroPromoOverlay({ topBannerSlides, heroSlides, promoCards, discountedProducts, socialMediaProducts, educationalProducts, bestsellingCourses, magazinePosts }: HeroPromoOverlayProps) {
+export default function HeroPromoOverlay({ topBannerSlides, heroSlides, promoCards, discountedProducts, socialMediaProducts, educationalProducts, bestsellingCourses, magazinePosts, featuredBlogs }: HeroPromoOverlayProps) {
   return (
     <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0 }}>
       {topBannerSlides?.map((s, i) => (
@@ -120,6 +121,23 @@ export default function HeroPromoOverlay({ topBannerSlides, heroSlides, promoCar
           <span>{post?.tags?.length || 0}</span>
           <span>{post?.rating || 0}</span>
           <span>{post?.reviewCount || 0}</span>
+        </div>
+      ))}
+      {featuredBlogs?.map((blog, i) => (
+        <div
+          key={`featured-blog-${i}`}
+          data-sanity-id={blog?._id}
+          data-sanity-type="home.featuredBlogs"
+          data-sanity-index={i}
+        >
+          <span>{blog?.title}</span>
+          <span>{blog?.excerpt}</span>
+          <span>{blog?.slug}</span>
+          <span>{blog?.author}</span>
+          <span>{blog?.category}</span>
+          <span>{blog?.tags?.length || 0}</span>
+          <span>{blog?.rating || 0}</span>
+          <span>{blog?.reviewCount || 0}</span>
         </div>
       ))}
     </div>

@@ -89,10 +89,15 @@ export default async function RootPage() {
     coverImageUrl: post.coverImage ? urlForImage(post.coverImage)?.url() : null,
   }))
   
+  const featuredBlogs = (data?.featuredBlogs || []).map((blog: any) => ({
+    ...blog,
+    coverImageUrl: blog.coverImage ? urlForImage(blog.coverImage)?.url() : null,
+  }))
+  
   return (
     <>
-      <HeroPromoOverlay topBannerSlides={topBannerSlides} heroSlides={heroSlides} promoCards={promoCards} discountedProducts={discountedProducts} socialMediaProducts={socialMediaProducts} educationalProducts={educationalProducts} bestsellingCourses={bestsellingCourses} magazinePosts={magazinePosts} />
-      <SharifHome heroData={{ topBannerSlides, heroSlides, promoCards, discountedProducts, socialMediaProducts, educationalProducts, bestsellingCourses, magazinePosts }} />
+      <HeroPromoOverlay topBannerSlides={topBannerSlides} heroSlides={heroSlides} promoCards={promoCards} discountedProducts={discountedProducts} socialMediaProducts={socialMediaProducts} educationalProducts={educationalProducts} bestsellingCourses={bestsellingCourses} magazinePosts={magazinePosts} featuredBlogs={featuredBlogs} />
+      <SharifHome heroData={{ topBannerSlides, heroSlides, promoCards, discountedProducts, socialMediaProducts, educationalProducts, bestsellingCourses, magazinePosts, featuredBlogs }} />
     </>
   )
 }
