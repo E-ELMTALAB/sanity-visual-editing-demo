@@ -172,6 +172,7 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
   const topBannerSlides = heroData?.topBannerSlides || []
   const heroSlides = heroData?.heroSlides || []
   const [products, setProducts] = useState<any[]>([])
+  const [courses, setCourses] = useState<any[]>([])
   
   // Fetch products from Sanity
   useEffect(() => {
@@ -213,6 +214,48 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
     }
     
     fetchProducts()
+  }, [])
+
+  // Fetch courses from Sanity
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch('/api/courses')
+        if (response.ok) {
+          const coursesData = await response.json()
+          setCourses(coursesData)
+        } else {
+          // Fallback to sample courses if no courses in Sanity
+          setCourses([
+            { _id: '1', title: 'آشنایی با ChatGPT', slug: { current: 'chatgpt-intro' }, category: 'ai' },
+            { _id: '2', title: 'تکنیک‌های پرامپت نویسی', slug: { current: 'prompt-techniques' }, category: 'ai' },
+            { _id: '3', title: 'هوش مصنوعی برای مبتدیان', slug: { current: 'ai-beginners' }, category: 'ai' },
+            { _id: '4', title: 'هوش مصنوعی در بازاریابی', slug: { current: 'ai-marketing' }, category: 'business' },
+            { _id: '5', title: 'مدیریت پروژه با AI', slug: { current: 'ai-project-management' }, category: 'business' },
+            { _id: '6', title: 'تولید محتوا با AI', slug: { current: 'ai-content-creation' }, category: 'design' },
+            { _id: '7', title: 'ساخت ویدیو با هوش مصنوعی', slug: { current: 'ai-video-creation' }, category: 'design' },
+            { _id: '8', title: 'طراحی گرافیک با AI', slug: { current: 'ai-graphic-design' }, category: 'design' },
+            { _id: '9', title: 'برنامه‌نویسی با کمک AI', slug: { current: 'ai-programming' }, category: 'programming' }
+          ])
+        }
+      } catch (error) {
+        console.error('Error fetching courses:', error)
+        // Fallback to sample courses on error
+        setCourses([
+          { _id: '1', title: 'آشنایی با ChatGPT', slug: { current: 'chatgpt-intro' }, category: 'ai' },
+          { _id: '2', title: 'تکنیک‌های پرامپت نویسی', slug: { current: 'prompt-techniques' }, category: 'ai' },
+          { _id: '3', title: 'هوش مصنوعی برای مبتدیان', slug: { current: 'ai-beginners' }, category: 'ai' },
+          { _id: '4', title: 'هوش مصنوعی در بازاریابی', slug: { current: 'ai-marketing' }, category: 'business' },
+          { _id: '5', title: 'مدیریت پروژه با AI', slug: { current: 'ai-project-management' }, category: 'business' },
+          { _id: '6', title: 'تولید محتوا با AI', slug: { current: 'ai-content-creation' }, category: 'design' },
+          { _id: '7', title: 'ساخت ویدیو با هوش مصنوعی', slug: { current: 'ai-video-creation' }, category: 'design' },
+          { _id: '8', title: 'طراحی گرافیک با AI', slug: { current: 'ai-graphic-design' }, category: 'design' },
+          { _id: '9', title: 'برنامه‌نویسی با کمک AI', slug: { current: 'ai-programming' }, category: 'programming' }
+        ])
+      }
+    }
+    
+    fetchCourses()
   }, [])
   
   const promoCards = heroData?.promoCards || []
@@ -832,196 +875,34 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
                 <div className="absolute top-full right-0 mt-2 w-[800px] bg-white rounded-2xl shadow-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
                   <div className="p-8">
                     <div className="grid grid-cols-3 gap-8">
-                      {/* AI Fundamentals Column */}
-                      <div>
-                        <div className="flex items-center mb-6">
-                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center ml-3">
-                            <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                            </svg>
-                          </div>
-                          <h3 className="text-lg font-bold text-gray-800">مبانی هوش مصنوعی</h3>
-                        </div>
-                        <ul className="space-y-3">
-                          <li>
-                            <a
-                              href="#"
-                              className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
-                            >
-                              <div className="w-6 h-6 bg-purple-500 rounded flex items-center justify-center ml-3">
-                                <span className="text-white text-xs font-bold">🤖</span>
-                              </div>
-                              <span>آشنایی با ChatGPT</span>
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
-                            >
-                              <div className="w-6 h-6 bg-indigo-500 rounded flex items-center justify-center ml-3">
-                                <span className="text-white text-xs font-bold">💡</span>
-                              </div>
-                              <span>تکنیک‌های پرامپت نویسی</span>
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
-                            >
-                              هوش مصنوعی برای مبتدیان
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
-                            >
-                              اصول یادگیری ماشین
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
-                            >
-                              شبکه‌های عصبی مقدماتی
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-
-                      {/* Business & Professional Column */}
-                      <div>
-                        <div className="flex items-center mb-6">
-                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center ml-3">
-                            <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z" />
-                            </svg>
-                          </div>
-                          <h3 className="text-lg font-bold text-gray-800">کسب و کار</h3>
-                        </div>
-                        <ul className="space-y-3">
-                          <li>
-                            <a
-                              href="#"
-                              className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
-                            >
-                              <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center ml-3">
-                                <span className="text-white text-xs font-bold">📊</span>
-                              </div>
-                              <span>هوش مصنوعی در بازاریابی</span>
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
+                      {/* Courses from Sanity */}
+                      {courses.length > 0 ? (
+                        courses.slice(0, 9).map((course, index) => (
+                          <div key={course._id || index} className="col-span-1">
+                            <Link
+                              href={`/courses/${course.slug?.current || course.slug || '#'}`}
                               className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
                             >
                               <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center ml-3">
-                                <span className="text-white text-xs font-bold">💼</span>
+                                <span className="text-white text-xs font-bold">
+                                  {course.category === 'ai' ? '🤖' : 
+                                   course.category === 'business' ? '💼' : 
+                                   course.category === 'design' ? '🎨' : 
+                                   course.category === 'programming' ? '💻' : 
+                                   course.category === 'marketing' ? '📊' : 
+                                   course.category === 'web-development' ? '🌐' : 
+                                   course.category === 'data-science' ? '📈' : '📚'}
+                                </span>
                               </div>
-                              <span>مدیریت پروژه با AI</span>
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
-                            >
-                              تحلیل داده با هوش مصنوعی
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
-                            >
-                              خدمات مشتری هوشمند
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
-                            >
-                              اتوماسیون فرآیندها
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-
-                      {/* Creative & Technical Column */}
-                      <div>
-                        <div className="flex items-center mb-6">
-                          <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center ml-3">
-                            <svg className="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
-                            </svg>
+                              <span>{course.title || course.name || 'دوره'}</span>
+                            </Link>
                           </div>
-                          <h3 className="text-lg font-bold text-gray-800">خلاقیت و فناوری</h3>
+                        ))
+                      ) : (
+                        <div className="col-span-3 text-center py-8">
+                          <p className="text-gray-500">هیچ دوره‌ای یافت نشد</p>
                         </div>
-                        <ul className="space-y-3">
-                          <li>
-                            <a
-                              href="#"
-                              className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
-                            >
-                              <div className="w-6 h-6 bg-pink-500 rounded flex items-center justify-center ml-3">
-                                <span className="text-white text-xs font-bold">🎨</span>
-                              </div>
-                              <span>تولید محتوا با AI</span>
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
-                            >
-                              <div className="w-6 h-6 bg-red-500 rounded flex items-center justify-center ml-3">
-                                <span className="text-white text-xs font-bold">🎬</span>
-                              </div>
-                              <span>ساخت ویدیو با هوش مصنوعی</span>
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
-                            >
-                              طراحی گرافیک با AI
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
-                            >
-                              برنامه‌نویسی با کمک AI
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
-                            >
-                              موسیقی و صدا با AI
-                            </a>
-                          </li>
-                        </ul>
-
-                        {/* Featured Course Badge */}
-                        <div className="mt-8 p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl border border-orange-100">
-                          <div className="flex items-center mb-2">
-                            <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                              ویژه
-                            </span>
-                          </div>
-                          <h4 className="font-bold text-gray-800 mb-1">دوره جامع AI</h4>
-                          <p className="text-sm text-gray-600">از صفر تا صد هوش مصنوعی</p>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
