@@ -7,14 +7,13 @@ import MobileMenu from "../components/mobile-menu"
 import RobotAssistant from "../components/robot-assistant"
 import ProductCard from "@/components/product-card"
 import CartDropdown from "@/components/cart-dropdown" // Assuming CartDropdown omponent exists
-import ProductsDropdown from "@/components/ProductsDropdown"
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Navigation, Pagination, Autoplay } from "swiper/modules"
 import "swiper/css"
 import "swiper/css/navigation"
 import "swiper/css/pagination"
 import Footer from "@/components/footer"
-import type { HeroSlide, PromoCard, DiscountedProduct, SocialMediaProduct, EducationalProduct, BestsellingCourse } from "types"
+import type { HeroSlide, PromoCard, DiscountedProduct, SocialMediaProduct, EducationalProduct, BestsellingCourse } from "../../types"
 
 const IndependentSlider = ({ className, items = [], autoplayInterval = 5000 }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -172,6 +171,50 @@ const PromoCard = ({ item }) => {
 export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: HeroSlide[]; heroSlides?: HeroSlide[]; promoCards?: PromoCard[]; discountedProducts?: DiscountedProduct[]; socialMediaProducts?: SocialMediaProduct[]; educationalProducts?: EducationalProduct[]; bestsellingCourses?: BestsellingCourse[]; magazinePosts?: any[] } }) {
   const topBannerSlides = heroData?.topBannerSlides || []
   const heroSlides = heroData?.heroSlides || []
+  const [products, setProducts] = useState<any[]>([])
+  
+  // Fetch products from Sanity
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/products')
+        if (response.ok) {
+          const productsData = await response.json()
+          setProducts(productsData)
+        } else {
+          // Fallback to sample products if no products in Sanity
+          setProducts([
+            { _id: '1', name: 'ChatGPT Plus', slug: { current: 'chatgpt-plus' }, category: 'ai' },
+            { _id: '2', name: 'Claude Pro', slug: { current: 'claude-pro' }, category: 'ai' },
+            { _id: '3', name: 'Spotify Premium', slug: { current: 'spotify-premium' }, category: 'music' },
+            { _id: '4', name: 'Netflix Premium', slug: { current: 'netflix-premium' }, category: 'entertainment' },
+            { _id: '5', name: 'YouTube Premium', slug: { current: 'youtube-premium' }, category: 'educational' },
+            { _id: '6', name: 'Instagram Premium', slug: { current: 'instagram-premium' }, category: 'social-media' },
+            { _id: '7', name: 'LinkedIn Premium', slug: { current: 'linkedin-premium' }, category: 'social-media' },
+            { _id: '8', name: 'Coursera Plus', slug: { current: 'coursera-plus' }, category: 'educational' },
+            { _id: '9', name: 'Udemy Business', slug: { current: 'udemy-business' }, category: 'educational' }
+          ])
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error)
+        // Fallback to sample products on error
+        setProducts([
+          { _id: '1', name: 'ChatGPT Plus', slug: { current: 'chatgpt-plus' }, category: 'ai' },
+          { _id: '2', name: 'Claude Pro', slug: { current: 'claude-pro' }, category: 'ai' },
+          { _id: '3', name: 'Spotify Premium', slug: { current: 'spotify-premium' }, category: 'music' },
+          { _id: '4', name: 'Netflix Premium', slug: { current: 'netflix-premium' }, category: 'entertainment' },
+          { _id: '5', name: 'YouTube Premium', slug: { current: 'youtube-premium' }, category: 'educational' },
+          { _id: '6', name: 'Instagram Premium', slug: { current: 'instagram-premium' }, category: 'social-media' },
+          { _id: '7', name: 'LinkedIn Premium', slug: { current: 'linkedin-premium' }, category: 'social-media' },
+          { _id: '8', name: 'Coursera Plus', slug: { current: 'coursera-plus' }, category: 'educational' },
+          { _id: '9', name: 'Udemy Business', slug: { current: 'udemy-business' }, category: 'educational' }
+        ])
+      }
+    }
+    
+    fetchProducts()
+  }, [])
+  
   const promoCards = heroData?.promoCards || []
   const discountedProductsFromSanity = heroData?.discountedProducts || []
   const socialMediaProductsFromSanity = heroData?.socialMediaProducts || []
@@ -731,7 +774,38 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
                 </Link>
 
                 {/* Products Dropdown Menu */}
-                <ProductsDropdown isOpen={true} />
+                <div className="absolute top-full right-0 mt-2 w-[800px] bg-white rounded-2xl shadow-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
+                  <div className="p-8">
+                    <div className="grid grid-cols-3 gap-8">
+                      {/* Products from Sanity */}
+                      {products.length > 0 ? (
+                        products.slice(0, 9).map((product, index) => (
+                          <div key={product._id || index} className="col-span-1">
+                            <Link
+                              href={`/products/${product.slug?.current || product.slug || '#'}`}
+                              className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
+                            >
+                              <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center ml-3">
+                                <span className="text-white text-xs font-bold">
+                                  {product.category === 'ai' ? '🤖' : 
+                                   product.category === 'music' ? '🎵' : 
+                                   product.category === 'social-media' ? '📱' : 
+                                   product.category === 'educational' ? '📚' : 
+                                   product.category === 'entertainment' ? '🎬' : '📦'}
+                                </span>
+                              </div>
+                              <span>{product.name || 'محصول'}</span>
+                            </Link>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="col-span-3 text-center py-8">
+                          <p className="text-gray-500">هیچ محصولی یافت نشد</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="relative group">

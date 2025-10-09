@@ -4,7 +4,6 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import ProductCard from "@/components/product-card"
-import ProductsDropdown from "@/components/ProductsDropdown"
 
 export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
@@ -352,7 +351,252 @@ export default function ProductsPage() {
                 </Link>
 
                 {/* Products Dropdown Menu */}
-                <ProductsDropdown isOpen={true} />
+                <div className="absolute top-full right-0 mt-2 w-[800px] bg-white rounded-2xl shadow-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
+                  <div className="p-8">
+                    <div className="grid grid-cols-3 gap-8">
+                      <div>
+                        <div className="flex items-center mb-6">
+                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center ml-3">
+                            <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-bold text-gray-800">هوش مصنوعی کاربردی</h3>
+                        </div>
+                        <ul className="space-y-3">
+                          <li>
+                            <Link
+                              href="/products?category=ai"
+                              className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
+                            >
+                              <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center ml-3">
+                                <span className="text-white text-xs font-bold">🤖</span>
+                              </div>
+                              <span>ChatGPT Plus</span>
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/products?category=ai"
+                              className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
+                            >
+                              <div className="w-6 h-6 bg-indigo-500 rounded flex items-center justify-center ml-3">
+                                <span className="text-white text-xs font-bold">💡</span>
+                              </div>
+                              <span>Claude Pro</span>
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/products?category=ai"
+                              className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
+                            >
+                              Gemini Advanced
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/products?category=ai"
+                              className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
+                            >
+                              Perplexity Pro
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/products?category=ai"
+                              className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
+                            >
+                              Copilot Pro
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center mb-6">
+                          <div className="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center ml-3">
+                            <svg className="w-5 h-5 text-pink-600" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-bold text-gray-800">هوش مصنوعی متن به عکس</h3>
+                        </div>
+                        <ul className="space-y-3">
+                          <li>
+                            <Link
+                              href="/products?category=ai"
+                              className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
+                            >
+                              <div className="w-6 h-6 bg-pink-500 rounded flex items-center justify-center ml-3">
+                                <span className="text-white text-xs font-bold">🎨</span>
+                              </div>
+                              <span>Midjourney</span>
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/products?category=ai"
+                              className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
+                            >
+                              <div className="w-6 h-6 bg-orange-500 rounded flex items-center justify-center ml-3">
+                                <span className="text-white text-xs font-bold">🖼️</span>
+                              </div>
+                              <span>DALL-E 3</span>
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/products?category=ai"
+                              className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
+                            >
+                              Stable Diffusion
+                            </Link>
+                          </li>
+                        </ul>
+
+                        <div className="mt-8">
+                          <div className="flex items-center mb-4">
+                            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center ml-3">
+                              <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-800">هوش مصنوعی متن به ویدیو</h3>
+                          </div>
+                          <ul className="space-y-3">
+                            <li>
+                              <Link
+                                href="/products?category=ai"
+                                className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
+                              >
+                                <div className="w-6 h-6 bg-red-500 rounded flex items-center justify-center ml-3">
+                                  <span className="text-white text-xs font-bold">🎬</span>
+                                </div>
+                                <span>Runway ML</span>
+                              </Link>
+                            </li>
+                            <li>
+                              <Link
+                                href="/products?category=ai"
+                                className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
+                              >
+                                Pika Labs
+                              </Link>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center mb-6">
+                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center ml-3">
+                            <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L19.2 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-bold text-gray-800">هوش مصنوعی برنامه‌نویسی</h3>
+                        </div>
+                        <ul className="space-y-3">
+                          <li>
+                            <Link
+                              href="/products?category=ai"
+                              className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
+                            >
+                              <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center ml-3">
+                                <span className="text-white text-xs font-bold">💻</span>
+                              </div>
+                              <span>GitHub Copilot</span>
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/products?category=ai"
+                              className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
+                            >
+                              <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center ml-3">
+                                <span className="text-white text-xs font-bold">🔧</span>
+                              </div>
+                              <span>Cursor Pro</span>
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/products?category=ai"
+                              className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
+                            >
+                              Replit AI
+                            </Link>
+                          </li>
+                        </ul>
+
+                        <div className="mt-8">
+                          <div className="flex items-center mb-4">
+                            <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center ml-3">
+                              <svg className="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                              </svg>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-800">هوش مصنوعی متن به صدا</h3>
+                          </div>
+                          <ul className="space-y-3">
+                            <li>
+                              <Link
+                                href="/products?category=ai"
+                                className="flex items-center text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50"
+                              >
+                                <div className="w-6 h-6 bg-yellow-500 rounded flex items-center justify-center ml-3">
+                                  <span className="text-white text-xs font-bold">🎵</span>
+                                </div>
+                                <span>ElevenLabs</span>
+                              </Link>
+                            </li>
+                            <li>
+                              <Link
+                                href="/products?category=ai"
+                                className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
+                              >
+                                Murf AI
+                              </Link>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div className="mt-8">
+                          <div className="flex items-center mb-4">
+                            <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center ml-3">
+                              <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                              </svg>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-800">سایر هوش مصنوعی‌ها</h3>
+                          </div>
+                          <ul className="space-y-3">
+                            <li>
+                              <Link
+                                href="/products?category=ai"
+                                className="text-gray-600 hover:text-[#3092BE] transition-colors py-2 px-3 rounded-lg hover:bg-gray-50 block"
+                              >
+                                مشاهده همه
+                              </Link>
+                            </li>
+                          </ul>
+                        </div>
+
+                        {/* Popular Badge */}
+                        <div className="mt-8 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100">
+                          <div className="flex items-center mb-2">
+                            <span className="bg-purple-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                              محبوب
+                            </span>
+                          </div>
+                          <h4 className="font-bold text-gray-800 mb-1">پکیج AI کامل</h4>
+                          <p className="text-sm text-gray-600">تمام ابزارهای هوش مصنوعی</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="relative group">
