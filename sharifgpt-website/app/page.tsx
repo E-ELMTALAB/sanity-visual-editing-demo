@@ -174,6 +174,8 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
   const featuredBlogsFromSanity = heroData?.featuredBlogs || []
   const [products, setProducts] = useState<any[]>([])
   const [courses, setCourses] = useState<any[]>([])
+  const [headerVisible, setHeaderVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
   
   // Fetch products from Sanity
   useEffect(() => {
@@ -638,6 +640,28 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
     }
   }, [storiesData, bannerImages.length]) // Added bannerImages.length to dependencies
 
+  // Scroll behavior to hide/show header
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      
+      if (currentScrollY < 10) {
+        setHeaderVisible(true)
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down and past 100px
+        setHeaderVisible(false)
+      } else if (currentScrollY < lastScrollY) {
+        // Scrolling up
+        setHeaderVisible(true)
+      }
+      
+      setLastScrollY(currentScrollY)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [lastScrollY])
+
   const handleMobileMenuToggle = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
@@ -765,7 +789,7 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
       )}
 
       {/* Header Section */}
-      <header className="sticky top-0 z-50 glassmorphism">
+      <header className={`fixed top-0 left-0 right-0 z-50 glassmorphism transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="container mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Mobile Menu Button - Only visible on mobile */}
@@ -909,28 +933,10 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
                 </div>
               </div>
               <Link
-                href="/enterprise"
-                className="flex items-center text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)] whitespace-nowrap"
-              >
-                <span>فروش سازمانی</span>
-                <svg
-                  className="w-4 h-4 mr-1"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </Link>
-              <Link
                 href="/blog"
                 className="text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)]"
               >
-                مجله
+                بلاگ
               </Link>
             </nav>
 
@@ -1150,32 +1156,6 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
                   </Link>
                 </div>
 
-                {/* Enterprise */}
-                <div className="border-b border-gray-100 pb-4 mb-4">
-                  <Link
-                    href="/enterprise"
-                    className="flex items-center justify-between p-3 text-gray-700 hover:text-[#3092BE] hover:bg-gray-50 rounded-lg transition-all duration-300 group"
-                    onClick={handleMobileMenuClose}
-                  >
-                    <div className="flex items-center space-x-3 space-x-reverse">
-                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" />
-                        </svg>
-                      </div>
-                      <span className="font-medium">فروش سازمانی</span>
-                    </div>
-                    <svg
-                      className="w-5 h-5 text-gray-400 group-hover:text-[#3092BE] transition-colors"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                </div>
-
                 {/* Blog */}
                 <div>
                   <Link
@@ -1216,7 +1196,7 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
         ></div>
       </header>
 
-      <main className="container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <main className="container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 mt-16 sm:mt-20">
         {/* Stories Section */}
         <section className="mb-8 sm:mb-12">
           <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">{"اتفاقات جدید امروز"}</h2>
