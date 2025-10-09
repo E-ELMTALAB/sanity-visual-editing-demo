@@ -20,6 +20,7 @@ export default function ProductsPageClient({ faqsData }: ProductsPageClientProps
   const [user, setUser] = useState({ name: "مهدی", email: "mehdi@example.com" })
   const [headerVisible, setHeaderVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const [products, setProducts] = useState<any[]>([])
 
   const handleProfileClick = () => {
     if (isAuthenticated) {
@@ -35,6 +36,23 @@ export default function ProductsPageClient({ faqsData }: ProductsPageClientProps
     setUser({ name: "", email: "" })
   }
 
+  // Fetch products from Sanity
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/api/products')
+        if (response.ok) {
+          const productsData = await response.json()
+          setProducts(productsData)
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error)
+      }
+    }
+    
+    fetchProducts()
+  }, [])
+
   const categories = [
     { id: "all", name: "همه محصولات", count: 45 },
     { id: "ai", name: "هوش مصنوعی", count: 15 },
@@ -43,209 +61,6 @@ export default function ProductsPageClient({ faqsData }: ProductsPageClientProps
     { id: "educational", name: "آموزشی", count: 10 },
     { id: "sim-card", name: "سیمکارت", count: 6 },
   ]
-
-  const products = [
-    {
-      id: 1,
-      title: "اکانت اسپاتیفای پریمیوم",
-      description:
-        "اسپاتیفای یکی از محبوب‌ترین سرویس‌های پخش موسیقی در جهان است که دسترسی به میلیون‌ها آهنگ، پادکست و محتوای صوتی را فراهم می‌کند.",
-      price: 250000,
-      originalPrice: 350000,
-      discount: 30,
-      rating: 4.5,
-      reviews: 16,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Group%205-ANnu9Zvi5tFV9zAx4ESZ6Wa9wyQxRL.png",
-      category: "music",
-      features: [
-        "دسترسی به میلیون‌ها آهنگ و پادکست",
-        "پخش بدون تبلیغات",
-        "کیفیت صدای بالا",
-        "دانلود آهنگ‌ها برای گوش دادن آفلاین",
-      ],
-      badge: "پرفروش",
-    },
-    {
-      id: 2,
-      title: "اکانت یوتیوب پریمیوم",
-      description: "یوتیوب پریمیوم امکان تماشای ویدیوها بدون تبلیغات، دانلود ویدیو و پخش در پس‌زمینه را فراهم می‌کند.",
-      price: 280000,
-      originalPrice: 400000,
-      discount: 30,
-      rating: 4.7,
-      reviews: 24,
-      image: "https://placehold.co/400x300/FF0000/FFFFFF?text=YouTube+Premium",
-      category: "educational",
-      features: [
-        "تماشای ویدیو بدون تبلیغات",
-        "دانلود ویدیوها برای تماشای آفلاین",
-        "پخش در پس‌زمینه",
-        "دسترسی به YouTube Music",
-      ],
-      badge: "جدید",
-    },
-    {
-      id: 3,
-      title: "اکانت نتفلیکس پریمیوم",
-      description: "نتفلیکس بزرگ‌ترین پلتفرم استریمینگ جهان با هزاران فیلم و سریال در کیفیت‌های مختلف.",
-      price: 320000,
-      originalPrice: 450000,
-      discount: 29,
-      rating: 4.8,
-      reviews: 31,
-      image: "https://placehold.co/400x300/E50914/FFFFFF?text=Netflix",
-      category: "educational",
-      features: [
-        "تماشای فیلم و سریال بدون محدودیت",
-        "کیفیت 4K Ultra HD",
-        "پشتیبانی از چندین دستگاه",
-        "محتوای اختصاصی نتفلیکس",
-      ],
-      badge: "محبوب",
-    },
-    {
-      id: 4,
-      title: "ویزا کارت مجازی",
-      description: "کارت اعتباری مجازی برای خریدهای آنلاین امن از سایت‌های خارجی.",
-      price: 150000,
-      originalPrice: 200000,
-      discount: 25,
-      rating: 4.3,
-      reviews: 12,
-      image: "https://placehold.co/400x300/1A1F71/FFFFFF?text=Visa+Card",
-      category: "sim-card",
-      features: ["خرید امن از سایت‌های خارجی", "فعال‌سازی فوری", "پشتیبانی 24 ساعته", "قابلیت شارژ مجدد"],
-    },
-    {
-      id: 5,
-      title: "مسترکارت مجازی",
-      description: "کارت اعتباری مجازی مسترکارت برای پرداخت‌های بین‌المللی.",
-      price: 160000,
-      originalPrice: 220000,
-      discount: 27,
-      rating: 4.4,
-      reviews: 18,
-      image: "https://placehold.co/400x300/EB001B/FFFFFF?text=Mastercard",
-      category: "sim-card",
-      features: ["پذیرش جهانی", "امنیت بالا", "مدیریت آسان", "گزارش‌گیری دقیق"],
-    },
-    {
-      id: 6,
-      title: "ChatGPT Plus",
-      description: "دسترسی به نسخه پیشرفته ChatGPT با قابلیت‌های بیشتر و سرعت بالاتر.",
-      price: 200000,
-      originalPrice: 250000,
-      discount: 20,
-      rating: 4.9,
-      reviews: 42,
-      image: "https://placehold.co/400x300/10A37F/FFFFFF?text=ChatGPT+Plus",
-      category: "ai",
-      features: ["دسترسی اولویت‌دار", "سرعت پاسخ‌دهی بالا", "مدل‌های جدیدتر", "پلاگین‌های اختصاصی"],
-      badge: "پیشنهاد ویژه",
-    },
-    {
-      id: 7,
-      title: "اکانت اینستاگرام پریمیوم",
-      description: "اکانت اینستاگرام با قابلیت‌های پیشرفته برای کسب و کار و تولیدکنندگان محتوا.",
-      price: 180000,
-      originalPrice: 250000,
-      discount: 28,
-      rating: 4.6,
-      reviews: 20,
-      image: "https://placehold.co/400x300/E4405F/FFFFFF?text=Instagram",
-      category: "social-media",
-      features: ["آنالیتیکس پیشرفته", "ابزارهای تجاری", "پشتیبانی اولویت‌دار", "قابلیت‌های تبلیغاتی"],
-      badge: "جدید",
-    },
-    {
-      id: 8,
-      title: "اکانت لینکدین پریمیوم",
-      description: "لینکدین پریمیوم برای توسعه شبکه حرفه‌ای و یافتن فرصت‌های شغلی بهتر.",
-      price: 220000,
-      originalPrice: 300000,
-      discount: 27,
-      rating: 4.4,
-      reviews: 15,
-      image: "https://placehold.co/400x300/0077B5/FFFFFF?text=LinkedIn",
-      category: "social-media",
-      features: ["جستجوی پیشرفته", "پیام‌رسانی نامحدود", "آنالیتیکس پروفایل", "دسترسی به دوره‌های آموزشی"],
-    },
-    {
-      id: 9,
-      title: "سیمکارت مجازی آمریکا",
-      description: "سیمکارت مجازی آمریکا برای دریافت پیامک و تماس‌های بین‌المللی.",
-      price: 120000,
-      originalPrice: 180000,
-      discount: 33,
-      rating: 4.2,
-      reviews: 25,
-      image: "https://placehold.co/400x300/FF6B6B/FFFFFF?text=US+SIM",
-      category: "sim-card",
-      features: ["شماره آمریکایی", "دریافت SMS", "پشتیبانی 24/7", "فعال‌سازی سریع"],
-    },
-    {
-      id: 10,
-      title: "دوره آموزش هوش مصنوعی",
-      description: "دوره جامع آموزش هوش مصنوعی از مبتدی تا پیشرفته با پروژه‌های عملی.",
-      price: 450000,
-      originalPrice: 600000,
-      discount: 25,
-      rating: 4.8,
-      reviews: 35,
-      image: "https://placehold.co/400x300/4ECDC4/FFFFFF?text=AI+Course",
-      category: "educational",
-      features: ["پروژه‌های عملی", "گواهینامه معتبر", "پشتیبانی مدرس", "دسترسی مادام‌العمر"],
-      badge: "پیشنهاد ویژه",
-    },
-  ]
-
-  const faqs = [
-    {
-      id: 1,
-      question: "اسپاتیفای چیست؟",
-      answer:
-        "اسپاتیفای یکی از بزرگ‌ترین پلتفرم‌های پخش موسیقی آنلاین در جهان است که دسترسی به میلیون‌ها آهنگ، پادکست و محتوای صوتی را فراهم می‌کند.",
-    },
-    {
-      id: 2,
-      question: "فرق پلن فعلی و اندیویجوال در اسپاتیفای چیست؟",
-      answer:
-        "پلن اندیویجوال برای یک کاربر طراحی شده و شامل تمام قابلیت‌های پریمیوم است، در حالی که پلن فعلی ممکن است محدودیت‌هایی داشته باشد.",
-    },
-    {
-      id: 3,
-      question: "زمان فعالسازی سفارشات چقدر است؟",
-      answer: "معمولاً سفارشات در کمتر از 24 ساعت فعال می‌شوند. در مواردی ممکن است تا 48 ساعت زمان ببرد.",
-    },
-    {
-      id: 4,
-      question: "نحوه وارد شدن به اکانت اسپاتیفای؟",
-      answer:
-        "پس از خرید، اطلاعات لاگین شامل ایمیل و رمز عبور برای شما ارسال می‌شود. با این اطلاعات می‌توانید وارد اکانت شوید.",
-    },
-  ]
-
-  const relatedArticles = [
-    {
-      id: 1,
-      title: "راهنمای کامل استفاده از اسپاتیفای پریمیوم",
-      category: "spotify",
-      readTime: "5 دقیقه",
-    },
-    {
-      id: 2,
-      title: "مزایای یوتیوب پریمیوم برای تولیدکنندگان محتوا",
-      category: "youtube",
-      readTime: "7 دقیقه",
-    },
-    {
-      id: 3,
-      title: "امنیت کارت‌های اعتباری مجازی در خریدهای آنلاین",
-      category: "cards",
-      readTime: "6 دقیقه",
-    },
-  ]
-
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -296,15 +111,15 @@ export default function ProductsPageClient({ faqsData }: ProductsPageClientProps
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (sortBy) {
       case "price-low":
-        return a.price - b.price
+        return (a.price || 0) - (b.price || 0)
       case "price-high":
-        return b.price - a.price
+        return (b.price || 0) - (a.price || 0)
       case "rating":
-        return b.rating - a.rating
+        return (b.rating || 0) - (a.rating || 0)
       case "newest":
-        return b.id - a.id
+        return (b._id || b.id || 0) - (a._id || a.id || 0)
       default:
-        return b.reviews - a.reviews
+        return (b.reviewCount || b.reviews || 0) - (a.reviewCount || a.reviews || 0)
     }
   })
 
@@ -1163,85 +978,22 @@ export default function ProductsPageClient({ faqsData }: ProductsPageClientProps
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-2 sm:gap-3 mb-12">
               {sortedProducts.map((product) => (
                 <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  title={product.title}
+                  key={product._id || product.id}
+                  id={product._id || product.id}
+                  title={product.name || product.title}
                   description={product.description}
                   price={product.price}
                   originalPrice={product.originalPrice}
-                  discountPercentage={product.discount}
+                  discountPercentage={product.discountPercentage || product.discount}
                   image={product.image}
-                  badge={product.badge}
+                  badge={product.badges?.[0] || product.badge}
                   rating={product.rating}
-                  reviews={product.reviews}
+                  reviews={product.reviewCount || product.reviews}
                   features={product.features}
-                  href={`/products/${product.id}`}
+                  href={`/products/${product.slug?.current || product.slug || product.id}`}
                   buttonText="مشاهده محصول"
                 />
               ))}
-            </div>
-
-            {/* FAQ Section */}
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">سوالات متداول</h2>
-              <div className="space-y-4">
-                {faqs.map((faq) => (
-                  <div key={faq.id} className="border border-gray-200 rounded-lg">
-                    <button
-                      onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
-                      className="w-full text-right p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="font-medium text-gray-800">{faq.question}</span>
-                      <svg
-                        className={`w-5 h-5 text-gray-500 transition-transform ${
-                          expandedFaq === faq.id ? "rotate-180" : ""
-                        }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    {expandedFaq === faq.id && (
-                      <div className="px-4 pb-4 text-gray-600 border-t border-gray-100">
-                        <p className="pt-3">{faq.answer}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 text-center">
-                <button className="text-blue-600 hover:text-blue-700 font-medium">بیشتر...</button>
-              </div>
-            </div>
-
-            {/* Related Articles Section */}
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">مقالات مرتبط با محصول</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {relatedArticles.map((article) => (
-                  <Link
-                    key={article.id}
-                    href={`/blog/${article.id}`}
-                    className="block p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all"
-                  >
-                    <h3 className="font-medium text-gray-800 mb-2 line-clamp-2">{article.title}</h3>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <span className="bg-gray-100 px-2 py-1 rounded text-xs">{article.category}</span>
-                      <span>{article.readTime}</span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-              <div className="mt-6 text-center">
-                <Link href="/blog" className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
-                  مشاهده همه مقالات
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </Link>
-              </div>
             </div>
 
             {/* FAQ Section */}
