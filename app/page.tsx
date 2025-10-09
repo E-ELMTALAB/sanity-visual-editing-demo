@@ -3,7 +3,7 @@ import { getClient } from 'lib/sanity.client'
 import { readToken } from 'lib/sanity.api'
 import { sharifHeroQuery } from 'lib/sanity.queries'
 import { urlForImage } from 'lib/sanity.image'
-import SharifHome from '@/sharifgpt-website/app/page'
+import SharifHome from '@/app/page'
 import HeroPromoOverlay from 'components/site/home/HeroPromoOverlay'
 import type { Metadata } from 'next'
 
