@@ -14,6 +14,8 @@ export default function CoursesPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const [user, setUser] = useState({ name: "مهدی", email: "mehdi@example.com" })
+  const [headerVisible, setHeaderVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
   const handleProfileClick = () => {
     if (isAuthenticated) {
@@ -42,6 +44,26 @@ export default function CoursesPage() {
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [])
+
+  // Scroll behavior to hide/show header
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      
+      if (currentScrollY < 10) {
+        setHeaderVisible(true)
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setHeaderVisible(false)
+      } else if (currentScrollY < lastScrollY) {
+        setHeaderVisible(true)
+      }
+      
+      setLastScrollY(currentScrollY)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [lastScrollY])
 
   const categories = [
     { id: "all", name: "همه دوره‌ها", count: 24 },
@@ -309,7 +331,7 @@ export default function CoursesPage() {
 
   return (
     <div className="bg-gray-50 min-h-screen" dir="rtl">
-      <header className="sticky top-0 z-50 glassmorphism">
+      <header className={`fixed top-0 left-0 right-0 z-50 glassmorphism transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="container mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Logo and Name */}
@@ -770,12 +792,6 @@ export default function CoursesPage() {
                   </div>
                 </div>
               </div>
-              <Link
-                href="/enterprise"
-                className="flex items-center text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)] whitespace-nowrap"
-              >
-                <span>فروش سازمانی</span>
-              </Link>
               <Link
                 href="/blog"
                 className="text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)]"
