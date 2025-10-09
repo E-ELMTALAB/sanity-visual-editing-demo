@@ -74,7 +74,7 @@ export default function ContactPageClient({ faqsData }: ContactPageClientProps) 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100" dir="rtl">
-      <header className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/70 border-b border-gray-200/50 shadow-sm transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 glassmorphism transition-transform duration-300 ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="container mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             <div className="flex items-center">
@@ -94,14 +94,9 @@ export default function ContactPageClient({ faqsData }: ContactPageClientProps) 
               <div className="relative flex items-center space-x-2 sm:space-x-4 space-x-reverse cursor-pointer">
                 <a href="/" className="flex items-center space-x-2 sm:space-x-4 space-x-reverse">
                   <img
-                    src="/images/design-mode/Group 1(1).png"
+                    src="/images/design-mode/Group%201(1).png"
                     alt="SharifGPT Logo"
                     className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.onerror = null;
-                      target.src = "/images/design-mode/Group%201(1).png";
-                    }}
                   />
                   <h1 className="text-lg sm:text-xl font-bold text-gray-800">SharifGPT</h1>
                 </a>
@@ -156,7 +151,7 @@ export default function ContactPageClient({ faqsData }: ContactPageClientProps) 
                 href="/blog"
                 className="text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)]"
               >
-                مجله
+                بلاگ
               </a>
             </nav>
 
