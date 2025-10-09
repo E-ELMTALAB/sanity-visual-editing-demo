@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getClient } from 'lib/sanity.client'
-import { productDocBySlugQuery } from 'lib/sanity.queries'
+import { productDocBySlugQuery, faqsByPageQuery } from 'lib/sanity.queries'
 import { urlForImage } from 'lib/sanity.image'
 
 export async function GET(
@@ -10,6 +10,7 @@ export async function GET(
   try {
     const client = getClient()
     const product = await client.fetch(productDocBySlugQuery, { slug: params.slug })
+    const faqs = await client.fetch(faqsByPageQuery, { pageLocation: 'products' })
     
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
@@ -59,6 +60,7 @@ export async function GET(
          tags: blog.tags || []
        })) : [],
        slug: product.slug,
+       faqs: faqs || [],
     })
   } catch (error) {
     console.error('Error fetching product:', error)

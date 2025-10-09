@@ -347,51 +347,6 @@ export const productCategoriesQuery = groq`
   array::unique(*[_type == "product" && defined(category)].category)
 `
 
-// Product document by slug - for individual product pages
-export const productDocumentBySlugQuery = groq`
-  *[_type == "product" && slug.current == $slug][0]{
-    _id,
-    _key,
-    name,
-    "slug": slug.current,
-    description,
-    category,
-    price,
-    originalPrice,
-    discountPercentage,
-    image,
-    gallery,
-    features,
-    badges,
-    inStock,
-    rating,
-    reviewCount,
-    options,
-    "relatedProducts": relatedProducts[]->{
-      _id,
-      name,
-      "slug": slug.current,
-      description,
-      price,
-      originalPrice,
-      discountPercentage,
-      image,
-      category,
-      rating,
-      reviewCount
-    },
-    "relatedBlogs": relatedBlogs[]->{
-      _id,
-      title,
-      "slug": slug.current,
-      "excerpt": pt::text(excerpt),
-      coverImage,
-      category
-    },
-    seo
-  }
-`
-
 // FAQ queries - fetch FAQs by page location
 export const faqsByPageQuery = groq`
   *[_type == "faq" && $pageLocation in pageLocations && isActive == true] | order(order asc, _createdAt asc) {
