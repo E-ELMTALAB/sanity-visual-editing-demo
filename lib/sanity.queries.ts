@@ -353,7 +353,7 @@ export const productDocumentBySlugQuery = groq`
     _id,
     _key,
     name,
-    slug,
+    "slug": slug.current,
     description,
     category,
     price,

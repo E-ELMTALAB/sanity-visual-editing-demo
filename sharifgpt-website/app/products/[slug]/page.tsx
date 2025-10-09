@@ -44,18 +44,37 @@ export default async function ProductPage({ params }: ProductPageProps) {
   
   // Process images for related products
   const relatedProducts = (productData?.relatedProducts || []).map((prod: any) => ({
-    ...prod,
+    _id: prod._id,
+    name: prod.name,
+    slug: prod.slug,
+    description: prod.description,
+    price: prod.price,
+    originalPrice: prod.originalPrice,
+    discountPercentage: prod.discountPercentage,
+    category: prod.category,
+    rating: prod.rating,
+    reviewCount: prod.reviewCount,
     imageUrl: prod.image ? urlForImage(prod.image)?.url() : null,
+  }))
+  
+  const relatedBlogs = (productData?.relatedBlogs || []).map((blog: any) => ({
+    _id: blog._id,
+    title: blog.title,
+    slug: blog.slug,
+    excerpt: blog.excerpt,
+    category: blog.category,
+    coverImageUrl: blog.coverImage ? urlForImage(blog.coverImage)?.url() : null,
   }))
   
   // Process product main image
   const productWithImages = {
     ...productData,
     imageUrl: productData?.image ? urlForImage(productData.image)?.url() : null,
-    galleryImages: (productData?.gallery || []).map((img: any) => urlForImage(img)?.url()),
+    galleryImages: (productData?.gallery || []).map((img: any) => urlForImage(img)?.url()).filter(Boolean),
     relatedProducts,
+    relatedBlogs,
   }
-  
+
   return (
     <>
       <ProductOverlay product={productWithImages} faqs={faqs} relatedProducts={relatedProducts} />

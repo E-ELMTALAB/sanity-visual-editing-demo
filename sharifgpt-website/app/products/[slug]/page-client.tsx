@@ -752,57 +752,59 @@ export default function ProductPageClient({ productData, faqsData }: ProductPage
         )}
 
         {/* Related Articles Section */}
-        <div className="mt-8">
-          <div className="bg-white rounded-xl shadow-sm p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-8">+�+�+�+�+�+� +�+�+�+�++</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedArticles.map((article: any) => (
-                <Link
-                  key={article.id}
-                  href={`/blog/${article.slug}`}
-                  className="block p-6 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-300 group"
-                >
-                  {article.coverImage && (
-                    <div className="mb-3">
-                      <img
-                        src={article.coverImage}
-                        alt={article.title}
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                    </div>
-                  )}
-                  <h3 className="font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                    {article.title}
-                  </h3>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span className="bg-gray-100 px-3 py-1 rounded-full text-xs font-medium">
-                      {Array.isArray(article.tags) && article.tags.length > 0 ? article.tags[0] : '+�+�+�+�+�'}
-                    </span>
-                    <span className="flex items-center">
-                      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+        {relatedArticles && relatedArticles.length > 0 && (
+          <div className="mt-8">
+            <div className="bg-white rounded-xl shadow-sm p-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-8">مقالات مرتبط</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {relatedArticles.map((article: any) => (
+                  <Link
+                    key={article._id}
+                    href={`/blog/${article.slug}`}
+                    className="block p-6 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-300 group"
+                  >
+                    {article.coverImageUrl && (
+                      <div className="mb-3">
+                        <img
+                          src={article.coverImageUrl}
+                          alt={article.title}
+                          className="w-full h-32 object-cover rounded-lg"
                         />
-                      </svg>
-                      5 +�+��+�+�
-                    </span>
-                  </div>
+                      </div>
+                    )}
+                    <h3 className="font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                      {article.title}
+                    </h3>
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <span className="bg-gray-100 px-3 py-1 rounded-full text-xs font-medium">
+                        {article.category || 'عمومی'}
+                      </span>
+                      <span className="flex items-center">
+                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        5 دقیقه
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <div className="mt-8 text-center">
+                <Link href="/blog" className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
+                  مشاهده همه مقالات
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
                 </Link>
-              ))}
-            </div>
-            <div className="mt-8 text-center">
-              <Link href="/blog" className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
-                +�+�+�+�+�+� +�+�+� +�+�+�+�+�+�
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </Link>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-40 backdrop-blur-md bg-white/90 border-t border-gray-200/50 shadow-2xl">
