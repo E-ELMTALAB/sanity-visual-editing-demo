@@ -1,0 +1,100 @@
+{
+  "store": {
+    "currencies": ["irr", "usd", "eur"],
+    "default_currency_code": "irr",
+    "swap_link_template": "https://sharifgpt.com/swap={swap_id}",
+    "payment_link_template": "https://sharifgpt.com/payment={payment_id}",
+    "invite_link_template": "https://sharifgpt.com/invite={invite_id}"
+  },
+  "users": [
+    {
+      "email": "admin@sharifgpt.com",
+      "password": "admin123",
+      "role": "admin"
+    }
+  ],
+  "regions": [
+    {
+      "id": "reg_iran",
+      "name": "Iran",
+      "currency_code": "irr",
+      "tax_rate": 9,
+      "tax_code": "IR_VAT",
+      "countries": ["ir"],
+      "payment_providers": [
+        {
+          "id": "manual"
+        }
+      ],
+      "fulfillment_providers": [
+        {
+          "id": "manual"
+        }
+      ]
+    },
+    {
+      "id": "reg_international",
+      "name": "International",
+      "currency_code": "usd",
+      "tax_rate": 0,
+      "tax_code": "INTL",
+      "countries": ["us", "ca", "gb", "de", "fr", "ae"],
+      "payment_providers": [
+        {
+          "id": "manual"
+        }
+      ],
+      "fulfillment_providers": [
+        {
+          "id": "manual"
+        }
+      ]
+    }
+  ],
+  "products": [
+    {
+      "title": "ChatGPT Plus - 1 Month",
+      "subtitle": "Premium AI assistant for one month",
+      "description": "Access to GPT-4, faster response times, and priority access during peak hours",
+      "handle": "chatgpt-plus-1-month",
+      "is_giftcard": false,
+      "weight": 0,
+      "status": "published",
+      "metadata": {
+        "isDigital": true,
+        "deliveryMethod": "account_credentials",
+        "serviceType": "chatgpt"
+      },
+      "images": [],
+      "options": [
+        {
+          "title": "Duration"
+        }
+      ],
+      "variants": [
+        {
+          "title": "1 Month",
+          "sku": "chatgpt-plus-1m",
+          "manage_inventory": false,
+          "allow_backorder": true,
+          "prices": [
+            {
+              "currency_code": "irr",
+              "amount": 3000000
+            },
+            {
+              "currency_code": "usd",
+              "amount": 2000
+            }
+          ],
+          "options": [
+            {
+              "value": "1 Month"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

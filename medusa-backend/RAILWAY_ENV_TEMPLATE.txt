@@ -1,0 +1,94 @@
+# =================================
+# RAILWAY ENVIRONMENT VARIABLES
+# Copy these to your Railway Medusa service
+# =================================
+
+# Node Environment
+NODE_ENV=production
+
+# Database (automatically provided by Railway PostgreSQL)
+# Use Railway's reference syntax
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+
+# Redis (automatically provided by Railway Redis)
+# Use Railway's reference syntax
+REDIS_URL=${{Redis.REDIS_URL}}
+
+# JWT Secret (CHANGE THIS - generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+JWT_SECRET=generate_your_own_secure_random_string_here_32_chars
+
+# Cookie Secret (CHANGE THIS - generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+COOKIE_SECRET=generate_your_own_secure_random_string_here_32_chars
+
+# Store CORS (your frontend URLs - separated by commas)
+STORE_CORS=https://your-frontend.vercel.app,http://localhost:3000
+
+# Admin CORS (your frontend URLs - separated by commas)
+ADMIN_CORS=https://your-frontend.vercel.app,http://localhost:3000
+
+# Admin User Credentials (for first-time setup)
+ADMIN_EMAIL=admin@sharifgpt.com
+ADMIN_PASSWORD=change_this_to_secure_password
+
+# Medusa Backend URL (will be your Railway domain)
+MEDUSA_BACKEND_URL=https://your-medusa-service.up.railway.app
+
+# Sanity Integration (for product sync)
+SANITY_PROJECT_ID=your_sanity_project_id
+SANITY_DATASET=production
+SANITY_API_TOKEN=your_sanity_api_token_with_write_access
+SANITY_WEBHOOK_SECRET=your_sanity_webhook_secret
+
+# Payment Gateways (add these when ready to test payments)
+
+# Zarinpal (Iranian payment gateway)
+# ZARINPAL_MERCHANT_ID=your_zarinpal_merchant_id
+# ZARINPAL_SANDBOX=true
+
+# Stripe (International payments)
+# STRIPE_API_KEY=sk_test_your_stripe_test_key
+# STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+
+# PayPal (International payments)
+# PAYPAL_CLIENT_ID=your_paypal_client_id
+# PAYPAL_CLIENT_SECRET=your_paypal_client_secret
+# PAYPAL_MODE=sandbox
+
+# Email Service (optional - for order confirmations)
+# SENDGRID_API_KEY=your_sendgrid_api_key
+# SENDGRID_FROM_EMAIL=noreply@sharifgpt.com
+
+# File Storage (optional - for product images, use later)
+# AWS_ACCESS_KEY_ID=your_aws_key
+# AWS_SECRET_ACCESS_KEY=your_aws_secret
+# AWS_REGION=us-east-1
+# AWS_BUCKET=your-bucket-name
+
+# =================================
+# FRONTEND ENVIRONMENT VARIABLES
+# Add these to Vercel
+# =================================
+
+# Medusa Backend URL (from Railway)
+NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://your-medusa-service.up.railway.app
+
+# Medusa Admin API Key (get this from Medusa admin panel after first deploy)
+MEDUSA_ADMIN_API_KEY=your_admin_api_key_from_medusa
+
+# Sanity Integration
+SANITY_WEBHOOK_SECRET=your_sanity_webhook_secret
+ADMIN_SYNC_TOKEN=generate_random_token_for_manual_sync
+
+# =================================
+# HOW TO GENERATE SECRETS
+# =================================
+
+# Method 1: Using Node.js
+# node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# Method 2: Using OpenSSL
+# openssl rand -hex 32
+
+# Method 3: Using Online Tool
+# https://generate-secret.vercel.app/32
+

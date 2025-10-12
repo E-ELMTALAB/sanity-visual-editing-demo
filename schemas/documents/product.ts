@@ -10,6 +10,7 @@ export default defineType({
     { name: 'seo', title: 'SEO' },
     { name: 'media', title: 'Media' },
     { name: 'relations', title: 'Relations' },
+    { name: 'sync', title: 'Medusa Sync' },
   ],
   fields: [
     // Content Fields
@@ -25,15 +26,61 @@ export default defineType({
       description: 'Collection key this product belongs to (e.g., "chatbot-ai", "ai-tools"). Leave empty if not part of a collection.',
       group: 'content'
     }),
-    defineField({ name: 'price', title: 'Price', type: 'number', group: 'content' }),
-    defineField({ name: 'originalPrice', title: 'Original Price', type: 'number', group: 'content' }),
-    defineField({ name: 'discountPercentage', title: 'Discount Percentage', type: 'number', group: 'content' }),
+    
+    // NOTE: These fields are now managed in Medusa
+    // Kept here for backward compatibility and display purposes only
+    defineField({ 
+      name: 'price', 
+      title: 'Price (Display Only)', 
+      type: 'number', 
+      group: 'content',
+      description: '⚠️ This is for display only. Actual pricing is managed in Medusa backend.',
+      readOnly: true,
+    }),
+    defineField({ 
+      name: 'originalPrice', 
+      title: 'Original Price (Display Only)', 
+      type: 'number', 
+      group: 'content',
+      description: '⚠️ This is for display only. Actual pricing is managed in Medusa backend.',
+      readOnly: true,
+    }),
+    defineField({ 
+      name: 'discountPercentage', 
+      title: 'Discount Percentage (Display Only)', 
+      type: 'number', 
+      group: 'content',
+      description: '⚠️ This is for display only. Actual discounts are managed in Medusa backend.',
+      readOnly: true,
+    }),
+    
     defineField({ name: 'features', title: 'Features', type: 'array', of: [{ type: 'string' }], group: 'content' }),
     defineField({ name: 'badges', title: 'Badges', type: 'array', of: [{ type: 'string' }], group: 'content' }),
-    defineField({ name: 'inStock', title: 'In Stock', type: 'boolean', initialValue: true, group: 'content' }),
+    
+    // NOTE: Stock status is now managed in Medusa
+    defineField({ 
+      name: 'inStock', 
+      title: 'In Stock (Display Only)', 
+      type: 'boolean', 
+      initialValue: true, 
+      group: 'content',
+      description: '⚠️ This is for display only. Actual inventory is managed in Medusa backend.',
+      readOnly: true,
+    }),
+    
     defineField({ name: 'rating', title: 'Rating (0-5)', type: 'number', group: 'content' }),
     defineField({ name: 'reviewCount', title: 'Review Count', type: 'number', group: 'content' }),
-    defineField({ name: 'options', title: 'Purchase Options', type: 'array', of: [{ type: productOption.name }], group: 'content' }),
+    
+    // NOTE: Product options are now managed as variants in Medusa
+    defineField({ 
+      name: 'options', 
+      title: 'Purchase Options (Legacy)', 
+      type: 'array', 
+      of: [{ type: productOption.name }], 
+      group: 'content',
+      description: '⚠️ Product options are now managed as variants in Medusa. This field is for backward compatibility only.',
+      hidden: true,
+    }),
     
     // Media Fields
     defineField({ 
@@ -85,6 +132,41 @@ export default defineType({
       }],
       description: 'Select related blog posts to display on this product page',
       group: 'relations'
+    }),
+
+    // Medusa Sync Fields
+    defineField({
+      name: 'medusaProductId',
+      title: 'Medusa Product ID',
+      type: 'string',
+      description: 'Auto-generated: Product ID in Medusa backend',
+      readOnly: true,
+      group: 'sync',
+    }),
+    defineField({
+      name: 'lastSyncedAt',
+      title: 'Last Synced',
+      type: 'datetime',
+      description: 'Last time this product was synced with Medusa',
+      readOnly: true,
+      group: 'sync',
+    }),
+    defineField({
+      name: 'syncStatus',
+      title: 'Sync Status',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Not Synced', value: 'not_synced' },
+          { title: 'Synced', value: 'synced' },
+          { title: 'Outdated', value: 'outdated' },
+          { title: 'Error', value: 'error' },
+        ],
+      },
+      description: 'Current sync status with Medusa',
+      readOnly: true,
+      group: 'sync',
+      initialValue: 'not_synced',
     }),
 
     // SEO Fields
@@ -172,7 +254,29 @@ export default defineType({
     }),
   ],
   preview: {
-    select: { title: 'name', subtitle: 'category', media: 'image' },
+    select: { 
+      title: 'name', 
+      subtitle: 'category', 
+      media: 'image',
+      syncStatus: 'syncStatus',
+      medusaProductId: 'medusaProductId',
+    },
+    prepare({ title, subtitle, media, syncStatus, medusaProductId }) {
+      const syncEmoji = {
+        synced: '✅',
+        not_synced: '⚠️',
+        outdated: '🔄',
+        error: '❌',
+      }[syncStatus || 'not_synced']
+
+      return {
+        title: `${syncEmoji} ${title}`,
+        subtitle: medusaProductId 
+          ? `${subtitle} • Synced to Medusa` 
+          : `${subtitle} • Not synced`,
+        media,
+      }
+    },
   },
 })
 
