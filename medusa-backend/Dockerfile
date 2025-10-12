@@ -10,13 +10,13 @@ RUN apk add --no-cache \
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package.json ./
 
 # Install dependencies
 FROM base AS dependencies
-RUN npm install --production --legacy-peer-deps
+RUN npm install --production --legacy-peer-deps --no-package-lock
 RUN cp -R node_modules /prod_node_modules
-RUN npm install --legacy-peer-deps
+RUN npm install --legacy-peer-deps --no-package-lock
 
 # Build application
 FROM base AS build
