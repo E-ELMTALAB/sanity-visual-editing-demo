@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
-    "@medusajs/medusa-js": "^6.1.11",
+    "@medusajs/medusa-js": "^6.1.0",
     "@portabletext/react": "3.0.11",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
