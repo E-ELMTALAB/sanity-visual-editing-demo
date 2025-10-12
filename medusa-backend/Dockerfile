@@ -14,9 +14,9 @@ COPY package*.json ./
 
 # Install dependencies
 FROM base AS dependencies
-RUN npm ci --only=production
+RUN npm install --production --legacy-peer-deps
 RUN cp -R node_modules /prod_node_modules
-RUN npm ci
+RUN npm install --legacy-peer-deps
 
 # Build application
 FROM base AS build
