@@ -26,6 +26,40 @@ const runMigrations = async (directory) => {
   }
 };
 
+const seedDatabase = async (container) => {
+  const storeService = container.resolve("storeService");
+  const userService = container.resolve("userService");
+  const regionService = container.resolve("regionService");
+  const currencyService = container.resolve("currencyService");
+  
+  console.log("Checking if database needs seeding...");
+  
+  try {
+    // Check if store exists
+    const store = await storeService.retrieve().catch(() => null);
+    
+    if (!store) {
+      console.log("Creating default store...");
+      await storeService.create();
+      
+      // Create default region
+      console.log("Creating default region...");
+      await regionService.create({
+        name: "Default Region",
+        currency_code: "usd",
+        tax_rate: 0,
+        payment_providers: ["manual"],
+        fulfillment_providers: ["manual"],
+        countries: ["us"],
+      });
+      
+      console.log("Database seeded successfully");
+    }
+  } catch (error) {
+    console.log("Seeding skipped or already complete:", error.message);
+  }
+};
+
 const start = async () => {
   const app = express();
   const directory = process.cwd();
@@ -40,6 +74,9 @@ const start = async () => {
       expressApp: app,
       isTest: false,
     });
+    
+    // Seed database if needed
+    await seedDatabase(container);
 
     const configModule_ = container.resolve("configModule");
     const port = configModule_.projectConfig.port ?? 9000;
