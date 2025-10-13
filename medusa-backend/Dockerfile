@@ -42,5 +42,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
   CMD node -e "require('http').get('http://localhost:9000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"
 
 # Start application
-CMD ["npm", "start"]
+CMD ["npm", "run", "start:railway"]
 
