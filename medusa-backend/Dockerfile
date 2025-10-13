@@ -16,11 +16,11 @@ COPY package.json ./
 FROM base AS dependencies
 RUN npm install --production --legacy-peer-deps --no-package-lock
 RUN cp -R node_modules /prod_node_modules
-RUN npm install --legacy-peer-deps --no-package-lock
 
 # Build application
 FROM base AS build
-COPY --from=dependencies /app/node_modules ./node_modules
+COPY package.json ./
+RUN npm install --legacy-peer-deps --no-package-lock
 COPY . .
 RUN npm run build
 
