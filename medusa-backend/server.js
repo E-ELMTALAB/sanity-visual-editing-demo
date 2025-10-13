@@ -72,7 +72,7 @@ const seedDatabase = async (directory) => {
     // Use Medusa's official seed function
     await seed({
       directory,
-      seedFile: directory + "/data/seed.json",
+      seedFile: "/app/data/seed.json",
       migrate: false, // We already ran migrations
     });
     
