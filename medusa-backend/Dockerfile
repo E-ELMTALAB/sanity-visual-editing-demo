@@ -15,7 +15,7 @@ COPY package.json ./
 # Build application
 FROM base AS build
 COPY package.json ./
-RUN npm install --legacy-peer-deps --no-package-lock
+RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build:server
 
