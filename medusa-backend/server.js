@@ -1,12 +1,39 @@
 const express = require("express");
 const { getConfigFile } = require("medusa-core-utils");
 const loaders = require("@medusajs/medusa/dist/loaders").default;
+const { MigrationGenerator } = require("@medusajs/medusa");
+const { DataSource } = require("typeorm");
+
+const runMigrations = async (directory) => {
+  console.log("Running database migrations...");
+  const { configModule } = getConfigFile(directory, "medusa-config");
+  
+  const dataSource = new DataSource({
+    type: "postgres",
+    url: configModule.projectConfig.database_url,
+    extra: configModule.projectConfig.database_extra || {},
+    migrations: [__dirname + "/node_modules/@medusajs/medusa/dist/migrations/*.js"],
+  });
+
+  try {
+    await dataSource.initialize();
+    await dataSource.runMigrations();
+    await dataSource.destroy();
+    console.log("Migrations completed successfully");
+  } catch (error) {
+    console.error("Migration failed:", error);
+    throw error;
+  }
+};
 
 const start = async () => {
   const app = express();
   const directory = process.cwd();
 
   try {
+    // Run migrations first
+    await runMigrations(directory);
+    
     const { configModule } = getConfigFile(directory, "medusa-config");
     const { container } = await loaders({
       directory,

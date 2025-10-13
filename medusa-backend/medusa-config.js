@@ -32,8 +32,8 @@ const STORE_CORS = process.env.STORE_CORS || "http://localhost:3000";
 // Database URL
 const DATABASE_URL = process.env.DATABASE_URL || "postgres://localhost/medusa-store";
 
-// Redis URL
-const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+// Redis URL (optional - only use if provided)
+const REDIS_URL = process.env.REDIS_URL;
 
 const plugins = [
   `medusa-fulfillment-manual`,
@@ -90,13 +90,18 @@ if (REDIS_URL) {
   });
 }
 
-// Redis event bus
-if (REDIS_URL && process.env.NODE_ENV === "production") {
+// Redis event bus (only if Redis is available)
+if (REDIS_URL) {
   plugins.push({
     resolve: `@medusajs/event-bus-redis`,
     options: {
       redisUrl: REDIS_URL,
     },
+  });
+} else {
+  // Use local event bus if no Redis
+  plugins.push({
+    resolve: `@medusajs/event-bus-local`,
   });
 }
 
@@ -122,7 +127,6 @@ const projectConfig = {
   store_cors: STORE_CORS,
   database_url: DATABASE_URL,
   admin_cors: ADMIN_CORS,
-  redis_url: REDIS_URL,
   // Railway/Production configuration
   host: process.env.HOST || "0.0.0.0",
   port: parseInt(process.env.PORT || "9000"),
@@ -134,12 +138,13 @@ const projectConfig = {
           },
         }
       : {},
+  ...(REDIS_URL && { redis_url: REDIS_URL }), // Only include Redis if provided
 };
 
 /** @type {import('@medusajs/medusa').ConfigModule} */
 module.exports = {
   projectConfig,
-  plugins,
+  plugins: plugins.filter(p => p), // Remove undefined plugins
   modules,
   featureFlags: {
     product_categories: true,
