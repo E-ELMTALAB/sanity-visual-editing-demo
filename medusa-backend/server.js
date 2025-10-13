@@ -26,37 +26,61 @@ const runMigrations = async (directory) => {
   }
 };
 
-const seedDatabase = async (container) => {
-  const storeService = container.resolve("storeService");
-  const userService = container.resolve("userService");
-  const regionService = container.resolve("regionService");
-  const currencyService = container.resolve("currencyService");
-  
+const seedDatabase = async (directory) => {
   console.log("Checking if database needs seeding...");
+  const { configModule } = getConfigFile(directory, "medusa-config");
   
+  const dataSource = new DataSource({
+    type: "postgres",
+    url: configModule.projectConfig.database_url,
+    extra: configModule.projectConfig.database_extra || {},
+    entities: [__dirname + "/node_modules/@medusajs/medusa/dist/models/*.js"],
+  });
+
   try {
-    // Check if store exists
-    const store = await storeService.retrieve().catch(() => null);
+    await dataSource.initialize();
     
-    if (!store) {
+    // Check if store exists
+    const storeCount = await dataSource.query("SELECT COUNT(*) FROM store");
+    
+    if (parseInt(storeCount[0].count) === 0) {
       console.log("Creating default store...");
-      await storeService.create();
       
-      // Create default region
-      console.log("Creating default region...");
-      await regionService.create({
-        name: "Default Region",
-        currency_code: "usd",
-        tax_rate: 0,
-        payment_providers: ["manual"],
-        fulfillment_providers: ["manual"],
-        countries: ["us"],
-      });
+      // Insert default store
+      await dataSource.query(`
+        INSERT INTO store (id, name, default_currency_code, created_at, updated_at)
+        VALUES ('store_01', 'Medusa Store', 'usd', NOW(), NOW())
+      `);
+      
+      // Insert default currency
+      await dataSource.query(`
+        INSERT INTO currency (code, name, symbol, symbol_native)
+        VALUES ('usd', 'US Dollar', '$', '$')
+        ON CONFLICT (code) DO NOTHING
+      `);
+      
+      // Insert default region
+      await dataSource.query(`
+        INSERT INTO region (id, name, currency_code, tax_rate, created_at, updated_at)
+        VALUES ('reg_01', 'Default Region', 'usd', 0, NOW(), NOW())
+      `);
+      
+      // Insert default country
+      await dataSource.query(`
+        INSERT INTO country (id, iso_2, iso_3, num_code, name, display_name, region_id)
+        VALUES (840, 'US', 'USA', 840, 'UNITED STATES', 'United States', 'reg_01')
+        ON CONFLICT (id) DO UPDATE SET region_id = 'reg_01'
+      `);
       
       console.log("Database seeded successfully");
+    } else {
+      console.log("Store already exists, skipping seeding");
     }
+    
+    await dataSource.destroy();
   } catch (error) {
-    console.log("Seeding skipped or already complete:", error.message);
+    console.error("Seeding error:", error.message);
+    try { await dataSource.destroy(); } catch {}
   }
 };
 
@@ -68,15 +92,15 @@ const start = async () => {
     // Run migrations first
     await runMigrations(directory);
     
+    // Seed database before initializing loaders
+    await seedDatabase(directory);
+    
     const { configModule } = getConfigFile(directory, "medusa-config");
     const { container } = await loaders({
       directory,
       expressApp: app,
       isTest: false,
     });
-    
-    // Seed database if needed
-    await seedDatabase(container);
 
     const configModule_ = container.resolve("configModule");
     const port = configModule_.projectConfig.port ?? 9000;
