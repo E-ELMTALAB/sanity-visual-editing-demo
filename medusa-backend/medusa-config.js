@@ -123,6 +123,9 @@ const projectConfig = {
   database_url: DATABASE_URL,
   admin_cors: ADMIN_CORS,
   redis_url: REDIS_URL,
+  // Railway/Production configuration
+  host: process.env.HOST || "0.0.0.0",
+  port: parseInt(process.env.PORT || "9000"),
   database_extra:
     process.env.NODE_ENV !== "development"
       ? {

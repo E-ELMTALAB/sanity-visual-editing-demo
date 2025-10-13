@@ -31,6 +31,7 @@ ENV NODE_ENV=production
 COPY --from=dependencies /prod_node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/medusa-config.js ./
+COPY --from=build /app/server.js ./
 COPY --from=build /app/package.json ./
 
 # Expose ports
@@ -42,5 +43,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
   CMD node -e "require('http').get('http://localhost:9000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"
 
 # Start application
-CMD ["npm", "run", "start:railway"]
+CMD ["node", "server.js"]
 
