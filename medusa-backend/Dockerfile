@@ -12,11 +12,6 @@ WORKDIR /app
 # Copy package files
 COPY package.json ./
 
-# Install dependencies
-FROM base AS dependencies
-RUN npm install --production --legacy-peer-deps --no-package-lock
-RUN cp -R node_modules /prod_node_modules
-
 # Build application
 FROM base AS build
 COPY package.json ./
@@ -28,7 +23,7 @@ RUN npm run build:server
 FROM base AS production
 ENV NODE_ENV=production
 
-COPY --from=dependencies /prod_node_modules ./node_modules
+COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/medusa-config.js ./
 COPY --from=build /app/server.js ./
