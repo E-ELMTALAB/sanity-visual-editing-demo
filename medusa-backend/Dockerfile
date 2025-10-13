@@ -22,7 +22,7 @@ FROM base AS build
 COPY package.json ./
 RUN npm install --legacy-peer-deps --no-package-lock
 COPY . .
-RUN npm run build
+RUN npm run build:server
 
 # Production image
 FROM base AS production
