@@ -27,7 +27,7 @@ const runMigrations = async (directory) => {
 };
 
 const seedDatabase = async (directory) => {
-  console.log("Checking if database needs seeding...");
+  console.log("Forcing complete database reseed...");
   const { configModule } = getConfigFile(directory, "medusa-config");
   
   const dataSource = new DataSource({
@@ -40,27 +40,46 @@ const seedDatabase = async (directory) => {
   try {
     await dataSource.initialize();
     
-    // Check if store exists
-    const storeCount = await dataSource.query("SELECT COUNT(*) FROM store");
+    console.log("Dropping all existing data...");
+    
+    // Disable foreign key checks temporarily
+    await dataSource.query("SET session_replication_role = 'replica';");
+    
+    // Get all table names
+    const tables = await dataSource.query(`
+      SELECT tablename FROM pg_tables 
+      WHERE schemaname = 'public' 
+      AND tablename NOT LIKE 'migrations%'
+    `);
+    
+    // Truncate all tables
+    for (const { tablename } of tables) {
+      try {
+        await dataSource.query(`TRUNCATE TABLE "${tablename}" CASCADE;`);
+        console.log(`Cleared table: ${tablename}`);
+      } catch (err) {
+        console.log(`Skipping table ${tablename}: ${err.message}`);
+      }
+    }
+    
+    // Re-enable foreign key checks
+    await dataSource.query("SET session_replication_role = 'origin';");
     
     await dataSource.destroy();
     
-    if (parseInt(storeCount[0].count) === 0) {
-      console.log("Store not found. Running Medusa official seed...");
-      
-      // Use Medusa's official seed function
-      await seed({
-        directory,
-        seedFile: directory + "/data/seed.json",
-        migrate: false, // We already ran migrations
-      });
-      
-      console.log("Database seeded successfully with official Medusa seed data");
-    } else {
-      console.log("Store already exists, skipping seeding");
-    }
+    console.log("All data cleared. Running Medusa official seed...");
+    
+    // Use Medusa's official seed function
+    await seed({
+      directory,
+      seedFile: directory + "/data/seed.json",
+      migrate: false, // We already ran migrations
+    });
+    
+    console.log("Database seeded successfully with official Medusa seed data");
   } catch (error) {
     console.error("Seeding error:", error.message);
+    console.error("Full error:", error);
     try { await dataSource.destroy(); } catch {}
     throw error;
   }
