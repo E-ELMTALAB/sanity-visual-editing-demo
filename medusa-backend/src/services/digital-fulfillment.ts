@@ -4,15 +4,18 @@ import { TransactionBaseService } from "@medusajs/medusa";
  * Service for handling digital product fulfillment
  */
 class DigitalFulfillmentService extends TransactionBaseService {
-  constructor(container) {
+  protected container_: any;
+
+  constructor(container: any) {
     super(container);
+    this.container_ = container;
   }
 
   /**
    * Fulfill digital products in an order
    */
   async fulfillDigitalProducts(orderId: string) {
-    const orderService = this.container.resolve("orderService");
+    const orderService = this.container_.resolve("orderService");
     
     try {
       const order = await orderService.retrieve(orderId, {

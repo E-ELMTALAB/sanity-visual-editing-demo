@@ -31,9 +31,10 @@ export default (app: Router) => {
   router.post("/", wrapHandler(async (req, res) => {
     // Verify webhook signature
     if (!verifyWebhookSignature(req)) {
-      return res.status(401).json({
+      res.status(401).json({
         error: "Invalid webhook signature",
       });
+      return;
     }
 
     const productService = req.scope.resolve("productService");
@@ -50,7 +51,8 @@ export default (app: Router) => {
 
       // Only process product documents
       if (_type !== "product") {
-        return res.json({ message: "Not a product, skipping" });
+        res.json({ message: "Not a product, skipping" });
+        return;
       }
 
       // Check if product exists in Medusa
@@ -109,9 +111,10 @@ export default (app: Router) => {
    */
   router.delete("/", wrapHandler(async (req, res) => {
     if (!verifyWebhookSignature(req)) {
-      return res.status(401).json({
+      res.status(401).json({
         error: "Invalid webhook signature",
       });
+      return;
     }
 
     const productService = req.scope.resolve("productService");
