@@ -25,7 +25,7 @@ ENV NODE_ENV=production
 
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/data ./data
+COPY --from=build /app/seed-data.sql ./
 COPY --from=build /app/medusa-config.js ./
 COPY --from=build /app/server.js ./
 COPY --from=build /app/package.json ./

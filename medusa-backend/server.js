@@ -2,7 +2,7 @@ const express = require("express");
 const { getConfigFile } = require("medusa-core-utils");
 const loaders = require("@medusajs/medusa/dist/loaders").default;
 const { DataSource } = require("typeorm");
-const seed = require("@medusajs/medusa/dist/commands/seed").default;
+const fs = require("fs");
 
 const runMigrations = async (directory) => {
   console.log("Running database migrations...");
@@ -67,16 +67,18 @@ const seedDatabase = async (directory) => {
     
     await dataSource.destroy();
     
-    console.log("All data cleared. Running Medusa official seed...");
+    console.log("All data cleared. Running SQL-based seed...");
     
-    // Use Medusa's official seed function
-    await seed({
-      directory,
-      seedFile: "/app/data/seed.json",
-      migrate: false, // We already ran migrations
-    });
+    // Re-initialize connection for seeding
+    await dataSource.initialize();
     
-    console.log("Database seeded successfully with official Medusa seed data");
+    // Read and execute SQL seed file
+    const seedSQL = fs.readFileSync("/app/seed-data.sql", "utf8");
+    await dataSource.query(seedSQL);
+    
+    await dataSource.destroy();
+    
+    console.log("Database seeded successfully with SQL seed data");
   } catch (error) {
     console.error("Seeding error:", error.message);
     console.error("Full error:", error);
