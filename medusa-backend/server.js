@@ -72,6 +72,34 @@ const seedDatabase = async (directory) => {
         ON CONFLICT (id) DO UPDATE SET region_id = 'reg_01'
       `);
       
+      // Insert payment providers
+      await dataSource.query(`
+        INSERT INTO payment_provider (id, is_installed)
+        VALUES ('manual', true)
+        ON CONFLICT (id) DO NOTHING
+      `);
+      
+      // Insert fulfillment providers
+      await dataSource.query(`
+        INSERT INTO fulfillment_provider (id, is_installed)
+        VALUES ('manual', true)
+        ON CONFLICT (id) DO NOTHING
+      `);
+      
+      // Link payment provider to region
+      await dataSource.query(`
+        INSERT INTO region_payment_providers (region_id, provider_id)
+        VALUES ('reg_01', 'manual')
+        ON CONFLICT DO NOTHING
+      `);
+      
+      // Link fulfillment provider to region
+      await dataSource.query(`
+        INSERT INTO region_fulfillment_providers (region_id, provider_id)
+        VALUES ('reg_01', 'manual')
+        ON CONFLICT DO NOTHING
+      `);
+      
       console.log("Database seeded successfully");
     } else {
       console.log("Store already exists, skipping seeding");
