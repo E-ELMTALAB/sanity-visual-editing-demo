@@ -16,7 +16,7 @@ export default function ProductsPageClient({ productsData = [], faqsData = [] }:
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [sortBy, setSortBy] = useState("popular")
   const [showFilters, setShowFilters] = useState(false)
-  const [expandedFaq, setExpandedFaq] = useState<number | null>(null)
+  const [expandedFaq, setExpandedFaq] = useState<string | null>(null)
   const [newReview, setNewReview] = useState({ name: "", rating: 5, comment: "" })
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
