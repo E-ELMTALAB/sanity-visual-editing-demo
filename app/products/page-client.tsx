@@ -126,7 +126,8 @@ export default function ProductsPageClient({ productsData = [], faqsData = [] }:
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const categoryParam = urlParams.get("category")
-    if (categoryParam && categories.some((cat) => cat.id === categoryParam)) {
+    const validCategories = ["all", "ai", "social-media", "music", "educational", "sim-card"]
+    if (categoryParam && validCategories.includes(categoryParam)) {
       setSelectedCategory(categoryParam)
     }
 
