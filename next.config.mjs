@@ -14,8 +14,6 @@ const config = {
     /// Set this to false if you want production builds to abort if there's lint errors
     ignoreDuringBuilds: process.env.VERCEL_ENV === 'production',
   },
-  // Exclude other project folders from the build
-  pageExtensions: ['tsx', 'ts', 'jsx', 'js'].map(ext => `**/${ext}`),
   webpack: (config, { isServer }) => {
     config.watchOptions = {
       ...config.watchOptions,
