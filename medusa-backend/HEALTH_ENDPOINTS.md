@@ -19,7 +19,7 @@ Your Medusa v2 backend has comprehensive health check endpoints to monitor syste
 curl https://your-medusa.railway.app/health
 ```
 
-#### Example Response:
+#### Example esponse:
 
 ```json
 {
