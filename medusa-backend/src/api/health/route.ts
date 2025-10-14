@@ -21,7 +21,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
   // Check Database Connection
   try {
-    const manager = req.scope.resolve("manager");
+    const manager = req.scope.resolve("manager") as any;
     await manager.query("SELECT 1");
     healthStatus.services.database = {
       status: "healthy",
