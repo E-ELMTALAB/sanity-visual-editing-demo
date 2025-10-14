@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { CustomPortableText } from 'components/shared/CustomPortableText'
 import type { PostListItemPayload } from 'types'
 import { Calendar, Clock, User, Tag, Search, Filter } from 'lucide-react'
-import Header from '../../../sharifgpt-website/components/header'
-import Footer from '../../../sharifgpt-website/components/footer'
+import { Navbar } from '@/components/global/Navbar'
+import { Footer } from '@/components/global/Footer'
 
 // Helper function to calculate reading time from excerpt
 function estimateReadingTime(excerpt: any[]): number {
@@ -42,7 +42,7 @@ export default function BlogIndex({ posts }: { posts: PostListItemPayload[] }) {
   return (
     <div className="bg-gray-50 min-h-screen" dir="rtl">
       {/* Header */}
-      <Header showProductsDropdown={true} showCoursesDropdown={true} />
+      <Navbar menuItems={[]} />
       
       {/* Main Content */}
       <div className="mx-auto max-w-7xl px-4 py-10">
@@ -208,7 +208,7 @@ export default function BlogIndex({ posts }: { posts: PostListItemPayload[] }) {
       </div>
 
       {/* Footer */}
-      <Footer />
+      <Footer footer={[]} />
     </div>
   )
 }

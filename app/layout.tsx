@@ -3,7 +3,7 @@ import { IBM_Plex_Mono, Inter, PT_Serif } from 'next/font/google'
 import dynamic from 'next/dynamic'
 const AppVisualEditing = dynamic(() => import('components/visual-editing/AppVisualEditing'), { ssr: false })
 const AppSharifProviders = dynamic(() => import('components/visual-editing/AppSharifProviders'), { ssr: false })
-import '@/app/globals.css'
+import 'styles/index.css'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'

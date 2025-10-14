@@ -4,7 +4,7 @@ import { readToken } from 'lib/sanity.api'
 import { productDocBySlugQuery, productDocPaths } from 'lib/sanity.queries'
 import { urlForImage } from 'lib/sanity.image'
 import ProductOverlay from 'components/site/product/ProductOverlay'
-import ProductPageClient from '../../../sharifgpt-website/app/products/[slug]/page'
+// Client component removed - using server component directly
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
@@ -130,7 +130,10 @@ export default async function Page({ params }: { params: { slug: string } }) {
   return (
     <>
       <ProductOverlay product={product} />
-      <ProductPageClient productData={productForClient} />
+      <div>
+        {/* Product page client component to be implemented */}
+        <pre>{JSON.stringify(productForClient, null, 2)}</pre>
+      </div>
     </>
   )
 }
