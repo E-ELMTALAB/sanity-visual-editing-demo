@@ -580,7 +580,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                   دوره‌های مرتبط
                 </DynamicHeading>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {course.relatedCourses.map((relatedCourse) => (
+                  {course.relatedCourses.map((relatedCourse: any) => (
                     <Link
                       key={relatedCourse._id}
                       href={`/courses/${relatedCourse.slug?.current}`}
