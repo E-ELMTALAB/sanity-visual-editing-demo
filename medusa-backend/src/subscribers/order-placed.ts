@@ -1,44 +1,38 @@
-import { EventBusService } from "@medusajs/medusa";
+import { Modules } from '@medusajs/framework/utils'
+import { INotificationModuleService, IOrderModuleService } from '@medusajs/framework/types'
+import { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa'
+import { EmailTemplates } from '../modules/email-notifications/templates'
 
-/**
- * Subscriber for order.placed event
- * Handles actions when an order is successfully placed
- */
-export default async function orderPlacedHandler({ data, eventName, container }) {
-  const orderService = container.resolve("orderService");
-  const eventBusService: EventBusService = container.resolve("eventBusService");
+export default async function orderPlacedHandler({
+  event: { data },
+  container,
+}: SubscriberArgs<any>) {
+  const notificationModuleService: INotificationModuleService = container.resolve(Modules.NOTIFICATION)
+  const orderModuleService: IOrderModuleService = container.resolve(Modules.ORDER)
+  
+  const order = await orderModuleService.retrieveOrder(data.id, { relations: ['items', 'summary', 'shipping_address'] })
+  const shippingAddress = await (orderModuleService as any).orderAddressService_.retrieve(order.shipping_address.id)
 
   try {
-    const order = await orderService.retrieve(data.id, {
-      relations: ["customer", "items", "items.variant", "items.variant.product"],
-    });
-
-    console.log(`Order placed: ${order.id}`);
-
-    // Check if order contains digital products
-    const hasDigitalProducts = order.items.some(
-      (item) => item.variant?.product?.metadata?.isDigital === true
-    );
-
-    if (hasDigitalProducts) {
-      // Emit event to fulfill digital products
-      await eventBusService.emit("order.digital_fulfillment_required", {
-        id: order.id,
-      });
-    }
-
-    // Send order confirmation email
-    // This will be handled by the email plugin
-    console.log(`Order confirmation email should be sent to: ${order.customer.email}`);
+    await notificationModuleService.createNotifications({
+      to: order.email,
+      channel: 'email',
+      template: EmailTemplates.ORDER_PLACED,
+      data: {
+        emailOptions: {
+          replyTo: 'info@example.com',
+          subject: 'Your order has been placed'
+        },
+        order,
+        shippingAddress,
+        preview: 'Thank you for your order!'
+      }
+    })
   } catch (error) {
-    console.error("Error in order.placed subscriber:", error);
+    console.error('Error sending order confirmation notification:', error)
   }
 }
 
-export const config = {
-  event: "order.placed",
-  context: {
-    subscriberId: "order-placed-handler",
-  },
-};
-
+export const config: SubscriberConfig = {
+  event: 'order.placed'
+}

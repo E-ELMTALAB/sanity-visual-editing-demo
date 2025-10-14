@@ -1,94 +1,117 @@
 # =================================
-# RAILWAY ENVIRONMENT VARIABLES
+# RAILWAY MEDUSA v2 ENVIRONMENT VARIABLES
 # Copy these to your Railway Medusa service
 # =================================
 
 # Node Environment
 NODE_ENV=production
 
+# =================================
+# REQUIRED - CORE CONFIGURATION
+# =================================
+
 # Database (automatically provided by Railway PostgreSQL)
-# Use Railway's reference syntax
 DATABASE_URL=${{Postgres.DATABASE_URL}}
 
-# Redis (automatically provided by Railway Redis)
-# Use Railway's reference syntax
-REDIS_URL=${{Redis.REDIS_URL}}
+# JWT Secret (REQUIRED - generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+JWT_SECRET=your_jwt_secret_here_min_32_chars_CHANGE_THIS
 
-# JWT Secret (CHANGE THIS - generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
-JWT_SECRET=generate_your_own_secure_random_string_here_32_chars
+# Cookie Secret (REQUIRED - generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+COOKIE_SECRET=your_cookie_secret_here_min_32_chars_CHANGE_THIS
 
-# Cookie Secret (CHANGE THIS - generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
-COOKIE_SECRET=generate_your_own_secure_random_string_here_32_chars
+# =================================
+# OPTIONAL - BACKEND & CORS
+# =================================
 
-# Store CORS (your frontend URLs - separated by commas)
+# Backend URL (auto-detected via RAILWAY_PUBLIC_DOMAIN_VALUE)
+# BACKEND_PUBLIC_URL will be set automatically by Railway
+
+# Store/Frontend CORS (your frontend URLs - comma-separated)
 STORE_CORS=https://your-frontend.vercel.app,http://localhost:3000
 
-# Admin CORS (your frontend URLs - separated by commas)
-ADMIN_CORS=https://your-frontend.vercel.app,http://localhost:3000
+# Admin CORS (comma-separated)
+ADMIN_CORS=https://your-frontend.vercel.app,http://localhost:9000
 
-# Admin User Credentials (for first-time setup)
-ADMIN_EMAIL=admin@sharifgpt.com
-ADMIN_PASSWORD=change_this_to_secure_password
+# Auth CORS (comma-separated)  
+AUTH_CORS=https://your-frontend.vercel.app,http://localhost:9000
 
-# Medusa Backend URL (will be your Railway domain)
-MEDUSA_BACKEND_URL=https://your-medusa-service.up.railway.app
+# =================================
+# OPTIONAL - REDIS (Recommended)
+# =================================
 
-# Sanity Integration (for product sync)
-SANITY_PROJECT_ID=your_sanity_project_id
-SANITY_DATASET=production
-SANITY_API_TOKEN=your_sanity_api_token_with_write_access
-SANITY_WEBHOOK_SECRET=your_sanity_webhook_secret
+# Redis (automatically provided by Railway Redis service)
+REDIS_URL=${{Redis.REDIS_URL}}
 
-# Payment Gateways (add these when ready to test payments)
+# =================================
+# OPTIONAL - MINIO FILE STORAGE
+# =================================
+# If not set, falls back to local file storage
+# Use Railway MinIO template or external MinIO service
 
-# Zarinpal (Iranian payment gateway)
-# ZARINPAL_MERCHANT_ID=your_zarinpal_merchant_id
-# ZARINPAL_SANDBOX=true
+# MinIO Endpoint (without http://)
+# MINIO_ENDPOINT=${{MinIO.RAILWAY_PRIVATE_DOMAIN}}:9000
 
-# Stripe (International payments)
+# MinIO Access Key
+# MINIO_ACCESS_KEY=your_minio_access_key
+
+# MinIO Secret Key
+# MINIO_SECRET_KEY=your_minio_secret_key
+
+# MinIO Bucket (optional, defaults to 'medusa-media')
+# MINIO_BUCKET=medusa-media
+
+# =================================
+# OPTIONAL - EMAIL NOTIFICATIONS
+# =================================
+# Choose ONE: Resend OR SendGrid (not both)
+
+# Option 1: Resend (Recommended) - Get key from https://resend.com
+# RESEND_API_KEY=re_your_resend_api_key
+# RESEND_FROM_EMAIL=noreply@yourdomain.com
+
+# Option 2: SendGrid
+# SENDGRID_API_KEY=SG.your_sendgrid_api_key
+# SENDGRID_FROM_EMAIL=noreply@yourdomain.com
+
+# =================================
+# OPTIONAL - PAYMENT PROVIDERS
+# =================================
+
+# Stripe Configuration - Get from https://stripe.com
 # STRIPE_API_KEY=sk_test_your_stripe_test_key
 # STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 
-# PayPal (International payments)
-# PAYPAL_CLIENT_ID=your_paypal_client_id
-# PAYPAL_CLIENT_SECRET=your_paypal_client_secret
-# PAYPAL_MODE=sandbox
+# =================================
+# OPTIONAL - MEILISEARCH
+# =================================
+# Use Railway Meilisearch template
 
-# Email Service (optional - for order confirmations)
-# SENDGRID_API_KEY=your_sendgrid_api_key
-# SENDGRID_FROM_EMAIL=noreply@sharifgpt.com
+# Meilisearch Host
+# MEILISEARCH_HOST=${{Meilisearch.RAILWAY_PRIVATE_DOMAIN}}:7700
 
-# File Storage (optional - for product images, use later)
-# AWS_ACCESS_KEY_ID=your_aws_key
-# AWS_SECRET_ACCESS_KEY=your_aws_secret
-# AWS_REGION=us-east-1
-# AWS_BUCKET=your-bucket-name
+# Meilisearch Admin API Key
+# MEILISEARCH_ADMIN_KEY=${{Meilisearch.MEILI_MASTER_KEY}}
 
 # =================================
-# FRONTEND ENVIRONMENT VARIABLES
-# Add these to Vercel
+# OPTIONAL - WORKER MODE
 # =================================
+# For scaling: set to 'server' on API instances, 'worker' on worker instances
+# Default: 'shared' (runs both in same instance)
 
-# Medusa Backend URL (from Railway)
-NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://your-medusa-service.up.railway.app
-
-# Medusa Admin API Key (get this from Medusa admin panel after first deploy)
-MEDUSA_ADMIN_API_KEY=your_admin_api_key_from_medusa
-
-# Sanity Integration
-SANITY_WEBHOOK_SECRET=your_sanity_webhook_secret
-ADMIN_SYNC_TOKEN=generate_random_token_for_manual_sync
+MEDUSA_WORKER_MODE=shared
 
 # =================================
-# HOW TO GENERATE SECRETS
+# OPTIONAL - DISABLE ADMIN
 # =================================
 
-# Method 1: Using Node.js
-# node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+# Set to 'true' if you want to disable the admin dashboard
+MEDUSA_DISABLE_ADMIN=false
 
-# Method 2: Using OpenSSL
-# openssl rand -hex 32
-
-# Method 3: Using Online Tool
-# https://generate-secret.vercel.app/32
-
+# =================================
+# NOTES
+# =================================
+# 1. Generate secrets using: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+# 2. Railway service references use syntax: ${{ServiceName.VARIABLE_NAME}}
+# 3. The backend URL is auto-detected from RAILWAY_PUBLIC_DOMAIN_VALUE
+# 4. Make sure to add all your frontend domains to CORS variables
+# 5. For production, always use production API keys (not test keys)

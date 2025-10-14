@@ -1,35 +1,36 @@
 {
   "compilerOptions": {
-    "lib": ["es2021"],
-    "target": "es2021",
-    "outDir": "./dist",
+    "target": "es2019",
+    "allowJs": true,
     "esModuleInterop": true,
-    "declaration": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "node16",
+    "moduleResolution": "node16",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "sourceMap": true,
-    "noImplicitReturns": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "noImplicitThis": true,
-    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true,
+    "skipDefaultLibCheck": true,
+    "declaration": true,
+    "sourceMap": false,
+    "outDir": "./.medusa/server",
+    "rootDir": "./",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
-    }
+      "*": ["./src/*"]
+    },
+    "jsx": "react-jsx",
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "checkJs": false
   },
-  "include": ["src"],
+  "ts-node": {
+    "swc": true
+  },
+  "include": ["src", "medusa-config.js"],
   "exclude": [
+    "**/__tests__",
+    "**/__fixtures__",
     "node_modules",
-    "dist",
     "build",
-    ".cache",
-    "tests",
-    "**/*.spec.ts"
+    ".cache"
   ]
 }
-
