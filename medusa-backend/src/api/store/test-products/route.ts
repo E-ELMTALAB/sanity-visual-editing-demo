@@ -12,27 +12,23 @@ import { Modules } from "@medusajs/framework/utils";
  */
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
-    const { limit = 10, offset = 0 } = req.query;
+    const limit = Number(req.query.limit) || 10;
+    const offset = Number(req.query.offset) || 0;
     
     const productModuleService: IProductModuleService = req.scope.resolve(Modules.PRODUCT);
     
-    // Get products with details
-    const products = await productModuleService.listProducts({
-      take: Number(limit),
-      skip: Number(offset)
-    });
-
-    // Get total count
-    const [, count] = await productModuleService.listAndCountProducts();
+    // Get all products and slice manually
+    const [allProducts, count] = await productModuleService.listAndCountProducts();
+    const products = allProducts.slice(offset, offset + limit);
 
     const response = {
       success: true,
       timestamp: new Date().toISOString(),
       pagination: {
         total: count,
-        limit: Number(limit),
-        offset: Number(offset),
-        hasMore: count > (Number(offset) + products.length)
+        limit: limit,
+        offset: offset,
+        hasMore: count > (offset + products.length)
       },
       products: products.map(product => ({
         id: product.id,
@@ -49,7 +45,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
           id: v.id,
           title: v.title,
           sku: v.sku,
-          prices: v.prices
+          options: (v as any).options || []
         })) || [],
         images: product.images || [],
         created_at: product.created_at,

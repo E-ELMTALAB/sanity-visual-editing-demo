@@ -15,7 +15,8 @@ import { Modules } from "@medusajs/framework/utils";
  */
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
-    const { title, description, price = 1000 } = req.body;
+    const body = req.body as { title?: string; description?: string; price?: number };
+    const { title, description, price = 1000 } = body;
 
     if (!title) {
       return res.status(400).json({

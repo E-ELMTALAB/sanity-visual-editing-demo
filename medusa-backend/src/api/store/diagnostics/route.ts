@@ -32,7 +32,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     // 1. Test Database Connection (via Product Module)
     try {
       const productModuleService: IProductModuleService = req.scope.resolve(Modules.PRODUCT);
-      const products = await productModuleService.listProducts({ take: 5 });
+      const [products] = await productModuleService.listAndCountProducts();
       
       diagnostics.tests.database = {
         status: "✅ Connected",
@@ -54,12 +54,12 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     // 2. Test Region Module
     try {
       const regionModuleService: IRegionModuleService = req.scope.resolve(Modules.REGION);
-      const regions = await regionModuleService.listRegions({ take: 10 });
+      const [regions] = await regionModuleService.listAndCountRegions();
       
       diagnostics.tests.regions = {
         status: "✅ Available",
         count: regions.length,
-        regions: regions.map(r => ({
+        regions: regions.slice(0, 10).map(r => ({
           id: r.id,
           name: r.name,
           currency_code: r.currency_code,
@@ -77,7 +77,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     // 3. Test Currency Module
     try {
       const currencyModuleService: ICurrencyModuleService = req.scope.resolve(Modules.CURRENCY);
-      const currencies = await currencyModuleService.listCurrencies({ take: 10 });
+      const [currencies] = await currencyModuleService.listAndCountCurrencies();
       
       diagnostics.tests.currencies = {
         status: "✅ Available",
@@ -98,7 +98,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     // 4. Test Store Module
     try {
       const storeModuleService: IStoreModuleService = req.scope.resolve(Modules.STORE);
-      const stores = await storeModuleService.listStores();
+      const [stores] = await storeModuleService.listAndCountStores();
       
       diagnostics.tests.store = {
         status: "✅ Available",
@@ -106,7 +106,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
         stores: stores.map(s => ({
           id: s.id,
           name: s.name,
-          default_currency_code: s.default_currency_code
+          currencies: (s as any).supported_currency_codes || []
         }))
       };
     } catch (error: any) {

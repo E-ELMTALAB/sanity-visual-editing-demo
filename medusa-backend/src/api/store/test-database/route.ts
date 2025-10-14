@@ -28,7 +28,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     // Test Product Module
     try {
       const productService: IProductModuleService = req.scope.resolve(Modules.PRODUCT);
-      const [products, count] = await productService.listAndCountProducts({ take: 1 });
+      const [products, count] = await productService.listAndCountProducts();
       testResults.modules.push({
         name: "Product Module",
         status: "✅ Working",
@@ -46,7 +46,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     // Test Region Module
     try {
       const regionService: IRegionModuleService = req.scope.resolve(Modules.REGION);
-      const [regions, count] = await regionService.listAndCountRegions({ take: 1 });
+      const [regions, count] = await regionService.listAndCountRegions();
       testResults.modules.push({
         name: "Region Module",
         status: "✅ Working",
@@ -64,7 +64,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     // Test Customer Module
     try {
       const customerService: ICustomerModuleService = req.scope.resolve(Modules.CUSTOMER);
-      const [customers, count] = await customerService.listAndCountCustomers({ take: 1 });
+      const [customers, count] = await customerService.listAndCountCustomers();
       testResults.modules.push({
         name: "Customer Module",
         status: "✅ Working",
@@ -82,7 +82,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     // Test Order Module
     try {
       const orderService: IOrderModuleService = req.scope.resolve(Modules.ORDER);
-      const [orders, count] = await orderService.listAndCountOrders({ take: 1 });
+      const [orders, count] = await orderService.listAndCountOrders();
       testResults.modules.push({
         name: "Order Module",
         status: "✅ Working",
@@ -100,7 +100,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     // Test Store Module
     try {
       const storeService: IStoreModuleService = req.scope.resolve(Modules.STORE);
-      const stores = await storeService.listStores({ take: 1 });
+      const [stores] = await storeService.listAndCountStores();
       testResults.modules.push({
         name: "Store Module",
         status: "✅ Working",
@@ -108,7 +108,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
         store: stores[0] ? {
           id: stores[0].id,
           name: stores[0].name,
-          default_currency: stores[0].default_currency_code
+          currencies: (stores[0] as any).supported_currency_codes || []
         } : "none"
       });
     } catch (error: any) {
