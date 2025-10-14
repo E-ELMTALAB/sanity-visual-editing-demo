@@ -198,7 +198,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                     {course.longDescription && (
                       <div>
                         <DynamicHeading 
-                          tag={course.sectionHeadingTag || 'h3'} 
+                          tag="h3" 
                           className="text-lg font-bold text-gray-800 mb-3"
                         >
                           درباره این دوره
@@ -212,7 +212,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                     {course.features && course.features.length > 0 && (
                       <div>
                         <DynamicHeading 
-                          tag={course.sectionHeadingTag || 'h3'} 
+                          tag="h3" 
                           className="text-lg font-bold text-gray-800 mb-3"
                         >
                           ویژگی‌های دوره
@@ -238,7 +238,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                     {course.requirements && course.requirements.length > 0 && (
                       <div>
                         <DynamicHeading 
-                          tag={course.sectionHeadingTag || 'h3'} 
+                          tag="h3" 
                           className="text-lg font-bold text-gray-800 mb-3"
                         >
                           پیش‌نیازها
@@ -269,7 +269,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                     {course.learningOutcomes && course.learningOutcomes.length > 0 && (
                       <div>
                         <DynamicHeading 
-                          tag={course.sectionHeadingTag || 'h3'} 
+                          tag="h3" 
                           className="text-lg font-bold text-gray-800 mb-3"
                         >
                           چیزهایی که یاد خواهید گرفت
@@ -300,7 +300,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                     {course.targetAudience && course.targetAudience.length > 0 && (
                       <div>
                         <DynamicHeading 
-                          tag={course.sectionHeadingTag || 'h3'} 
+                          tag="h3" 
                           className="text-lg font-bold text-gray-800 mb-3"
                         >
                           این دوره برای چه کسانی است
@@ -334,7 +334,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                 {activeTab === "curriculum" && (
                   <div className="space-y-4">
                     <DynamicHeading 
-                      tag={course.sectionHeadingTag || 'h3'} 
+                      tag="h3" 
                       className="text-lg font-bold text-gray-800 mb-4"
                     >
                       سرفصل‌های دوره
@@ -426,7 +426,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
                         )}
                         <div className="flex-1 text-right">
                           <DynamicHeading 
-                            tag={course.sectionHeadingTag || 'h3'} 
+                            tag="h3" 
                             className="text-xl font-bold text-gray-800 mb-1"
                           >
                             {course.instructor.name}
@@ -537,7 +537,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
             {faqsData && faqsData.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <DynamicHeading 
-                  tag={course.sectionHeadingTag || 'h3'} 
+                  tag="h3" 
                   className="text-lg font-bold text-gray-800 mb-4"
                 >
                   سوالات متداول
@@ -574,7 +574,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
             {course.relatedCourses && course.relatedCourses.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <DynamicHeading 
-                  tag={course.sectionHeadingTag || 'h3'} 
+                  tag="h3" 
                   className="text-lg font-bold text-gray-800 mb-4"
                 >
                   دوره‌های مرتبط
@@ -713,7 +713,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
             {course.features && course.features.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <DynamicHeading 
-                  tag={course.sectionHeadingTag || 'h3'} 
+                  tag="h3" 
                   className="text-lg font-bold text-gray-800 mb-4"
                 >
                   این دوره شامل:
