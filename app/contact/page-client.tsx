@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import MobileMenu from "@/components/mobile-menu"
-import type { FAQ } from "@/types"
+import type { FAQ } from "types"
 
 interface ContactPageClientProps {
   faqsData?: FAQ[]
