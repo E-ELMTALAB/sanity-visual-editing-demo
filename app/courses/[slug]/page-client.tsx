@@ -56,7 +56,7 @@ export default function CoursePageClient({ courseData, faqsData }: CoursePageCli
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <DynamicHeading 
-                    tag={course.mainHeadingTag || 'h1'} 
+                    tag="h1"
                     className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2"
                   >
                     {course.title}
