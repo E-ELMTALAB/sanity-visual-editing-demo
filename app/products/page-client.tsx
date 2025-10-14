@@ -431,7 +431,6 @@ export default function ProductsPageClient({ productsData = [], faqsData = [] }:
                   reviews={product.reviews}
                   features={product.features}
                   href={`/products/${product.slug}`}
-                  buttonText="مشاهده محصول"
                 />
               ))}
             </div>
