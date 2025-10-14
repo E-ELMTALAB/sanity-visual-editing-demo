@@ -356,7 +356,7 @@ function MobileFilters({
             variant="outline"
             className="mt-4 rounded-full border-slate-200"
             onClick={() => {
-              setSelections({ brand: [], features: [], billing: [], price: [] })
+              setSelections({ category: [], features: [], tags: [], price: [] })
               setOpen(false)
             }}
           >
