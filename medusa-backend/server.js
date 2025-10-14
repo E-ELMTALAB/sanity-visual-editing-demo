@@ -4,6 +4,36 @@ const loaders = require("@medusajs/medusa/dist/loaders").default;
 const { DataSource } = require("typeorm");
 const fs = require("fs");
 
+// TEMPORARY FIX: Patch provider services to skip the problematic update
+const patchProviderServices = () => {
+  try {
+    // Patch PaymentProviderService
+    const PaymentProviderService = require("@medusajs/medusa/dist/services/payment-provider").default;
+    PaymentProviderService.prototype.registerInstalledProviders = async function(providerIds) {
+      console.log("PATCHED: Skipping payment provider registration to avoid update error");
+      return;
+    };
+    console.log("✅ Patched PaymentProviderService");
+  } catch (error) {
+    console.log("⚠️ Could not patch PaymentProviderService:", error.message);
+  }
+  
+  try {
+    // Patch FulfillmentProviderService
+    const FulfillmentProviderService = require("@medusajs/medusa/dist/services/fulfillment-provider").default;
+    FulfillmentProviderService.prototype.registerInstalledProviders = async function(providerIds) {
+      console.log("PATCHED: Skipping fulfillment provider registration to avoid update error");
+      return;
+    };
+    console.log("✅ Patched FulfillmentProviderService");
+  } catch (error) {
+    console.log("⚠️ Could not patch FulfillmentProviderService:", error.message);
+  }
+};
+
+// Apply patches before anything else
+patchProviderServices();
+
 const runMigrations = async (directory) => {
   console.log("Running database migrations...");
   const { configModule } = getConfigFile(directory, "medusa-config");
