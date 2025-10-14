@@ -42,6 +42,16 @@ export interface PagePayload {
   overview?: PortableTextBlock[]
   title?: string
   slug?: string
+  seo?: {
+    metaTitle?: string
+    metaDescription?: string
+    canonicalUrl?: string
+    robotsMeta?: string
+    openGraphTitle?: string
+    openGraphDescription?: string
+    openGraphImage?: Image
+    structuredData?: string
+  }
 }
 
 export interface ProjectPayload {
