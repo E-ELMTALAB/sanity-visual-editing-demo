@@ -25,7 +25,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     
     for (const product of products) {
       try {
-        await productModuleService.deleteProducts(product.id);
+        await productModuleService.deleteProducts([product.id]);
         deletedIds.push(product.id);
         console.log(`✅ Deleted: ${product.title} (${product.id})`);
       } catch (error: any) {

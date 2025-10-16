@@ -16,12 +16,13 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     const body = req.body as any;
     
     // Build product data from request
+    const status = body.status || "published";
     const productData = {
       title: body.title || "Untitled Product",
       subtitle: body.subtitle,
       description: body.description,
       handle: body.handle || `product-${Date.now()}`,
-      status: (body.status || "published") as const,
+      status: status as "draft" | "published",
       is_giftcard: false,
       discountable: true,
       thumbnail: body.thumbnail,
