@@ -112,12 +112,10 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
           most_popular: color.name === "Midnight Black",
           limited_edition: color.name === "Rose Gold",
         },
-        options: [
-          {
-            option: "Color",
-            value: color.name,
-          },
-        ],
+        // In Medusa v2, variant options should be a Record<optionTitle, value>
+        options: {
+          Color: color.name,
+        },
       };
 
       const variants = await productModuleService.createProductVariants(variantData);
