@@ -1,4 +1,4 @@
-import sanityClient from "@sanity/client";
+import { createClient } from "@sanity/client";
 
 export function getSanityClient() {
   const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
@@ -11,7 +11,7 @@ export function getSanityClient() {
     );
   }
 
-  return sanityClient({
+  return createClient({
     projectId,
     dataset,
     token,
@@ -51,9 +51,9 @@ export const DEFAULT_GROQ = `
     description,
     "slug": slug{current},
     "thumbnailUrl": coalesce(thumbnail.asset->url, thumbnailUrl),
-    "images": images[]{asset->url},
+    "images": images[].asset->url,
     status,
-    tags[],
+    tags,
     price,
     stock,
     variants[]{
