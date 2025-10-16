@@ -31,7 +31,7 @@ async function main() {
     latestUpdatedAt = !latestUpdatedAt || doc._updatedAt > latestUpdatedAt ? doc._updatedAt : latestUpdatedAt;
     const body = mapSanityToUpsertBody(doc);
     if (dryRun) {
-      log(`DRY-RUN upsert sanityId=${body.sanityId} handle=${body.handle}`);
+      log(`DRY-RUN upsert sanityId=${body.sanityId} handle=${body.handle} title="${body.title}"`);
       continue;
     }
 
@@ -40,9 +40,13 @@ async function main() {
       failed++;
       log(`FAIL sanityId=${body.sanityId}: ${res.error}`);
     } else {
-      // We can't distinguish create/update without a dedicated endpoint response; treat as updated
-      updated++;
-      log(`OK sanityId=${body.sanityId} productId=${res.productId ?? "unknown"}`);
+      if (res.isUpdate) {
+        updated++;
+        log(`UPDATED sanityId=${body.sanityId} productId=${res.productId ?? "unknown"}`);
+      } else {
+        created++;
+        log(`CREATED sanityId=${body.sanityId} productId=${res.productId ?? "unknown"}`);
+      }
     }
   }
 

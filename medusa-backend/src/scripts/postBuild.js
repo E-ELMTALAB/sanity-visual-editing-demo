@@ -38,7 +38,7 @@ try {
   const hasAdmin = !!process.env.MEDUSA_ADMIN_TOKEN && (!!process.env.BACKEND_URL || !!process.env.MEDUSA_ADMIN_URL);
   if (hasProject && hasToken && hasAdmin) {
     console.log('Running Sanity → Medusa sync (build-time)...');
-    execSync('node ../../src/scripts/sanitySync.ts', { cwd: MEDUSA_SERVER_PATH, stdio: 'inherit' });
+    execSync('tsx ../../src/scripts/sanitySync.ts', { cwd: MEDUSA_SERVER_PATH, stdio: 'inherit' });
   } else {
     console.log('Skipping Sanity sync: missing envs');
   }

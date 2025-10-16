@@ -31,6 +31,15 @@ export type SanityProduct = {
   images?: string[];
   status?: "draft" | "published";
   tags?: string[];
+  price?: number;
+  stock?: number;
+  variants?: Array<{
+    title?: string;
+    sku?: string;
+    price?: number;
+    stock?: number;
+    options?: Record<string, string>;
+  }>;
 };
 
 export const DEFAULT_GROQ = `
@@ -44,7 +53,16 @@ export const DEFAULT_GROQ = `
     "thumbnailUrl": coalesce(thumbnail.asset->url, thumbnailUrl),
     "images": images[]{asset->url},
     status,
-    tags[]
+    tags[],
+    price,
+    stock,
+    variants[]{
+      title,
+      sku,
+      price,
+      stock,
+      options
+    }
   }
 `;
 

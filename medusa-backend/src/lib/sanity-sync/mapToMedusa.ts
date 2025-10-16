@@ -31,6 +31,15 @@ export function mapSanityToUpsertBody(doc: SanityProduct): UpsertBody {
     thumbnailUrl: doc.thumbnailUrl,
     images: doc.images || [],
     tags: doc.tags || [],
+    // Add basic variant if no variants specified
+    variants: doc.variants || [{
+      title: doc.title || "Default",
+      prices: doc.price ? [{
+        amount: Math.round(doc.price * 100), // Convert to cents
+        currency_code: "usd"
+      }] : undefined,
+      inventory_quantity: doc.stock || 0,
+    }],
   };
 }
 
