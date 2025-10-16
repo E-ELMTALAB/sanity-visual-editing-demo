@@ -30,3 +30,18 @@ execSync('pnpm i --prod --frozen-lockfile', {
   cwd: MEDUSA_SERVER_PATH,
   stdio: 'inherit'
 });
+
+// Optionally run Sanity sync after build when token and project envs exist
+try {
+  const hasProject = !!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID && !!process.env.NEXT_PUBLIC_SANITY_DATASET;
+  const hasToken = !!process.env.SANITY_API_READ_TOKEN;
+  const hasAdmin = !!process.env.MEDUSA_ADMIN_TOKEN && (!!process.env.BACKEND_URL || !!process.env.MEDUSA_ADMIN_URL);
+  if (hasProject && hasToken && hasAdmin) {
+    console.log('Running Sanity → Medusa sync (build-time)...');
+    execSync('node ../../src/scripts/sanitySync.ts', { cwd: MEDUSA_SERVER_PATH, stdio: 'inherit' });
+  } else {
+    console.log('Skipping Sanity sync: missing envs');
+  }
+} catch (e) {
+  console.warn('Sanity sync failed:', e?.message || e);
+}
