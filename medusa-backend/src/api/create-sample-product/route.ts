@@ -3,61 +3,29 @@ import { IProductModuleService } from "@medusajs/framework/types";
 import { Modules } from "@medusajs/framework/utils";
 
 /**
- * Test endpoint to add a sample product
+ * Upsert product endpoint (create or update from Sanity sync)
  * POST /create-sample-product
  * 
- * No authentication required - for testing only
+ * No authentication required - accepts product data from request body
  */
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
     const productModuleService: IProductModuleService = req.scope.resolve(Modules.PRODUCT);
 
-    // Sample product data
+    // Get product data from request body (from Sanity sync)
+    const body = req.body as any;
+    
+    // Build product data from request
     const productData = {
-      title: "Premium Wireless Headphones Pro",
-      subtitle: "Studio-quality sound with advanced noise cancellation",
-      description: "Experience immersive audio with our premium wireless headphones. Featuring advanced active noise cancellation, 40-hour battery life, Bluetooth 5.3, and premium comfort for all-day wear. Perfect for music lovers, professionals, and travelers.",
-      handle: `premium-wireless-headphones-${Date.now()}`,
-      status: "published" as const,
+      title: body.title || "Untitled Product",
+      subtitle: body.subtitle,
+      description: body.description,
+      handle: body.handle || `product-${Date.now()}`,
+      status: (body.status || "published") as const,
       is_giftcard: false,
       discountable: true,
-      thumbnail: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
-      weight: 250,
-      length: 20,
-      height: 8,
-      width: 18,
-      origin_country: "US",
-      material: "Aluminum, Protein Leather, Premium Plastics",
-      metadata: {
-        brand: "AudioPro",
-        model: "AP-3000X Pro",
-        warranty: "2 years international warranty",
-        features: [
-          "Active Noise Cancellation (ANC)",
-          "Bluetooth 5.3 with multipoint connection",
-          "40h battery life with fast charging",
-          "Premium drivers for studio-quality sound",
-          "Comfortable over-ear design"
-        ],
-        certifications: ["FCC", "CE", "RoHS"],
-        release_date: "2025-01-15",
-        sku_prefix: "HDPHN-AP3000X"
-      },
-      // Keep images simple (Medusa v2 can accept string[]); we'll skip to avoid schema mismatch
-      // images: [
-      //   "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1200&q=80",
-      //   "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=1200&q=80",
-      //   "https://images.unsplash.com/photo-1545127398-14699f92334b?w=1200&q=80",
-      // ],
-      // Remove tags: in Medusa v2, tags must be referenced by existing tag IDs
-      // We'll attach tags in a follow-up step via an upsert flow
-      // Avoid defining product options for now to prevent variant option constraint issues
-      // options: [
-      //   {
-      //     title: "Color",
-      //     values: ["Midnight Black", "Silver Gray", "Rose Gold"],
-      //   },
-      // ],
+      thumbnail: body.thumbnail,
+      metadata: body.metadata || {},
     };
 
     // Create the product
@@ -74,9 +42,11 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       relations: ["variants", "images", "options", "tags"],
     });
 
+    console.log(`✅ Product created from Sanity: ${completeProduct.title} (${completeProduct.id})`);
+
     return res.status(201).json({
       success: true,
-      message: "✅ Sample product created successfully!",
+      message: "✅ Product created from Sanity data",
       product: {
         id: completeProduct.id,
         title: completeProduct.title,
