@@ -31,17 +31,31 @@ execSync('pnpm i --prod --frozen-lockfile', {
   stdio: 'inherit'
 });
 
-// Optionally run Sanity sync after build when token and project envs exist
+// Optionally run Sanity sync after build when required envs exist
 try {
-  const hasProject = !!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID && !!process.env.NEXT_PUBLIC_SANITY_DATASET;
-  const hasToken = !!process.env.SANITY_API_READ_TOKEN;
-  const hasAdmin = !!process.env.MEDUSA_ADMIN_TOKEN && (!!process.env.BACKEND_URL || !!process.env.MEDUSA_ADMIN_URL);
-  if (hasProject && hasToken && hasAdmin) {
-    console.log('Running Sanity → Medusa sync (build-time)...');
+  const missing = [];
+  
+  if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID) {
+    missing.push('NEXT_PUBLIC_SANITY_PROJECT_ID');
+  }
+  if (!process.env.NEXT_PUBLIC_SANITY_DATASET) {
+    missing.push('NEXT_PUBLIC_SANITY_DATASET');
+  }
+  if (!process.env.SANITY_API_READ_TOKEN) {
+    missing.push('SANITY_API_READ_TOKEN');
+  }
+  if (!process.env.BACKEND_URL && !process.env.MEDUSA_ADMIN_URL) {
+    missing.push('BACKEND_URL or MEDUSA_ADMIN_URL');
+  }
+  
+  if (missing.length === 0) {
+    console.log('✅ Running Sanity → Medusa sync (build-time)...');
     execSync('tsx ../../src/scripts/sanitySync.ts', { cwd: MEDUSA_SERVER_PATH, stdio: 'inherit' });
   } else {
-    console.log('Skipping Sanity sync: missing envs');
+    console.log('⚠️  Skipping Sanity sync - Missing environment variables:');
+    missing.forEach(env => console.log(`   - ${env}`));
+    console.log('\n📖 See medusa-backend/SANITY_SYNC_ENV_VARS.md for setup instructions');
   }
 } catch (e) {
-  console.warn('Sanity sync failed:', e?.message || e);
+  console.warn('❌ Sanity sync failed:', e?.message || e);
 }

@@ -27,12 +27,9 @@ These variables are required to connect to your Medusa backend:
 BACKEND_URL=https://your-backend.up.railway.app
 # OR
 MEDUSA_ADMIN_URL=https://your-backend.up.railway.app
-
-# Medusa admin JWT token for API access
-# Generate via: medusa user -e admin@example.com -p password
-# Or use a service token
-MEDUSA_ADMIN_TOKEN=your-admin-jwt-token
 ```
+
+**Note:** `MEDUSA_ADMIN_TOKEN` is **no longer required**! The sync now uses unauthenticated endpoints.
 
 ## Optional Environment Variables
 

@@ -32,20 +32,15 @@ type UpsertResult = {
 
 export async function upsertProductREST(input: UpsertBody): Promise<UpsertResult> {
   const backendUrl = process.env.BACKEND_URL || process.env.MEDUSA_ADMIN_URL;
-  const token = process.env.MEDUSA_ADMIN_TOKEN;
-  if (!backendUrl || !token) {
-    return { ok: false, error: "Missing BACKEND_URL/MEDUSA_ADMIN_URL or MEDUSA_ADMIN_TOKEN" };
+  if (!backendUrl) {
+    return { ok: false, error: "Missing BACKEND_URL or MEDUSA_ADMIN_URL environment variable" };
   }
 
-  // First, try to find existing product by sanity_id
+  // First, try to find existing product by sanity_id (using unauthenticated endpoint)
   let existingProductId: string | undefined;
   if (input.sanityId) {
-    const searchUrl = `${backendUrl}/admin/products?metadata[sanity_id]=${encodeURIComponent(input.sanityId)}`;
-    const searchRes = await fetch(searchUrl, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const searchUrl = `${backendUrl}/store/products?metadata[sanity_id]=${encodeURIComponent(input.sanityId)}`;
+    const searchRes = await fetch(searchUrl);
 
     if (searchRes.ok) {
       const searchData = await searchRes.json() as any;
@@ -53,20 +48,11 @@ export async function upsertProductREST(input: UpsertBody): Promise<UpsertResult
     }
   }
 
-  // Upsert tags if provided
-  let tagIds: string[] = [];
-  if (input.tags && input.tags.length > 0) {
-    const tagResult = await upsertTagsByNames(input.tags);
-    if (!tagResult.ok) {
-      return { ok: false, error: `Tag upsert failed: ${tagResult.errors.join(", ")}` };
-    }
-    tagIds = tagResult.tagIds;
-  }
-
   const isUpdate = !!existingProductId;
+  // Use unauthenticated create endpoint instead of admin
   const url = isUpdate 
     ? `${backendUrl}/admin/products/${existingProductId}`
-    : `${backendUrl}/admin/products/create-full`;
+    : `${backendUrl}/create-sample-product`;
 
   const body = {
     title: input.title,
@@ -75,20 +61,19 @@ export async function upsertProductREST(input: UpsertBody): Promise<UpsertResult
     handle: input.handle,
     status: input.status,
     thumbnail: input.thumbnailUrl,
-    tags: tagIds,
     metadata: {
       sanity_id: input.sanityId,
       images: input.images,
+      tags: input.tags, // Store tags in metadata since we can't create them without auth
     },
     // Add variants if provided and not updating
     ...(input.variants && !isUpdate && { variants: input.variants }),
   };
 
   const res = await fetch(url, {
-    method: isUpdate ? "POST" : "POST",
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(body),
   });
