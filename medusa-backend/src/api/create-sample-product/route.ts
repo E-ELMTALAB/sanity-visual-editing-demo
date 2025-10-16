@@ -49,13 +49,8 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       //   "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=1200&q=80",
       //   "https://images.unsplash.com/photo-1545127398-14699f92334b?w=1200&q=80",
       // ],
-      tags: [
-        { value: "wireless" },
-        { value: "bluetooth" },
-        { value: "noise-cancelling" },
-        { value: "premium" },
-        { value: "bestseller" },
-      ],
+      // Remove tags: in Medusa v2, tags must be referenced by existing tag IDs
+      // We'll attach tags in a follow-up step via an upsert flow
       // Avoid defining product options for now to prevent variant option constraint issues
       // options: [
       //   {
