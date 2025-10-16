@@ -65,7 +65,7 @@ The sync runs automatically after each Railway build.
    ```
 
 2. **Trigger a Redeploy:**
-   - Click "Redeploy" in Railway dashboard
+   - Click "Redeploy in Railway dashboard
    - OR push a small change to trigger rebuild
 
 3. **Monitor Logs:**
