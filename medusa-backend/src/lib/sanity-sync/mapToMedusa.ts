@@ -10,6 +10,16 @@ export type UpsertBody = {
   thumbnailUrl?: string;
   images?: string[];
   tags?: string[];
+  variants?: Array<{
+    title?: string;
+    sku?: string;
+    prices?: Array<{
+      amount: number;
+      currency_code: string;
+    }>;
+    options?: Record<string, string>;
+    inventory_quantity?: number;
+  }>;
 };
 
 export function toHandle(input?: string): string | undefined {
