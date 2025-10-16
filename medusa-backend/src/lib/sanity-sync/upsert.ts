@@ -31,9 +31,14 @@ type UpsertResult = {
 };
 
 export async function upsertProductREST(input: UpsertBody): Promise<UpsertResult> {
-  const backendUrl = process.env.BACKEND_URL || process.env.MEDUSA_ADMIN_URL;
+  let backendUrl = process.env.BACKEND_URL || process.env.MEDUSA_ADMIN_URL;
   if (!backendUrl) {
     return { ok: false, error: "Missing BACKEND_URL or MEDUSA_ADMIN_URL environment variable" };
+  }
+
+  // Ensure URL has protocol
+  if (!backendUrl.startsWith('http://') && !backendUrl.startsWith('https://')) {
+    backendUrl = `https://${backendUrl}`;
   }
 
   // First, try to find existing product by sanity_id (using unauthenticated endpoint)
