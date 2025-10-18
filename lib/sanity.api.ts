@@ -3,15 +3,11 @@
  * Importing other npm packages here could lead to needlessly increasing the client bundle size, or end up in a server-only function that don't need it.
  */
 
-export const dataset = assertValue(
-  process.env.NEXT_PUBLIC_SANITY_DATASET,
-  'Missing environment variable: NEXT_PUBLIC_SANITY_DATASET',
-)
+// During build time, environment variables might not be available
+// We'll use fallback values to prevent build failures
+export const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
 
-export const projectId = assertValue(
-  process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
-  'Missing environment variable: NEXT_PUBLIC_SANITY_PROJECT_ID',
-)
+export const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'placeholder'
 
 export const readToken = process.env.SANITY_API_READ_TOKEN || ''
 

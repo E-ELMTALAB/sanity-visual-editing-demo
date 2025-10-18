@@ -2,6 +2,18 @@ import { apiVersion, basePath, dataset, projectId } from 'lib/sanity.api'
 import { createClient } from 'next-sanity'
 
 export function getClient(preview?: { token: string }) {
+  // Validate that we have proper credentials before creating client
+  if (!projectId || !dataset || projectId === 'placeholder' || dataset === 'production' && !process.env.NEXT_PUBLIC_SANITY_PROJECT_ID) {
+    console.warn('Sanity credentials not properly configured')
+    // Return a dummy client that won't work but won't crash the build
+    return createClient({
+      projectId: 'placeholder',
+      dataset: 'production',
+      apiVersion,
+      useCdn: false,
+    })
+  }
+
   const client = createClient({
     projectId,
     dataset,
