@@ -1,9 +1,11 @@
 import { draftMode } from 'next/headers'
 import { getClient } from 'lib/sanity.client'
 import { readToken } from 'lib/sanity.api'
-import { sharifHeroQuery } from 'lib/sanity.queries'
+import { sharifHeroQuery, settingsQuery } from 'lib/sanity.queries'
 import { urlForImage } from 'lib/sanity.image'
 import HeroPromoOverlay from 'components/site/home/HeroPromoOverlay'
+import SharifHomePage from 'components/site/home/SharifHomePage'
+import Layout from 'components/shared/Layout'
 import type { Metadata } from 'next'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -45,7 +47,12 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootPage() {
   const isDraft = draftMode().isEnabled
   const client = getClient(isDraft ? { token: readToken } : undefined)
-  const data = await client.fetch<any | null>(sharifHeroQuery)
+  
+  // Fetch homepage data and settings
+  const [data, settings] = await Promise.all([
+    client.fetch<any | null>(sharifHeroQuery),
+    client.fetch<any | null>(settingsQuery),
+  ])
   
   // Convert Sanity image objects to URLs
   const topBannerSlides = (data?.topBannerSlides || []).map((slide: any) => ({
@@ -94,9 +101,30 @@ export default async function RootPage() {
   }))
   
   return (
-    <>
-      <HeroPromoOverlay topBannerSlides={topBannerSlides} heroSlides={heroSlides} promoCards={promoCards} discountedProducts={discountedProducts} socialMediaProducts={socialMediaProducts} educationalProducts={educationalProducts} bestsellingCourses={bestsellingCourses} magazinePosts={magazinePosts} featuredBlogs={featuredBlogs} />
-    </>
+    <Layout settings={settings} preview={isDraft}>
+      <SharifHomePage
+        topBannerSlides={topBannerSlides}
+        heroSlides={heroSlides}
+        promoCards={promoCards}
+        discountedProducts={discountedProducts}
+        socialMediaProducts={socialMediaProducts}
+        educationalProducts={educationalProducts}
+        bestsellingCourses={bestsellingCourses}
+        magazinePosts={magazinePosts}
+        featuredBlogs={featuredBlogs}
+      />
+      <HeroPromoOverlay
+        topBannerSlides={topBannerSlides}
+        heroSlides={heroSlides}
+        promoCards={promoCards}
+        discountedProducts={discountedProducts}
+        socialMediaProducts={socialMediaProducts}
+        educationalProducts={educationalProducts}
+        bestsellingCourses={bestsellingCourses}
+        magazinePosts={magazinePosts}
+        featuredBlogs={featuredBlogs}
+      />
+    </Layout>
   )
 }
 
