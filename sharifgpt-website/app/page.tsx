@@ -1536,7 +1536,7 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
                       : undefined
                   }
                   rating={course.rating}
-                  reviewCount={course.reviewCount}
+                  reviews={course.reviewCount}
                   image={course.image}
                   category={course.category}
                   href={`/courses/${course.slug}`}
