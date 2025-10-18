@@ -1237,7 +1237,7 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
             <div className="flex flex-col gap-6">
               {/* اسلایدر بنر بالا */}
               <div className="w-full h-[200px] md:h-[250px] lg:h-[280px]">
-                <IndependentSlider items={sliderData.topBanner} />
+                <IndependentSlider className="w-full h-full" items={sliderData.topBanner} />
               </div>
 
               {/* بخش اصلی (اسلایدر وسط و بنرهای کناری) */}
@@ -1249,7 +1249,7 @@ export default function HomePage({ heroData }: { heroData?: { topBannerSlides?: 
 
                 {/* اسلایدر اصلی وسط */}
                 <div className="w-full lg:w-1/2 h-full">
-                  <IndependentSlider items={sliderData.mainSlider} />
+                  <IndependentSlider className="w-full h-full" items={sliderData.mainSlider} />
                 </div>
 
                 {/* بنر سمت چپ (در موبایل زیر اسلایدر) */}
