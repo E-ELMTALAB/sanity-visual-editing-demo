@@ -27,31 +27,30 @@ export default defineType({
       group: 'content'
     }),
     
-    // NOTE: These fields are now managed in Medusa
-    // Kept here for backward compatibility and display purposes only
+    // Pricing Fields - Synced to Medusa
     defineField({ 
       name: 'price', 
-      title: 'Price (Display Only)', 
+      title: 'Price (USD)', 
       type: 'number', 
       group: 'content',
-      description: '⚠️ This is for display only. Actual pricing is managed in Medusa backend.',
-      readOnly: true,
+      description: 'Current selling price in USD. This will be synced to Medusa backend.',
+      validation: (Rule) => Rule.min(0).precision(2),
     }),
     defineField({ 
       name: 'originalPrice', 
-      title: 'Original Price (Display Only)', 
+      title: 'Original Price (USD)', 
       type: 'number', 
       group: 'content',
-      description: '⚠️ This is for display only. Actual pricing is managed in Medusa backend.',
-      readOnly: true,
+      description: 'Original price before discount in USD (optional). Used to show price comparison.',
+      validation: (Rule) => Rule.min(0).precision(2),
     }),
     defineField({ 
       name: 'discountPercentage', 
-      title: 'Discount Percentage (Display Only)', 
+      title: 'Discount Percentage', 
       type: 'number', 
       group: 'content',
-      description: '⚠️ This is for display only. Actual discounts are managed in Medusa backend.',
-      readOnly: true,
+      description: 'Discount percentage (0-100). Auto-calculated from price and originalPrice, or set manually.',
+      validation: (Rule) => Rule.min(0).max(100),
     }),
     
     defineField({ name: 'features', title: 'Features', type: 'array', of: [{ type: 'string' }], group: 'content' }),

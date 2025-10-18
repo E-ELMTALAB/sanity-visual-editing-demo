@@ -32,11 +32,15 @@ export type SanityProduct = {
   status?: "draft" | "published";
   tags?: string[];
   price?: number;
+  originalPrice?: number;
+  discountPercentage?: number;
   stock?: number;
   variants?: Array<{
     title?: string;
     sku?: string;
     price?: number;
+    originalPrice?: number;
+    discountPercentage?: number;
     stock?: number;
     options?: Record<string, string>;
   }>;
@@ -55,11 +59,15 @@ export const DEFAULT_GROQ = `
     status,
     tags,
     price,
+    originalPrice,
+    discountPercentage,
     stock,
     variants[]{
       title,
       sku,
       price,
+      originalPrice,
+      discountPercentage,
       stock,
       options
     }

@@ -19,6 +19,10 @@ export type UpsertBody = {
     }>;
     options?: Record<string, string>;
     inventory_quantity?: number;
+    metadata?: {
+      original_price?: number;
+      discount_percentage?: number;
+    };
   }>;
 };
 
@@ -31,6 +35,35 @@ export function toHandle(input?: string): string | undefined {
 }
 
 export function mapSanityToUpsertBody(doc: SanityProduct): UpsertBody {
+  // Map variants if they exist, otherwise create default variant
+  const mappedVariants = doc.variants && doc.variants.length > 0
+    ? doc.variants.map((variant) => ({
+        title: variant.title || doc.title || "Default",
+        sku: variant.sku,
+        prices: variant.price ? [{
+          amount: Math.round(variant.price * 100), // Convert to cents
+          currency_code: "usd"
+        }] : undefined,
+        options: variant.options,
+        inventory_quantity: variant.stock || 0,
+        metadata: {
+          original_price: variant.originalPrice ? Math.round(variant.originalPrice * 100) : undefined,
+          discount_percentage: variant.discountPercentage,
+        }
+      }))
+    : [{
+        title: doc.title || "Default",
+        prices: doc.price ? [{
+          amount: Math.round(doc.price * 100), // Convert to cents
+          currency_code: "usd"
+        }] : undefined,
+        inventory_quantity: doc.stock || 0,
+        metadata: {
+          original_price: doc.originalPrice ? Math.round(doc.originalPrice * 100) : undefined,
+          discount_percentage: doc.discountPercentage,
+        }
+      }];
+
   return {
     sanityId: doc._id,
     title: doc.title,
@@ -41,15 +74,7 @@ export function mapSanityToUpsertBody(doc: SanityProduct): UpsertBody {
     thumbnailUrl: doc.thumbnailUrl,
     images: doc.images || [],
     tags: doc.tags || [],
-    // Add basic variant if no variants specified
-    variants: doc.variants || [{
-      title: doc.title || "Default",
-      prices: doc.price ? [{
-        amount: Math.round(doc.price * 100), // Convert to cents
-        currency_code: "usd"
-      }] : undefined,
-      inventory_quantity: doc.stock || 0,
-    }],
+    variants: mappedVariants,
   };
 }
 
