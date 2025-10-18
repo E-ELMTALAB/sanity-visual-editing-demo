@@ -66,9 +66,9 @@ export async function upsertProductREST(input: UpsertBody): Promise<UpsertResult
     handle: input.handle,
     status: input.status,
     thumbnail: input.thumbnailUrl,
+    images: input.images, // Pass images in body, not metadata
     metadata: {
       sanity_id: input.sanityId,
-      images: input.images,
       tags: input.tags, // Store tags in metadata since we can't create them without auth
     },
     // Add variants if provided and not updating

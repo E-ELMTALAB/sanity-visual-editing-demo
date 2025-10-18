@@ -17,7 +17,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     
     // Build product data from request
     const status = body.status || "published";
-    const productData = {
+    const productData: any = {
       title: body.title || "Untitled Product",
       subtitle: body.subtitle,
       description: body.description,
@@ -28,6 +28,14 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       thumbnail: body.thumbnail,
       metadata: body.metadata || {},
     };
+
+    // Add images if provided - format them correctly for Medusa v2
+    if (body.images && Array.isArray(body.images) && body.images.length > 0) {
+      productData.images = body.images.map((url: string, index: number) => ({
+        url,
+        position: index,
+      }));
+    }
 
     // Create the product
     const products = await productModuleService.createProducts(productData);
