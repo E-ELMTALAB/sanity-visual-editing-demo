@@ -1,0 +1,138 @@
+{
+  "title": "Premium Wireless Headphones",
+  "subtitle": "Studio-quality sound with active noise cancellation",
+  "description": "Experience immersive audio with our premium wireless headphones. Featuring advanced active noise cancellation, 40-hour battery life, and premium comfort for all-day wear.",
+  "handle": "premium-wireless-headphones",
+  "status": "published",
+  "is_giftcard": false,
+  "discountable": true,
+  
+  "type": "electronics",
+  "tags": ["wireless", "bluetooth", "noise-cancelling", "premium", "bestseller"],
+  
+  "thumbnail": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800",
+  "images": [
+    "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1200",
+    "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=1200",
+    "https://images.unsplash.com/photo-1545127398-14699f92334b?w=1200"
+  ],
+  
+  "weight": 250,
+  "length": 20,
+  "height": 8,
+  "width": 18,
+  "origin_country": "CN",
+  "hs_code": "8518.30.20",
+  "material": "Aluminum, Protein Leather, Plastic",
+  
+  "metadata": {
+    "brand": "AudioPro",
+    "model": "AP-3000X",
+    "warranty": "2 years",
+    "features": [
+      "Active Noise Cancellation",
+      "Bluetooth 5.3",
+      "40h battery life",
+      "Fast charging",
+      "Multipoint connection"
+    ],
+    "certifications": ["FCC", "CE", "RoHS"],
+    "release_date": "2025-01-15"
+  },
+  
+  "options": [
+    {
+      "title": "Color",
+      "values": ["Midnight Black", "Silver Gray", "Rose Gold"]
+    }
+  ],
+  
+  "variants": [
+    {
+      "title": "Midnight Black",
+      "sku": "HDPHN-AP3000X-BLK",
+      "ean": "5901234567890",
+      "barcode": "HDPHN-BLK-001",
+      "inventory_quantity": 150,
+      "allow_backorder": false,
+      "manage_inventory": true,
+      "options": [
+        { "option": "Color", "value": "Midnight Black" }
+      ],
+      "prices": [
+        {
+          "currency_code": "usd",
+          "amount": 34999,
+          "min_quantity": 1
+        },
+        {
+          "currency_code": "eur",
+          "amount": 32999
+        },
+        {
+          "currency_code": "gbp",
+          "amount": 29999
+        }
+      ],
+      "weight": 250,
+      "metadata": {
+        "color_hex": "#1a1a1a",
+        "most_popular": true
+      }
+    },
+    {
+      "title": "Silver Gray",
+      "sku": "HDPHN-AP3000X-SLV",
+      "ean": "5901234567891",
+      "barcode": "HDPHN-SLV-001",
+      "inventory_quantity": 100,
+      "allow_backorder": false,
+      "manage_inventory": true,
+      "options": [
+        { "option": "Color", "value": "Silver Gray" }
+      ],
+      "prices": [
+        {
+          "currency_code": "usd",
+          "amount": 34999
+        },
+        {
+          "currency_code": "eur",
+          "amount": 32999
+        }
+      ],
+      "weight": 250,
+      "metadata": {
+        "color_hex": "#c0c0c0"
+      }
+    },
+    {
+      "title": "Rose Gold",
+      "sku": "HDPHN-AP3000X-RSG",
+      "ean": "5901234567892",
+      "barcode": "HDPHN-RSG-001",
+      "inventory_quantity": 75,
+      "allow_backorder": true,
+      "manage_inventory": true,
+      "options": [
+        { "option": "Color", "value": "Rose Gold" }
+      ],
+      "prices": [
+        {
+          "currency_code": "usd",
+          "amount": 36999
+        },
+        {
+          "currency_code": "eur",
+          "amount": 34999
+        }
+      ],
+      "weight": 250,
+      "metadata": {
+        "color_hex": "#b76e79",
+        "limited_edition": true
+      }
+    }
+  ]
+}
+
