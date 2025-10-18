@@ -17,7 +17,7 @@ const config = {
   webpack: (config, { isServer }) => {
     config.watchOptions = {
       ...config.watchOptions,
-      ignored: ['**/node_modules', '**/medusa-backend/**', '**/sharifgpt-website/**'],
+      ignored: ['**/node_modules', '**/medusa-backend/**'],
     }
     return config
   },
