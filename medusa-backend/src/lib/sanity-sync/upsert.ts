@@ -41,52 +41,34 @@ export async function upsertProductREST(input: UpsertBody): Promise<UpsertResult
     backendUrl = `https://${backendUrl}`;
   }
 
-  // Try to find existing product by handle (more reliable than metadata search)
+  // First, try to find existing product by sanity_id (using unauthenticated endpoint)
   let existingProductId: string | undefined;
-  let existingSanityId: string | undefined;
-  
-  if (input.handle) {
-    try {
-      const searchUrl = `${backendUrl}/store/products?handle=${encodeURIComponent(input.handle)}`;
-      const searchRes = await fetch(searchUrl);
+  if (input.sanityId) {
+    const searchUrl = `${backendUrl}/store/products?metadata[sanity_id]=${encodeURIComponent(input.sanityId)}`;
+    const searchRes = await fetch(searchUrl);
 
-      if (searchRes.ok) {
-        const searchData = await searchRes.json() as any;
-        const product = searchData.products?.[0];
-        if (product) {
-          existingProductId = product.id;
-          existingSanityId = product.metadata?.sanity_id;
-        }
-      }
-    } catch (e) {
-      console.error("Error searching for existing product:", e);
+    if (searchRes.ok) {
+      const searchData = await searchRes.json() as any;
+      existingProductId = searchData.products?.[0]?.id;
     }
   }
 
-  // Determine if this is an update or create
-  const isUpdate = !!existingProductId && existingSanityId === input.sanityId;
-  
-  // If handle exists but belongs to different sanity product, make handle unique
-  if (existingProductId && existingSanityId !== input.sanityId) {
-    input.handle = `${input.handle}-${Date.now()}`;
-  }
-
-  // Use custom endpoint that supports both create and update
+  const isUpdate = !!existingProductId;
+  // Use unauthenticated create endpoint instead of admin
   const url = isUpdate 
-    ? `${backendUrl}/update-sample-product`
+    ? `${backendUrl}/admin/products/${existingProductId}`
     : `${backendUrl}/create-sample-product`;
 
   const body = {
-    productId: existingProductId, // Only used for updates
     title: input.title,
     subtitle: input.subtitle,
     description: input.description,
     handle: input.handle,
     status: input.status,
     thumbnail: input.thumbnailUrl,
-    images: input.images, // Pass images in body, not metadata
     metadata: {
       sanity_id: input.sanityId,
+      images: input.images,
       tags: input.tags, // Store tags in metadata since we can't create them without auth
     },
     // Add variants if provided and not updating

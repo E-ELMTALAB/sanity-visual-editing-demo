@@ -1,0 +1,20 @@
+[33mf3ab19e[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix blank homepage - add missing visible content component
+[33md456ff4[m Implement complete price sync from Sanity to Medusa
+[33m897afae[m Trigger rebuild for Sanity sync fixes
+[33m0b0c617[m Fix Sanity sync upsert logic to handle existing products
+[33m7858632[m Fix Sanity sync: properly transfer product images and titles to Medusa
+[33m49a2c62[m nothing changed
+[33m49fe951[m fix: TypeScript errors - deleteProducts expects array, fix status const assertion
+[33me7010a2[m fix(sanity-sync): make create-sample-product accept Sanity data from request body + add cleanup endpoint
+[33m8c17767[m fix(sanity-sync): auto-add https:// protocol to BACKEND_URL if missing
+[33m2cc8a60[m fix(sanity-sync): use createClient named export and fix GROQ query syntax (tags[] -> tags, images[] syntax)
+[33m63f6cf8[m feat(sanity-sync): remove auth requirement and add specific missing env var messages
+[33maf42fd8[m docs(sanity-sync): add comprehensive testing guide with 5 testing methods
+[33m5183dc1[m fix(sanity-sync): add variants type to UpsertBody and remove node-fetch import (use native fetch)
+[33m228ce69[m chore(medusa-backend): update pnpm-lock.yaml with new dependencies (@sanity/client, node-fetch, tsx, cross-env)
+[33mbf4e117[m feat(sanity-sync): complete Sanity→Medusa sync with tags, variants, webhook, and docs
+[33mbdaf114[m feat(sanity-sync): build-time Sanity→Medusa upsert via Admin REST with checkpoint + dry-run
+[33m2dd1af5[m fix(create-sample-product): remove tags field to avoid 'Tag with id undefined' error
+[33m5f93bb7[m chore(create-sample-product): simplify further by skipping variants to avoid 500s
+[33m0d8fe09[m fix(create-sample-product): simplify payload (remove images/options) to avoid schema mismatches
+[33mca9032f[m fix(create-sample-product): align variant options to Record<string,string> for v2
