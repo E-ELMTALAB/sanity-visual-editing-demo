@@ -1,4 +1,4 @@
-import { apiVersion, basePath, dataset, projectId } from 'lib/sanity.api'
+import { apiVersion, basePath, dataset, projectId } from './sanity.api'
 import { createClient } from 'next-sanity'
 
 export function getClient(preview?: { token: string }) {
