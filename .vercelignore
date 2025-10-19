@@ -1,0 +1,3 @@
+# Ignore the sharifgpt-website subfolder during root project builds
+sharifgpt-website/
+

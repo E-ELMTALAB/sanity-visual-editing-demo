@@ -1,0 +1,7 @@
+{
+  "installCommand": "npm install --prefix sharifgpt-website",
+  "buildCommand": "npm run build --prefix sharifgpt-website",
+  "devCommand": "npm run dev --prefix sharifgpt-website",
+  "outputDirectory": "sharifgpt-website/.next"
+}
+
