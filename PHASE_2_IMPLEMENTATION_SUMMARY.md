@@ -8,7 +8,7 @@
 
 ---
 
-## 📦 What Was Implemented
+## 📦 What Was Implemente
 
 ### 1. Medusa Backend Project Structure
 
