@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useCart } from "../../../contexts/cart-context"
-import CartDropdown from "../../../components/cart-dropdown"
+import { useCart } from "@/contexts/cart-context"
+import CartDropdown from "@/components/cart-dropdown"
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 

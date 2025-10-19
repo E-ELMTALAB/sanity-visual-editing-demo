@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import MobileMenu from "../../components/mobile-menu" // Added MobileMenu import
+import MobileMenu from "@/components/mobile-menu" // Added MobileMenu import
 
 export default function Contact() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)

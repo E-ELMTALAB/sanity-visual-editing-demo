@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import ProductCard from "@/components/product-card"
-import type { FAQ } from "../../../types"
+import type { FAQ } from "@/types"
 
 interface ProductsPageClientProps {
   faqsData?: FAQ[]

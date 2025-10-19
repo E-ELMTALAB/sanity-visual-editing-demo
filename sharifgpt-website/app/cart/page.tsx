@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useCart } from "../../contexts/cart-context"
-import CartDropdown from "../../components/cart-dropdown"
-import MobileMenu from "../../components/mobile-menu" // Imported MobileMenu component
+import { useCart } from "@/contexts/cart-context"
+import CartDropdown from "@/components/cart-dropdown"
+import MobileMenu from "@/components/mobile-menu" // Imported MobileMenu component
 
 export default function CartPage() {
   const { state, removeItem, updateQuantity, clearCart } = useCart()

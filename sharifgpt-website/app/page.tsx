@@ -13,7 +13,7 @@ import "swiper/css"
 import "swiper/css/navigation"
 import "swiper/css/pagination"
 import Footer from "@/components/footer"
-import type { HeroSlide, PromoCard, DiscountedProduct, SocialMediaProduct, EducationalProduct, BestsellingCourse } from "../../types"
+import type { HeroSlide, PromoCard, DiscountedProduct, SocialMediaProduct, EducationalProduct, BestsellingCourse } from "@/types"
 
 const IndependentSlider = ({ className, items = [], autoplayInterval = 5000 }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
