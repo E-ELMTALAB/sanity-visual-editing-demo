@@ -51,12 +51,11 @@ This tells Vercel to:
 - Build the Next.js app in `sharifgpt-website/`
 - Use the output from `sharifgpt-website/.next`
 
-### 2. **.vercelignore** (NEW FILE)
-```
-# Ignore the sharifgpt-website subfolder during root project builds
-sharifgpt-website/
-```
-This tells Vercel to completely ignore the `sharifgpt-website/` folder when building the root project.
+### 2. **.vercelignore** (REMOVED)
+❌ Initially created but **REMOVED** because it conflicted with `vercel.json`.
+- When `vercel.json` tells Vercel to build FROM `sharifgpt-website/`
+- `.vercelignore` was preventing Vercel from accessing that folder
+- Result: Build failed with "Could not read package.json"
 
 ### 3. **tsconfig.json** (MODIFIED)
 ```json
