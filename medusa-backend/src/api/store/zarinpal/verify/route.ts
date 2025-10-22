@@ -10,7 +10,13 @@ export async function POST(
   res: MedusaResponse
 ): Promise<void> {
   try {
-    const { authority, Status, cart_id, order_id } = req.body;
+    const body = (req.body || {}) as {
+      authority?: string
+      Status?: string
+      cart_id?: string
+      order_id?: string
+    }
+    const { authority, Status, cart_id, order_id } = body;
 
     if (!authority) {
       res.status(400).json({
@@ -66,7 +72,7 @@ export async function POST(
     }
 
     // Authorize the payment with Zarinpal
-    const authorizedData = await paymentModuleService.authorizePaymentSession(
+    const authorizedData: any = await paymentModuleService.authorizePaymentSession(
       zarinpalSession.id,
       {
         authority,
@@ -74,9 +80,10 @@ export async function POST(
       }
     );
 
-    if (!authorizedData || authorizedData.error) {
+    // In Medusa v2, authorizePaymentSession returns either PaymentProviderError or { status, data }
+    if (!authorizedData || (authorizedData as any).error) {
       res.status(400).json({
-        error: authorizedData?.error || "Payment authorization failed",
+        error: (authorizedData as any)?.error || "Payment authorization failed",
         detail: authorizedData,
       });
       return;
@@ -87,8 +94,8 @@ export async function POST(
       success: true,
       message: "Payment verified successfully",
       data: {
-        ref_id: authorizedData.ref_id,
-        card_pan: authorizedData.card_pan,
+        ref_id: (authorizedData as any).data?.ref_id,
+        card_pan: (authorizedData as any).data?.card_pan,
         cart_id: resourceId,
       },
     });

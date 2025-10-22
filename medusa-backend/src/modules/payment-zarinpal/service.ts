@@ -1,18 +1,15 @@
-import {
-  AbstractPaymentProvider,
+import type {
   PaymentProviderError,
   PaymentProviderSessionResponse,
   PaymentSessionStatus,
   ProviderWebhookPayload,
   WebhookActionResult,
-  PaymentActions,
   UpdatePaymentProviderSession,
   Logger,
+  MedusaContainer,
 } from "@medusajs/framework/types";
-import {
-  MedusaError,
-  PaymentSessionStatus as PaymentStatus,
-} from "@medusajs/framework/utils";
+import { AbstractPaymentProvider, PaymentActions } from "@medusajs/utils/dist/payment";
+import { MedusaError, PaymentSessionStatus as PaymentStatus } from "@medusajs/framework/utils";
 import axios from "axios";
 
 interface ZarinpalOptions {
@@ -53,12 +50,11 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   protected description_: string;
   protected callbackUrl_: string;
   protected baseUrl_: string;
+  protected logger: Logger;
 
-  constructor(
-    { logger }: { logger: Logger },
-    options: ZarinpalOptions
-  ) {
-    super({ logger } as any, options);
+  constructor(container: MedusaContainer, options: ZarinpalOptions) {
+    super(container, options);
+    this.logger = container.resolve("logger");
 
     this.merchantId_ = options.merchant_id;
     this.sandbox_ = options.sandbox ?? false;
@@ -142,14 +138,14 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         },
       };
 
-      this.logger_.info("Zarinpal payment request:", requestData);
+      this.logger.info("Zarinpal payment request:", requestData);
 
       const response = await axios.post<ZarinpalRequestResponse>(
         `${this.baseUrl_}/request.json`,
         requestData
       );
 
-      this.logger_.info("Zarinpal response:", response.data);
+      this.logger.info("Zarinpal response:", response.data);
 
       if (response.data.data.code !== 100) {
         return {
@@ -175,7 +171,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         },
       };
     } catch (error: any) {
-      this.logger_.error("Zarinpal initiate payment error:", error);
+      this.logger.error("Zarinpal initiate payment error:", error);
       return {
         error: error.message || "Failed to initiate payment",
         code: "ZARINPAL_INIT_ERROR",
@@ -187,7 +183,10 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   async authorizePayment(
     paymentSessionData: Record<string, unknown>,
     context: Record<string, unknown>
-  ): Promise<PaymentProviderError | PaymentProviderSessionResponse["data"]> {
+  ): Promise<
+    | PaymentProviderError
+    | { status: PaymentSessionStatus; data: PaymentProviderSessionResponse["data"] }
+  > {
     try {
       const authority = context.authority as string;
       const status = context.Status as string;
@@ -222,14 +221,17 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       }
 
       return {
-        ...paymentSessionData,
-        status: "verified",
-        ref_id: response.data.data.ref_id,
-        card_pan: response.data.data.card_pan,
-        verified_at: new Date().toISOString(),
+        status: PaymentStatus.AUTHORIZED,
+        data: {
+          ...paymentSessionData,
+          status: "verified",
+          ref_id: response.data.data.ref_id,
+          card_pan: response.data.data.card_pan,
+          verified_at: new Date().toISOString(),
+        } as any,
       };
     } catch (error: any) {
-      this.logger_.error("Zarinpal authorize payment error:", error);
+      this.logger.error("Zarinpal authorize payment error:", error);
       return {
         error: error.message || "Failed to authorize payment",
         code: "ZARINPAL_AUTH_ERROR",
@@ -284,7 +286,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   ): Promise<PaymentProviderError | PaymentProviderSessionResponse["data"]> {
     // Note: Zarinpal doesn't have an automatic refund API
     // Refunds must be done manually through Zarinpal dashboard
-    this.logger_.warn(
+    this.logger.warn(
       "Zarinpal refund requested - must be processed manually through Zarinpal dashboard"
     );
 
