@@ -1,19 +1,18 @@
-import type {
-  PaymentProviderError,
-  PaymentProviderSessionResponse,
-  PaymentSessionStatus,
-  ProviderWebhookPayload,
-  WebhookActionResult,
-  UpdatePaymentProviderSession,
-  Logger,
-  MedusaContainer,
-} from "@medusajs/framework/types";
-// Fallback import paths for monorepo resolution
+import type { Logger, MedusaContainer } from "@medusajs/framework/types";
+// Fallback import for AbstractPaymentProvider
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { AbstractPaymentProvider, PaymentActions } from "@medusajs/framework/utils/dist/payment";
+import { AbstractPaymentProvider } from "@medusajs/framework/utils/dist/payment";
 import { MedusaError, PaymentSessionStatus as PaymentStatus } from "@medusajs/framework/utils";
 import axios from "axios";
+
+// Local minimal fallbacks for provider-related types to avoid version/entrypoint mismatches
+type PaymentProviderError = { error: string; code?: string; detail?: any };
+type PaymentProviderSessionResponse = { data: Record<string, any> };
+type PaymentSessionStatus = any;
+type ProviderWebhookPayload = { payload: any };
+type WebhookActionResult = { action: any; data?: { session_id: string; amount: number } };
+type UpdatePaymentProviderSession = { data?: Record<string, any>; context?: Record<string, any> };
 
 interface ZarinpalOptions {
   merchant_id: string;
@@ -230,7 +229,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       }
 
       return {
-        status: PaymentStatus.AUTHORIZED,
+        status: PaymentStatus.AUTHORIZED as any,
         data: {
           ...paymentSessionData,
           status: "verified",
@@ -332,7 +331,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   ): Promise<WebhookActionResult> {
     // Zarinpal doesn't have webhooks, verification is done via redirect
     return {
-      action: PaymentActions.NOT_SUPPORTED,
+      action: "not_supported" as any,
       data: {
         session_id: "",
         amount: 0,
