@@ -45,7 +45,7 @@ export async function POST(
     }
 
     // Find the Zarinpal payment session
-    const paymentCollection = cart?.payment_collection;
+    const paymentCollection = (cart as any)?.payment_collection;
     
     if (!paymentCollection) {
       res.status(400).json({

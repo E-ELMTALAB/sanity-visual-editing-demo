@@ -1,6 +1,6 @@
 import { Modules } from '@medusajs/framework/utils'
 import { INotificationModuleService, IOrderModuleService } from '@medusajs/framework/types'
-import { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa'
+import type { SubscriberArgs, SubscriberConfig } from '@medusajs/framework/types'
 import { EmailTemplates } from '../modules/email-notifications/templates'
 
 export default async function orderPlacedHandler({
@@ -11,7 +11,7 @@ export default async function orderPlacedHandler({
   const orderModuleService: IOrderModuleService = container.resolve(Modules.ORDER)
   
   const order = await orderModuleService.retrieveOrder(data.id, { relations: ['items', 'summary', 'shipping_address'] })
-  const shippingAddress = await (orderModuleService as any).orderAddressService_.retrieve(order.shipping_address.id)
+  const shippingAddress = (order as any).shipping_address
 
   try {
     await notificationModuleService.createNotifications({

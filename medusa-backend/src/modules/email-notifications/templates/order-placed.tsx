@@ -5,13 +5,30 @@ import { OrderDTO, OrderAddressDTO } from '@medusajs/framework/types'
 
 export const ORDER_PLACED = 'order-placed'
 
+// Extended OrderDTO type to include relations that are loaded at runtime
+type ExtendedOrderDTO = OrderDTO & {
+  display_id: string;
+  summary: {
+    raw_current_order_total: {
+      value: number;
+    };
+  };
+  items: Array<{
+    id: string;
+    title: string;
+    product_title: string;
+    quantity: number;
+    unit_price: number;
+  }>;
+}
+
 interface OrderPlacedPreviewProps {
-  order: OrderDTO & { display_id: string; summary: { raw_current_order_total: { value: number } } }
+  order: ExtendedOrderDTO
   shippingAddress: OrderAddressDTO
 }
 
 export interface OrderPlacedTemplateProps {
-  order: OrderDTO & { display_id: string; summary: { raw_current_order_total: { value: number } } }
+  order: ExtendedOrderDTO
   shippingAddress: OrderAddressDTO
   preview?: string
 }
