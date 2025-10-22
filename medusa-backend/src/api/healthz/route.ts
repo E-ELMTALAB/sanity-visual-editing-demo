@@ -12,3 +12,4 @@ export const HEAD = async (req: MedusaRequest, res: MedusaResponse) => {
 };
 
 
+

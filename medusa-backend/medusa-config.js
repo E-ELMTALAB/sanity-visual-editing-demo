@@ -1,4 +1,5 @@
-import { loadEnv, Modules, defineConfig } from '@medusajs/utils';
+import { defineConfig } from '@medusajs/utils';
+import { loadEnv, Modules } from '@medusajs/framework/utils';
 import {
   ADMIN_CORS,
   AUTH_CORS,
