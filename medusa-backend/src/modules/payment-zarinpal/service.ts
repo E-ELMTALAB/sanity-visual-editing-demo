@@ -7,8 +7,8 @@ import type {
   UpdatePaymentProviderSession,
   Logger,
   MedusaContainer,
-} from "@medusajs/framework/types";
-import { AbstractPaymentProvider, PaymentActions } from "@medusajs/utils/dist/payment";
+} from "@medusajs/types";
+import { AbstractPaymentProvider, PaymentActions } from "@medusajs/utils";
 import { MedusaError, PaymentSessionStatus as PaymentStatus } from "@medusajs/framework/utils";
 import axios from "axios";
 
@@ -138,14 +138,18 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         },
       };
 
-      this.logger.info("Zarinpal payment request:", requestData);
+      this.logger.info(
+        `Zarinpal payment request: ${JSON.stringify(requestData)}`
+      );
 
       const response = await axios.post<ZarinpalRequestResponse>(
         `${this.baseUrl_}/request.json`,
         requestData
       );
 
-      this.logger.info("Zarinpal response:", response.data);
+      this.logger.info(
+        `Zarinpal response: ${JSON.stringify(response.data)}`
+      );
 
       if (response.data.data.code !== 100) {
         return {
@@ -171,7 +175,9 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         },
       };
     } catch (error: any) {
-      this.logger.error("Zarinpal initiate payment error:", error);
+      this.logger.error(
+        `Zarinpal initiate payment error: ${error?.message || "unknown"}`
+      );
       return {
         error: error.message || "Failed to initiate payment",
         code: "ZARINPAL_INIT_ERROR",
@@ -231,7 +237,9 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         } as any,
       };
     } catch (error: any) {
-      this.logger.error("Zarinpal authorize payment error:", error);
+      this.logger.error(
+        `Zarinpal authorize payment error: ${error?.message || "unknown"}`
+      );
       return {
         error: error.message || "Failed to authorize payment",
         code: "ZARINPAL_AUTH_ERROR",
@@ -322,7 +330,10 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
     // Zarinpal doesn't have webhooks, verification is done via redirect
     return {
       action: PaymentActions.NOT_SUPPORTED,
-      data: {},
+      data: {
+        session_id: "",
+        amount: 0,
+      },
     };
   }
 }

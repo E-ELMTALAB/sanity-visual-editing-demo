@@ -1,6 +1,6 @@
 import { Modules } from '@medusajs/framework/utils'
 import { INotificationModuleService, IOrderModuleService } from '@medusajs/framework/types'
-import type { SubscriberArgs, SubscriberConfig } from '@medusajs/framework/dist/subscribers/types'
+import type { SubscriberArgs, SubscriberConfig } from '@medusajs/framework/types'
 import { EmailTemplates } from '../modules/email-notifications/templates'
 
 export default async function orderPlacedHandler({
