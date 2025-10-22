@@ -7,8 +7,11 @@ import type {
   UpdatePaymentProviderSession,
   Logger,
   MedusaContainer,
-} from "@medusajs/types";
-import { AbstractPaymentProvider, PaymentActions } from "@medusajs/utils";
+} from "@medusajs/framework/types";
+// Fallback import paths for monorepo resolution
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { AbstractPaymentProvider, PaymentActions } from "@medusajs/framework/utils/dist/payment";
 import { MedusaError, PaymentSessionStatus as PaymentStatus } from "@medusajs/framework/utils";
 import axios from "axios";
 
