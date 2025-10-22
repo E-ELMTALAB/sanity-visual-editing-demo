@@ -15,6 +15,9 @@ import {
   STORE_CORS,
   STRIPE_API_KEY,
   STRIPE_WEBHOOK_SECRET,
+  ZARINPAL_MERCHANT_ID,
+  ZARINPAL_SANDBOX,
+  ZARINPAL_CALLBACK_URL,
   WORKER_MODE,
   MINIO_ENDPOINT,
   MINIO_ACCESS_KEY,
@@ -117,19 +120,29 @@ const medusaConfig = {
         ]
       }
     }] : []),
-    ...(STRIPE_API_KEY && STRIPE_WEBHOOK_SECRET ? [{
+    ...((STRIPE_API_KEY && STRIPE_WEBHOOK_SECRET) || ZARINPAL_MERCHANT_ID ? [{
       key: Modules.PAYMENT,
       resolve: '@medusajs/payment',
       options: {
         providers: [
-          {
+          ...(STRIPE_API_KEY && STRIPE_WEBHOOK_SECRET ? [{
             resolve: '@medusajs/payment-stripe',
             id: 'stripe',
             options: {
               apiKey: STRIPE_API_KEY,
               webhookSecret: STRIPE_WEBHOOK_SECRET,
             },
-          },
+          }] : []),
+          ...(ZARINPAL_MERCHANT_ID ? [{
+            resolve: './src/modules/payment-zarinpal',
+            id: 'zarinpal',
+            options: {
+              merchant_id: ZARINPAL_MERCHANT_ID,
+              sandbox: ZARINPAL_SANDBOX,
+              description: 'Payment for order',
+              callback_url: ZARINPAL_CALLBACK_URL || `${BACKEND_URL}/store/zarinpal/callback`,
+            },
+          }] : []),
         ],
       },
     }] : [])

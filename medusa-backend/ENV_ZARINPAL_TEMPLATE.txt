@@ -1,0 +1,34 @@
+# ================================
+# Zarinpal Payment Gateway Setup
+# ================================
+# Copy these variables to your .env file and fill in your values
+
+# Your Zarinpal Merchant ID (UUID format)
+# Get this from: https://www.zarinpal.com/panel → Settings → API & Webhooks
+ZARINPAL_MERCHANT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+# Sandbox mode: true for testing, false for production
+# Use true during development and testing
+ZARINPAL_SANDBOX=true
+
+# Callback URL where customers return after payment
+# Local development example:
+ZARINPAL_CALLBACK_URL=http://localhost:3000/checkout/callback
+
+# Production example:
+# ZARINPAL_CALLBACK_URL=https://yourdomain.com/checkout/callback
+
+# ================================
+# Example Configuration (Development)
+# ================================
+# ZARINPAL_MERCHANT_ID=12345678-1234-1234-1234-123456789012
+# ZARINPAL_SANDBOX=true
+# ZARINPAL_CALLBACK_URL=http://localhost:3000/checkout/callback
+
+# ================================
+# Example Configuration (Production)
+# ================================
+# ZARINPAL_MERCHANT_ID=your-production-merchant-id
+# ZARINPAL_SANDBOX=false
+# ZARINPAL_CALLBACK_URL=https://yourstore.com/checkout/callback
+

@@ -85,6 +85,13 @@ export const STRIPE_API_KEY = process.env.STRIPE_API_KEY;
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
 /**
+ * (optional) Zarinpal payment gateway configuration
+ */
+export const ZARINPAL_MERCHANT_ID = process.env.ZARINPAL_MERCHANT_ID;
+export const ZARINPAL_SANDBOX = process.env.ZARINPAL_SANDBOX === 'true';
+export const ZARINPAL_CALLBACK_URL = process.env.ZARINPAL_CALLBACK_URL;
+
+/**
  * (optional) Meilisearch configuration
  */
 export const MEILISEARCH_HOST = process.env.MEILISEARCH_HOST;
