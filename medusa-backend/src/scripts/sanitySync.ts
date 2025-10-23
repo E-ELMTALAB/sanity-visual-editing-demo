@@ -13,9 +13,9 @@ async function main() {
 
   const client = getSanityClient();
 
-  const baseQuery = DEFAULT_GROQ;
+  const baseQuery = `${DEFAULT_GROQ} | order(_updatedAt asc) ${since ? `| [_updatedAt > $since]` : ''}`;
   log(`Fetching products${since ? ` since ${since}` : " (full)"}...`);
-  const docs: SanityProduct[] = await client.fetch(baseQuery);
+  const docs: SanityProduct[] = await client.fetch(baseQuery, since ? { since } : {});
 
   if (!docs?.length) {
     log("No products from Sanity.");
@@ -27,28 +27,48 @@ async function main() {
   let failed = 0;
   let latestUpdatedAt = since;
 
-  for (const doc of docs) {
+  const concurrency = Number(process.env.SANITY_SYNC_CONCURRENCY || 5);
+  const queue: Promise<void>[] = [];
+
+  async function processDoc(doc: SanityProduct) {
     latestUpdatedAt = !latestUpdatedAt || doc._updatedAt > latestUpdatedAt ? doc._updatedAt : latestUpdatedAt;
     const body = mapSanityToUpsertBody(doc);
     if (dryRun) {
       log(`DRY-RUN upsert sanityId=${body.sanityId} handle=${body.handle} title="${body.title}"`);
-      continue;
+      return;
     }
-
-    const res = await upsertProductREST(body);
-    if (!res.ok) {
-      failed++;
-      log(`FAIL sanityId=${body.sanityId}: ${res.error}`);
-    } else {
-      if (res.isUpdate) {
+    try {
+      const res = await upsertProductREST(body);
+      if (!res.ok) {
+        failed++;
+        log(`FAIL sanityId=${body.sanityId}: ${res.error}`);
+      } else if (res.isUpdate) {
         updated++;
         log(`UPDATED sanityId=${body.sanityId} productId=${res.productId ?? "unknown"}`);
       } else {
         created++;
         log(`CREATED sanityId=${body.sanityId} productId=${res.productId ?? "unknown"}`);
       }
+    } catch (e: any) {
+      failed++;
+      log(`FAIL sanityId=${body.sanityId}: ${e?.message || e}`);
     }
   }
+
+  for (const doc of docs) {
+    const p = processDoc(doc);
+    queue.push(p);
+    if (queue.length >= concurrency) {
+      await Promise.race(queue).catch(() => undefined);
+      // prune settled promises
+      for (let i = queue.length - 1; i >= 0; i--) {
+        if (Reflect.get(queue[i] as any, 'settled')) {
+          queue.splice(i, 1);
+        }
+      }
+    }
+  }
+  await Promise.allSettled(queue);
 
   if (!dryRun && latestUpdatedAt) {
     writeCheckpoint(latestUpdatedAt);

@@ -54,12 +54,13 @@ export async function upsertProductREST(input: UpsertBody): Promise<UpsertResult
   }
 
   const isUpdate = !!existingProductId;
-  // Use unauthenticated create endpoint instead of admin
+  // Use unauthenticated endpoints for both create and update to avoid admin auth overhead
   const url = isUpdate 
-    ? `${backendUrl}/admin/products/${existingProductId}`
+    ? `${backendUrl}/update-sample-product`
     : `${backendUrl}/create-sample-product`;
 
   const body = {
+    ...(isUpdate && { productId: existingProductId }),
     title: input.title,
     subtitle: input.subtitle,
     description: input.description,
