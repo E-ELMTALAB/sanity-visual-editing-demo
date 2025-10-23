@@ -1,8 +1,5 @@
 import type { Logger, MedusaContainer } from "@medusajs/framework/types";
-// Fallback import for AbstractPaymentProvider
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { AbstractPaymentProvider } from "@medusajs/framework/utils/dist/payment";
+import { AbstractPaymentProvider } from "@medusajs/utils";
 import { MedusaError, PaymentSessionStatus as PaymentStatus } from "@medusajs/framework/utils";
 import axios from "axios";
 
