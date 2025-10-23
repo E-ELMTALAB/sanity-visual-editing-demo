@@ -1,4 +1,27 @@
-import type { Logger, MedusaContainer } from "@medusajs/framework/types";
+import type {
+  Logger,
+  MedusaContainer,
+  InitiatePaymentInput,
+  InitiatePaymentOutput,
+  AuthorizePaymentInput,
+  AuthorizePaymentOutput,
+  CancelPaymentInput,
+  CancelPaymentOutput,
+  CapturePaymentInput,
+  CapturePaymentOutput,
+  DeletePaymentInput,
+  DeletePaymentOutput,
+  GetPaymentStatusInput,
+  GetPaymentStatusOutput,
+  RefundPaymentInput,
+  RefundPaymentOutput,
+  RetrievePaymentInput,
+  RetrievePaymentOutput,
+  UpdatePaymentInput,
+  UpdatePaymentOutput,
+  ProviderWebhookPayload,
+  WebhookActionResult
+} from "@medusajs/framework/types";
 import { AbstractPaymentProvider } from "@medusajs/utils";
 import { MedusaError, PaymentSessionStatus as PaymentStatus } from "@medusajs/framework/utils";
 import axios from "axios";
@@ -82,38 +105,27 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
     }
   }
 
-  async getPaymentStatus(
-    paymentSessionData: Record<string, unknown>
-  ): Promise<PaymentSessionStatus> {
-    const status = paymentSessionData.status as string;
-
+  async getPaymentStatus(input: GetPaymentStatusInput): Promise<GetPaymentStatusOutput> {
+    const status = (input.data as any)?.status as string;
     switch (status) {
       case "verified":
       case "paid":
-        return PaymentStatus.AUTHORIZED;
+        return { status: PaymentStatus.AUTHORIZED } as any;
       case "pending":
-        return PaymentStatus.PENDING;
+        return { status: PaymentStatus.PENDING } as any;
       case "canceled":
       case "cancelled":
-        return PaymentStatus.CANCELED;
+        return { status: PaymentStatus.CANCELED } as any;
       case "error":
-        return PaymentStatus.ERROR;
+        return { status: PaymentStatus.ERROR } as any;
       default:
-        return PaymentStatus.PENDING;
+        return { status: PaymentStatus.PENDING } as any;
     }
   }
 
-  async initiatePayment(
-    context: any
-  ): Promise<PaymentProviderError | PaymentProviderSessionResponse> {
+  async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
     try {
-      const {
-        amount,
-        currency_code,
-        email,
-        context: paymentContext,
-        resource_id,
-      } = context;
+      const { amount, currency_code, email, context: paymentContext, resource_id } = input as any;
 
       // Zarinpal works with Rials (IRR), convert from smallest unit
       const amountInRials = Math.round(amount / 10); // Convert from smallest unit to Rials
@@ -164,6 +176,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         : `https://www.zarinpal.com/pg/StartPay/${authority}`;
 
       return {
+        id: authority as string,
         data: {
           authority,
           payment_url: paymentUrl,
@@ -172,37 +185,23 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
           currency_code: "IRR",
           resource_id,
         },
-      };
+      } as any;
     } catch (error: any) {
       this.logger.error(
         `Zarinpal initiate payment error: ${error?.message || "unknown"}`
       );
-      return {
-        error: error.message || "Failed to initiate payment",
-        code: "ZARINPAL_INIT_ERROR",
-        detail: error.response?.data || error,
-      };
+      throw error;
     }
   }
 
-  async authorizePayment(
-    paymentSessionData: Record<string, unknown>,
-    context: Record<string, unknown>
-  ): Promise<
-    | PaymentProviderError
-    | { status: PaymentSessionStatus; data: PaymentProviderSessionResponse["data"] }
-  > {
+  async authorizePayment(input: AuthorizePaymentInput): Promise<AuthorizePaymentOutput> {
     try {
-      const authority = context.authority as string;
-      const status = context.Status as string;
+      const authority = (input.context as any)?.authority ?? (input.data as any)?.authority;
+      const status = (input.context as any)?.Status ?? (input.context as any)?.status;
 
       // Check if payment was successful
       if (status !== "OK") {
-        return {
-          error: "Payment was cancelled or failed",
-          code: "PAYMENT_CANCELLED",
-          detail: context,
-        };
+        throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, "Payment was cancelled or failed");
       }
 
       // Verify payment with Zarinpal
@@ -228,69 +227,58 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       return {
         status: PaymentStatus.AUTHORIZED as any,
         data: {
-          ...paymentSessionData,
+          ...(input.data || {}),
           status: "verified",
           ref_id: response.data.data.ref_id,
           card_pan: response.data.data.card_pan,
           verified_at: new Date().toISOString(),
-        } as any,
-      };
+        },
+      } as any;
     } catch (error: any) {
       this.logger.error(
         `Zarinpal authorize payment error: ${error?.message || "unknown"}`
       );
-      return {
-        error: error.message || "Failed to authorize payment",
-        code: "ZARINPAL_AUTH_ERROR",
-        detail: error.response?.data || error,
-      };
+      throw error;
     }
   }
 
-  async cancelPayment(
-    paymentSessionData: Record<string, unknown>
-  ): Promise<PaymentProviderError | PaymentProviderSessionResponse["data"]> {
+  async cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput> {
     return {
-      ...paymentSessionData,
-      status: "cancelled",
-      cancelled_at: new Date().toISOString(),
-    };
+      data: {
+        ...(input.data || {}),
+        status: "cancelled",
+        cancelled_at: new Date().toISOString(),
+      },
+    } as any;
   }
 
-  async capturePayment(
-    paymentSessionData: Record<string, unknown>
-  ): Promise<PaymentProviderError | PaymentProviderSessionResponse["data"]> {
+  async capturePayment(input: CapturePaymentInput): Promise<CapturePaymentOutput> {
     // Zarinpal automatically captures on verification
     // This is just to mark it as captured in Medusa
-    if (paymentSessionData.status !== "verified") {
-      return {
-        error: "Payment must be verified before capture",
-        code: "INVALID_STATUS",
-        detail: paymentSessionData,
-      };
+    if ((input.data as any)?.status !== "verified") {
+      throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, "Payment must be verified before capture");
     }
 
     return {
-      ...paymentSessionData,
-      status: "paid",
-      captured_at: new Date().toISOString(),
-    };
+      data: {
+        ...(input.data || {}),
+        status: "paid",
+        captured_at: new Date().toISOString(),
+      },
+    } as any;
   }
 
-  async deletePayment(
-    paymentSessionData: Record<string, unknown>
-  ): Promise<PaymentProviderError | PaymentProviderSessionResponse["data"]> {
+  async deletePayment(input: DeletePaymentInput): Promise<DeletePaymentOutput> {
     return {
-      ...paymentSessionData,
-      status: "cancelled",
-      deleted_at: new Date().toISOString(),
-    };
+      data: {
+        ...(input.data || {}),
+        status: "cancelled",
+        deleted_at: new Date().toISOString(),
+      },
+    } as any;
   }
 
-  async refundPayment(
-    paymentSessionData: Record<string, unknown>,
-    refundAmount: number
-  ): Promise<PaymentProviderError | PaymentProviderSessionResponse["data"]> {
+  async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
     // Note: Zarinpal doesn't have an automatic refund API
     // Refunds must be done manually through Zarinpal dashboard
     this.logger.warn(
@@ -298,34 +286,30 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
     );
 
     return {
-      ...paymentSessionData,
-      refund_requested: true,
-      refund_amount: refundAmount,
-      refund_requested_at: new Date().toISOString(),
-      status: "refund_pending",
-    };
+      data: {
+        ...(input.data || {}),
+        refund_requested: true,
+        refund_amount: input.amount,
+        refund_requested_at: new Date().toISOString(),
+        status: "refund_pending",
+      },
+    } as any;
   }
 
-  async retrievePayment(
-    paymentSessionData: Record<string, unknown>
-  ): Promise<PaymentProviderError | PaymentProviderSessionResponse["data"]> {
-    return paymentSessionData;
+  async retrievePayment(input: RetrievePaymentInput): Promise<RetrievePaymentOutput> {
+    return { data: input.data } as any;
   }
 
-  async updatePayment(
-    context: UpdatePaymentProviderSession
-  ): Promise<PaymentProviderError | PaymentProviderSessionResponse> {
+  async updatePayment(input: UpdatePaymentInput): Promise<UpdatePaymentOutput> {
     return {
       data: {
-        ...context.data,
-        ...context.context,
+        ...(input.data || {}),
+        ...(input.context || {}),
       },
-    };
+    } as any;
   }
 
-  async getWebhookActionAndData(
-    payload: ProviderWebhookPayload["payload"]
-  ): Promise<WebhookActionResult> {
+  async getWebhookActionAndData(payload: ProviderWebhookPayload["payload"]): Promise<WebhookActionResult> {
     // Zarinpal doesn't have webhooks, verification is done via redirect
     return {
       action: "not_supported" as any,
