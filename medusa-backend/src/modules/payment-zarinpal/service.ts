@@ -103,25 +103,34 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   }
 
   async getPaymentStatus(input: GetPaymentStatusInput): Promise<GetPaymentStatusOutput> {
+    this.logger.info(
+      `[zarinpal] getPaymentStatus called | data.status=${(input.data as any)?.status}`
+    )
     const status = (input.data as any)?.status as string;
     switch (status) {
       case "verified":
       case "paid":
+        this.logger.info(`[zarinpal] getPaymentStatus -> AUTHORIZED`)
         return { status: PaymentStatus.AUTHORIZED } as any;
       case "pending":
+        this.logger.info(`[zarinpal] getPaymentStatus -> PENDING`)
         return { status: PaymentStatus.PENDING } as any;
       case "canceled":
       case "cancelled":
+        this.logger.info(`[zarinpal] getPaymentStatus -> CANCELED`)
         return { status: PaymentStatus.CANCELED } as any;
       case "error":
+        this.logger.info(`[zarinpal] getPaymentStatus -> ERROR`)
         return { status: PaymentStatus.ERROR } as any;
       default:
+        this.logger.info(`[zarinpal] getPaymentStatus -> DEFAULT(PENDING)`)
         return { status: PaymentStatus.PENDING } as any;
     }
   }
 
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
     try {
+      const offline = process.env.ZARINPAL_OFFLINE === "true"
       const { amount, currency_code, email, context: paymentContext, resource_id } = input as any;
 
       // Zarinpal works with Rials (IRR), convert from smallest unit
@@ -134,7 +143,30 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       // Build callback URL with order/cart ID
       const callbackUrl = `${this.callbackUrl_}?resource_id=${resource_id}`;
 
-      // Request payment from Zarinpal
+      // Offline test mode: short-circuit without external call
+      if (offline) {
+        this.logger.info(
+          `[zarinpal] initiatePayment(offline=true) | resource_id=${resource_id} amount_in_rials=${amountInRials}`
+        )
+        const testAuthority = `TEST_${Date.now()}`
+        const testUrl = `https://example.com/offline-pay?auth=${testAuthority}`
+        return {
+          id: testAuthority,
+          data: {
+            authority: testAuthority,
+            payment_url: testUrl,
+            status: "pending",
+            amount: amountInRials,
+            currency_code: "IRR",
+            resource_id,
+          },
+        } as any
+      }
+
+      // Request payment from Zarinpal (online mode)
+      this.logger.info(
+        `[zarinpal] initiatePayment(offline=false) | resource_id=${resource_id} amount_in_rials=${amountInRials}`
+      )
       const requestData = {
         merchant_id: this.merchantId_,
         amount: amountInRials,
@@ -146,18 +178,14 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         },
       };
 
-      this.logger.info(
-        `Zarinpal payment request: ${JSON.stringify(requestData)}`
-      );
+      this.logger.info(`[zarinpal] request -> /request.json | amount=${amountInRials}`)
 
       const response = await axios.post<ZarinpalRequestResponse>(
         `${this.baseUrl_}/request.json`,
         requestData
       );
 
-      this.logger.info(
-        `Zarinpal response: ${JSON.stringify(response.data)}`
-      );
+      this.logger.info(`[zarinpal] response <- code=${response.data?.data?.code} message=${response.data?.data?.message}`)
 
       if (response.data.data.code !== 100) {
         throw new MedusaError(
@@ -171,6 +199,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         ? `https://sandbox.zarinpal.com/pg/StartPay/${authority}`
         : `https://www.zarinpal.com/pg/StartPay/${authority}`;
 
+      this.logger.info(`[zarinpal] initiatePayment success | authority=${authority} url=${paymentUrl}`)
       return {
         id: authority as string,
         data: {
@@ -183,21 +212,36 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         },
       } as any;
     } catch (error: any) {
-      this.logger.error(
-        `Zarinpal initiate payment error: ${error?.message || "unknown"}`
-      );
+      this.logger.error(`[zarinpal] initiatePayment error: ${error?.message || "unknown"}`)
       throw error;
     }
   }
 
   async authorizePayment(input: AuthorizePaymentInput): Promise<AuthorizePaymentOutput> {
     try {
+      const offline = process.env.ZARINPAL_OFFLINE === "true"
       const authority = (input.context as any)?.authority ?? (input.data as any)?.authority;
       const status = (input.context as any)?.Status ?? (input.context as any)?.status;
+      this.logger.info(`[zarinpal] authorizePayment called | authority=${authority} status=${status} offline=${offline}`)
 
       // Check if payment was successful
       if (status !== "OK") {
         throw new MedusaError(MedusaError.Types.INVALID_ARGUMENT, "Payment was cancelled or failed");
+      }
+
+      // Offline test mode: bypass external verify
+      if (offline && typeof authority === "string" && authority.startsWith("TEST_")) {
+        this.logger.info(`[zarinpal] authorizePayment offline success | authority=${authority}`)
+        return {
+          status: PaymentStatus.AUTHORIZED as any,
+          data: {
+            ...(input.data || {}),
+            status: "verified",
+            ref_id: `OFFLINE_REF_${Date.now()}`,
+            card_pan: "0000-0000-0000-0000",
+            verified_at: new Date().toISOString(),
+          },
+        } as any
       }
 
       // Verify payment with Zarinpal
@@ -206,12 +250,14 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         amount: (input.data as any)?.amount as number,
         authority: authority,
       };
+      this.logger.info(`[zarinpal] verify -> /verify.json | authority=${authority} amount=${(input.data as any)?.amount}`)
 
       const response = await axios.post<ZarinpalVerifyResponse>(
         `${this.baseUrl_}/verify.json`,
         verifyData
       );
 
+      this.logger.info(`[zarinpal] verify response <- code=${response.data?.data?.code} message=${response.data?.data?.message}`)
       if (response.data.data.code !== 100 && response.data.data.code !== 101) {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
@@ -219,6 +265,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         );
       }
 
+      this.logger.info(`[zarinpal] authorizePayment success | ref_id=${response.data.data.ref_id}`)
       return {
         status: PaymentStatus.AUTHORIZED as any,
         data: {
@@ -230,14 +277,13 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         },
       } as any;
     } catch (error: any) {
-      this.logger.error(
-        `Zarinpal authorize payment error: ${error?.message || "unknown"}`
-      );
+      this.logger.error(`[zarinpal] authorizePayment error: ${error?.message || "unknown"}`)
       throw error;
     }
   }
 
   async cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput> {
+    this.logger.info(`[zarinpal] cancelPayment called`)
     return {
       data: {
         ...(input.data || {}),
@@ -248,6 +294,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   }
 
   async capturePayment(input: CapturePaymentInput): Promise<CapturePaymentOutput> {
+    this.logger.info(`[zarinpal] capturePayment called | status=${(input.data as any)?.status}`)
     // Zarinpal automatically captures on verification
     // This is just to mark it as captured in Medusa
     if ((input.data as any)?.status !== "verified") {
@@ -264,6 +311,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   }
 
   async deletePayment(input: DeletePaymentInput): Promise<DeletePaymentOutput> {
+    this.logger.info(`[zarinpal] deletePayment called`)
     return {
       data: {
         ...(input.data || {}),
@@ -279,6 +327,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
     this.logger.warn(
       "Zarinpal refund requested - must be processed manually through Zarinpal dashboard"
     );
+    this.logger.info(`[zarinpal] refundPayment called | amount=${input.amount}`)
 
     return {
       data: {
@@ -292,10 +341,12 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   }
 
   async retrievePayment(input: RetrievePaymentInput): Promise<RetrievePaymentOutput> {
+    this.logger.info(`[zarinpal] retrievePayment called`)
     return { data: input.data } as any;
   }
 
   async updatePayment(input: UpdatePaymentInput): Promise<UpdatePaymentOutput> {
+    this.logger.info(`[zarinpal] updatePayment called`)
     return {
       data: {
         ...(input.data || {}),
