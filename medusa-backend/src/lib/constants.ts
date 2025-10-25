@@ -106,4 +106,6 @@ export const WORKER_MODE =
 /**
  * Disable Admin
  */
-export const SHOULD_DISABLE_ADMIN = process.env.MEDUSA_DISABLE_ADMIN === 'true'
+export const SHOULD_DISABLE_ADMIN = typeof process.env.MEDUSA_DISABLE_ADMIN !== 'undefined'
+  ? process.env.MEDUSA_DISABLE_ADMIN === 'true'
+  : process.env.NODE_ENV === 'production'
