@@ -121,7 +121,7 @@ const medusaConfig = {
         ]
       }
     }] : []),
-    ...((STRIPE_API_KEY && STRIPE_WEBHOOK_SECRET) || ZARINPAL_MERCHANT_ID ? [{
+    ...((STRIPE_API_KEY && STRIPE_WEBHOOK_SECRET) || ZARINPAL_MERCHANT_ID || process.env.ZARINPAL_OFFLINE === 'true' ? [{
       key: Modules.PAYMENT,
       resolve: '@medusajs/payment',
       options: {
@@ -134,7 +134,7 @@ const medusaConfig = {
               webhookSecret: STRIPE_WEBHOOK_SECRET,
             },
           }] : []),
-          ...(ZARINPAL_MERCHANT_ID ? [{
+          ...((ZARINPAL_MERCHANT_ID || process.env.ZARINPAL_OFFLINE === 'true') ? [{
             resolve: './src/modules/payment-zarinpal',
             id: 'zarinpal',
             options: {

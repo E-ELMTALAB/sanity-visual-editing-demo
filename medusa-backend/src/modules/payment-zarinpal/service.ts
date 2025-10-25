@@ -86,7 +86,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       ? "https://sandbox.zarinpal.com/pg/v4/payment"
       : "https://payment.zarinpal.com/pg/v4/payment";
 
-    if (!this.merchantId_) {
+    if (!this.merchantId_ && process.env.ZARINPAL_OFFLINE !== "true") {
       throw new MedusaError(
         MedusaError.Types.INVALID_ARGUMENT,
         "Zarinpal merchant_id is required"
@@ -95,7 +95,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   }
 
   static validateOptions(options: Record<any, any>): void {
-    if (!options.merchant_id) {
+    if (!options.merchant_id && process.env.ZARINPAL_OFFLINE !== "true") {
       throw new MedusaError(
         MedusaError.Types.INVALID_ARGUMENT,
         "Zarinpal requires merchant_id in options"
