@@ -90,6 +90,7 @@ export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 export const ZARINPAL_MERCHANT_ID = process.env.ZARINPAL_MERCHANT_ID;
 export const ZARINPAL_SANDBOX = process.env.ZARINPAL_SANDBOX === 'true';
 export const ZARINPAL_CALLBACK_URL = process.env.ZARINPAL_CALLBACK_URL;
+export const ZARINPAL_OFFLINE = process.env.ZARINPAL_OFFLINE === 'true';
 
 /**
  * (optional) Meilisearch configuration

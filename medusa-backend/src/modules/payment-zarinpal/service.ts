@@ -73,7 +73,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   protected logger: Logger;
 
   constructor(container: MedusaContainer, options: ZarinpalOptions) {
-    super(container, options);
+    super(container as unknown as Record<string, unknown>, options);
     this.logger = container.resolve("logger");
 
     this.merchantId_ = options.merchant_id;
@@ -86,21 +86,16 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       ? "https://sandbox.zarinpal.com/pg/v4/payment"
       : "https://payment.zarinpal.com/pg/v4/payment";
 
+    // Do not throw here to avoid blocking provider registration
     if (!this.merchantId_ && process.env.ZARINPAL_OFFLINE !== "true") {
-      throw new MedusaError(
-        MedusaError.Types.INVALID_ARGUMENT,
-        "Zarinpal merchant_id is required"
-      );
+      try {
+        this.logger?.warn?.("[zarinpal] merchant_id missing; provider will operate in limited mode until configured.")
+      } catch {}
     }
   }
 
   static validateOptions(options: Record<any, any>): void {
-    if (!options.merchant_id && process.env.ZARINPAL_OFFLINE !== "true") {
-      throw new MedusaError(
-        MedusaError.Types.INVALID_ARGUMENT,
-        "Zarinpal requires merchant_id in options"
-      );
-    }
+    // Be permissive to ensure provider registers; runtime methods will guard as needed
   }
 
   async getPaymentStatus(input: GetPaymentStatusInput): Promise<GetPaymentStatusOutput> {

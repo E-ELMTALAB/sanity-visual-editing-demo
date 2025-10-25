@@ -19,6 +19,7 @@ import {
   ZARINPAL_MERCHANT_ID,
   ZARINPAL_SANDBOX,
   ZARINPAL_CALLBACK_URL,
+  ZARINPAL_OFFLINE,
   WORKER_MODE,
   MINIO_ENDPOINT,
   MINIO_ACCESS_KEY,
@@ -121,7 +122,7 @@ const medusaConfig = {
         ]
       }
     }] : []),
-    ...((STRIPE_API_KEY && STRIPE_WEBHOOK_SECRET) || ZARINPAL_MERCHANT_ID || process.env.ZARINPAL_OFFLINE === 'true' ? [{
+    ...((STRIPE_API_KEY && STRIPE_WEBHOOK_SECRET) || ZARINPAL_MERCHANT_ID || ZARINPAL_OFFLINE ? [{
       key: Modules.PAYMENT,
       resolve: '@medusajs/payment',
       options: {
@@ -134,7 +135,7 @@ const medusaConfig = {
               webhookSecret: STRIPE_WEBHOOK_SECRET,
             },
           }] : []),
-          ...((ZARINPAL_MERCHANT_ID || process.env.ZARINPAL_OFFLINE === 'true') ? [{
+          ...((ZARINPAL_MERCHANT_ID || ZARINPAL_OFFLINE) ? [{
             resolve: './src/modules/payment-zarinpal',
             id: 'zarinpal',
             options: {
