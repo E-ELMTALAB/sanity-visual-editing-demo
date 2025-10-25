@@ -36,6 +36,7 @@ interface ZarinpalOptions {
   sandbox?: boolean;
   description?: string;
   callback_url?: string;
+  offline?: boolean;
 }
 
 interface ZarinpalRequestResponse {
@@ -71,6 +72,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   protected callbackUrl_: string;
   protected baseUrl_: string;
   protected logger: Logger;
+  protected offline_: boolean;
 
   constructor(container: MedusaContainer, options: ZarinpalOptions) {
     super(container as unknown as Record<string, unknown>, options);
@@ -80,6 +82,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
     this.sandbox_ = options.sandbox ?? false;
     this.description_ = options.description ?? "Payment";
     this.callbackUrl_ = options.callback_url ?? "";
+    this.offline_ = options.offline ?? (process.env.ZARINPAL_OFFLINE === "true");
 
     // Set the appropriate base URL based on sandbox mode
     this.baseUrl_ = this.sandbox_
@@ -87,7 +90,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       : "https://payment.zarinpal.com/pg/v4/payment";
 
     // Do not throw here to avoid blocking provider registration
-    if (!this.merchantId_ && process.env.ZARINPAL_OFFLINE !== "true") {
+    if (!this.merchantId_ && !this.offline_) {
       try {
         this.logger?.warn?.("[zarinpal] merchant_id missing; provider will operate in limited mode until configured.")
       } catch {}
@@ -126,7 +129,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
 
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
     try {
-      const offline = process.env.ZARINPAL_OFFLINE === "true"
+      const offline = this.offline_ || process.env.ZARINPAL_OFFLINE === "true"
       const { amount, currency_code, email, context: paymentContext, resource_id } = input as any;
 
       // Zarinpal works with Rials (IRR), convert from smallest unit
@@ -215,7 +218,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
 
   async authorizePayment(input: AuthorizePaymentInput): Promise<AuthorizePaymentOutput> {
     try {
-      const offline = process.env.ZARINPAL_OFFLINE === "true"
+      const offline = this.offline_ || process.env.ZARINPAL_OFFLINE === "true"
       const authority = (input.context as any)?.authority ?? (input.data as any)?.authority;
       const status = (input.context as any)?.Status ?? (input.context as any)?.status;
       this.logger.info(`[zarinpal] authorizePayment called | authority=${authority} status=${status} offline=${offline}`)

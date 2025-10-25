@@ -143,6 +143,7 @@ const medusaConfig = {
               sandbox: ZARINPAL_SANDBOX,
               description: 'Payment for order',
               callback_url: ZARINPAL_CALLBACK_URL || `${BACKEND_URL}/store/zarinpal/callback`,
+              offline: ZARINPAL_OFFLINE,
             },
           }] : []),
         ],
