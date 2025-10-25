@@ -26,13 +26,10 @@ import { AbstractPaymentProvider } from "@medusajs/utils";
 import { MedusaError, PaymentSessionStatus as PaymentStatus } from "@medusajs/framework/utils";
 import axios from "axios";
 
-// Local minimal fallbacks for provider-related types to avoid version/entrypoint mismatches
+// Local minimal fallbacks for provider-related types to avoid version/entrypoint mismatches (kept for internal use only)
 type PaymentProviderError = { error: string; code?: string; detail?: any };
 type PaymentProviderSessionResponse = { data: Record<string, any> };
 type PaymentSessionStatus = any;
-type ProviderWebhookPayload = { payload: any };
-type WebhookActionResult = { action: any; data?: { session_id: string; amount: number } };
-type UpdatePaymentProviderSession = { data?: Record<string, any>; context?: Record<string, any> };
 
 interface ZarinpalOptions {
   merchant_id: string;
@@ -163,11 +160,10 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       );
 
       if (response.data.data.code !== 100) {
-        return {
-          error: response.data.data.message || "Payment request failed",
-          code: response.data.data.code.toString(),
-          detail: response.data,
-        };
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          response.data.data.message || "Payment request failed"
+        );
       }
 
       const authority = response.data.data.authority;
@@ -207,7 +203,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       // Verify payment with Zarinpal
       const verifyData = {
         merchant_id: this.merchantId_,
-        amount: paymentSessionData.amount as number,
+        amount: (input.data as any)?.amount as number,
         authority: authority,
       };
 
@@ -217,11 +213,10 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       );
 
       if (response.data.data.code !== 100 && response.data.data.code !== 101) {
-        return {
-          error: response.data.data.message || "Payment verification failed",
-          code: response.data.data.code.toString(),
-          detail: response.data,
-        };
+        throw new MedusaError(
+          MedusaError.Types.INVALID_ARGUMENT,
+          response.data.data.message || "Payment verification failed"
+        );
       }
 
       return {
