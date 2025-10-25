@@ -64,6 +64,7 @@ interface ZarinpalVerifyResponse {
 
 class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   static identifier = "zarinpal";
+  static PROVIDER = "zarinpal";
   protected merchantId_: string;
   protected sandbox_: boolean;
   protected description_: string;
