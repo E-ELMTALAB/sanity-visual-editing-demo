@@ -3,8 +3,8 @@
 
 $ErrorActionPreference = "Stop"
 
-# Configuration
-$BACKEND_URL = "http://localhost:9000"
+# Configuration (env override supported)
+$BACKEND_URL = if ($env:BACKEND_URL) { $env:BACKEND_URL } else { "http://localhost:9000" }
 $REGION_ID = "" # Will be fetched automatically
 $CART_ID = ""
 $PAYMENT_COLLECTION_ID = ""
