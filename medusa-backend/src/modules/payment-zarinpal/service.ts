@@ -165,8 +165,8 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       const { amount, currency_code, email, context: paymentContext, resource_id } = input as any;
       console.log("[ZARINPAL-initiatePayment] Extracted params:", { amount, currency_code, email, resource_id })
 
-      // Zarinpal works with Rials (IRR), convert from smallest unit
-      const amountInRials = Math.round(amount / 10); // Convert from smallest unit to Rials
+      // Zarinpal works with Rials (IRR), use fixed 10000 Rials for testing
+      const amountInRials = 10000; // Fixed amount for testing
 
       const metadata = paymentContext?.metadata || {};
       const description = metadata.description || this.description_;
