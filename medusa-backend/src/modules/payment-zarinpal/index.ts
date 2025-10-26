@@ -1,11 +1,13 @@
-import { ModuleProvider, Modules } from '@medusajs/framework/utils'
+import { ModuleProviderExports } from '@medusajs/framework/types'
 import ZarinpalProviderService from './service'
 
 const services = [ZarinpalProviderService]
 
-export default ModuleProvider(Modules.PAYMENT, {
+const providerExport: ModuleProviderExports = {
   services,
-})
+}
+
+export default providerExport
 
 
 
