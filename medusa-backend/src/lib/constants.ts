@@ -110,3 +110,13 @@ export const WORKER_MODE =
 export const SHOULD_DISABLE_ADMIN = typeof process.env.MEDUSA_DISABLE_ADMIN !== 'undefined'
   ? process.env.MEDUSA_DISABLE_ADMIN === 'true'
   : process.env.NODE_ENV === 'production'
+
+/**
+ * Currency conversion rates for Zarinpal (IRR)
+ */
+export const CURRENCY_TO_IRR = {
+  'eur': 500000,  // 1 EUR = 500,000 IRR
+  'usd': 420000,  // 1 USD = 420,000 IRR
+  'irr': 1,       // 1 IRR = 1 IRR
+  'default': 42000 // Default conversion rate
+}

@@ -24,6 +24,7 @@ import type {
 } from "@medusajs/framework/types";
 import { AbstractPaymentProvider } from "@medusajs/utils";
 import { MedusaError, PaymentSessionStatus as PaymentStatus } from "@medusajs/framework/utils";
+import { CURRENCY_TO_IRR } from "../../lib/constants";
 import axios from "axios";
 
 // Local minimal fallbacks for provider-related types to avoid version/entrypoint mismatches (kept for internal use only)
@@ -165,20 +166,44 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       const { amount, currency_code, email, context: paymentContext, resource_id } = input as any;
       console.log("[ZARINPAL-initiatePayment] Extracted params:", { amount, currency_code, email, resource_id })
 
-      // Zarinpal works with Rials (IRR), use fixed 10000 Rials for testing
-      const amountInRials = 10000; // Fixed amount for testing
+      // Ensure resource_id is available (get from context if not provided)
+      const actualResourceId = resource_id || (paymentContext as any)?.resource_id || (paymentContext as any)?.cart_id;
+      console.log("[ZARINPAL-initiatePayment] Actual resource_id:", actualResourceId)
+
+      // Convert amount based on currency using predefined rates
+      const conversionRate = CURRENCY_TO_IRR[currency_code as keyof typeof CURRENCY_TO_IRR] || CURRENCY_TO_IRR.default;
+
+      if (currency_code === 'irr') {
+        // Already in Rials, use as is
+        amountInRials = amount;
+      } else {
+        // Convert from smallest currency unit (cents) to Rials
+        // amount is in smallest unit (e.g., 1000 cents = 10 EUR)
+        const amountInCurrency = amount / 100; // Convert to actual currency amount
+        amountInRials = Math.round(amountInCurrency * conversionRate);
+      }
+
+      // Ensure minimum amount (1,000 Rials)
+      amountInRials = Math.max(amountInRials, 1000);
+
+      console.log("[ZARINPAL-initiatePayment] Converted amount:", {
+        original: amount,
+        currency: currency_code,
+        conversionRate,
+        rials: amountInRials
+      })
 
       const metadata = paymentContext?.metadata || {};
       const description = metadata.description || this.description_;
       const mobile = metadata.mobile || "";
-      
+
       // Build callback URL with order/cart ID
-      const callbackUrl = `${this.callbackUrl_}?resource_id=${resource_id}`;
+      const callbackUrl = `${this.callbackUrl_}?resource_id=${actualResourceId}`;
 
       // Offline test mode: short-circuit without external call
       if (offline) {
         this.logger_.info(
-          `[zarinpal] initiatePayment(offline=true) | resource_id=${resource_id} amount_in_rials=${amountInRials}`
+          `[zarinpal] initiatePayment(offline=true) | resource_id=${actualResourceId} amount_in_rials=${amountInRials}`
         )
         const testAuthority = `TEST_${Date.now()}`
         const testUrl = `https://example.com/offline-pay?auth=${testAuthority}`
@@ -190,14 +215,14 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
             status: "pending",
             amount: amountInRials,
             currency_code: "IRR",
-            resource_id,
+            resource_id: actualResourceId,
           },
         } as any
       }
 
       // Request payment from Zarinpal (online mode)
       this.logger_.info(
-        `[zarinpal] initiatePayment(offline=false) | resource_id=${resource_id} amount_in_rials=${amountInRials}`
+        `[zarinpal] initiatePayment(offline=false) | resource_id=${actualResourceId} amount_in_rials=${amountInRials}`
       )
       const requestData = {
         merchant_id: this.merchantId_,
@@ -240,7 +265,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
           status: "pending",
           amount: amountInRials,
           currency_code: "IRR",
-          resource_id,
+          resource_id: actualResourceId,
         },
       } as any;
     } catch (error: any) {
@@ -277,12 +302,14 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       }
 
       // Verify payment with Zarinpal
+      // Use the amount that was originally sent to Zarinpal (should be in Rials)
+      const originalAmount = (input.data as any)?.amount || (input.context as any)?.amount;
       const verifyData = {
         merchant_id: this.merchantId_,
-        amount: (input.data as any)?.amount as number,
+        amount: originalAmount,
         authority: authority,
       };
-      this.logger_.info(`[zarinpal] verify -> /verify.json | authority=${authority} amount=${(input.data as any)?.amount}`)
+      this.logger_.info(`[zarinpal] verify -> /verify.json | authority=${authority} amount=${originalAmount}`)
 
       const response = await axios.post<ZarinpalVerifyResponse>(
         `${this.baseUrl_}/verify.json`,

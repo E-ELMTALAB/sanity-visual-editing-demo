@@ -61,7 +61,7 @@ export async function POST(
     }
 
     const zarinpalSession = paymentCollection.payment_sessions?.find(
-      (session: any) => session.provider_id === "zarinpal"
+      (session: any) => session.provider_id === "pp_zarinpal_zarinpal"
     );
 
     if (!zarinpalSession) {
