@@ -172,6 +172,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
 
       // Convert amount based on currency using predefined rates
       const conversionRate = CURRENCY_TO_IRR[currency_code as keyof typeof CURRENCY_TO_IRR] || CURRENCY_TO_IRR.default;
+      let amountInRials: number;
 
       if (currency_code === 'irr') {
         // Already in Rials, use as is
