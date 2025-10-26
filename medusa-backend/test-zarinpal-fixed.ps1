@@ -66,7 +66,8 @@ Write-Host "✅ Payment collection created: $PC_ID" -ForegroundColor Green;
 Write-Host "`n🚨 CRITICAL TEST: Creating Zarinpal payment session..." -ForegroundColor Magenta;
 Write-Host "This should now work with the fixes applied!" -ForegroundColor Magenta;
 try {
-    $psBody = @{ provider_id = 'zarinpal' } | ConvertTo-Json -Depth 5;
+    $psBody = @{ provider_id = 'pp_zarinpal_zarinpal' } | ConvertTo-Json -Depth 5;
+    Write-Host "Using provider_id: pp_zarinpal_zarinpal" -ForegroundColor Yellow;
     $ps = Invoke-RestMethod -Uri "$BASE/store/payment-collections/$PC_ID/payment-sessions" -Headers $HJSON -Method POST -Body $psBody;
     $PS_ID = $ps.payment_session.id; 
     $AUTHORITY = $ps.payment_session.data.authority; 

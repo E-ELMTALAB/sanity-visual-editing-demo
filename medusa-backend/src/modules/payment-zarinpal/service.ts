@@ -63,6 +63,10 @@ interface ZarinpalVerifyResponse {
   errors: any[];
 }
 
+type InjectedDependencies = {
+  logger: Logger
+}
+
 class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   static identifier = "zarinpal";
   static PROVIDER = "zarinpal";
@@ -71,18 +75,18 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   protected description_: string;
   protected callbackUrl_: string;
   protected baseUrl_: string;
-  protected logger: Logger;
+  protected logger_: Logger;
   protected offline_: boolean;
 
-  constructor(container: MedusaContainer, options: ZarinpalOptions) {
+  constructor({ logger }: InjectedDependencies, options: ZarinpalOptions) {
     console.log("[ZARINPAL-CONSTRUCTOR] Starting constructor...")
     console.log("[ZARINPAL-CONSTRUCTOR] Options received:", JSON.stringify(options, null, 2))
     
     try {
-      super(container as unknown as Record<string, unknown>, options);
+      super()
       console.log("[ZARINPAL-CONSTRUCTOR] Super constructor completed")
       
-      this.logger = container.resolve("logger");
+      this.logger_ = logger;
       console.log("[ZARINPAL-CONSTRUCTOR] Logger resolved")
 
       this.merchantId_ = options.merchant_id;
@@ -105,7 +109,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       // Do not throw here to avoid blocking provider registration
       if (!this.merchantId_ && !this.offline_) {
         try {
-          this.logger?.warn?.("[zarinpal] merchant_id missing; provider will operate in limited mode until configured.")
+          this.logger_?.warn?.("[zarinpal] merchant_id missing; provider will operate in limited mode until configured.")
           console.log("[ZARINPAL-CONSTRUCTOR] Warning: merchant_id missing")
         } catch {}
       }
@@ -123,27 +127,27 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   }
 
   async getPaymentStatus(input: GetPaymentStatusInput): Promise<GetPaymentStatusOutput> {
-    this.logger.info(
+    this.logger_.info(
       `[zarinpal] getPaymentStatus called | data.status=${(input.data as any)?.status}`
     )
     const status = (input.data as any)?.status as string;
     switch (status) {
       case "verified":
       case "paid":
-        this.logger.info(`[zarinpal] getPaymentStatus -> AUTHORIZED`)
+        this.logger_.info(`[zarinpal] getPaymentStatus -> AUTHORIZED`)
         return { status: PaymentStatus.AUTHORIZED } as any;
       case "pending":
-        this.logger.info(`[zarinpal] getPaymentStatus -> PENDING`)
+        this.logger_.info(`[zarinpal] getPaymentStatus -> PENDING`)
         return { status: PaymentStatus.PENDING } as any;
       case "canceled":
       case "cancelled":
-        this.logger.info(`[zarinpal] getPaymentStatus -> CANCELED`)
+        this.logger_.info(`[zarinpal] getPaymentStatus -> CANCELED`)
         return { status: PaymentStatus.CANCELED } as any;
       case "error":
-        this.logger.info(`[zarinpal] getPaymentStatus -> ERROR`)
+        this.logger_.info(`[zarinpal] getPaymentStatus -> ERROR`)
         return { status: PaymentStatus.ERROR } as any;
       default:
-        this.logger.info(`[zarinpal] getPaymentStatus -> DEFAULT(PENDING)`)
+        this.logger_.info(`[zarinpal] getPaymentStatus -> DEFAULT(PENDING)`)
         return { status: PaymentStatus.PENDING } as any;
     }
   }
@@ -171,7 +175,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
 
       // Offline test mode: short-circuit without external call
       if (offline) {
-        this.logger.info(
+        this.logger_.info(
           `[zarinpal] initiatePayment(offline=true) | resource_id=${resource_id} amount_in_rials=${amountInRials}`
         )
         const testAuthority = `TEST_${Date.now()}`
@@ -190,7 +194,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       }
 
       // Request payment from Zarinpal (online mode)
-      this.logger.info(
+      this.logger_.info(
         `[zarinpal] initiatePayment(offline=false) | resource_id=${resource_id} amount_in_rials=${amountInRials}`
       )
       const requestData = {
@@ -204,14 +208,14 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         },
       };
 
-      this.logger.info(`[zarinpal] request -> /request.json | amount=${amountInRials}`)
+      this.logger_.info(`[zarinpal] request -> /request.json | amount=${amountInRials}`)
 
       const response = await axios.post<ZarinpalRequestResponse>(
         `${this.baseUrl_}/request.json`,
         requestData
       );
 
-      this.logger.info(`[zarinpal] response <- code=${response.data?.data?.code} message=${response.data?.data?.message}`)
+      this.logger_.info(`[zarinpal] response <- code=${response.data?.data?.code} message=${response.data?.data?.message}`)
 
       if (response.data.data.code !== 100) {
         throw new MedusaError(
@@ -225,7 +229,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         ? `https://sandbox.zarinpal.com/pg/StartPay/${authority}`
         : `https://www.zarinpal.com/pg/StartPay/${authority}`;
 
-      this.logger.info(`[zarinpal] initiatePayment success | authority=${authority} url=${paymentUrl}`)
+      this.logger_.info(`[zarinpal] initiatePayment success | authority=${authority} url=${paymentUrl}`)
       return {
         id: authority as string,
         data: {
@@ -238,7 +242,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         },
       } as any;
     } catch (error: any) {
-      this.logger.error(`[zarinpal] initiatePayment error: ${error?.message || "unknown"}`)
+      this.logger_.error(`[zarinpal] initiatePayment error: ${error?.message || "unknown"}`)
       throw error;
     }
   }
@@ -248,7 +252,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       const offline = this.offline_ || process.env.ZARINPAL_OFFLINE === "true"
       const authority = (input.context as any)?.authority ?? (input.data as any)?.authority;
       const status = (input.context as any)?.Status ?? (input.context as any)?.status;
-      this.logger.info(`[zarinpal] authorizePayment called | authority=${authority} status=${status} offline=${offline}`)
+      this.logger_.info(`[zarinpal] authorizePayment called | authority=${authority} status=${status} offline=${offline}`)
 
       // Check if payment was successful
       if (status !== "OK") {
@@ -257,7 +261,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
 
       // Offline test mode: bypass external verify
       if (offline && typeof authority === "string" && authority.startsWith("TEST_")) {
-        this.logger.info(`[zarinpal] authorizePayment offline success | authority=${authority}`)
+        this.logger_.info(`[zarinpal] authorizePayment offline success | authority=${authority}`)
         return {
           status: PaymentStatus.AUTHORIZED as any,
           data: {
@@ -276,14 +280,14 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         amount: (input.data as any)?.amount as number,
         authority: authority,
       };
-      this.logger.info(`[zarinpal] verify -> /verify.json | authority=${authority} amount=${(input.data as any)?.amount}`)
+      this.logger_.info(`[zarinpal] verify -> /verify.json | authority=${authority} amount=${(input.data as any)?.amount}`)
 
       const response = await axios.post<ZarinpalVerifyResponse>(
         `${this.baseUrl_}/verify.json`,
         verifyData
       );
 
-      this.logger.info(`[zarinpal] verify response <- code=${response.data?.data?.code} message=${response.data?.data?.message}`)
+      this.logger_.info(`[zarinpal] verify response <- code=${response.data?.data?.code} message=${response.data?.data?.message}`)
       if (response.data.data.code !== 100 && response.data.data.code !== 101) {
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
@@ -291,7 +295,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         );
       }
 
-      this.logger.info(`[zarinpal] authorizePayment success | ref_id=${response.data.data.ref_id}`)
+      this.logger_.info(`[zarinpal] authorizePayment success | ref_id=${response.data.data.ref_id}`)
       return {
         status: PaymentStatus.AUTHORIZED as any,
         data: {
@@ -303,13 +307,13 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         },
       } as any;
     } catch (error: any) {
-      this.logger.error(`[zarinpal] authorizePayment error: ${error?.message || "unknown"}`)
+      this.logger_.error(`[zarinpal] authorizePayment error: ${error?.message || "unknown"}`)
       throw error;
     }
   }
 
   async cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput> {
-    this.logger.info(`[zarinpal] cancelPayment called`)
+    this.logger_.info(`[zarinpal] cancelPayment called`)
     return {
       data: {
         ...(input.data || {}),
@@ -320,7 +324,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   }
 
   async capturePayment(input: CapturePaymentInput): Promise<CapturePaymentOutput> {
-    this.logger.info(`[zarinpal] capturePayment called | status=${(input.data as any)?.status}`)
+    this.logger_.info(`[zarinpal] capturePayment called | status=${(input.data as any)?.status}`)
     // Zarinpal automatically captures on verification
     // This is just to mark it as captured in Medusa
     if ((input.data as any)?.status !== "verified") {
@@ -337,7 +341,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   }
 
   async deletePayment(input: DeletePaymentInput): Promise<DeletePaymentOutput> {
-    this.logger.info(`[zarinpal] deletePayment called`)
+    this.logger_.info(`[zarinpal] deletePayment called`)
     return {
       data: {
         ...(input.data || {}),
@@ -350,10 +354,10 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
     // Note: Zarinpal doesn't have an automatic refund API
     // Refunds must be done manually through Zarinpal dashboard
-    this.logger.warn(
+    this.logger_.warn(
       "Zarinpal refund requested - must be processed manually through Zarinpal dashboard"
     );
-    this.logger.info(`[zarinpal] refundPayment called | amount=${input.amount}`)
+    this.logger_.info(`[zarinpal] refundPayment called | amount=${input.amount}`)
 
     return {
       data: {
@@ -367,12 +371,12 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   }
 
   async retrievePayment(input: RetrievePaymentInput): Promise<RetrievePaymentOutput> {
-    this.logger.info(`[zarinpal] retrievePayment called`)
+    this.logger_.info(`[zarinpal] retrievePayment called`)
     return { data: input.data } as any;
   }
 
   async updatePayment(input: UpdatePaymentInput): Promise<UpdatePaymentOutput> {
-    this.logger.info(`[zarinpal] updatePayment called`)
+    this.logger_.info(`[zarinpal] updatePayment called`)
     return {
       data: {
         ...(input.data || {}),
