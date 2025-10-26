@@ -37,12 +37,12 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         ? (region as any).payment_providers
         : []
 
-      if (providers.includes("zarinpal")) {
+      if (providers.includes("pp_zarinpal_zarinpal")) {
         skipped.push(region.id)
         continue
       }
 
-      const nextProviders = [...providers, "zarinpal"]
+      const nextProviders = [...providers, "pp_zarinpal_zarinpal"]
       await regionModule.updateRegions(region.id, {
         payment_providers: nextProviders,
       })
