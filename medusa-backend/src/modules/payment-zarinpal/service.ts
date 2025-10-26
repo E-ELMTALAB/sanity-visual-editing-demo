@@ -92,16 +92,16 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       } as Logger
       console.log("[ZARINPAL-CONSTRUCTOR] Logger resolved")
 
-      this.merchantId_ = options.merchant_id;
-      this.sandbox_ = options.sandbox ?? false;
-      this.description_ = options.description ?? "Payment";
-      this.callbackUrl_ = options.callback_url ?? "";
+    this.merchantId_ = options.merchant_id;
+    this.sandbox_ = options.sandbox ?? false;
+    this.description_ = options.description ?? "Payment";
+    this.callbackUrl_ = options.callback_url ?? "";
       this.offline_ = options.offline ?? (process.env.ZARINPAL_OFFLINE === "true");
 
-      // Set the appropriate base URL based on sandbox mode
-      this.baseUrl_ = this.sandbox_
-        ? "https://sandbox.zarinpal.com/pg/v4/payment"
-        : "https://payment.zarinpal.com/pg/v4/payment";
+    // Set the appropriate base URL based on sandbox mode
+    this.baseUrl_ = this.sandbox_
+      ? "https://sandbox.zarinpal.com/pg/v4/payment"
+      : "https://payment.zarinpal.com/pg/v4/payment";
 
       console.log("[ZARINPAL-CONSTRUCTOR] Provider initialized successfully")
       console.log("[ZARINPAL-CONSTRUCTOR] Identifier:", ZarinpalProviderService.identifier)
@@ -227,6 +227,17 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       // Build callback URL with order/cart ID
       const callbackUrl = `${this.callbackUrl_}?resource_id=${actualResourceId}`;
 
+      // Build metadata object - only include non-empty values
+      const requestMetadata: any = {};
+      if (email && email.trim()) {
+        requestMetadata.email = email.trim();
+      }
+      if (mobile && mobile.trim()) {
+        requestMetadata.mobile = mobile.trim();
+      }
+
+      this.logger_.info(`[zarinpal] Cleaned metadata: ${JSON.stringify(requestMetadata, null, 2)}`)
+
       // Offline test mode: short-circuit without external call
       if (offline) {
         this.logger_.info(
@@ -251,16 +262,19 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       this.logger_.info(
         `[zarinpal] initiatePayment(offline=false) | resource_id=${actualResourceId} amount_in_rials=${amountInRials}`
       )
-      const requestData = {
+
+      // Only include metadata if it has values, or omit it entirely
+      const requestData: any = {
         merchant_id: this.merchantId_,
         amount: amountInRials,
         description: description,
         callback_url: callbackUrl,
-        metadata: {
-          email: email || "",
-          mobile: mobile,
-        },
       };
+
+      // Only add metadata if it has values
+      if (Object.keys(requestMetadata).length > 0) {
+        requestData.metadata = requestMetadata;
+      }
 
       // Detailed logging for debugging
       this.logger_.info(`[zarinpal] === REQUEST TO ZARINPAL API ===`)
@@ -273,8 +287,8 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
 
       try {
         this.logger_.info(`[zarinpal] Sending request to Zarinpal...`)
-        const response = await axios.post<ZarinpalRequestResponse>(
-          `${this.baseUrl_}/request.json`,
+      const response = await axios.post<ZarinpalRequestResponse>(
+        `${this.baseUrl_}/request.json`,
           requestData,
           {
             timeout: 30000, // 30 second timeout
@@ -292,28 +306,28 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         this.logger_.info(`[zarinpal] Response Message: ${response.data?.data?.message}`)
         this.logger_.info(`[zarinpal] Authority: ${response.data?.data?.authority}`)
 
-        if (response.data.data.code !== 100) {
+      if (response.data.data.code !== 100) {
           this.logger_.error(`[zarinpal] Zarinpal API Error - Code: ${response.data.data.code}, Message: ${response.data.data.message}`)
           throw new MedusaError(
             MedusaError.Types.INVALID_ARGUMENT,
             `Zarinpal API Error: ${response.data.data.message}`
           );
-        }
+      }
 
-        const authority = response.data.data.authority;
-        const paymentUrl = this.sandbox_
-          ? `https://sandbox.zarinpal.com/pg/StartPay/${authority}`
-          : `https://www.zarinpal.com/pg/StartPay/${authority}`;
+      const authority = response.data.data.authority;
+      const paymentUrl = this.sandbox_
+        ? `https://sandbox.zarinpal.com/pg/StartPay/${authority}`
+        : `https://www.zarinpal.com/pg/StartPay/${authority}`;
 
         this.logger_.info(`[zarinpal] initiatePayment success | authority=${authority} url=${paymentUrl}`)
-        return {
+      return {
           id: authority as string,
-          data: {
-            authority,
-            payment_url: paymentUrl,
-            status: "pending",
-            amount: amountInRials,
-            currency_code: "IRR",
+        data: {
+          authority,
+          payment_url: paymentUrl,
+          status: "pending",
+          amount: amountInRials,
+          currency_code: "IRR",
             resource_id: actualResourceId,
           },
         } as any;
@@ -378,8 +392,8 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       this.logger_.info(`[zarinpal] Sending verification request...`)
 
       try {
-        const response = await axios.post<ZarinpalVerifyResponse>(
-          `${this.baseUrl_}/verify.json`,
+      const response = await axios.post<ZarinpalVerifyResponse>(
+        `${this.baseUrl_}/verify.json`,
           verifyData,
           {
             timeout: 30000,
@@ -398,7 +412,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         this.logger_.info(`[zarinpal] Ref ID: ${response.data?.data?.ref_id}`)
         this.logger_.info(`[zarinpal] Card PAN: ${response.data?.data?.card_pan}`)
 
-        if (response.data.data.code !== 100 && response.data.data.code !== 101) {
+      if (response.data.data.code !== 100 && response.data.data.code !== 101) {
           this.logger_.error(`[zarinpal] Verification failed - Code: ${response.data.data.code}, Message: ${response.data.data.message}`)
           throw new MedusaError(
             MedusaError.Types.INVALID_ARGUMENT,
@@ -407,14 +421,14 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         }
 
         this.logger_.info(`[zarinpal] authorizePayment success | ref_id=${response.data.data.ref_id}`)
-        return {
+      return {
           status: PaymentStatus.AUTHORIZED as any,
           data: {
             ...(input.data || {}),
-            status: "verified",
-            ref_id: response.data.data.ref_id,
-            card_pan: response.data.data.card_pan,
-            verified_at: new Date().toISOString(),
+        status: "verified",
+        ref_id: response.data.data.ref_id,
+        card_pan: response.data.data.card_pan,
+        verified_at: new Date().toISOString(),
           },
         } as any;
       } catch (error: any) {
@@ -438,8 +452,8 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
     return {
       data: {
         ...(input.data || {}),
-        status: "cancelled",
-        cancelled_at: new Date().toISOString(),
+      status: "cancelled",
+      cancelled_at: new Date().toISOString(),
       },
     } as any;
   }
@@ -455,8 +469,8 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
     return {
       data: {
         ...(input.data || {}),
-        status: "paid",
-        captured_at: new Date().toISOString(),
+      status: "paid",
+      captured_at: new Date().toISOString(),
       },
     } as any;
   }
@@ -466,8 +480,8 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
     return {
       data: {
         ...(input.data || {}),
-        status: "cancelled",
-        deleted_at: new Date().toISOString(),
+      status: "cancelled",
+      deleted_at: new Date().toISOString(),
       },
     } as any;
   }
@@ -483,10 +497,10 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
     return {
       data: {
         ...(input.data || {}),
-        refund_requested: true,
+      refund_requested: true,
         refund_amount: input.amount,
-        refund_requested_at: new Date().toISOString(),
-        status: "refund_pending",
+      refund_requested_at: new Date().toISOString(),
+      status: "refund_pending",
       },
     } as any;
   }
