@@ -37,17 +37,27 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         ? (region as any).payment_providers
         : []
 
-      if (providers.includes("zarinpal")) {
+      console.log(`[enable-zarinpal] Region ${region.id} current providers:`, providers)
+
+      // Medusa creates provider IDs as "pp_{provider}_{id}" format
+      // We need to check for the full provider ID
+      const zarinpalProviderId = "pp_zarinpal_zarinpal"
+      
+      if (providers.includes(zarinpalProviderId)) {
+        console.log(`[enable-zarinpal] Region ${region.id} already has zarinpal provider`)
         skipped.push(region.id)
         continue
       }
 
-      const nextProviders = [...providers, "zarinpal"]
+      console.log(`[enable-zarinpal] Adding ${zarinpalProviderId} to region ${region.id}`)
+      const nextProviders = [...providers, zarinpalProviderId]
       await regionModule.updateRegions(region.id, {
         payment_providers: nextProviders,
       })
       updated.push(region.id)
     }
+
+    console.log(`[enable-zarinpal] Summary: updated=${updated.length}, skipped=${skipped.length}`)
 
     res.status(200).json({ success: true, updated, skipped })
   } catch (e: any) {
