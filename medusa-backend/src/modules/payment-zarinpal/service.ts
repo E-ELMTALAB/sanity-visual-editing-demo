@@ -75,30 +75,51 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   protected offline_: boolean;
 
   constructor(container: MedusaContainer, options: ZarinpalOptions) {
-    super(container as unknown as Record<string, unknown>, options);
-    this.logger = container.resolve("logger");
+    console.log("[ZARINPAL-CONSTRUCTOR] Starting constructor...")
+    console.log("[ZARINPAL-CONSTRUCTOR] Options received:", JSON.stringify(options, null, 2))
+    
+    try {
+      super(container as unknown as Record<string, unknown>, options);
+      console.log("[ZARINPAL-CONSTRUCTOR] Super constructor completed")
+      
+      this.logger = container.resolve("logger");
+      console.log("[ZARINPAL-CONSTRUCTOR] Logger resolved")
 
-    this.merchantId_ = options.merchant_id;
-    this.sandbox_ = options.sandbox ?? false;
-    this.description_ = options.description ?? "Payment";
-    this.callbackUrl_ = options.callback_url ?? "";
-    this.offline_ = options.offline ?? (process.env.ZARINPAL_OFFLINE === "true");
+      this.merchantId_ = options.merchant_id;
+      this.sandbox_ = options.sandbox ?? false;
+      this.description_ = options.description ?? "Payment";
+      this.callbackUrl_ = options.callback_url ?? "";
+      this.offline_ = options.offline ?? (process.env.ZARINPAL_OFFLINE === "true");
 
-    // Set the appropriate base URL based on sandbox mode
-    this.baseUrl_ = this.sandbox_
-      ? "https://sandbox.zarinpal.com/pg/v4/payment"
-      : "https://payment.zarinpal.com/pg/v4/payment";
+      // Set the appropriate base URL based on sandbox mode
+      this.baseUrl_ = this.sandbox_
+        ? "https://sandbox.zarinpal.com/pg/v4/payment"
+        : "https://payment.zarinpal.com/pg/v4/payment";
 
-    // Do not throw here to avoid blocking provider registration
-    if (!this.merchantId_ && !this.offline_) {
-      try {
-        this.logger?.warn?.("[zarinpal] merchant_id missing; provider will operate in limited mode until configured.")
-      } catch {}
+      console.log("[ZARINPAL-CONSTRUCTOR] Provider initialized successfully")
+      console.log("[ZARINPAL-CONSTRUCTOR] Identifier:", ZarinpalProviderService.identifier)
+      console.log("[ZARINPAL-CONSTRUCTOR] Base URL:", this.baseUrl_)
+      console.log("[ZARINPAL-CONSTRUCTOR] Offline mode:", this.offline_)
+      console.log("[ZARINPAL-CONSTRUCTOR] Has merchant ID:", !!this.merchantId_)
+
+      // Do not throw here to avoid blocking provider registration
+      if (!this.merchantId_ && !this.offline_) {
+        try {
+          this.logger?.warn?.("[zarinpal] merchant_id missing; provider will operate in limited mode until configured.")
+          console.log("[ZARINPAL-CONSTRUCTOR] Warning: merchant_id missing")
+        } catch {}
+      }
+    } catch (error: any) {
+      console.error("[ZARINPAL-CONSTRUCTOR] ERROR during construction:", error.message)
+      console.error("[ZARINPAL-CONSTRUCTOR] Error stack:", error.stack)
+      throw error
     }
   }
 
   static validateOptions(options: Record<any, any>): void {
+    console.log("[ZARINPAL-validateOptions] Called with options:", JSON.stringify(options, null, 2))
     // Be permissive to ensure provider registers; runtime methods will guard as needed
+    console.log("[ZARINPAL-validateOptions] Validation passed (permissive)")
   }
 
   async getPaymentStatus(input: GetPaymentStatusInput): Promise<GetPaymentStatusOutput> {
@@ -128,9 +149,15 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   }
 
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
+    console.log("[ZARINPAL-initiatePayment] Method called")
+    console.log("[ZARINPAL-initiatePayment] Input:", JSON.stringify(input, null, 2))
+    
     try {
       const offline = this.offline_ || process.env.ZARINPAL_OFFLINE === "true"
+      console.log("[ZARINPAL-initiatePayment] Offline mode:", offline)
+      
       const { amount, currency_code, email, context: paymentContext, resource_id } = input as any;
+      console.log("[ZARINPAL-initiatePayment] Extracted params:", { amount, currency_code, email, resource_id })
 
       // Zarinpal works with Rials (IRR), convert from smallest unit
       const amountInRials = Math.round(amount / 10); // Convert from smallest unit to Rials

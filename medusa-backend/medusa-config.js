@@ -31,6 +31,12 @@ import {
 
 loadEnv(process.env.NODE_ENV, process.cwd());
 
+console.log('[MEDUSA-CONFIG] Loading configuration...')
+console.log('[MEDUSA-CONFIG] ZARINPAL_MERCHANT_ID:', !!ZARINPAL_MERCHANT_ID ? 'SET' : 'NOT SET')
+console.log('[MEDUSA-CONFIG] ZARINPAL_OFFLINE:', ZARINPAL_OFFLINE)
+console.log('[MEDUSA-CONFIG] ZARINPAL_SANDBOX:', ZARINPAL_SANDBOX)
+console.log('[MEDUSA-CONFIG] ZARINPAL_CALLBACK_URL:', ZARINPAL_CALLBACK_URL)
+
 const medusaConfig = {
   projectConfig: {
     databaseUrl: DATABASE_URL,
@@ -122,33 +128,48 @@ const medusaConfig = {
         ]
       }
     }] : []),
-    ...((STRIPE_API_KEY && STRIPE_WEBHOOK_SECRET) || ZARINPAL_MERCHANT_ID || ZARINPAL_OFFLINE ? [{
-      key: Modules.PAYMENT,
-      resolve: '@medusajs/payment',
-      options: {
-        providers: [
-          ...(STRIPE_API_KEY && STRIPE_WEBHOOK_SECRET ? [{
-            resolve: '@medusajs/payment-stripe',
-            id: 'stripe',
-            options: {
-              apiKey: STRIPE_API_KEY,
-              webhookSecret: STRIPE_WEBHOOK_SECRET,
-            },
-          }] : []),
-          ...((ZARINPAL_MERCHANT_ID || ZARINPAL_OFFLINE) ? [{
-            resolve: './src/modules/payment-zarinpal',
-            id: 'zarinpal',
-            options: {
-              merchant_id: ZARINPAL_MERCHANT_ID,
-              sandbox: ZARINPAL_SANDBOX,
-              description: 'Payment for order',
-              callback_url: ZARINPAL_CALLBACK_URL || `${BACKEND_URL}/store/zarinpal/callback`,
-              offline: ZARINPAL_OFFLINE,
-            },
-          }] : []),
-        ],
-      },
-    }] : [])
+    ...((STRIPE_API_KEY && STRIPE_WEBHOOK_SECRET) || ZARINPAL_MERCHANT_ID || ZARINPAL_OFFLINE ? (() => {
+      console.log('[MEDUSA-CONFIG] Registering PAYMENT module...')
+      const paymentModule = {
+        key: Modules.PAYMENT,
+        resolve: '@medusajs/payment',
+        options: {
+          providers: [
+            ...(STRIPE_API_KEY && STRIPE_WEBHOOK_SECRET ? [{
+              resolve: '@medusajs/payment-stripe',
+              id: 'stripe',
+              options: {
+                apiKey: STRIPE_API_KEY,
+                webhookSecret: STRIPE_WEBHOOK_SECRET,
+              },
+            }] : []),
+            ...((ZARINPAL_MERCHANT_ID || ZARINPAL_OFFLINE) ? (() => {
+              console.log('[MEDUSA-CONFIG] Adding Zarinpal provider to payment module')
+              console.log('[MEDUSA-CONFIG] Zarinpal options:', {
+                merchant_id: ZARINPAL_MERCHANT_ID ? 'SET' : 'NOT SET',
+                sandbox: ZARINPAL_SANDBOX,
+                offline: ZARINPAL_OFFLINE,
+                callback_url: ZARINPAL_CALLBACK_URL || `${BACKEND_URL}/store/zarinpal/callback`
+              })
+              
+              return [{
+                resolve: './src/modules/payment-zarinpal',
+                id: 'zarinpal',
+                options: {
+                  merchant_id: ZARINPAL_MERCHANT_ID,
+                  sandbox: ZARINPAL_SANDBOX,
+                  description: 'Payment for order',
+                  callback_url: ZARINPAL_CALLBACK_URL || `${BACKEND_URL}/store/zarinpal/callback`,
+                  offline: ZARINPAL_OFFLINE,
+                },
+              }]
+            })() : []),
+          ],
+        },
+      }
+      console.log('[MEDUSA-CONFIG] Payment module configured with', paymentModule.options.providers.length, 'provider(s)')
+      return [paymentModule]
+    })() : [])
   ],
   plugins: [
   ...(MEILISEARCH_HOST && MEILISEARCH_ADMIN_KEY ? [{
@@ -175,5 +196,9 @@ const medusaConfig = {
     }] : [])
   ]
 };
+
+console.log('[MEDUSA-CONFIG] Configuration object created')
+console.log('[MEDUSA-CONFIG] Total modules:', medusaConfig.modules.length)
+console.log('[MEDUSA-CONFIG] Modules:', medusaConfig.modules.map(m => m.key))
 
 export default defineConfig(medusaConfig);
