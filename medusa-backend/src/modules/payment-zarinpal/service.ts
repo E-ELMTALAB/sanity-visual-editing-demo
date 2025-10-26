@@ -239,7 +239,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       // Detailed logging for debugging
       this.logger_.info(`[zarinpal] === REQUEST TO ZARINPAL API ===`)
       this.logger_.info(`[zarinpal] URL: ${this.baseUrl_}/request.json`)
-      this.logger_.info(`[zarinpal] Request Data:`, JSON.stringify(requestData, null, 2))
+      this.logger_.info(`[zarinpal] Request Data: ${JSON.stringify(requestData, null, 2)}`)
       this.logger_.info(`[zarinpal] Amount in Rials: ${amountInRials}`)
       this.logger_.info(`[zarinpal] Minimum required: 1000 Rials`)
       this.logger_.info(`[zarinpal] Maximum allowed: 500,000,000 Rials`)
@@ -261,7 +261,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
 
         this.logger_.info(`[zarinpal] === RESPONSE FROM ZARINPAL API ===`)
         this.logger_.info(`[zarinpal] Status Code: ${response.status}`)
-        this.logger_.info(`[zarinpal] Response Data:`, JSON.stringify(response.data, null, 2))
+        this.logger_.info(`[zarinpal] Response Data: ${JSON.stringify(response.data, null, 2)}`)
         this.logger_.info(`[zarinpal] Response Code: ${response.data?.data?.code}`)
         this.logger_.info(`[zarinpal] Response Message: ${response.data?.data?.message}`)
         this.logger_.info(`[zarinpal] Authority: ${response.data?.data?.authority}`)
@@ -296,14 +296,14 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         this.logger_.error(`[zarinpal] Error Type: ${error.constructor.name}`)
         this.logger_.error(`[zarinpal] Error Message: ${error.message}`)
         this.logger_.error(`[zarinpal] Error Status: ${error.response?.status}`)
-        this.logger_.error(`[zarinpal] Error Response Data:`, error.response?.data)
-        this.logger_.error(`[zarinpal] Error Response Headers:`, error.response?.headers)
+        this.logger_.error(`[zarinpal] Error Response Data: ${JSON.stringify(error.response?.data || {}, null, 2)}`)
+        this.logger_.error(`[zarinpal] Error Response Headers: ${JSON.stringify(error.response?.headers || {}, null, 2)}`)
         throw error;
       }
 
     } catch (error: any) {
       this.logger_.error(`[zarinpal] initiatePayment error: ${error?.message || "unknown"}`)
-      this.logger_.error(`[zarinpal] Error details:`, error)
+      this.logger_.error(`[zarinpal] Error details: ${JSON.stringify(error, null, 2)}`)
       throw error;
     }
   }
@@ -346,7 +346,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
 
       this.logger_.info(`[zarinpal] === PAYMENT VERIFICATION ===`)
       this.logger_.info(`[zarinpal] URL: ${this.baseUrl_}/verify.json`)
-      this.logger_.info(`[zarinpal] Verify Data:`, JSON.stringify(verifyData, null, 2))
+      this.logger_.info(`[zarinpal] Verify Data: ${JSON.stringify(verifyData, null, 2)}`)
       this.logger_.info(`[zarinpal] Authority: ${authority}`)
       this.logger_.info(`[zarinpal] Amount: ${originalAmount} Rials`)
       this.logger_.info(`[zarinpal] Sending verification request...`)
@@ -366,7 +366,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
 
         this.logger_.info(`[zarinpal] === VERIFICATION RESPONSE ===`)
         this.logger_.info(`[zarinpal] Status Code: ${response.status}`)
-        this.logger_.info(`[zarinpal] Response Data:`, JSON.stringify(response.data, null, 2))
+        this.logger_.info(`[zarinpal] Response Data: ${JSON.stringify(response.data, null, 2)}`)
         this.logger_.info(`[zarinpal] Response Code: ${response.data?.data?.code}`)
         this.logger_.info(`[zarinpal] Response Message: ${response.data?.data?.message}`)
         this.logger_.info(`[zarinpal] Ref ID: ${response.data?.data?.ref_id}`)
@@ -396,8 +396,8 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         this.logger_.error(`[zarinpal] Error Type: ${error.constructor.name}`)
         this.logger_.error(`[zarinpal] Error Message: ${error.message}`)
         this.logger_.error(`[zarinpal] Error Status: ${error.response?.status}`)
-        this.logger_.error(`[zarinpal] Error Response Data:`, error.response?.data)
-        this.logger_.error(`[zarinpal] Error Response Headers:`, error.response?.headers)
+        this.logger_.error(`[zarinpal] Error Response Data: ${JSON.stringify(error.response?.data || {}, null, 2)}`)
+        this.logger_.error(`[zarinpal] Error Response Headers: ${JSON.stringify(error.response?.headers || {}, null, 2)}`)
         throw error;
       }
 
