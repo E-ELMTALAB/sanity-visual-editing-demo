@@ -167,12 +167,26 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       console.log("[ZARINPAL-initiatePayment] Extracted params:", { amount, currency_code, email, resource_id })
 
       // Ensure resource_id is available (get from context if not provided)
-      const actualResourceId = resource_id || (paymentContext as any)?.resource_id || (paymentContext as any)?.cart_id;
+      const actualResourceId = resource_id ||
+        (paymentContext as any)?.resource_id ||
+        (paymentContext as any)?.cart_id ||
+        (input as any)?.resource_id ||
+        (input as any)?.cart_id ||
+        `cart_${Date.now()}`; // fallback
+
+      console.log("[ZARINPAL-initiatePayment] Input context:", JSON.stringify(paymentContext, null, 2))
       console.log("[ZARINPAL-initiatePayment] Actual resource_id:", actualResourceId)
 
       // Convert amount based on currency using predefined rates
       const conversionRate = CURRENCY_TO_IRR[currency_code as keyof typeof CURRENCY_TO_IRR] || CURRENCY_TO_IRR.default;
       let amountInRials: number;
+
+      console.log("[ZARINPAL-initiatePayment] Conversion details:", {
+        originalAmount: amount,
+        currency: currency_code,
+        conversionRate: conversionRate,
+        amountInCurrency: amount / 100
+      })
 
       if (currency_code === 'irr') {
         // Already in Rials, use as is
@@ -182,16 +196,28 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         // amount is in smallest unit (e.g., 1000 cents = 10 EUR)
         const amountInCurrency = amount / 100; // Convert to actual currency amount
         amountInRials = Math.round(amountInCurrency * conversionRate);
+
+        // For testing, ensure minimum realistic amount (100,000 Rials = ~0.20 EUR)
+        if (amountInRials < 100000) {
+          console.log("[ZARINPAL-initiatePayment] Amount too small for testing, using minimum:", amountInRials)
+          amountInRials = 100000; // 100,000 Rials minimum for testing
+        }
       }
 
-      // Ensure minimum amount (1,000 Rials)
+      // Ensure minimum amount (1,000 Rials) and maximum (500M Rials)
       amountInRials = Math.max(amountInRials, 1000);
+      amountInRials = Math.min(amountInRials, 500000000);
 
-      console.log("[ZARINPAL-initiatePayment] Converted amount:", {
+      console.log("[ZARINPAL-initiatePayment] Final converted amount:", {
         original: amount,
         currency: currency_code,
         conversionRate,
-        rials: amountInRials
+        finalRials: amountInRials,
+        validation: {
+          min: amountInRials >= 1000,
+          max: amountInRials <= 500000000,
+          valid: amountInRials >= 1000 && amountInRials <= 500000000
+        }
       })
 
       const metadata = paymentContext?.metadata || {};
