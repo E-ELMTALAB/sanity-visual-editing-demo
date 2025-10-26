@@ -83,7 +83,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
     console.log("[ZARINPAL-CONSTRUCTOR] Options received:", JSON.stringify(options, null, 2))
     
     try {
-      super()
+      super({ logger } as any, options)
       console.log("[ZARINPAL-CONSTRUCTOR] Super constructor completed")
       
       this.logger_ = logger;
