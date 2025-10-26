@@ -236,41 +236,74 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         },
       };
 
-      this.logger_.info(`[zarinpal] request -> /request.json | amount=${amountInRials}`)
+      // Detailed logging for debugging
+      this.logger_.info(`[zarinpal] === REQUEST TO ZARINPAL API ===`)
+      this.logger_.info(`[zarinpal] URL: ${this.baseUrl_}/request.json`)
+      this.logger_.info(`[zarinpal] Request Data:`, JSON.stringify(requestData, null, 2))
+      this.logger_.info(`[zarinpal] Amount in Rials: ${amountInRials}`)
+      this.logger_.info(`[zarinpal] Minimum required: 1000 Rials`)
+      this.logger_.info(`[zarinpal] Maximum allowed: 500,000,000 Rials`)
+      this.logger_.info(`[zarinpal] Amount validation: ${amountInRials >= 1000 && amountInRials <= 500000000 ? 'VALID' : 'INVALID'}`)
 
-      const response = await axios.post<ZarinpalRequestResponse>(
-        `${this.baseUrl_}/request.json`,
-        requestData
-      );
-
-      this.logger_.info(`[zarinpal] response <- code=${response.data?.data?.code} message=${response.data?.data?.message}`)
-
-      if (response.data.data.code !== 100) {
-        throw new MedusaError(
-          MedusaError.Types.INVALID_ARGUMENT,
-          response.data.data.message || "Payment request failed"
+      try {
+        this.logger_.info(`[zarinpal] Sending request to Zarinpal...`)
+        const response = await axios.post<ZarinpalRequestResponse>(
+          `${this.baseUrl_}/request.json`,
+          requestData,
+          {
+            timeout: 30000, // 30 second timeout
+            headers: {
+              'Content-Type': 'application/json',
+              'User-Agent': 'Medusa-Zarinpal-Integration/1.0'
+            }
+          }
         );
+
+        this.logger_.info(`[zarinpal] === RESPONSE FROM ZARINPAL API ===`)
+        this.logger_.info(`[zarinpal] Status Code: ${response.status}`)
+        this.logger_.info(`[zarinpal] Response Data:`, JSON.stringify(response.data, null, 2))
+        this.logger_.info(`[zarinpal] Response Code: ${response.data?.data?.code}`)
+        this.logger_.info(`[zarinpal] Response Message: ${response.data?.data?.message}`)
+        this.logger_.info(`[zarinpal] Authority: ${response.data?.data?.authority}`)
+
+        if (response.data.data.code !== 100) {
+          this.logger_.error(`[zarinpal] Zarinpal API Error - Code: ${response.data.data.code}, Message: ${response.data.data.message}`)
+          throw new MedusaError(
+            MedusaError.Types.INVALID_ARGUMENT,
+            `Zarinpal API Error: ${response.data.data.message}`
+          );
+        }
+
+        const authority = response.data.data.authority;
+        const paymentUrl = this.sandbox_
+          ? `https://sandbox.zarinpal.com/pg/StartPay/${authority}`
+          : `https://www.zarinpal.com/pg/StartPay/${authority}`;
+
+        this.logger_.info(`[zarinpal] initiatePayment success | authority=${authority} url=${paymentUrl}`)
+        return {
+          id: authority as string,
+          data: {
+            authority,
+            payment_url: paymentUrl,
+            status: "pending",
+            amount: amountInRials,
+            currency_code: "IRR",
+            resource_id: actualResourceId,
+          },
+        } as any;
+      } catch (error: any) {
+        this.logger_.error(`[zarinpal] === ZARINPAL API CALL FAILED ===`)
+        this.logger_.error(`[zarinpal] Error Type: ${error.constructor.name}`)
+        this.logger_.error(`[zarinpal] Error Message: ${error.message}`)
+        this.logger_.error(`[zarinpal] Error Status: ${error.response?.status}`)
+        this.logger_.error(`[zarinpal] Error Response Data:`, error.response?.data)
+        this.logger_.error(`[zarinpal] Error Response Headers:`, error.response?.headers)
+        throw error;
       }
 
-      const authority = response.data.data.authority;
-      const paymentUrl = this.sandbox_
-        ? `https://sandbox.zarinpal.com/pg/StartPay/${authority}`
-        : `https://www.zarinpal.com/pg/StartPay/${authority}`;
-
-      this.logger_.info(`[zarinpal] initiatePayment success | authority=${authority} url=${paymentUrl}`)
-      return {
-        id: authority as string,
-        data: {
-          authority,
-          payment_url: paymentUrl,
-          status: "pending",
-          amount: amountInRials,
-          currency_code: "IRR",
-          resource_id: actualResourceId,
-        },
-      } as any;
     } catch (error: any) {
       this.logger_.error(`[zarinpal] initiatePayment error: ${error?.message || "unknown"}`)
+      this.logger_.error(`[zarinpal] Error details:`, error)
       throw error;
     }
   }
@@ -310,32 +343,64 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         amount: originalAmount,
         authority: authority,
       };
-      this.logger_.info(`[zarinpal] verify -> /verify.json | authority=${authority} amount=${originalAmount}`)
 
-      const response = await axios.post<ZarinpalVerifyResponse>(
-        `${this.baseUrl_}/verify.json`,
-        verifyData
-      );
+      this.logger_.info(`[zarinpal] === PAYMENT VERIFICATION ===`)
+      this.logger_.info(`[zarinpal] URL: ${this.baseUrl_}/verify.json`)
+      this.logger_.info(`[zarinpal] Verify Data:`, JSON.stringify(verifyData, null, 2))
+      this.logger_.info(`[zarinpal] Authority: ${authority}`)
+      this.logger_.info(`[zarinpal] Amount: ${originalAmount} Rials`)
+      this.logger_.info(`[zarinpal] Sending verification request...`)
 
-      this.logger_.info(`[zarinpal] verify response <- code=${response.data?.data?.code} message=${response.data?.data?.message}`)
-      if (response.data.data.code !== 100 && response.data.data.code !== 101) {
-        throw new MedusaError(
-          MedusaError.Types.INVALID_ARGUMENT,
-          response.data.data.message || "Payment verification failed"
+      try {
+        const response = await axios.post<ZarinpalVerifyResponse>(
+          `${this.baseUrl_}/verify.json`,
+          verifyData,
+          {
+            timeout: 30000,
+            headers: {
+              'Content-Type': 'application/json',
+              'User-Agent': 'Medusa-Zarinpal-Integration/1.0'
+            }
+          }
         );
+
+        this.logger_.info(`[zarinpal] === VERIFICATION RESPONSE ===`)
+        this.logger_.info(`[zarinpal] Status Code: ${response.status}`)
+        this.logger_.info(`[zarinpal] Response Data:`, JSON.stringify(response.data, null, 2))
+        this.logger_.info(`[zarinpal] Response Code: ${response.data?.data?.code}`)
+        this.logger_.info(`[zarinpal] Response Message: ${response.data?.data?.message}`)
+        this.logger_.info(`[zarinpal] Ref ID: ${response.data?.data?.ref_id}`)
+        this.logger_.info(`[zarinpal] Card PAN: ${response.data?.data?.card_pan}`)
+
+        if (response.data.data.code !== 100 && response.data.data.code !== 101) {
+          this.logger_.error(`[zarinpal] Verification failed - Code: ${response.data.data.code}, Message: ${response.data.data.message}`)
+          throw new MedusaError(
+            MedusaError.Types.INVALID_ARGUMENT,
+            response.data.data.message || "Payment verification failed"
+          );
+        }
+
+        this.logger_.info(`[zarinpal] authorizePayment success | ref_id=${response.data.data.ref_id}`)
+        return {
+          status: PaymentStatus.AUTHORIZED as any,
+          data: {
+            ...(input.data || {}),
+            status: "verified",
+            ref_id: response.data.data.ref_id,
+            card_pan: response.data.data.card_pan,
+            verified_at: new Date().toISOString(),
+          },
+        } as any;
+      } catch (error: any) {
+        this.logger_.error(`[zarinpal] === VERIFICATION API CALL FAILED ===`)
+        this.logger_.error(`[zarinpal] Error Type: ${error.constructor.name}`)
+        this.logger_.error(`[zarinpal] Error Message: ${error.message}`)
+        this.logger_.error(`[zarinpal] Error Status: ${error.response?.status}`)
+        this.logger_.error(`[zarinpal] Error Response Data:`, error.response?.data)
+        this.logger_.error(`[zarinpal] Error Response Headers:`, error.response?.headers)
+        throw error;
       }
 
-      this.logger_.info(`[zarinpal] authorizePayment success | ref_id=${response.data.data.ref_id}`)
-      return {
-        status: PaymentStatus.AUTHORIZED as any,
-        data: {
-          ...(input.data || {}),
-          status: "verified",
-          ref_id: response.data.data.ref_id,
-          card_pan: response.data.data.card_pan,
-          verified_at: new Date().toISOString(),
-        },
-      } as any;
     } catch (error: any) {
       this.logger_.error(`[zarinpal] authorizePayment error: ${error?.message || "unknown"}`)
       throw error;
