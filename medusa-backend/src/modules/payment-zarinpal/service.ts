@@ -63,10 +63,6 @@ interface ZarinpalVerifyResponse {
   errors: any[];
 }
 
-type InjectedDependencies = {
-  logger: Logger
-}
-
 class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   static identifier = "zarinpal";
   static PROVIDER = "zarinpal";
@@ -78,15 +74,21 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
   protected logger_: Logger;
   protected offline_: boolean;
 
-  constructor({ logger }: InjectedDependencies, options: ZarinpalOptions) {
+  constructor(cradle: Record<string, unknown>, options: ZarinpalOptions) {
     console.log("[ZARINPAL-CONSTRUCTOR] Starting constructor...")
     console.log("[ZARINPAL-CONSTRUCTOR] Options received:", JSON.stringify(options, null, 2))
     
     try {
-      super({ logger } as any, options)
+      super(cradle, options)
       console.log("[ZARINPAL-CONSTRUCTOR] Super constructor completed")
       
-      this.logger_ = logger;
+      // Get logger from cradle if available, otherwise create a dummy logger
+      this.logger_ = (cradle as any).logger || {
+        info: (...args: any[]) => console.log("[ZARINPAL-LOG]", ...args),
+        warn: (...args: any[]) => console.warn("[ZARINPAL-LOG]", ...args),
+        error: (...args: any[]) => console.error("[ZARINPAL-LOG]", ...args),
+        debug: (...args: any[]) => console.debug("[ZARINPAL-LOG]", ...args),
+      } as Logger
       console.log("[ZARINPAL-CONSTRUCTOR] Logger resolved")
 
       this.merchantId_ = options.merchant_id;
