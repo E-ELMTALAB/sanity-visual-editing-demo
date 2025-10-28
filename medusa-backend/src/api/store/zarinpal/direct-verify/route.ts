@@ -14,6 +14,11 @@ import { IPaymentModuleService } from "@medusajs/framework/types";
  * }
  */
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
   try {
     const body = req.body as {
       authority: string;
@@ -109,4 +114,12 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       stack: process.env.NODE_ENV === "development" ? error.stack : undefined
     });
   }
+};
+
+// Handle preflight requests
+export const OPTIONS = async (req: MedusaRequest, res: MedusaResponse) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.status(200).end();
 };

@@ -6,6 +6,11 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework";
  * Simple endpoint to test CORS configuration
  */
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
   try {
     res.status(200).json({
       success: true,
@@ -23,6 +28,9 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 };
 
 export const OPTIONS = async (req: MedusaRequest, res: MedusaResponse) => {
-  // Handle preflight requests
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.status(200).end();
 };
