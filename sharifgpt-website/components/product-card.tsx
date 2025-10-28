@@ -9,9 +9,9 @@ interface ProductCardProps {
   id: string | number
   title: string
   description?: string
-  price: number
-  originalPrice?: number
-  discountPercentage?: number
+  price: number | null | undefined
+  originalPrice?: number | null | undefined
+  discountPercentage?: number | null | undefined
   image?: string
   category?: string
   rating?: number
@@ -36,7 +36,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   badge,
   href,
 }) => {
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | null | undefined) => {
+    if (!price || isNaN(price)) return "0"
     return price.toLocaleString("fa-IR")
   }
 
@@ -80,7 +81,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <div className="text-blue-600 text-base sm:text-xl font-bold">
             {formatPrice(price)} <span className="text-xs sm:text-sm text-gray-500">تومان</span>
           </div>
-          {originalPrice && originalPrice > price && (
+          {originalPrice && price && originalPrice > price && (
             <div className="text-xs text-gray-400 line-through">{formatPrice(originalPrice)} تومان</div>
           )}
         </div>
