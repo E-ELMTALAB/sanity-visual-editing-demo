@@ -1,7 +1,7 @@
 {
-  "installCommand": "npm install",
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "outputDirectory": ".next"
+  "installCommand": "cd sharifgpt-website && npm install",
+  "buildCommand": "cd sharifgpt-website && npm run build",
+  "devCommand": "cd sharifgpt-website && npm run dev",
+  "outputDirectory": "sharifgpt-website/.next"
 }
 
