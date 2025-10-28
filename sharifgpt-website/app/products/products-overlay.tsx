@@ -1,6 +1,6 @@
 "use client"
 
-import { useQuery } from 'next-sanity'
+import { useLiveQuery } from 'next-sanity/preview'
 import { getClient } from '@/lib/sanity.client'
 import { productsListQuery, faqsByPageQuery } from '@/lib/sanity.queries'
 
@@ -12,16 +12,14 @@ interface ProductsOverlayProps {
 export default function ProductsOverlay({ productsData, faqsData }: ProductsOverlayProps) {
   const client = getClient()
   
-  const { data: liveProductsData } = useQuery(productsListQuery, {}, { 
+  const [liveProductsData] = useLiveQuery(productsListQuery, {}, { 
     client,
-    initialData: productsData,
-    enabled: true 
+    initialData: productsData
   })
   
-  const { data: liveFaqsData } = useQuery(faqsByPageQuery, { pageLocation: 'products' }, { 
+  const [liveFaqsData] = useLiveQuery(faqsByPageQuery, { pageLocation: 'products' }, { 
     client,
-    initialData: faqsData,
-    enabled: true 
+    initialData: faqsData
   })
 
   return null // This component only provides live data updates
