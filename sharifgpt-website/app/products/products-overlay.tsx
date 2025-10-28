@@ -1,6 +1,6 @@
 "use client"
 
-import { useQuery } from '@sanity.io/client'
+import { useQuery } from '@sanity/io/client'
 import { productsListQuery, faqsByPageQuery } from '@/lib/sanity.queries'
 
 interface ProductsOverlayProps {
