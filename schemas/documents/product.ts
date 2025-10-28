@@ -1,5 +1,5 @@
 import { defineField, defineType } from 'sanity'
-import productOption from '../schemas/objects/productOption'
+import productOption from '../objects/productOption'
 
 export default defineType({
   name: 'product',
