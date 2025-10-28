@@ -4,7 +4,9 @@
  */
 
 import { useState, useCallback } from 'react'
-import { paymentAPI } from '@/lib/medusa-api'
+import { regionAPI, cartAPI, paymentAPI } from '@/lib/medusa-api'
+import { convertCartItemsToMedusa } from '@/lib/medusa-product-helper'
+import { MedusaAPIError } from '@/lib/medusa-api'
 
 export interface CustomerInfo {
   firstName: string
@@ -60,74 +62,146 @@ export function useZarinpalPayment() {
     setStatus({ loading: true, error: null, cartId: null })
 
     try {
-      console.log('Starting payment initiation using test endpoint...')
-      console.log('Cart items:', cartItems)
-      console.log('Customer info:', customerInfo)
-      console.log('Additional services:', additionalServices)
+      // Step 1: Get IRR region
+      console.log('Getting IRR region...')
+      const irrRegion = await regionAPI.findIRRRegion()
+      console.log('IRR region found:', irrRegion.id)
 
-      // Calculate total amount including additional services
-      const cartTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-      let additionalTotal = 0
-      if (additionalServices) {
-        if (additionalServices.insurance) additionalTotal += 50000
-        if (additionalServices.warranty) additionalTotal += 75000
-        if (additionalServices.priority) additionalTotal += 100000
-      }
-      const totalAmount = cartTotal + additionalTotal
-
-      console.log('Total amount calculated:', totalAmount)
-
-      // Prepare items for the simple payment endpoint
-      const paymentItems = cartItems.map(item => ({
-        id: item.id,
-        title: item.title,
-        price: item.price,
-        quantity: item.quantity,
-      }))
-
-      // Use the simple payment endpoint that doesn't require publishable key
-      const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'
-      const response = await fetch(`${MEDUSA_BACKEND_URL}/store/simple-payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Step 2: Create Medusa cart
+      console.log('Creating Medusa cart...')
+      const { cart } = await cartAPI.create({
+        region_id: irrRegion.id,
+        email: customerInfo.email,
+        metadata: {
+          customer_first_name: customerInfo.firstName,
+          customer_last_name: customerInfo.lastName,
+          customer_phone: customerInfo.phone,
+          source: 'frontend',
         },
-        body: JSON.stringify({
-          items: paymentItems,
+      })
+      console.log('Cart created:', cart.id)
+
+      // Step 3: Convert cart items to Medusa format and add to cart
+      console.log('Converting cart items...')
+      const medusaLineItems = await convertCartItemsToMedusa(cartItems)
+      console.log('Converted line items:', medusaLineItems.length)
+
+      // Add each line item to the cart
+      for (const lineItem of medusaLineItems) {
+        await cartAPI.addLineItem(cart.id, lineItem)
+      }
+
+      // Add additional services as line items if selected
+      if (additionalServices) {
+        const serviceItems = []
+        
+        if (additionalServices.insurance) {
+          serviceItems.push({
+            variant_id: 'service-insurance', // This would need to be created in Medusa
+            quantity: 1,
+            metadata: { service_type: 'insurance', source: 'frontend' },
+          })
+        }
+        
+        if (additionalServices.warranty) {
+          serviceItems.push({
+            variant_id: 'service-warranty',
+            quantity: 1,
+            metadata: { service_type: 'warranty', source: 'frontend' },
+          })
+        }
+        
+        if (additionalServices.priority) {
+          serviceItems.push({
+            variant_id: 'service-priority',
+            quantity: 1,
+            metadata: { service_type: 'priority', source: 'frontend' },
+          })
+        }
+
+        // Add service items to cart
+        for (const serviceItem of serviceItems) {
+          try {
+            await cartAPI.addLineItem(cart.id, serviceItem)
+          } catch (error) {
+            console.warn('Failed to add service item:', error)
+            // Continue without the service item
+          }
+        }
+      }
+
+      // Step 4: Retrieve updated cart to get final total
+      console.log('Retrieving updated cart...')
+      const { cart: updatedCart } = await cartAPI.retrieve(cart.id)
+      const totalAmount = updatedCart.total || 0
+      console.log('Cart total:', totalAmount)
+
+      // Step 5: Create payment collection
+      console.log('Creating payment collection...')
+      const { payment_collection } = await paymentAPI.createCollection({
+        cart_id: cart.id,
+        region_id: irrRegion.id,
+        currency_code: 'irr',
+        amount: totalAmount,
+        metadata: {
           customer_email: customerInfo.email,
           customer_phone: customerInfo.phone,
-        }),
+          source: 'frontend',
+        },
       })
+      console.log('Payment collection created:', payment_collection.id)
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
-      }
+      // Step 6: Create Zarinpal payment session
+      console.log('Creating Zarinpal payment session...')
+      const { payment_session } = await paymentAPI.createSession(
+        payment_collection.id,
+        {
+          provider_id: 'pp_zarinpal_zarinpal',
+          amount: totalAmount,
+          currency_code: 'irr',
+          metadata: {
+            customer_email: customerInfo.email,
+            customer_phone: customerInfo.phone,
+            cart_id: cart.id,
+            source: 'frontend',
+          },
+        }
+      )
+      console.log('Payment session created:', payment_session.id)
 
-      const result = await response.json()
-      console.log('Payment initiated successfully:', result)
-
-      if (!result.success || !result.payment?.payment_url) {
-        throw new Error(result.error || 'Payment URL not found in response')
+      // Step 7: Extract payment URL from session data
+      const sessionData = payment_session.data
+      if (!sessionData || !sessionData.payment_url) {
+        throw new Error('Payment URL not found in session data')
       }
 
       setStatus({
         loading: false,
         error: null,
-        cartId: result.payment.resource_id,
+        cartId: cart.id,
       })
 
       return {
         success: true,
-        paymentUrl: result.payment.payment_url,
-        cartId: result.payment.resource_id,
+        paymentUrl: sessionData.payment_url,
+        cartId: cart.id,
       }
     } catch (error) {
       console.error('Payment initiation failed:', error)
       
       let errorMessage = 'خطا در شروع فرآیند پرداخت'
       
-      if (error instanceof Error) {
+      if (error instanceof MedusaAPIError) {
+        if (error.status === 0) {
+          errorMessage = 'خطا در اتصال به سرور. لطفاً اتصال اینترنت خود را بررسی کنید.'
+        } else if (error.status === 400) {
+          errorMessage = 'اطلاعات ارسالی نامعتبر است. لطفاً دوباره تلاش کنید.'
+        } else if (error.status === 404) {
+          errorMessage = 'منطقه IRR یافت نشد. لطفاً با پشتیبانی تماس بگیرید.'
+        } else {
+          errorMessage = `خطای سرور: ${error.message}`
+        }
+      } else if (error instanceof Error) {
         errorMessage = error.message
       }
 
