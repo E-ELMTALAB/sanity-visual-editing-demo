@@ -180,9 +180,9 @@ export default function CheckoutPage() {
         upsells
       )
 
-      if (result.success && result.paymentUrl && result.cartId) {
-        // Store Medusa cart ID
-        setMedusaCartId(result.cartId)
+      if (result.success && result.paymentUrl && result.resourceId) {
+        // Store Medusa resource ID
+        setMedusaCartId(result.resourceId)
         
         // Redirect to Zarinpal payment gateway
         window.location.href = result.paymentUrl

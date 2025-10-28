@@ -33,20 +33,20 @@ export default function PaymentCallbackPage() {
         // Extract parameters from URL
         const authority = searchParams.get('Authority')
         const status = searchParams.get('Status')
-        const cartId = searchParams.get('cart_id') || medusaCartId
+        const resourceId = searchParams.get('resource_id') || medusaCartId
 
         if (!authority) {
           throw new Error('Authority parameter is missing')
         }
 
-        if (!cartId) {
-          throw new Error('Cart ID is missing')
+        if (!resourceId) {
+          throw new Error('Resource ID is missing')
         }
 
-        console.log('Processing payment callback:', { authority, status, cartId })
+        console.log('Processing payment callback:', { authority, status, resourceId })
 
         // Verify payment with Medusa backend
-        const verificationResult = await verifyPayment(authority, status || '', cartId)
+        const verificationResult = await verifyPayment(authority, status || '', resourceId)
 
         if (verificationResult.success) {
           setResult({
