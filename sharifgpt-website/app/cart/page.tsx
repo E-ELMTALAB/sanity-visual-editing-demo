@@ -13,6 +13,9 @@ export default function CartPage() {
   const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false)
   const [user, setUser] = useState({ name: "مهدی", email: "mehdi@example.com" })
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false) // Added mobile menu state to match home page
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [customerEmail, setCustomerEmail] = useState("")
+  const [customerPhone, setCustomerPhone] = useState("")
 
   const handleProfileClick = () => {
     if (isAuthenticated) {
@@ -26,6 +29,90 @@ export default function CartPage() {
     setIsAuthenticated(false)
     setIsProfileDropdownOpen(false)
     setUser({ name: "", email: "" })
+  }
+
+  const handleCheckout = async () => {
+    if (state.items.length === 0) {
+      alert("سبد خرید شما خالی است")
+      return
+    }
+
+    if (!customerEmail.trim()) {
+      alert("لطفاً ایمیل خود را وارد کنید")
+      return
+    }
+
+    if (!customerPhone.trim()) {
+      alert("لطفاً شماره تلفن خود را وارد کنید")
+      return
+    }
+
+    setIsProcessing(true)
+
+    try {
+      // Step 1: Create cart in Medusa
+      const cartResponse = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'}/store/cart/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items: state.items.map(item => ({
+            id: item.id,
+            title: item.title,
+            price: item.price,
+            image: item.image,
+            quantity: item.quantity,
+            selectedOption: item.selectedOption
+          })),
+          customer_email: customerEmail,
+          customer_phone: customerPhone
+        })
+      })
+
+      const cartData = await cartResponse.json()
+
+      if (!cartData.success) {
+        throw new Error(cartData.error || 'خطا در ایجاد سبد خرید')
+      }
+
+      // Step 2: Initiate payment
+      const paymentResponse = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'}/store/cart/payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cart_id: cartData.cart.id,
+          customer_email: customerEmail,
+          customer_phone: customerPhone
+        })
+      })
+
+      const paymentData = await paymentResponse.json()
+
+      if (!paymentData.success) {
+        throw new Error(paymentData.error || 'خطا در شروع پرداخت')
+      }
+
+      // Step 3: Redirect to payment gateway
+      if (paymentData.payment.payment_url) {
+        // Store cart ID in localStorage for verification after payment
+        localStorage.setItem('pending_cart_id', cartData.cart.id)
+        localStorage.setItem('pending_payment_authority', paymentData.payment.authority)
+        
+        // Redirect to Zarinpal payment gateway
+        window.location.href = paymentData.payment.payment_url
+      } else {
+        throw new Error('لینک پرداخت دریافت نشد')
+      }
+
+    } catch (error: any) {
+      console.error('Checkout error:', error)
+      alert(`خطا در پردازش سفارش: ${error.message}`)
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   useEffect(() => {
@@ -422,6 +509,41 @@ export default function CartPage() {
                 ))}
               </div>
 
+              {/* Customer Information Form */}
+              <div className="mt-8 border-t border-gray-200 pt-6">
+                <div className="bg-white p-6 rounded-xl border border-gray-200">
+                  <h3 className="text-lg font-bold text-gray-800 mb-4">اطلاعات تماس</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        ایمیل *
+                      </label>
+                      <input
+                        type="email"
+                        value={customerEmail}
+                        onChange={(e) => setCustomerEmail(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="example@email.com"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        شماره تلفن *
+                      </label>
+                      <input
+                        type="tel"
+                        value={customerPhone}
+                        onChange={(e) => setCustomerPhone(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="09123456789"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Cart Summary */}
               <div className="mt-8 border-t border-gray-200 pt-6">
                 <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 rounded-xl">
@@ -431,7 +553,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex items-center justify-between mb-6">
                     <span className="text-gray-700 text-xl">مجموع کل:</span>
-                    <span className="text-3xl font-bold text-blue-600">{state.total.toLocaleString()} تومان</span>
+                    <span className="text-3xl font-bold text-blue-600">{(state.total || 0).toLocaleString()} تومان</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Link
@@ -440,8 +562,12 @@ export default function CartPage() {
                     >
                       ادامه خرید
                     </Link>
-                    <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-bold">
-                      تسویه حساب
+                    <button 
+                      onClick={handleCheckout}
+                      disabled={isProcessing}
+                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isProcessing ? "در حال پردازش..." : "تسویه حساب"}
                     </button>
                   </div>
                 </div>
