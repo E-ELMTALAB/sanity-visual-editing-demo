@@ -24,9 +24,9 @@ function PaymentSuccessContent() {
           return
         }
 
-        // Verify payment using direct verification endpoint
+        // Verify payment using simple verification endpoint
         const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
-        const response = await fetch(`${medusaUrl}/store/zarinpal/direct-verify`, {
+        const response = await fetch(`${medusaUrl}/store/simple-verify`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

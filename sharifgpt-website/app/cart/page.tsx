@@ -50,9 +50,9 @@ export default function CartPage() {
     setIsProcessing(true)
 
     try {
-      // Use direct Zarinpal payment endpoint
+      // Use simple payment endpoint with explicit CORS handling
       const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
-      const paymentResponse = await fetch(`${medusaUrl}/store/zarinpal/direct-payment`, {
+      const paymentResponse = await fetch(`${medusaUrl}/store/simple-payment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
