@@ -25,7 +25,8 @@ function PaymentSuccessContent() {
         }
 
         // Complete the order in Medusa
-        const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'}/store/cart/complete`, {
+        const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
+        const response = await fetch(`${medusaUrl}/store/cart/complete`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -51,7 +51,8 @@ export default function CartPage() {
 
     try {
       // Step 1: Create cart in Medusa
-      const cartResponse = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'}/store/cart/create`, {
+      const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
+      const cartResponse = await fetch(`${medusaUrl}/store/cart/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -77,7 +78,7 @@ export default function CartPage() {
       }
 
       // Step 2: Initiate payment
-      const paymentResponse = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'}/store/cart/payment`, {
+      const paymentResponse = await fetch(`${medusaUrl}/store/cart/payment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
