@@ -1,4 +1,4 @@
-import { resolveHref } from 'lib/sanity.links'
+import { resolveHref } from '../lib/sanity.links'
 import { map, Observable } from 'rxjs'
 import {
   DocumentLocationResolver,
