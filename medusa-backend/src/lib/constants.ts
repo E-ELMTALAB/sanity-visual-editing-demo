@@ -45,7 +45,7 @@ export const AUTH_CORS = process.env.AUTH_CORS;
 /**
  * Store/frontend CORS origins
  */
-export const STORE_CORS = process.env.STORE_CORS;
+export const STORE_CORS = process.env.STORE_CORS || "https://sanity-visual-editing-git-a2c1fe-arshanelmtalab-5364s-projects.vercel.app,https://sanity-visual-editing-demo.vercel.app,http://localhost:3000";
 
 /**
  * JWT Secret used for signing JWT tokens
