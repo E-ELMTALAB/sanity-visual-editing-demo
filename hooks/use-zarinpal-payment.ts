@@ -111,8 +111,8 @@ export function useZarinpalPayment() {
       console.log('Items:', items)
       console.log('Total amount:', totalAmount)
 
-      // Use the test endpoint that doesn't require publishable key
-      const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'}/store/simple-payment`, {
+      // Use the Next.js API proxy to avoid CORS issues
+      const response = await fetch('/api/payment/initiate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -207,8 +207,8 @@ export function useZarinpalPayment() {
       console.log('Status:', status)
       console.log('Resource ID:', resourceId)
 
-      // Use the test verification endpoint
-      const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'}/store/simple-verify`, {
+      // Use the Next.js API proxy to avoid CORS issues
+      const response = await fetch('/api/payment/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
