@@ -16,7 +16,7 @@ export default function CartDropdown({ isOpen, onClose }: CartDropdownProps) {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (dropdownRef.current && event.target && !dropdownRef.current.contains(event.target as Node)) {
         onClose()
       }
     }
@@ -97,7 +97,7 @@ export default function CartDropdown({ isOpen, onClose }: CartDropdownProps) {
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-gray-800 text-sm truncate">{item.title}</h4>
                   {item.selectedOption && <p className="text-xs text-gray-500">{item.selectedOption}</p>}
-                  <p className="text-blue-600 font-bold text-sm">{item.price.toLocaleString()} تومان</p>
+                  <p className="text-blue-600 font-bold text-sm">{(item.price || 0).toLocaleString()} تومان</p>
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse">
                   <div className="flex items-center border border-gray-300 rounded-lg">
@@ -140,7 +140,7 @@ export default function CartDropdown({ isOpen, onClose }: CartDropdownProps) {
         <div className="p-4 border-t border-gray-100 bg-gray-50">
           <div className="flex items-center justify-between mb-4">
             <span className="text-gray-600">مجموع:</span>
-            <span className="text-xl font-bold text-blue-600">{state.total.toLocaleString()} تومان</span>
+            <span className="text-xl font-bold text-blue-600">{(state.total || 0).toLocaleString()} تومان</span>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Link

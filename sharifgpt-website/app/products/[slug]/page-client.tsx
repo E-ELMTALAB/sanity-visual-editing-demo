@@ -476,7 +476,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
                       <div className="space-y-2">
                         <div className="flex items-center space-x-3 space-x-reverse">
                           <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                            {displayPrice.toLocaleString()} تومان
+                            {(displayPrice || 0).toLocaleString()} تومان
                           </span>
                           {product.originalPrice > selectedPrice && (
                             <div className="bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full shadow-md border border-white/20">
@@ -489,7 +489,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
                         {product.originalPrice > selectedPrice && (
                           <div className="flex items-center space-x-2 space-x-reverse">
                             <span className="text-sm text-gray-500 line-through bg-gray-100/60 backdrop-blur-sm px-2 py-0.5 rounded-md">
-                              {displayOriginalPrice.toLocaleString()} تومان
+                              {(displayOriginalPrice || 0).toLocaleString()} تومان
                             </span>
                           </div>
                         )}
@@ -507,7 +507,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
                           <span className="text-xs font-medium text-green-700">صرفه‌جویی شما:</span>
                         </div>
                         <div className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                          {(displayOriginalPrice - displayPrice).toLocaleString()} تومان
+                          {((displayOriginalPrice || 0) - (displayPrice || 0)).toLocaleString()} تومان
                         </div>
                       </div>
                     </div>
@@ -577,7 +577,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
                       <div className="space-y-2">
                         <div className="flex items-center space-x-3 space-x-reverse">
                           <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                            {displayPrice.toLocaleString()} تومان
+                            {(displayPrice || 0).toLocaleString()} تومان
                           </span>
                           {product.originalPrice > selectedPrice && (
                             <div className="bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full shadow-md border border-white/20">
@@ -590,7 +590,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
                         {product.originalPrice > selectedPrice && (
                           <div className="flex items-center space-x-2 space-x-reverse">
                             <span className="text-sm text-gray-500 line-through bg-gray-100/60 backdrop-blur-sm px-2 py-0.5 rounded-md">
-                              {displayOriginalPrice.toLocaleString()} تومان
+                              {(displayOriginalPrice || 0).toLocaleString()} تومان
                             </span>
                           </div>
                         )}
@@ -608,7 +608,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
                           <span className="text-xs font-medium text-green-700">صرفه‌جویی شما:</span>
                         </div>
                         <div className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                          {(displayOriginalPrice - displayPrice).toLocaleString()} تومان
+                          {((displayOriginalPrice || 0) - (displayPrice || 0)).toLocaleString()} تومان
                         </div>
                       </div>
                     </div>
@@ -783,11 +783,11 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2 space-x-reverse">
                         <span className="text-lg font-bold text-blue-600">
-                          {relatedProduct.price.toLocaleString()} تومان
+                          {(relatedProduct.price || 0).toLocaleString()} تومان
                         </span>
                         {relatedProduct.originalPrice > relatedProduct.price && (
                           <span className="text-sm text-gray-500 line-through">
-                            {relatedProduct.originalPrice.toLocaleString()}
+                            {(relatedProduct.originalPrice || 0).toLocaleString()}
                           </span>
                         )}
                       </div>
@@ -870,12 +870,12 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
                 <h3 className="font-bold text-gray-800 text-xs sm:text-sm truncate">{product.title}</h3>
                 <div className="flex items-center space-x-1 space-x-reverse">
                   <p className="text-blue-600 font-bold text-sm sm:text-base whitespace-nowrap">
-                    {displayPrice.toLocaleString()}
+                    {(displayPrice || 0).toLocaleString()}
                   </p>
                   <span className="text-blue-600 font-bold text-xs sm:text-sm">تومان</span>
                   {displayOriginalPrice > displayPrice && (
                     <span className="text-xs text-gray-500 line-through ml-1">
-                      {displayOriginalPrice.toLocaleString()}
+                      {(displayOriginalPrice || 0).toLocaleString()}
                     </span>
                   )}
                 </div>
