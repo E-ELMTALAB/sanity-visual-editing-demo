@@ -90,6 +90,9 @@ interface CartContextType {
   removeItem: (id: number) => void
   updateQuantity: (id: number, quantity: number) => void
   clearCart: () => void
+  // Medusa integration
+  medusaCartId: string | null
+  setMedusaCartId: (cartId: string | null) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -100,6 +103,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     total: 0,
     itemCount: 0,
   })
+  
+  // Medusa cart ID for payment processing
+  const [medusaCartId, setMedusaCartId] = useState<string | null>(null)
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -136,10 +142,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearCart = () => {
     dispatch({ type: "CLEAR_CART" })
+    setMedusaCartId(null) // Clear Medusa cart ID when clearing cart
   }
 
   return (
-    <CartContext.Provider value={{ state, addItem, removeItem, updateQuantity, clearCart }}>
+    <CartContext.Provider value={{ 
+      state, 
+      addItem, 
+      removeItem, 
+      updateQuantity, 
+      clearCart,
+      medusaCartId,
+      setMedusaCartId
+    }}>
       {children}
     </CartContext.Provider>
   )

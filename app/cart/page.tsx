@@ -441,9 +441,12 @@ export default function CartPage() {
                     >
                       ادامه خرید
                     </Link>
-                    <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-bold">
+                    <Link
+                      href="/checkout"
+                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-bold text-center block"
+                    >
                       تسویه حساب
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>

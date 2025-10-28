@@ -4,6 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { useCart } from "@/contexts/cart-context"
+import { useZarinpalPayment } from "@/hooks/use-zarinpal-payment"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -77,7 +78,8 @@ const packageDeals = [
 ]
 
 export default function CheckoutPage() {
-  const { state } = useCart()
+  const { state, setMedusaCartId } = useCart()
+  const { initiatePayment, status: paymentStatus } = useZarinpalPayment()
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -91,6 +93,7 @@ export default function CheckoutPage() {
   })
   const [selectedCourses, setSelectedCourses] = useState<number[]>([])
   const [selectedPackage, setSelectedPackage] = useState<number | null>(null)
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -149,6 +152,49 @@ export default function CheckoutPage() {
       ...formData,
       [e.target.name]: e.target.value,
     })
+  }
+
+  const handlePayment = async () => {
+    // Validate form
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) {
+      alert('لطفاً تمام فیلدهای ضروری را پر کنید')
+      return
+    }
+
+    if (!formData.email.includes('@')) {
+      alert('لطفاً یک ایمیل معتبر وارد کنید')
+      return
+    }
+
+    setIsProcessingPayment(true)
+
+    try {
+      const result = await initiatePayment(
+        state.items,
+        {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+        },
+        upsells
+      )
+
+      if (result.success && result.paymentUrl && result.cartId) {
+        // Store Medusa cart ID
+        setMedusaCartId(result.cartId)
+        
+        // Redirect to Zarinpal payment gateway
+        window.location.href = result.paymentUrl
+      } else {
+        alert(result.error || 'خطا در شروع فرآیند پرداخت')
+      }
+    } catch (error) {
+      console.error('Payment error:', error)
+      alert('خطا در شروع فرآیند پرداخت')
+    } finally {
+      setIsProcessingPayment(false)
+    }
   }
 
   const handleUpsellChange = (type: keyof typeof upsells) => {
@@ -755,9 +801,22 @@ export default function CheckoutPage() {
                     <span className="text-blue-600">{formatPrice(calculateTotal())} تومان</span>
                   </div>
 
-                  <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 text-lg">
-                    <CreditCard className="w-5 h-5 ml-2" />
-                    پرداخت نهایی
+                  <Button 
+                    onClick={handlePayment}
+                    disabled={isProcessingPayment || paymentStatus.loading}
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isProcessingPayment || paymentStatus.loading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
+                        در حال پردازش...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-5 h-5 ml-2" />
+                        پرداخت نهایی
+                      </>
+                    )}
                   </Button>
 
                   <div className="text-xs text-gray-500 text-center mt-4">
