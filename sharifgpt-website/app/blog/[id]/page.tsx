@@ -200,7 +200,7 @@ export default function BlogArticlePage() {
             <div className="relative flex items-center space-x-2 sm:space-x-4 space-x-reverse cursor-pointer">
               <Link href="/" className="flex items-center space-x-2 sm:space-x-4 space-x-reverse">
                 <img
-                  src="/images/design-mode/Group%201(1).png"
+                  src="/images/design-mode/group-1-1.png"
                   alt="SharifGPT Logo"
                   className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                 />
@@ -748,7 +748,7 @@ export default function BlogArticlePage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3 space-x-reverse">
                   <img
-                    src="/images/design-mode/Group%201(1).png"
+                    src="/images/design-mode/group-1-1.png"
                     alt="نویسنده"
                     className="w-10 h-10 rounded-full object-cover"
                   />

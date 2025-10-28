@@ -206,7 +206,7 @@ export default function CheckoutPage() {
               >
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden shadow-lg">
                   <img
-                    src="/images/design-mode/Group%201(2).png"
+                    src="/images/design-mode/group-1-2.png"
                     alt="SharifGPT Logo"
                     width="40"
                     height="40"

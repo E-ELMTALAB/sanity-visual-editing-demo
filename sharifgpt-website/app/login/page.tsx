@@ -52,7 +52,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-3 space-x-reverse group">
             <img
-              src="/images/design-mode/Group%201(1).png"
+              src="/images/design-mode/group-1-1.png"
               alt="SharifGPT Logo"
               className="w-12 h-12 rounded-full object-cover group-hover:scale-110 transition-transform duration-300"
             />

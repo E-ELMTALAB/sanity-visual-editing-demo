@@ -232,7 +232,7 @@ export default function CourseDetailPage() {
             <div className="relative flex items-center space-x-2 sm:space-x-4 space-x-reverse cursor-pointer">
               <Link href="/" className="flex items-center space-x-2 sm:space-x-4 space-x-reverse">
                 <img
-                  src="/images/design-mode/Group%201(1).png"
+                  src="/images/design-mode/group-1-1.png"
                   alt="SharifGPT Logo"
                   className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                 />
@@ -1320,7 +1320,7 @@ export default function CourseDetailPage() {
             <div>
               <div className="flex items-center justify-center md:justify-start space-x-2 space-x-reverse mb-4">
                 <img
-                  src="/images/design-mode/Group%201(1).png"
+                  src="/images/design-mode/group-1-1.png"
                   alt="SharifGPT Logo"
                   className="w-8 h-8 rounded-full object-cover"
                 />

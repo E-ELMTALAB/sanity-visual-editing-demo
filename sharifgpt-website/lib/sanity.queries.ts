@@ -483,6 +483,29 @@ export const allCoursesQuery = groq`
   }
 `
 
+// Course list query for API
+export const courseListQuery = groq`
+  *[_type == "course" && isPublished == true] | order(_createdAt desc) {
+    _id,
+    title,
+    slug,
+    shortDescription,
+    price,
+    originalPrice,
+    discountPercentage,
+    rating,
+    reviewCount,
+    totalStudents,
+    featuredImage,
+    category,
+    level,
+    badge,
+    instructor->{
+      name
+    }
+  }
+`
+
 // Featured courses query
 export const featuredCoursesQuery = groq`
   *[_type == "course" && isPublished == true && isFeatured == true] | order(_createdAt desc) {

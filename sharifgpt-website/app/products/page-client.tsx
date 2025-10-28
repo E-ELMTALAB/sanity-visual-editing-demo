@@ -7,10 +7,11 @@ import ProductCard from "@/components/product-card"
 import type { FAQ } from "@/types"
 
 interface ProductsPageClientProps {
+  productsData: any[]
   faqsData?: FAQ[]
 }
 
-export default function ProductsPageClient({ faqsData }: ProductsPageClientProps) {
+export default function ProductsPageClient({ productsData, faqsData }: ProductsPageClientProps) {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [sortBy, setSortBy] = useState("popular")
   const [showFilters, setShowFilters] = useState(false)
@@ -20,7 +21,7 @@ export default function ProductsPageClient({ faqsData }: ProductsPageClientProps
   const [user, setUser] = useState({ name: "مهدی", email: "mehdi@example.com" })
   const [headerVisible, setHeaderVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
-  const [products, setProducts] = useState<any[]>([])
+  const [products, setProducts] = useState<any[]>(productsData || [])
 
   const handleProfileClick = () => {
     if (isAuthenticated) {
@@ -36,22 +37,12 @@ export default function ProductsPageClient({ faqsData }: ProductsPageClientProps
     setUser({ name: "", email: "" })
   }
 
-  // Fetch products from Sanity
+  // Update products when props change
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch('/api/products')
-        if (response.ok) {
-          const productsData = await response.json()
-          setProducts(productsData)
-        }
-      } catch (error) {
-        console.error('Error fetching products:', error)
-      }
+    if (productsData) {
+      setProducts(productsData)
     }
-    
-    fetchProducts()
-  }, [])
+  }, [productsData])
 
   const categories = [
     { id: "all", name: "همه محصولات", count: 45 },
@@ -132,7 +123,7 @@ export default function ProductsPageClient({ faqsData }: ProductsPageClientProps
             <div className="relative flex items-center space-x-2 sm:space-x-4 space-x-reverse cursor-pointer">
               <Link href="/" className="flex items-center space-x-2 sm:space-x-4 space-x-reverse">
                 <img
-                  src="/images/design-mode/Group%201(1).png"
+                  src="/images/design-mode/group-1-1.png"
                   alt="SharifGPT Logo"
                   className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                 />
