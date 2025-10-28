@@ -50,114 +50,41 @@ export default function CartPage() {
     setIsProcessing(true)
 
     try {
+      // Use direct Zarinpal payment endpoint
       const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
-      
-      // Step 1: Get regions
-      const regionsResponse = await fetch(`${medusaUrl}/store/regions`)
-      const regionsData = await regionsResponse.json()
-      const regionId = regionsData.regions[0]?.id
-
-      if (!regionId) {
-        throw new Error('هیچ منطقه‌ای یافت نشد')
-      }
-
-      // Step 2: Create cart
-      const cartResponse = await fetch(`${medusaUrl}/store/carts`, {
+      const paymentResponse = await fetch(`${medusaUrl}/store/zarinpal/direct-payment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          region_id: regionId,
-          email: customerEmail,
-          metadata: {
-            customer_phone: customerPhone
-          }
-        })
-      })
-
-      const cartData = await cartResponse.json()
-      const cartId = cartData.cart.id
-
-      // Step 3: Add line items to cart
-      for (const item of state.items) {
-        // First, create a product if it doesn't exist
-        const productResponse = await fetch(`${medusaUrl}/store/products`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+          items: state.items.map(item => ({
+            id: item.id,
             title: item.title,
-            description: `Product: ${item.title}`,
-            status: 'published',
-            handle: `product-${item.id}-${Date.now()}`,
-            is_giftcard: false,
-            discountable: true,
-            metadata: {
-              frontend_id: item.id,
-              image_url: item.image,
-              selected_option: item.selectedOption
-            }
-          })
+            price: item.price,
+            quantity: item.quantity
+          })),
+          customer_email: customerEmail,
+          customer_phone: customerPhone,
+          description: `پرداخت سفارش ${state.items.length} کالا`
         })
+      })
 
-        const productData = await productResponse.json()
-        const variantId = productData.product.variants[0]?.id
+      const paymentData = await paymentResponse.json()
 
-        if (variantId) {
-          // Add line item to cart
-          await fetch(`${medusaUrl}/store/carts/${cartId}/line-items`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              variant_id: variantId,
-              quantity: item.quantity,
-              metadata: {
-                frontend_id: item.id,
-                selected_option: item.selectedOption,
-                image_url: item.image
-              }
-            })
-          })
-        }
+      if (!paymentData.success) {
+        throw new Error(paymentData.error || 'خطا در شروع پرداخت')
       }
 
-      // Step 4: Create payment collection
-      const paymentCollectionResponse = await fetch(`${medusaUrl}/store/carts/${cartId}/payment-collection`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      })
-
-      const paymentCollectionData = await paymentCollectionResponse.json()
-      const paymentCollectionId = paymentCollectionData.payment_collection.id
-
-      // Step 5: Create Zarinpal payment session
-      const paymentSessionResponse = await fetch(`${medusaUrl}/store/payment-collections/${paymentCollectionId}/payment-sessions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          provider_id: 'pp_zarinpal_zarinpal'
-        })
-      })
-
-      const paymentSessionData = await paymentSessionResponse.json()
-      const paymentUrl = paymentSessionData.payment_session.data.payment_url
-      const authority = paymentSessionData.payment_session.data.authority
-
-      if (paymentUrl) {
-        // Store cart ID in localStorage for verification after payment
-        localStorage.setItem('pending_cart_id', cartId)
-        localStorage.setItem('pending_payment_authority', authority)
+      // Redirect to payment gateway
+      if (paymentData.payment.payment_url) {
+        // Store payment data in localStorage for verification after payment
+        localStorage.setItem('pending_resource_id', paymentData.payment.resource_id)
+        localStorage.setItem('pending_payment_authority', paymentData.payment.authority)
+        localStorage.setItem('pending_payment_session_id', paymentData.payment.session_id)
         
         // Redirect to Zarinpal payment gateway
-        window.location.href = paymentUrl
+        window.location.href = paymentData.payment.payment_url
       } else {
         throw new Error('لینک پرداخت دریافت نشد')
       }

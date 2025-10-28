@@ -1,0 +1,128 @@
+import { MedusaRequest, MedusaResponse } from "@medusajs/framework";
+import { Modules } from "@medusajs/framework/utils";
+import { IPaymentModuleService } from "@medusajs/framework/types";
+import { CURRENCY_TO_IRR } from "../../../lib/constants";
+
+/**
+ * Direct Zarinpal Payment Endpoint
+ * POST /store/zarinpal/direct-payment
+ * 
+ * Body:
+ * {
+ *   "items": [
+ *     {
+ *       "id": 1,
+ *       "title": "Product Name",
+ *       "price": 100000,
+ *       "quantity": 2
+ *     }
+ *   ],
+ *   "customer_email": "customer@example.com",
+ *   "customer_phone": "+989123456789",
+ *   "description": "Payment for order"
+ * }
+ */
+export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
+  try {
+    const body = req.body as {
+      items: Array<{
+        id: number;
+        title: string;
+        price: number;
+        quantity: number;
+      }>;
+      customer_email?: string;
+      customer_phone?: string;
+      description?: string;
+    };
+
+    const { items, customer_email, customer_phone, description = "Payment for order" } = body;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Items array is required and cannot be empty"
+      });
+    }
+
+    // Calculate total amount
+    const totalAmount = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    // Convert to Rials (assuming input is in Rials)
+    const amountInRials = totalAmount;
+
+    // Create a simple resource ID for tracking
+    const resourceId = `direct_payment_${Date.now()}`;
+
+    // Get payment module service
+    const paymentModuleService: IPaymentModuleService = req.scope.resolve(Modules.PAYMENT);
+
+    // Create payment collection
+    const paymentCollection = await paymentModuleService.createPaymentCollections({
+      currency_code: "irr",
+      amount: amountInRials,
+      metadata: {
+        resource_id: resourceId,
+        customer_email: customer_email,
+        customer_phone: customer_phone,
+        items: items,
+        description: description
+      }
+    });
+
+    // Create Zarinpal payment session
+    const paymentSession = await paymentModuleService.createPaymentSessions(paymentCollection.id, {
+      provider_id: "pp_zarinpal_zarinpal",
+      amount: amountInRials,
+      currency_code: "irr",
+      data: {
+        email: customer_email,
+        mobile: customer_phone,
+        resource_id: resourceId
+      }
+    });
+
+    // Initiate payment
+    const paymentData = await paymentModuleService.initiatePaymentSession(paymentSession.id, {
+      amount: amountInRials,
+      currency_code: "irr",
+      email: customer_email,
+      context: {
+        resource_id: resourceId,
+        customer_email: customer_email,
+        customer_phone: customer_phone,
+        items: items
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Payment initiated successfully",
+      payment: {
+        session_id: paymentSession.id,
+        collection_id: paymentCollection.id,
+        authority: paymentData.data?.authority,
+        payment_url: paymentData.data?.payment_url,
+        amount: paymentData.data?.amount,
+        currency_code: paymentData.data?.currency_code,
+        status: paymentData.data?.status,
+        resource_id: resourceId
+      },
+      order: {
+        resource_id: resourceId,
+        total: amountInRials,
+        currency_code: "irr",
+        item_count: items.length,
+        items: items
+      }
+    });
+
+  } catch (error: any) {
+    console.error("Direct payment error:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined
+    });
+  }
+};

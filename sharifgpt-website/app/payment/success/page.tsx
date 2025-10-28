@@ -16,55 +16,40 @@ function PaymentSuccessContent() {
       try {
         const authority = searchParams.get('Authority')
         const status = searchParams.get('Status')
-        const cartId = localStorage.getItem('pending_cart_id')
+        const resourceId = localStorage.getItem('pending_resource_id')
 
-        if (!authority || !cartId) {
+        if (!authority || !resourceId) {
           setStatus('error')
           setErrorMessage('اطلاعات پرداخت ناقص است')
           return
         }
 
-        // Verify payment with Zarinpal
+        // Verify payment using direct verification endpoint
         const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
-        const verifyResponse = await fetch(`${medusaUrl}/store/zarinpal/verify`, {
+        const response = await fetch(`${medusaUrl}/store/zarinpal/direct-verify`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             authority: authority,
-            Status: status,
-            cart_id: cartId
+            status: status,
+            resource_id: resourceId
           })
         })
 
-        const verifyData = await verifyResponse.json()
+        const data = await response.json()
 
-        if (!verifyData.success) {
-          setStatus('error')
-          setErrorMessage(verifyData.error || 'خطا در تأیید پرداخت')
-          return
-        }
-
-        // Complete the cart to create order
-        const completeResponse = await fetch(`${medusaUrl}/store/carts/${cartId}/complete`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        })
-
-        const completeData = await completeResponse.json()
-
-        if (completeData.order) {
+        if (data.success) {
           setStatus('success')
-          setOrderData(completeData.order)
+          setOrderData(data.order)
           // Clear pending data
-          localStorage.removeItem('pending_cart_id')
+          localStorage.removeItem('pending_resource_id')
           localStorage.removeItem('pending_payment_authority')
+          localStorage.removeItem('pending_payment_session_id')
         } else {
           setStatus('error')
-          setErrorMessage('خطا در تکمیل سفارش')
+          setErrorMessage(data.error || 'خطا در تأیید پرداخت')
         }
 
       } catch (error: any) {
@@ -171,4 +156,3 @@ export default function PaymentSuccessPage() {
     </Suspense>
   )
 }
-
