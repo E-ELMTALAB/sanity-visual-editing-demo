@@ -24,31 +24,47 @@ function PaymentSuccessContent() {
           return
         }
 
-        // Complete the order in Medusa
+        // Verify payment with Zarinpal
         const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
-        const response = await fetch(`${medusaUrl}/store/cart/complete`, {
+        const verifyResponse = await fetch(`${medusaUrl}/store/zarinpal/verify`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            cart_id: cartId,
             authority: authority,
-            status: status
+            Status: status,
+            cart_id: cartId
           })
         })
 
-        const data = await response.json()
+        const verifyData = await verifyResponse.json()
 
-        if (data.success) {
+        if (!verifyData.success) {
+          setStatus('error')
+          setErrorMessage(verifyData.error || 'خطا در تأیید پرداخت')
+          return
+        }
+
+        // Complete the cart to create order
+        const completeResponse = await fetch(`${medusaUrl}/store/carts/${cartId}/complete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+
+        const completeData = await completeResponse.json()
+
+        if (completeData.order) {
           setStatus('success')
-          setOrderData(data.order)
+          setOrderData(completeData.order)
           // Clear pending data
           localStorage.removeItem('pending_cart_id')
           localStorage.removeItem('pending_payment_authority')
         } else {
           setStatus('error')
-          setErrorMessage(data.error || 'خطا در تکمیل سفارش')
+          setErrorMessage('خطا در تکمیل سفارش')
         }
 
       } catch (error: any) {
@@ -155,3 +171,4 @@ export default function PaymentSuccessPage() {
     </Suspense>
   )
 }
+
