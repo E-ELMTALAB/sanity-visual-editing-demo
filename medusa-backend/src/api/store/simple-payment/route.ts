@@ -3,11 +3,12 @@ import { Modules } from "@medusajs/framework/utils";
 import { IPaymentModuleService } from "@medusajs/framework/types";
 import { CURRENCY_TO_IRR } from "../../../lib/constants";
 
-// CORS middleware function
+// Enhanced CORS middleware function
 const setCorsHeaders = (res: MedusaResponse) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, x-publishable-api-key, x-medusa-access-token');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Max-Age', '86400');
 };
 
