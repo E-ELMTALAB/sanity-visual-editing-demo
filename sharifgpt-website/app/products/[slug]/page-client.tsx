@@ -132,173 +132,8 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
   const displayDiscount = product.discount > 0 ? product.discount : actualDiscount
 
   return (
-    // trimmed rendering: reuse existing UI from previous file
-    // For brevity, import the same JSX structure as before
-    // This file was split to client to comply with Sanity server-fetch pattern
     <div className="bg-gray-50 min-h-screen" dir="rtl">
-      {/* Header, content, pricing, tabs, related sections - kept unchanged */}
-      {/* The original JSX from the previous page.tsx remains here. */}
-    </div>
-  )
-}
-
-"use client"
-
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { useCart } from "@/contexts/cart-context"
-import CartDropdown from "@/components/cart-dropdown"
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-
-interface ProductPageProps {
-  productData: any
-}
-
-export default function ProductPage({ productData }: ProductPageProps) {
-  const [selectedTab, setSelectedTab] = useState("description")
-  const [quantity, setQuantity] = useState(1)
-  const [selectedOption, setSelectedOption] = useState(productData?.options?.[0]?.id || "")
-  const [selectedImage, setSelectedImage] = useState(0)
-
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
-  const [user, setUser] = useState({ name: "+�+�+���", email: "mehdi@example.com" })
-
-  const { state: cartState, addItem } = useCart()
-  const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false)
-  const [showAddedToCart, setShowAddedToCart] = useState(false)
-
-
-  const handleProfileClick = () => {
-    if (isAuthenticated) {
-      setIsProfileDropdownOpen(!isProfileDropdownOpen)
-    } else {
-      window.location.href = "/login"
-    }
-  }
-
-  const handleLogout = () => {
-    setIsAuthenticated(false)
-    setIsProfileDropdownOpen(false)
-    setUser({ name: "", email: "" })
-  }
-
-  const handleAddToCart = () => {
-    const selectedProductOption = product.options.find((opt: any) => opt.id === selectedOption)
-    addItem({
-      id: product.id,
-      title: product.title,
-      price: selectedProductOption?.price || product.price,
-      image: product.image,
-      selectedOption: selectedProductOption?.name,
-      quantity,
-    })
-
-    setShowAddedToCart(true)
-    setTimeout(() => setShowAddedToCart(false), 3000)
-  }
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const profileContainer = document.getElementById("profileContainer")
-      if (profileContainer && !profileContainer.contains(event.target as Node)) {
-        setIsProfileDropdownOpen(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
-
-  const product = {
-    id: 1,
-    title: productData?.name || "+�+�+�+�+�",
-    description: productData?.description || "+�+�+���+�+�+� +�+�+�+�+�",
-    category: productData?.category || "+�+�+�+�+�+�+�",
-    price: productData?.price || null,
-    originalPrice: productData?.originalPrice || null,
-    discount: productData?.discountPercentage || 0,
-    rating: typeof productData?.rating === 'number' ? productData.rating : 0,
-    reviews: typeof productData?.reviewCount === 'number' ? productData.reviewCount : 0,
-    image: productData?.imageUrl || "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
-    gallery: Array.isArray(productData?.galleryUrls) && productData?.galleryUrls?.length
-      ? productData.galleryUrls.filter(Boolean)
-      : [
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dPdgCWW6zllellUtmElnrpbQKerDIJ.png",
-          "https://placehold.co/600x400/1DB954/FFFFFF?text=Spotify+2",
-          "https://placehold.co/600x400/1DB954/FFFFFF?text=Spotify+3",
-        ],
-    features: Array.isArray(productData?.features) ? productData.features : [],
-    options: Array.isArray(productData?.options) ? productData.options : [],
-    badges: Array.isArray(productData?.badges) ? productData.badges : [],
-    inStock: productData?.inStock !== false,
-    relatedProducts: Array.isArray(productData?.relatedProducts) ? productData.relatedProducts : [],
-    relatedBlogs: Array.isArray(productData?.relatedBlogs) ? productData.relatedBlogs : [],
-  }
-
-  const reviews = [
-    {
-      id: 1,
-      user: "+�+�� +�+�+�+���",
-      rating: 5,
-      date: "2 +�+�+� ++��+�",
-      comment: "+�+�+�� +�+�+�+� +�+���+� +�+�+�+� +�+� +� +�+�+�+� +�+�+�+� +�+�+� +��G��+�+�+�. +��+�+�+� +�+� +���+�� +�+�+�+�+� +�+�+�.",
-      helpful: 12,
-    },
-    {
-      id: 2,
-      user: "+�+�+�+� +�+�+�+���",
-      rating: 4,
-      date: "1 +�+�+�+� ++��+�",
-      comment: "+���+���+� +�+�+��� +�+�+�+� +�+�� ��+�+� +���+� +�+�+�+� +�+�. +�+� +�+� +�+�+��� +�+�+�+�.",
-      helpful: 8,
-    },
-    {
-      id: 3,
-      user: "+�+�+�+� +�+�+����",
-      rating: 5,
-      date: "2 +�+�+�+� ++��+�",
-      comment: "+�+�+�+���+� +��+�+� +�+�+�+�+� +�+� +�+�+�+�. +++�+���+�+�+�� +�+� +�+�+�� +�+�+�.",
-      helpful: 15,
-    },
-  ]
-
-
-  const relatedProducts = product.relatedProducts
-  const relatedArticles = product.relatedBlogs
-
-  const selectedPrice = product.options && product.options.length > 0 
-    ? (product.options.find((opt: any) => opt.id === selectedOption)?.price || product.options[0]?.price || product.price)
-    : product.price
-
-  // If no price data is available, show a message instead of 0
-  const displayPrice = selectedPrice || 0
-  const displayOriginalPrice = product.originalPrice || 0
-
-  // Calculate actual discount based on displayed prices
-  const actualDiscount = displayOriginalPrice > displayPrice 
-    ? Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100)
-    : 0
-
-  const displayDiscount = product.discount > 0 ? product.discount : actualDiscount
-
-  // Debug logging
-  console.log('Product Data Debug:', {
-    productData: productData,
-    product: product,
-    selectedPrice: selectedPrice,
-    displayPrice: displayPrice,
-    displayOriginalPrice: displayOriginalPrice,
-    actualDiscount: actualDiscount,
-    displayDiscount: displayDiscount
-  })
-
-
-  return (
-    <div className="bg-gray-50 min-h-screen" dir="rtl">
+      {/* Header */}
       <header className="sticky top-0 z-50 glassmorphism">
         <div className="container mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
@@ -322,7 +157,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                   href="/products"
                   className="flex items-center text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)]"
                 >
-                  <span>+�+�+�+�+�+�+�</span>
+                  <span>محصولات</span>
                   <svg
                     className="w-4 h-4 mr-1 transition-transform duration-200 group-hover:rotate-180"
                     xmlns="http://www.w3.org/2000/svg"
@@ -343,7 +178,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                   href="/courses"
                   className="flex items-center text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)]"
                 >
-                  <span>+�+�+�+�G��+�+�</span>
+                  <span>دوره‌ها</span>
                   <svg
                     className="w-4 h-4 mr-1 transition-transform duration-200 group-hover:rotate-180"
                     xmlns="http://www.w3.org/2000/svg"
@@ -362,13 +197,13 @@ export default function ProductPage({ productData }: ProductPageProps) {
                 href="/enterprise"
                 className="flex items-center text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)] whitespace-nowrap"
               >
-                <span>+�+�+�+� +�+�+�+�+�+��</span>
+                <span>فروش سازمانی</span>
               </Link>
               <Link
                 href="/blog"
                 className="text-gray-700 hover:text-[#3092BE] transition-all duration-300 px-3 py-2 rounded-lg text-sm font-medium transform hover:scale-105 hover:shadow-[0_0_15px_rgba(48,146,190,0.3)]"
               >
-                +�+�+�+�
+                بلاگ
               </Link>
             </nav>
 
@@ -378,7 +213,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
               <div className="relative hidden xl:block">
                 <input
                   type="text"
-                  placeholder="+�+�+�+�+�..."
+                  placeholder="جستجو..."
                   className="w-40 xl:w-48 bg-gray-100 border border-[#3092BE] rounded-full py-2 pr-4 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3092BE] transition-all duration-300 ease-in-out hover:w-48 xl:hover:w-60 focus:w-48 xl:focus:w-60"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -408,14 +243,14 @@ export default function ProductPage({ productData }: ProductPageProps) {
                       href="/contact"
                       className="text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#3092BE] transition-colors cursor-pointer"
                     >
-                      +�+�+�+� +�+� +�+�
+                      تماس با ما
                     </a>
                     <span className="relative flex h-2 w-2 sm:h-3 sm:w-3 mr-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 sm:h-3 sm:w-3 bg-green-500"></span>
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">+�+�+���+�: +�+�+�+���+�</p>
+                  <p className="text-xs text-gray-500 mt-1">وضعیت: آنلاین</p>
                 </div>
               </div>
 
@@ -457,7 +292,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                       <img
                         className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-md object-cover"
                         src="/images/design-mode/3Y1Z0Qj(2).png"
-                        alt="+�+�+�+�+�+� +�+�+�+�+�"
+                        alt="آواتار کاربر"
                       />
                     ) : (
                       <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-md bg-white flex items-center justify-center">
@@ -482,7 +317,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                         <img
                           className="w-12 h-12 rounded-full object-cover"
                           src="/images/design-mode/3Y1Z0Qj(1).png"
-                          alt="+�+�+�+�+�+� +�+�+�+�+�"
+                          alt="آواتار کاربر"
                         />
                         <div className="text-right">
                           <p className="font-semibold text-gray-800">{user.name}</p>
@@ -504,7 +339,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM5 9h14l1 12H4L5 9z"
                             />
                           </svg>
-                          <span>+++�+�+�+���+� +�+�</span>
+                          <span>پروفایل من</span>
                         </a>
                         <a
                           href="#"
@@ -518,7 +353,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                               d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
                             />
                           </svg>
-                          <span>+�+�+�+�+�+�+� +�+�</span>
+                          <span>سفارشات من</span>
                         </a>
                       </div>
 
@@ -536,7 +371,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                               d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                             />
                           </svg>
-                          <span>+�+�+�+�</span>
+                          <span>خروج</span>
                         </button>
                       </div>
                     </div>
@@ -557,14 +392,14 @@ export default function ProductPage({ productData }: ProductPageProps) {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center space-x-2 space-x-reverse text-sm text-gray-500">
             <Link href="/" className="hover:text-blue-600">
-              +�+�+�+�
+              خانه
             </Link>
             <span>/</span>
             <Link href="/products" className="hover:text-blue-600">
-              +�+�+�+�+�+�+�
+              محصولات
             </Link>
             <span>/</span>
-            <span className="text-gray-800">{product.category || '+�+�+�+�+�+�+�'}</span>
+            <span className="text-gray-800">{product.category || 'محصولات'}</span>
             <span>/</span>
             <span className="text-gray-800">{product.title}</span>
           </div>
@@ -616,7 +451,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
 
                       <div className="flex items-center space-x-2 space-x-reverse">
                         <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-blue-200/50">
-                          <span className="text-blue-700 font-semibold text-xs">({product.reviews} +�+++�)</span>
+                          <span className="text-blue-700 font-semibold text-xs">({product.reviews} نظر)</span>
                         </div>
                         <div className="bg-gradient-to-r from-green-50/80 to-emerald-50/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-green-200/50 flex items-center space-x-1 space-x-reverse">
                           <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
@@ -626,7 +461,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                               clipRule="evenodd"
                             />
                           </svg>
-                          <span className="text-green-700 font-semibold text-xs">+�+����+� +�+�+�</span>
+                          <span className="text-green-700 font-semibold text-xs">تایید شده</span>
                         </div>
                       </div>
                     </div>
@@ -641,11 +476,11 @@ export default function ProductPage({ productData }: ProductPageProps) {
                       <div className="space-y-2">
                         <div className="flex items-center space-x-3 space-x-reverse">
                           <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                            {displayPrice.toLocaleString()} +�+�+�+�+�
+                            {displayPrice.toLocaleString()} تومان
                           </span>
                           {product.originalPrice > selectedPrice && (
                             <div className="bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full shadow-md border border-white/20">
-                              <span className="font-bold text-xs">{displayDiscount}% +�+�+���+�</span>
+                              <span className="font-bold text-xs">{displayDiscount}% تخفیف</span>
                             </div>
                           )}
                         </div>
@@ -654,7 +489,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                         {product.originalPrice > selectedPrice && (
                           <div className="flex items-center space-x-2 space-x-reverse">
                             <span className="text-sm text-gray-500 line-through bg-gray-100/60 backdrop-blur-sm px-2 py-0.5 rounded-md">
-                              {displayOriginalPrice.toLocaleString()} +�+�+�+�+�
+                              {displayOriginalPrice.toLocaleString()} تومان
                             </span>
                           </div>
                         )}
@@ -669,10 +504,10 @@ export default function ProductPage({ productData }: ProductPageProps) {
                               clipRule="evenodd"
                             />
                           </svg>
-                          <span className="text-xs font-medium text-green-700">+�+�+�+�G��+�+��� +�+�+�:</span>
+                          <span className="text-xs font-medium text-green-700">صرفه‌جویی شما:</span>
                         </div>
                         <div className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                          {(displayOriginalPrice - displayPrice).toLocaleString()} +�+�+�+�+�
+                          {(displayOriginalPrice - displayPrice).toLocaleString()} تومان
                         </div>
                       </div>
                     </div>
@@ -717,7 +552,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
 
                       <div className="flex items-center space-x-2 space-x-reverse">
                         <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-blue-200/50">
-                          <span className="text-blue-700 font-semibold text-xs">({product.reviews} +�+++�)</span>
+                          <span className="text-blue-700 font-semibold text-xs">({product.reviews} نظر)</span>
                         </div>
                         <div className="bg-gradient-to-r from-green-50/80 to-emerald-50/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-green-200/50 flex items-center space-x-1 space-x-reverse">
                           <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
@@ -727,7 +562,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                               clipRule="evenodd"
                             />
                           </svg>
-                          <span className="text-green-700 font-semibold text-xs">+�+����+� +�+�+�</span>
+                          <span className="text-green-700 font-semibold text-xs">تایید شده</span>
                         </div>
                       </div>
                     </div>
@@ -742,11 +577,11 @@ export default function ProductPage({ productData }: ProductPageProps) {
                       <div className="space-y-2">
                         <div className="flex items-center space-x-3 space-x-reverse">
                           <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                            {displayPrice.toLocaleString()} +�+�+�+�+�
+                            {displayPrice.toLocaleString()} تومان
                           </span>
                           {product.originalPrice > selectedPrice && (
                             <div className="bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full shadow-md border border-white/20">
-                              <span className="font-bold text-xs">{displayDiscount}% +�+�+���+�</span>
+                              <span className="font-bold text-xs">{displayDiscount}% تخفیف</span>
                             </div>
                           )}
                         </div>
@@ -755,7 +590,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                         {product.originalPrice > selectedPrice && (
                           <div className="flex items-center space-x-2 space-x-reverse">
                             <span className="text-sm text-gray-500 line-through bg-gray-100/60 backdrop-blur-sm px-2 py-0.5 rounded-md">
-                              {displayOriginalPrice.toLocaleString()} +�+�+�+�+�
+                              {displayOriginalPrice.toLocaleString()} تومان
                             </span>
                           </div>
                         )}
@@ -770,10 +605,10 @@ export default function ProductPage({ productData }: ProductPageProps) {
                               clipRule="evenodd"
                             />
                           </svg>
-                          <span className="text-xs font-medium text-green-700">+�+�+�+�G��+�+��� +�+�+�:</span>
+                          <span className="text-xs font-medium text-green-700">صرفه‌جویی شما:</span>
                         </div>
                         <div className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                          {(displayOriginalPrice - displayPrice).toLocaleString()} +�+�+�+�+�
+                          {(displayOriginalPrice - displayPrice).toLocaleString()} تومان
                         </div>
                       </div>
                     </div>
@@ -792,9 +627,9 @@ export default function ProductPage({ productData }: ProductPageProps) {
             <div className="border-b border-gray-200">
               <div className="flex">
                 {[
-                  { id: "description", name: "+�+�+���+�+�+�" },
-                  { id: "features", name: "+��+�+���G��+�+�" },
-                  { id: "reviews", name: "+�+++�+�+� +�+�+�+�+�+�+�" },
+                  { id: "description", name: "توضیحات" },
+                  { id: "features", name: "ویژگی‌ها" },
+                  { id: "faqs", name: "سوالات متداول" },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -825,7 +660,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
 
               {selectedTab === "features" && (
                 <div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-6">+��+�+���G��+�+��� +�+�+++�+���+�+���</h3>
+                  <h3 className="text-xl font-bold text-gray-800 mb-6">ویژگی‌های اسپاتیفای</h3>
                   <ul className="space-y-4">
                     {product.features.map((feature: any, index: number) => (
                       <li key={index} className="flex items-start space-x-3 space-x-reverse">
@@ -847,49 +682,55 @@ export default function ProductPage({ productData }: ProductPageProps) {
                 </div>
               )}
 
-              {selectedTab === "reviews" && (
+              {selectedTab === "faqs" && (
                 <div>
-                  <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-xl font-bold text-gray-800">+�+++�+�+� +�+�+�+�+�+�+�</h3>
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                      +�+�+� +�+++�
-                    </button>
-                  </div>
-
-                  <div className="space-y-6">
-                    {reviews.map((review) => (
-                      <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center space-x-3 space-x-reverse">
-                            <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                              <span className="text-gray-600 font-medium">{review.user[0]}</span>
+                  {faqsData && faqsData.length > 0 ? (
+                    <div className="space-y-4">
+                      {faqsData.map((faq: any, index: number) => (
+                        <div key={faq._id} className="border border-gray-200 rounded-lg overflow-hidden">
+                          <button
+                            onClick={() => toggleFAQ(index)}
+                            className="w-full flex items-center justify-between p-5 text-right hover:bg-gray-50 transition-colors"
+                          >
+                            <div className="flex items-start gap-3 flex-1">
+                              {faq.category && (
+                                <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
+                                  {faq.category === 'general' && 'عمومی'}
+                                  {faq.category === 'payment' && 'پرداخت'}
+                                  {faq.category === 'products' && 'محصولات'}
+                                  {faq.category === 'technical' && 'فنی'}
+                                  {faq.category === 'services' && 'خدمات'}
+                                  {!['general', 'payment', 'products', 'technical', 'services'].includes(faq.category) && faq.category}
+                                </span>
+                              )}
+                              <h3 className="font-semibold text-gray-800 flex-1">
+                                {faq.question}
+                              </h3>
                             </div>
-                            <div>
-                              <div className="font-medium text-gray-800">{review.user}</div>
-                              <div className="text-sm text-gray-500">{review.date}</div>
+                            <svg
+                              className={`w-5 h-5 text-gray-500 transition-transform flex-shrink-0 mr-3 ${
+                                expandedFAQ === index ? 'rotate-180' : ''
+                              }`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          {expandedFAQ === index && (
+                            <div className="px-5 pb-5 text-gray-600 leading-relaxed">
+                              {faq.answer}
                             </div>
-                          </div>
-                          <div className="flex items-center">
-                            {[...Array(5)].map((_, i) => (
-                              <svg
-                                key={i}
-                                className={`w-4 h-4 ${i < review.rating ? "text-yellow-400" : "text-gray-300"}`}
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                              </svg>
-                            ))}
-                          </div>
+                          )}
                         </div>
-                        <p className="text-gray-700 mb-3">{review.comment}</p>
-                        <div className="flex items-center space-x-4 space-x-reverse text-sm text-gray-500">
-                          <button className="hover:text-blue-600">+�+���+� ({review.helpful})</button>
-                          <button className="hover:text-blue-600">+++�+�+�</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-gray-500">
+                      <p>هیچ سوالی یافت نشد</p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -900,7 +741,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
         {/* Related Products Section */}
         <div className="mt-16">
           <div className="bg-white rounded-xl shadow-sm p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-8">+�+�+�+�+�+�+� +�+�+�+�++</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-8">محصولات مرتبط</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((relatedProduct: any) => (
                 <Link
@@ -916,7 +757,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                     />
                     {relatedProduct.discountPercentage > 0 && (
                       <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                        {relatedProduct.discountPercentage}% +�+�+���+�
+                        {relatedProduct.discountPercentage}% تخفیف
                       </div>
                     )}
                   </div>
@@ -942,7 +783,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2 space-x-reverse">
                         <span className="text-lg font-bold text-blue-600">
-                          {relatedProduct.price.toLocaleString()} +�+�+�+�+�
+                          {relatedProduct.price.toLocaleString()} تومان
                         </span>
                         {relatedProduct.originalPrice > relatedProduct.price && (
                           <span className="text-sm text-gray-500 line-through">
@@ -957,7 +798,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
             </div>
             <div className="mt-8 text-center">
               <Link href="/products" className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
-                +�+�+�+�+�+� +�+�+� +�+�+�+�+�+�+�
+                مشاهده همه محصولات
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
@@ -969,7 +810,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
         {/* Related Articles Section */}
         <div className="mt-8">
           <div className="bg-white rounded-xl shadow-sm p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-8">+�+�+�+�+�+� +�+�+�+�++</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-8">مقالات مرتبط</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedArticles.map((article: any) => (
                 <Link
@@ -991,7 +832,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                   </h3>
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <span className="bg-gray-100 px-3 py-1 rounded-full text-xs font-medium">
-                      {Array.isArray(article.tags) && article.tags.length > 0 ? article.tags[0] : '+�+�+�+�+�'}
+                      {Array.isArray(article.tags) && article.tags.length > 0 ? article.tags[0] : 'مقاله'}
                     </span>
                     <span className="flex items-center">
                       <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1002,7 +843,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
-                      5 +�+��+�+�
+                      5 دقیقه
                     </span>
                   </div>
                 </Link>
@@ -1010,7 +851,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
             </div>
             <div className="mt-8 text-center">
               <Link href="/blog" className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
-                +�+�+�+�+�+� +�+�+� +�+�+�+�+�+�
+                مشاهده همه مقالات
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
@@ -1031,7 +872,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                   <p className="text-blue-600 font-bold text-sm sm:text-base whitespace-nowrap">
                     {displayPrice.toLocaleString()}
                   </p>
-                  <span className="text-blue-600 font-bold text-xs sm:text-sm">+�+�+�+�+�</span>
+                  <span className="text-blue-600 font-bold text-xs sm:text-sm">تومان</span>
                   {displayOriginalPrice > displayPrice && (
                     <span className="text-xs text-gray-500 line-through ml-1">
                       {displayOriginalPrice.toLocaleString()}
@@ -1049,7 +890,7 @@ export default function ProductPage({ productData }: ProductPageProps) {
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="px-2 sm:px-3 py-2 text-gray-700 hover:bg-white/60 transition-all duration-300 font-bold text-sm sm:text-base"
                 >
-                  G��
+                  −
                 </button>
                 <div className="px-2 sm:px-3 py-2 border-x border-white/30 bg-white/40 font-bold text-gray-800 min-w-[35px] sm:min-w-[40px] text-center text-sm sm:text-base">
                   {quantity}
@@ -1092,8 +933,8 @@ export default function ProductPage({ productData }: ProductPageProps) {
                   </svg>
                   {showAddedToCart && <div className="absolute inset-0 bg-white/20 rounded-full animate-ping"></div>}
                 </div>
-                <span className="relative hidden sm:inline">{showAddedToCart ? "G�� +�+�+�+�+� +�+�!" : "+�+�+�+�+�+� +�+� +�+�+�"}</span>
-                <span className="relative sm:hidden">{showAddedToCart ? "G��" : "+"}</span>
+                <span className="relative hidden sm:inline">{showAddedToCart ? "✨ اضافه شد!" : "افزودن به سبد"}</span>
+                <span className="relative sm:hidden">{showAddedToCart ? "✓" : "+"}</span>
               </button>
             </div>
           </div>
@@ -1115,39 +956,39 @@ export default function ProductPage({ productData }: ProductPageProps) {
                   <h3 className="text-lg font-bold">SharifGPT</h3>
                 </div>
                 <p className="text-sm text-blue-100 leading-relaxed">
-                  +�+�+�+�+�G��+�+�+�+�+� +�+�+�+���+� +�+�+�+�+� +�+�+� +�+�+�+�+��� +� +�+�+�+�+�+�+� +���+���+�+�+� +�+� +���+���+� +�+�+�+� +� +��+�+� +�+�+�+�+�
+                  ارائه‌دهنده بهترین خدمات هوش مصنوعی و محصولات دیجیتال با کیفیت بالا و قیمت مناسب
                 </p>
               </div>
 
               <div>
-                <h4 className="font-semibold mb-4">+��+�+�G��+�+��� +�+���+�</h4>
+                <h4 className="font-semibold mb-4">لینک‌های مفید</h4>
                 <ul className="space-y-2 text-sm">
                   <li>
                     <a href="#" className="text-blue-100 hover:text-white transition-colors">
-                      +�+�+���++ +� +�+�+�+��+�
+                      شرایط و قوانین
                     </a>
                   </li>
                   <li>
                     <a href="#" className="text-blue-100 hover:text-white transition-colors">
-                      +�+���+� +�+�+�+���
+                      حریم خصوصی
                     </a>
                   </li>
                   <li>
                     <a href="#" className="text-blue-100 hover:text-white transition-colors">
-                      +�+�+�+�+�+� +�+�
+                      درباره ما
                     </a>
                   </li>
                 </ul>
               </div>
 
               <div>
-                <h4 className="font-semibold mb-4">+�+�+�+� +�+�+�+�+�+�</h4>
+                <h4 className="font-semibold mb-4">نماد اعتماد</h4>
                 <div className="flex justify-center md:justify-start">
                   <div className="w-16 h-16 bg-white/10 rounded-lg flex items-center justify-center">
                     <span className="text-xs text-center">
-                      +�+�+�+�
+                      نماد
                       <br />
-                      +�+�+�+�+�+�
+                      اعتماد
                     </span>
                   </div>
                 </div>
