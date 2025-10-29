@@ -94,11 +94,11 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       message: "Payment initiated successfully",
       payment: {
         session_id: paymentSession.id,
-        authority: paymentData.data?.authority,
-        payment_url: paymentData.data?.payment_url,
-        amount: paymentData.data?.amount,
-        currency_code: paymentData.data?.currency_code,
-        status: paymentData.data?.status
+        authority: paymentData.session_id, // Using session_id as authority for now
+        payment_url: `https://sandbox.zarinpal.com/pg/StartPay/${paymentData.session_id}`, // Mock payment URL
+        amount: paymentData.amount,
+        currency_code: paymentData.currency_code,
+        status: paymentData.status
       },
       cart: {
         id: cart.id,

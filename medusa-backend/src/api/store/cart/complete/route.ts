@@ -65,14 +65,14 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     // Complete the cart to create an order
     // Note: In Medusa v2, we need to use the order module to create an order from cart
     const order = await orderModuleService.createOrders({
-      cart_id: cart_id,
       email: cart.email,
       currency_code: cart.currency_code,
       region_id: cart.region_id,
       items: cart.items?.map((item: any) => ({
         variant_id: item.variant_id,
         quantity: item.quantity,
-        unit_price: item.unit_price
+        unit_price: item.unit_price,
+        title: item.variant?.product?.title || "Unknown Product"
       })) || []
     });
 
