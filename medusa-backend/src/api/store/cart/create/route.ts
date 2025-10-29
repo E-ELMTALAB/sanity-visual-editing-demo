@@ -123,6 +123,8 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         await cartModuleService.addLineItems(cart.id, [{
           variant_id: variant.id,
           quantity: item.quantity,
+          title: item.title,
+          unit_price: item.price,
           metadata: {
             frontend_id: item.id,
             selected_option: item.selectedOption,

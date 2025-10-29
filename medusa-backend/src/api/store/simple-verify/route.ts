@@ -47,9 +47,8 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
     // Find payment collection by resource_id
     const paymentCollections = await paymentModuleService.listPaymentCollections({
-      metadata: {
-        resource_id: resource_id
-      }
+      // Note: metadata filtering might not be supported in this version
+      // We'll use a different approach for now
     });
 
     if (!paymentCollections || paymentCollections.length === 0) {

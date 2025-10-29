@@ -45,7 +45,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   res.setHeader('Access-Control-Max-Age', '86400');
   
   try {
-    const body = await req.json();
+    const body = req.body;
     res.status(200).json({
       success: true,
       message: "CORS POST request handled successfully",

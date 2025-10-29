@@ -75,7 +75,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   }
   
   try {
-    const body = await req.json().catch(() => ({}));
+    const body = req.body || {};
     
     const response = {
       success: true,
