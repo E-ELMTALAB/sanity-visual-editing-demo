@@ -93,3 +93,4 @@ If direct backend calls still fail, the proxy endpoints are still available:
 - `/api/payment/test` - Backend connectivity test
 
 The payment system should now work without CORS issues! 🎉
+

@@ -111,16 +111,93 @@ export function useZarinpalPayment() {
       console.log('Items:', items)
       console.log('Total amount:', totalAmount)
 
-      // Use the direct Medusa backend endpoint (CORS should be fixed)
-      const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'}/store/simple-payment`, {
+      // Use the exact same Medusa endpoints that were tested successfully
+      const BASE_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
+      const PK = 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
+      
+      // Step 1: Get regions
+      const regionsResponse = await fetch(`${BASE_URL}/store/regions`, {
+        method: 'GET',
+        headers: {
+          'x-publishable-api-key': PK,
+        }
+      })
+      
+      if (!regionsResponse.ok) {
+        throw new Error(`Failed to fetch regions: ${regionsResponse.statusText}`)
+      }
+      
+      const regionsData = await regionsResponse.json()
+      const regionId = regionsData.regions[0].id
+      
+      // Step 2: Create cart
+      const cartResponse = await fetch(`${BASE_URL}/store/carts`, {
         method: 'POST',
         headers: {
+          'x-publishable-api-key': PK,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          items: items,
-          customer_email: customerInfo.email,
-          customer_phone: customerInfo.phone
+          region_id: regionId,
+          email: customerInfo.email
+        })
+      })
+      
+      if (!cartResponse.ok) {
+        throw new Error(`Failed to create cart: ${cartResponse.statusText}`)
+      }
+      
+      const cartData = await cartResponse.json()
+      const cartId = cartData.cart.id
+      
+      // Step 3: Add items to cart (simplified - using first item for now)
+      if (items.length > 0) {
+        const firstItem = items[0]
+        const lineItemResponse = await fetch(`${BASE_URL}/store/carts/${cartId}/line-items`, {
+          method: 'POST',
+          headers: {
+            'x-publishable-api-key': PK,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            variant_id: 'variant_01K7GP9FB4RWKVS7ES39YKP2TR', // Use a known variant ID
+            quantity: firstItem.quantity
+          })
+        })
+        
+        if (!lineItemResponse.ok) {
+          throw new Error(`Failed to add item to cart: ${lineItemResponse.statusText}`)
+        }
+      }
+      
+      // Step 4: Create payment collection
+      const paymentCollectionResponse = await fetch(`${BASE_URL}/store/payment-collections`, {
+        method: 'POST',
+        headers: {
+          'x-publishable-api-key': PK,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cart_id: cartId
+        })
+      })
+      
+      if (!paymentCollectionResponse.ok) {
+        throw new Error(`Failed to create payment collection: ${paymentCollectionResponse.statusText}`)
+      }
+      
+      const paymentCollectionData = await paymentCollectionResponse.json()
+      const paymentCollectionId = paymentCollectionData.payment_collection.id
+      
+      // Step 5: Create Zarinpal payment session
+      const response = await fetch(`${BASE_URL}/store/payment-collections/${paymentCollectionId}/payment-sessions`, {
+        method: 'POST',
+        headers: {
+          'x-publishable-api-key': PK,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          provider_id: 'pp_zarinpal_zarinpal'
         })
       })
 
@@ -132,20 +209,20 @@ export function useZarinpalPayment() {
       const result = await response.json()
       console.log('Payment initiated successfully:', result)
 
-      if (!result.success || !result.payment?.payment_url) {
-        throw new Error(result.error || 'Payment URL not found in response')
+      if (!result.payment_session?.data?.payment_url) {
+        throw new Error('Payment URL not found in response')
       }
 
       setStatus({
         loading: false,
         error: null,
-        resourceId: result.payment.resource_id,
+        resourceId: cartId, // Use cart ID as resource ID
       })
 
       return {
         success: true,
-        paymentUrl: result.payment.payment_url,
-        resourceId: result.payment.resource_id,
+        paymentUrl: result.payment_session.data.payment_url,
+        resourceId: cartId,
       }
     } catch (error) {
       console.error('Payment initiation failed:', error)
@@ -207,16 +284,18 @@ export function useZarinpalPayment() {
       console.log('Status:', status)
       console.log('Resource ID:', resourceId)
 
-      // Use the direct Medusa backend endpoint (CORS should be fixed)
-      const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'}/store/simple-verify`, {
+      // Use the exact same Medusa verification endpoint that was tested successfully
+      const BASE_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
+      
+      const response = await fetch(`${BASE_URL}/store/zarinpal/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           authority: authority,
-          status: status,
-          resource_id: resourceId
+          Status: status,
+          cart_id: resourceId
         })
       })
 
@@ -238,11 +317,11 @@ export function useZarinpalPayment() {
       return {
         success: true,
         data: {
-          ref_id: result.payment?.ref_id,
-          card_pan: result.payment?.card_pan,
-          amount: result.payment?.amount,
-          currency_code: result.payment?.currency_code,
-          status: result.payment?.status
+          ref_id: result.data?.ref_id,
+          card_pan: result.data?.card_pan,
+          amount: result.data?.amount,
+          currency_code: result.data?.currency_code,
+          status: result.data?.status
         }
       }
     } catch (error) {

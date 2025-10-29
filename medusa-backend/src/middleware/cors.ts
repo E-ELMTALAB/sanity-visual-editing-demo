@@ -31,3 +31,4 @@ export const setCorsHeaders = (res: MedusaResponse) => {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Max-Age', '86400');
 };
+

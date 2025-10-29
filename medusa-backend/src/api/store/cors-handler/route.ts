@@ -72,3 +72,4 @@ export const OPTIONS = async (req: MedusaRequest, res: MedusaResponse) => {
   
   res.status(200).end();
 };
+
