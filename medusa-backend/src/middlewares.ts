@@ -1,5 +1,4 @@
 import { defineMiddlewares } from "@medusajs/framework";
-import cors from "cors";
 
 /**
  * Medusa v2 Middleware Configuration
