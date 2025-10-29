@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework";
 import { Modules } from "@medusajs/framework/utils";
 import { IPaymentModuleService } from "@medusajs/framework/types";
+import { applyCorsHeaders, handleCorsPreflight } from "../../../../middleware/global-cors";
 
 /**
  * Direct Zarinpal Payment Verification
@@ -14,10 +15,13 @@ import { IPaymentModuleService } from "@medusajs/framework/types";
  * }
  */
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  // Apply comprehensive CORS headers
+  applyCorsHeaders(res);
+  
+  // Handle preflight requests
+  if (handleCorsPreflight(req, res)) {
+    return;
+  }
   
   try {
     const body = req.body as {
@@ -117,8 +121,6 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
 // Handle preflight requests
 export const OPTIONS = async (req: MedusaRequest, res: MedusaResponse) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  applyCorsHeaders(res);
   res.status(200).end();
 };

@@ -2,15 +2,7 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework";
 import { Modules } from "@medusajs/framework/utils";
 import { IPaymentModuleService } from "@medusajs/framework/types";
 import { CURRENCY_TO_IRR } from "../../../lib/constants";
-
-// Enhanced CORS middleware function
-const setCorsHeaders = (res: MedusaResponse) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, x-publishable-api-key, x-medusa-access-token');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Max-Age', '86400');
-};
+import { applyCorsHeaders, handleCorsPreflight } from "../../../middleware/global-cors";
 
 /**
  * Simple Payment Endpoint with explicit CORS handling
@@ -31,8 +23,13 @@ const setCorsHeaders = (res: MedusaResponse) => {
  * }
  */
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
-  // Set CORS headers first
-  setCorsHeaders(res);
+  // Apply comprehensive CORS headers
+  applyCorsHeaders(res);
+  
+  // Handle preflight requests
+  if (handleCorsPreflight(req, res)) {
+    return;
+  }
   
   try {
     const body = req.body as {
@@ -136,6 +133,6 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
 // Handle preflight requests
 export const OPTIONS = async (req: MedusaRequest, res: MedusaResponse) => {
-  setCorsHeaders(res);
+  applyCorsHeaders(res);
   res.status(200).end();
 };
