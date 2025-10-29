@@ -1,5 +1,6 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { Modules } from "@medusajs/framework/utils";
+import { applyCorsHeaders, handleCorsPreflight } from "../../../../middleware/global-cors";
 
 /**
  * POST /store/zarinpal/verify
@@ -9,6 +10,14 @@ export async function POST(
   req: MedusaRequest,
   res: MedusaResponse
 ): Promise<void> {
+  // Apply CORS headers
+  applyCorsHeaders(res);
+  
+  // Handle preflight requests
+  if (handleCorsPreflight(req, res)) {
+    return;
+  }
+  
   try {
     const body = (req.body || {}) as {
       authority?: string
@@ -106,5 +115,13 @@ export async function POST(
       message: error.message,
     });
   }
+}
+
+export async function OPTIONS(
+  req: MedusaRequest,
+  res: MedusaResponse
+): Promise<void> {
+  applyCorsHeaders(res);
+  res.status(200).end();
 }
 

@@ -1,94 +1,103 @@
-# ============================================
 # CORS Fix Test Script
-# ============================================
-# This script tests the CORS configuration after applying fixes
+# This script tests the CORS configuration on the Medusa backend
 
-$ErrorActionPreference = 'Stop';
-$BASE = 'https://backend-production-ea59.up.railway.app';
+Write-Host "Testing CORS Configuration..." -ForegroundColor Green
 
-Write-Host "=== CORS Fix Test Script ===" -ForegroundColor Green;
-Write-Host "Testing CORS configuration after fixes..." -ForegroundColor Yellow;
-Write-Host "";
+$backendUrl = "http://localhost:9000"
+$testEndpoint = "$backendUrl/store/cors-test-comprehensive"
 
-# Test 1: CORS Handler endpoint
-Write-Host "Test 1: Testing CORS Handler endpoint..." -ForegroundColor Cyan;
+Write-Host "Backend URL: $backendUrl" -ForegroundColor Yellow
+Write-Host "Test Endpoint: $testEndpoint" -ForegroundColor Yellow
+
+# Test 1: Basic GET request
+Write-Host "`n1. Testing basic GET request..." -ForegroundColor Cyan
 try {
-    $corsTest = Invoke-RestMethod -Uri "$BASE/store/cors-handler" -Method GET -Headers @{ 'Origin' = 'https://sanity-visual-editing-git-a2c1fe-arshanelmtalab-5364s-projects.vercel.app' };
-    Write-Host "✅ CORS Handler working:" -ForegroundColor Green;
-    $corsTest | ConvertTo-Json -Depth 3 | Write-Host;
-} catch {
-    Write-Host "❌ CORS Handler failed: $($_.Exception.Message)" -ForegroundColor Red;
-}
-
-Write-Host "";
-
-# Test 2: Simple Payment endpoint (OPTIONS preflight)
-Write-Host "Test 2: Testing Simple Payment OPTIONS preflight..." -ForegroundColor Cyan;
-try {
-    $optionsResponse = Invoke-WebRequest -Uri "$BASE/store/simple-payment" -Method OPTIONS -Headers @{ 
-        'Origin' = 'https://sanity-visual-editing-git-a2c1fe-arshanelmtalab-5364s-projects.vercel.app';
-        'Access-Control-Request-Method' = 'POST';
-        'Access-Control-Request-Headers' = 'Content-Type';
-    } -UseBasicParsing;
-    
-    Write-Host "✅ OPTIONS preflight successful:" -ForegroundColor Green;
-    Write-Host "Status: $($optionsResponse.StatusCode)" -ForegroundColor Gray;
-    Write-Host "CORS Headers:" -ForegroundColor Gray;
-    $optionsResponse.Headers | Where-Object { $_.Key -like "*Access-Control*" } | ForEach-Object {
-        Write-Host "  $($_.Key): $($_.Value)" -ForegroundColor Gray;
+    $response = Invoke-RestMethod -Uri $testEndpoint -Method GET -Headers @{
+        "Content-Type" = "application/json"
+        "Origin" = "http://localhost:3000"
     }
+    Write-Host "✓ GET request successful" -ForegroundColor Green
+    Write-Host "Response: $($response.message)" -ForegroundColor White
 } catch {
-    Write-Host "❌ OPTIONS preflight failed: $($_.Exception.Message)" -ForegroundColor Red;
+    Write-Host "✗ GET request failed: $($_.Exception.Message)" -ForegroundColor Red
 }
 
-Write-Host "";
-
-# Test 3: Simple Payment endpoint (POST request)
-Write-Host "Test 3: Testing Simple Payment POST request..." -ForegroundColor Cyan;
+# Test 2: OPTIONS preflight request
+Write-Host "`n2. Testing OPTIONS preflight request..." -ForegroundColor Cyan
 try {
-    $paymentData = @{
+    $response = Invoke-RestMethod -Uri $testEndpoint -Method OPTIONS -Headers @{
+        "Origin" = "http://localhost:3000"
+        "Access-Control-Request-Method" = "POST"
+        "Access-Control-Request-Headers" = "Content-Type"
+    }
+    Write-Host "✓ OPTIONS request successful" -ForegroundColor Green
+    Write-Host "Response: $($response.message)" -ForegroundColor White
+} catch {
+    Write-Host "✗ OPTIONS request failed: $($_.Exception.Message)" -ForegroundColor Red
+}
+
+# Test 3: POST request
+Write-Host "`n3. Testing POST request..." -ForegroundColor Cyan
+try {
+    $testData = @{
+        test = "CORS POST test"
+        timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    } | ConvertTo-Json
+    
+    $response = Invoke-RestMethod -Uri $testEndpoint -Method POST -Body $testData -ContentType "application/json" -Headers @{
+        "Origin" = "http://localhost:3000"
+    }
+    Write-Host "✓ POST request successful" -ForegroundColor Green
+    Write-Host "Response: $($response.message)" -ForegroundColor White
+} catch {
+    Write-Host "✗ POST request failed: $($_.Exception.Message)" -ForegroundColor Red
+}
+
+# Test 4: Test cart creation endpoint
+Write-Host "`n4. Testing cart creation endpoint..." -ForegroundColor Cyan
+try {
+    $cartData = @{
         items = @(
             @{
                 id = 1
                 title = "Test Product"
                 price = 100000
+                image = "test.jpg"
                 quantity = 1
+                selectedOption = "Default"
             }
         )
         customer_email = "test@example.com"
         customer_phone = "+989123456789"
-    } | ConvertTo-Json -Depth 3;
-
-    $paymentResponse = Invoke-RestMethod -Uri "$BASE/store/simple-payment" -Method POST -Headers @{ 
-        'Content-Type' = 'application/json';
-        'Origin' = 'https://sanity-visual-editing-git-a2c1fe-arshanelmtalab-5364s-projects.vercel.app';
-    } -Body $paymentData;
+    } | ConvertTo-Json
     
-    Write-Host "✅ Payment POST successful:" -ForegroundColor Green;
-    $paymentResponse | ConvertTo-Json -Depth 3 | Write-Host;
-} catch {
-    Write-Host "❌ Payment POST failed: $($_.Exception.Message)" -ForegroundColor Red;
-    if ($_.Exception.Response) {
-        $errorStream = $_.Exception.Response.GetResponseStream();
-        $reader = New-Object System.IO.StreamReader($errorStream);
-        $errorBody = $reader.ReadToEnd();
-        Write-Host "Error Response: $errorBody" -ForegroundColor Red;
+    $response = Invoke-RestMethod -Uri "$backendUrl/store/cart/create" -Method POST -Body $cartData -ContentType "application/json" -Headers @{
+        "Origin" = "http://localhost:3000"
     }
-}
-
-Write-Host "";
-
-# Test 4: Test CORS endpoint
-Write-Host "Test 4: Testing existing CORS test endpoint..." -ForegroundColor Cyan;
-try {
-    $corsTest2 = Invoke-RestMethod -Uri "$BASE/store/cors-test" -Method GET -Headers @{ 'Origin' = 'https://sanity-visual-editing-git-a2c1fe-arshanelmtalab-5364s-projects.vercel.app' };
-    Write-Host "✅ CORS Test endpoint working:" -ForegroundColor Green;
-    $corsTest2 | ConvertTo-Json -Depth 3 | Write-Host;
+    Write-Host "✓ Cart creation successful" -ForegroundColor Green
+    Write-Host "Cart ID: $($response.cart.id)" -ForegroundColor White
 } catch {
-    Write-Host "❌ CORS Test endpoint failed: $($_.Exception.Message)" -ForegroundColor Red;
+    Write-Host "✗ Cart creation failed: $($_.Exception.Message)" -ForegroundColor Red
 }
 
-Write-Host "";
-Write-Host "=== CORS Test Complete ===" -ForegroundColor Green;
-Write-Host "If all tests pass, CORS should be working correctly!" -ForegroundColor Yellow;
+# Test 5: Test Zarinpal verification endpoint
+Write-Host "`n5. Testing Zarinpal verification endpoint..." -ForegroundColor Cyan
+try {
+    $verifyData = @{
+        authority = "test_authority_123"
+        Status = "OK"
+        cart_id = "test_cart_123"
+    } | ConvertTo-Json
+    
+    $response = Invoke-RestMethod -Uri "$backendUrl/store/zarinpal/verify" -Method POST -Body $verifyData -ContentType "application/json" -Headers @{
+        "Origin" = "http://localhost:3000"
+    }
+    Write-Host "✓ Zarinpal verification endpoint accessible" -ForegroundColor Green
+    Write-Host "Response: $($response.message)" -ForegroundColor White
+} catch {
+    Write-Host "✗ Zarinpal verification failed: $($_.Exception.Message)" -ForegroundColor Red
+}
 
+Write-Host "`nCORS Test Complete!" -ForegroundColor Green
+Write-Host "If all tests passed, CORS is properly configured for testing." -ForegroundColor Yellow
+Write-Host "If any tests failed, check the Medusa backend logs and ensure it's running." -ForegroundColor Yellow

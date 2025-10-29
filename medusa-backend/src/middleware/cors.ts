@@ -1,21 +1,17 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework";
+import { applyCorsHeaders, handleCorsPreflight } from "./global-cors";
 
 /**
  * Global CORS Middleware
  * This middleware handles CORS for all requests to the Medusa backend
  */
 export const corsMiddleware = (req: MedusaRequest, res: MedusaResponse, next: () => void) => {
-  // Set CORS headers for all requests
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, x-publishable-api-key, x-medusa-access-token');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Max-Age', '86400');
+  // Apply comprehensive CORS headers
+  applyCorsHeaders(res);
   
   // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+  if (handleCorsPreflight(req, res)) {
+    return; // Request was handled as preflight
   }
   
   next();
@@ -23,12 +19,9 @@ export const corsMiddleware = (req: MedusaRequest, res: MedusaResponse, next: ()
 
 /**
  * Enhanced CORS headers for specific endpoints
+ * @deprecated Use applyCorsHeaders from global-cors.ts instead
  */
 export const setCorsHeaders = (res: MedusaResponse) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, x-publishable-api-key, x-medusa-access-token');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Max-Age', '86400');
+  applyCorsHeaders(res);
 };
 

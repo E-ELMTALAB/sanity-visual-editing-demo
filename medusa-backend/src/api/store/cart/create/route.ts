@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework";
 import { Modules } from "@medusajs/framework/utils";
 import { ICartModuleService, IProductModuleService } from "@medusajs/framework/types";
+import { applyCorsHeaders, handleCorsPreflight } from "../../../../middleware/global-cors";
 
 /**
  * Create Cart from Frontend Cart Data
@@ -23,6 +24,14 @@ import { ICartModuleService, IProductModuleService } from "@medusajs/framework/t
  * }
  */
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
+  // Apply CORS headers
+  applyCorsHeaders(res);
+  
+  // Handle preflight requests
+  if (handleCorsPreflight(req, res)) {
+    return;
+  }
+  
   try {
     const body = req.body as {
       items: Array<{
@@ -96,13 +105,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             title: item.selectedOption || "Default",
             sku: `SKU-${item.id}-${Date.now()}`,
             manage_inventory: false,
-            allow_backorder: true,
-            prices: [
-              {
-                amount: item.price,
-                currency_code: "irr"
-              }
-            ]
+            allow_backorder: true
           });
         }
 
@@ -117,7 +120,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         }
 
         // Add line item to cart
-        await cartModuleService.addLineItems(cart.id, {
+        await cartModuleService.addLineItems(cart.id, [{
           variant_id: variant.id,
           quantity: item.quantity,
           metadata: {
@@ -125,7 +128,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             selected_option: item.selectedOption,
             image_url: item.image
           }
-        });
+        }]);
 
       } catch (error) {
         console.error(`Error adding item ${item.title} to cart:`, error);
@@ -169,4 +172,9 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       stack: process.env.NODE_ENV === "development" ? error.stack : undefined
     });
   }
+};
+
+export const OPTIONS = async (req: MedusaRequest, res: MedusaResponse) => {
+  applyCorsHeaders(res);
+  res.status(200).end();
 };

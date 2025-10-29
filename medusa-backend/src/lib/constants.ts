@@ -33,17 +33,17 @@ export const DATABASE_URL = assertValue(
 export const REDIS_URL = process.env.REDIS_URL;
 
 /**
- * Admin CORS origins
+ * Admin CORS origins - allow all for testing
  */
-export const ADMIN_CORS = process.env.ADMIN_CORS;
+export const ADMIN_CORS = process.env.ADMIN_CORS || "*";
 
 /**
- * Auth CORS origins
+ * Auth CORS origins - allow all for testing
  */
-export const AUTH_CORS = process.env.AUTH_CORS;
+export const AUTH_CORS = process.env.AUTH_CORS || "*";
 
 /**
- * Store/frontend CORS origins
+ * Store/frontend CORS origins - allow all for testing
  */
 export const STORE_CORS = process.env.STORE_CORS || "*";
 
