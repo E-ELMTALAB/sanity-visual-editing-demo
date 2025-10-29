@@ -2,7 +2,6 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework";
 import { Modules } from "@medusajs/framework/utils";
 import { IPaymentModuleService } from "@medusajs/framework/types";
 import { CURRENCY_TO_IRR } from "../../../lib/constants";
-import { applyCorsHeaders, handleCorsPreflight } from "../../../middleware/global-cors";
 
 /**
  * Simple Payment Endpoint with explicit CORS handling
@@ -23,14 +22,6 @@ import { applyCorsHeaders, handleCorsPreflight } from "../../../middleware/globa
  * }
  */
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
-  // Apply comprehensive CORS headers
-  applyCorsHeaders(res);
-  
-  // Handle preflight requests
-  if (handleCorsPreflight(req, res)) {
-    return;
-  }
-  
   try {
     const body = req.body as {
       items: Array<{
@@ -131,8 +122,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   }
 };
 
-// Handle preflight requests
+// OPTIONS method is now handled by the middleware
 export const OPTIONS = async (req: MedusaRequest, res: MedusaResponse) => {
-  applyCorsHeaders(res);
   res.status(200).end();
 };
