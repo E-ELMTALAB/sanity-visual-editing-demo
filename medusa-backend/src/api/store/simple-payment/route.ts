@@ -115,7 +115,19 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       }
     });
     console.log('[SIMPLE-PAYMENT] ✅ Payment session created:', paymentSession.id);
+    console.log('[SIMPLE-PAYMENT] Payment session data:', JSON.stringify(paymentSession.data, null, 2));
 
+    // Extract authority and payment_url from payment session data
+    const authority = (paymentSession.data as any)?.authority || null;
+    const payment_url = (paymentSession.data as any)?.payment_url || null;
+    
+    console.log('[SIMPLE-PAYMENT] Extracted authority:', authority);
+    console.log('[SIMPLE-PAYMENT] Extracted payment_url:', payment_url);
+    
+    if (!authority) {
+      console.log('[SIMPLE-PAYMENT] ⚠️ WARNING: No authority returned from payment provider');
+    }
+    
     // For now, we'll return the payment session data
     // In a real implementation, you would initiate the payment with Zarinpal here
     const paymentData = {
@@ -123,7 +135,9 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       provider_id: paymentSession.provider_id,
       amount: paymentSession.amount,
       currency_code: paymentSession.currency_code,
-      status: paymentSession.status
+      status: paymentSession.status,
+      authority: authority,
+      payment_url: payment_url
     };
     console.log('[SIMPLE-PAYMENT] Payment data prepared:', JSON.stringify(paymentData, null, 2));
 
@@ -133,8 +147,8 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       payment: {
         session_id: paymentSession.id,
         collection_id: paymentCollection.id,
-        authority: paymentData.session_id, // Using session_id as authority for now
-        payment_url: `https://sandbox.zarinpal.com/pg/StartPay/${paymentData.session_id}`, // Mock payment URL
+        authority: authority || paymentData.session_id, // Use real authority from provider, fallback to session_id
+        payment_url: payment_url || `https://sandbox.zarinpal.com/pg/StartPay/${authority || paymentData.session_id}`, // Use real payment URL from provider
         amount: paymentData.amount,
         currency_code: paymentData.currency_code,
         status: paymentData.status,
