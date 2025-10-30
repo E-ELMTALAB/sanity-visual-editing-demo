@@ -114,7 +114,7 @@ export const WORKER_MODE =
  */
 export const SHOULD_DISABLE_ADMIN = typeof process.env.MEDUSA_DISABLE_ADMIN !== 'undefined'
   ? process.env.MEDUSA_DISABLE_ADMIN === 'true'
-  : process.env.NODE_ENV === 'production'
+  : false // Changed: Enable admin by default for API key management
 
 /**
  * Currency conversion rates for Zarinpal (IRR)
