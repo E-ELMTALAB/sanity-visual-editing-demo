@@ -44,6 +44,23 @@ function getAllowedOrigin(requestOrigin: string | undefined, corsConfig: string)
 
 export default defineMiddlewares({
   routes: [
+    // EARLY MIDDLEWARE to log ALL requests to /store/* FIRST
+    // Middlewares run in REVERSE ORDER, so this will log LAST
+    {
+      matcher: "/store/*",
+      middlewares: [
+        (req, res, next) => {
+          console.log('[EARLY-MIDDLEWARE] ======== REQUEST REACHED CUSTOM MIDDLEWARE ========');
+          console.log('[EARLY-MIDDLEWARE] Path:', req.url);
+          console.log('[EARLY-MIDDLEWARE] Method:', req.method);
+          console.log('[EARLY-MIDDLEWARE] Full URL:', req.url);
+          console.log('[EARLY-MIDDLEWARE] All headers:', JSON.stringify(req.headers, null, 2));
+          console.log('[EARLY-MIDDLEWARE] If you see this, request PASSED Medusa middleware!');
+          next();
+        },
+      ],
+    },
+    
     // CORS middleware for all store API routes
     {
       matcher: "/store/*",
