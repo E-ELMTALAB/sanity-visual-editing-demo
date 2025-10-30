@@ -44,6 +44,8 @@ function getAllowedOrigin(requestOrigin: string | undefined, corsConfig: string)
 }
 
 export const applyCorsHeaders = (reqOrRes: MedusaRequest | MedusaResponse, res?: MedusaResponse) => {
+  console.log('[CORS] applyCorsHeaders called');
+  
   // Handle both old signature (res only) and new signature (req, res)
   let req: MedusaRequest | null = null;
   let response: MedusaResponse;
@@ -52,21 +54,32 @@ export const applyCorsHeaders = (reqOrRes: MedusaRequest | MedusaResponse, res?:
     // New signature: (req, res)
     req = reqOrRes as MedusaRequest;
     response = res;
+    console.log('[CORS] Using new signature (req, res)');
   } else {
     // Old signature: (res) - backward compatibility
     response = reqOrRes as MedusaResponse;
+    console.log('[CORS] Using old signature (res only)');
   }
   
   // Get CORS config from environment variable
   const corsConfig = process.env.STORE_CORS || '*';
   const requestOrigin = req?.headers?.origin;
   
+  console.log('[CORS] Configuration:');
+  console.log('[CORS] - STORE_CORS env:', corsConfig);
+  console.log('[CORS] - Request origin:', requestOrigin);
+  
   // Get allowed origin based on config
   const allowedOrigin = getAllowedOrigin(requestOrigin, corsConfig);
+  
+  console.log('[CORS] - Allowed origin:', allowedOrigin);
   
   // Only set Access-Control-Allow-Origin if we have a valid origin
   if (allowedOrigin) {
     response.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    console.log('[CORS] ✅ Set Access-Control-Allow-Origin:', allowedOrigin);
+  } else {
+    console.log('[CORS] ⚠️ No allowed origin, skipping Access-Control-Allow-Origin');
   }
   
   response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD');
@@ -75,6 +88,8 @@ export const applyCorsHeaders = (reqOrRes: MedusaRequest | MedusaResponse, res?:
   response.setHeader('Access-Control-Max-Age', '86400');
   response.setHeader('Access-Control-Expose-Headers', 'Content-Length, X-JSON');
   response.setHeader('Vary', 'Origin');
+  
+  console.log('[CORS] ✅ All CORS headers set');
 };
 
 export const handleCorsPreflight = (req: MedusaRequest, res: MedusaResponse) => {

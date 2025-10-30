@@ -49,16 +49,28 @@ export default defineMiddlewares({
       matcher: "/store/*",
       middlewares: [
         (req, res, next) => {
+          console.log('[MIDDLEWARE] /store/* middleware triggered');
+          console.log('[MIDDLEWARE] Request path:', req.url);
+          console.log('[MIDDLEWARE] Request method:', req.method);
+          console.log('[MIDDLEWARE] Request origin:', req.headers.origin);
+          
           // Get CORS config from environment variable
           const corsConfig = process.env.STORE_CORS || '*';
           const requestOrigin = req.headers.origin;
           
+          console.log('[MIDDLEWARE] CORS config from env:', corsConfig);
+          
           // Get allowed origin based on config
           const allowedOrigin = getAllowedOrigin(requestOrigin, corsConfig);
+          
+          console.log('[MIDDLEWARE] Allowed origin determined:', allowedOrigin);
           
           // Only set Access-Control-Allow-Origin if we have a valid origin
           if (allowedOrigin) {
             res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+            console.log('[MIDDLEWARE] ✅ Set Access-Control-Allow-Origin:', allowedOrigin);
+          } else {
+            console.log('[MIDDLEWARE] ⚠️ No allowed origin determined');
           }
           
           res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD');
@@ -68,12 +80,16 @@ export default defineMiddlewares({
           res.setHeader('Access-Control-Expose-Headers', 'Content-Length, X-JSON');
           res.setHeader('Vary', 'Origin');
           
+          console.log('[MIDDLEWARE] All CORS headers set, proceeding...');
+          
           // Handle preflight requests
           if (req.method === 'OPTIONS') {
+            console.log('[MIDDLEWARE] OPTIONS request, returning 200');
             res.status(200).end();
             return;
           }
           
+          console.log('[MIDDLEWARE] Calling next() to continue to route handler');
           next();
         },
       ],
