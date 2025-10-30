@@ -56,6 +56,7 @@ export default function CartPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-publishable-api-key': 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4',
         },
         body: JSON.stringify({
           items: state.items.map(item => ({

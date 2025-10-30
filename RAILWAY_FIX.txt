@@ -1,0 +1,8 @@
+RAILWAY QUICK FIX:
+
+Add this environment variable to Railway:
+Variable Name: MEDUSA_DISABLE_ADMIN
+Value: false
+
+This will enable the admin panel and fix the API key issue.
+
