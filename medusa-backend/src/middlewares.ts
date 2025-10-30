@@ -4,6 +4,44 @@ import { defineMiddlewares } from "@medusajs/framework";
  * Medusa v2 Middleware Configuration
  * This file configures CORS and other middlewares for custom routes
  */
+
+/**
+ * Get allowed origin based on configuration
+ * Supports: *, exact matches, and regex patterns
+ */
+function getAllowedOrigin(requestOrigin: string | undefined, corsConfig: string): string | undefined {
+  if (corsConfig === '*' || !corsConfig) {
+    return '*';
+  }
+  
+  const origins = corsConfig.split(',').map(origin => origin.trim());
+  
+  if (!requestOrigin) {
+    return undefined;
+  }
+  
+  // Check exact matches
+  if (origins.includes(requestOrigin)) {
+    return requestOrigin;
+  }
+  
+  // Check regex patterns (e.g., /^https:\/\/.*\.yourdomain\.com$/)
+  for (const pattern of origins) {
+    if (pattern.startsWith('/') && pattern.endsWith('/')) {
+      try {
+        const regex = new RegExp(pattern.slice(1, -1));
+        if (regex.test(requestOrigin)) {
+          return requestOrigin;
+        }
+      } catch (e) {
+        console.warn(`Invalid CORS regex pattern: ${pattern}`);
+      }
+    }
+  }
+  
+  return undefined;
+}
+
 export default defineMiddlewares({
   routes: [
     // CORS middleware for all store API routes
@@ -11,8 +49,18 @@ export default defineMiddlewares({
       matcher: "/store/*",
       middlewares: [
         (req, res, next) => {
-          // Apply comprehensive CORS headers
-          res.setHeader('Access-Control-Allow-Origin', '*');
+          // Get CORS config from environment variable
+          const corsConfig = process.env.STORE_CORS || '*';
+          const requestOrigin = req.headers.origin;
+          
+          // Get allowed origin based on config
+          const allowedOrigin = getAllowedOrigin(requestOrigin, corsConfig);
+          
+          // Only set Access-Control-Allow-Origin if we have a valid origin
+          if (allowedOrigin) {
+            res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+          }
+          
           res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD');
           res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, x-publishable-api-key, x-medusa-access-token, Accept, Origin, Cache-Control, Pragma');
           res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -35,8 +83,14 @@ export default defineMiddlewares({
       matcher: "/admin/*",
       middlewares: [
         (req, res, next) => {
-          // Apply comprehensive CORS headers
-          res.setHeader('Access-Control-Allow-Origin', '*');
+          const corsConfig = process.env.ADMIN_CORS || '*';
+          const requestOrigin = req.headers.origin;
+          const allowedOrigin = getAllowedOrigin(requestOrigin, corsConfig);
+          
+          if (allowedOrigin) {
+            res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+          }
+          
           res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD');
           res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, x-medusa-access-token, Accept, Origin, Cache-Control, Pragma');
           res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -44,7 +98,6 @@ export default defineMiddlewares({
           res.setHeader('Access-Control-Expose-Headers', 'Content-Length, X-JSON');
           res.setHeader('Vary', 'Origin');
           
-          // Handle preflight requests
           if (req.method === 'OPTIONS') {
             res.status(200).end();
             return;
@@ -59,8 +112,14 @@ export default defineMiddlewares({
       matcher: "/internal/*",
       middlewares: [
         (req, res, next) => {
-          // Apply comprehensive CORS headers
-          res.setHeader('Access-Control-Allow-Origin', '*');
+          const corsConfig = process.env.AUTH_CORS || '*';
+          const requestOrigin = req.headers.origin;
+          const allowedOrigin = getAllowedOrigin(requestOrigin, corsConfig);
+          
+          if (allowedOrigin) {
+            res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+          }
+          
           res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD');
           res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, x-medusa-access-token, Accept, Origin, Cache-Control, Pragma');
           res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -68,7 +127,6 @@ export default defineMiddlewares({
           res.setHeader('Access-Control-Expose-Headers', 'Content-Length, X-JSON');
           res.setHeader('Vary', 'Origin');
           
-          // Handle preflight requests
           if (req.method === 'OPTIONS') {
             res.status(200).end();
             return;
