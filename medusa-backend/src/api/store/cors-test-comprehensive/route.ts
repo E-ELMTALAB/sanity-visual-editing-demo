@@ -11,7 +11,7 @@ import { applyCorsHeaders, handleCorsPreflight } from "../../../middleware/globa
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   // Apply CORS headers
-  applyCorsHeaders(res);
+  applyCorsHeaders(req, res);
   
   // Handle preflight requests
   if (handleCorsPreflight(req, res)) {
@@ -67,7 +67,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   // Apply CORS headers
-  applyCorsHeaders(res);
+  applyCorsHeaders(req, res);
   
   // Handle preflight requests
   if (handleCorsPreflight(req, res)) {
@@ -102,7 +102,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
 export const OPTIONS = async (req: MedusaRequest, res: MedusaResponse) => {
   // Apply CORS headers for preflight requests
-  applyCorsHeaders(res);
+  applyCorsHeaders(req, res);
   
   const response = {
     success: true,
@@ -124,7 +124,7 @@ export const OPTIONS = async (req: MedusaRequest, res: MedusaResponse) => {
 
 // Support all HTTP methods for comprehensive testing
 export const PUT = async (req: MedusaRequest, res: MedusaResponse) => {
-  applyCorsHeaders(res);
+  applyCorsHeaders(req, res);
   if (handleCorsPreflight(req, res)) return;
   
   res.status(200).json({
@@ -136,7 +136,7 @@ export const PUT = async (req: MedusaRequest, res: MedusaResponse) => {
 };
 
 export const DELETE = async (req: MedusaRequest, res: MedusaResponse) => {
-  applyCorsHeaders(res);
+  applyCorsHeaders(req, res);
   if (handleCorsPreflight(req, res)) return;
   
   res.status(200).json({
@@ -148,7 +148,7 @@ export const DELETE = async (req: MedusaRequest, res: MedusaResponse) => {
 };
 
 export const PATCH = async (req: MedusaRequest, res: MedusaResponse) => {
-  applyCorsHeaders(res);
+  applyCorsHeaders(req, res);
   if (handleCorsPreflight(req, res)) return;
   
   res.status(200).json({

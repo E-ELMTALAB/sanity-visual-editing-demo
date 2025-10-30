@@ -7,7 +7,7 @@ import { applyCorsHeaders, handleCorsPreflight } from "./global-cors";
  */
 export const corsMiddleware = (req: MedusaRequest, res: MedusaResponse, next: () => void) => {
   // Apply comprehensive CORS headers
-  applyCorsHeaders(res);
+  applyCorsHeaders(req, res);
   
   // Handle preflight requests
   if (handleCorsPreflight(req, res)) {
@@ -21,7 +21,7 @@ export const corsMiddleware = (req: MedusaRequest, res: MedusaResponse, next: ()
  * Enhanced CORS headers for specific endpoints
  * @deprecated Use applyCorsHeaders from global-cors.ts instead
  */
-export const setCorsHeaders = (res: MedusaResponse) => {
-  applyCorsHeaders(res);
+export const setCorsHeaders = (req: MedusaRequest, res: MedusaResponse) => {
+  applyCorsHeaders(req, res);
 };
 

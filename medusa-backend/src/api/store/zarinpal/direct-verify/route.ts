@@ -16,7 +16,7 @@ import { applyCorsHeaders, handleCorsPreflight } from "../../../../middleware/gl
  */
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   // Apply comprehensive CORS headers
-  applyCorsHeaders(res);
+  applyCorsHeaders(req, res);
   
   // Handle preflight requests
   if (handleCorsPreflight(req, res)) {
@@ -121,6 +121,6 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
 // Handle preflight requests
 export const OPTIONS = async (req: MedusaRequest, res: MedusaResponse) => {
-  applyCorsHeaders(res);
+  applyCorsHeaders(req, res);
   res.status(200).end();
 };

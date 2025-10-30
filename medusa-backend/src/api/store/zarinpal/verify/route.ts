@@ -11,7 +11,7 @@ export async function POST(
   res: MedusaResponse
 ): Promise<void> {
   // Apply CORS headers
-  applyCorsHeaders(res);
+  applyCorsHeaders(req, res);
   
   // Handle preflight requests
   if (handleCorsPreflight(req, res)) {
@@ -121,7 +121,7 @@ export async function OPTIONS(
   req: MedusaRequest,
   res: MedusaResponse
 ): Promise<void> {
-  applyCorsHeaders(res);
+  applyCorsHeaders(req, res);
   res.status(200).end();
 }
 
