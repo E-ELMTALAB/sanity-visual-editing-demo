@@ -7,18 +7,65 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework";
  * Usage: Import and call this function at the beginning of each API route handler
  */
 
-export const applyCorsHeaders = (res: MedusaResponse) => {
-  // Set comprehensive CORS headers for all domains (testing purposes)
-  res.setHeader('Access-Control-Allow-Origin', '*');
+/**
+ * Get allowed origin based on configuration
+ */
+function getAllowedOrigin(requestOrigin: string | undefined, corsConfig: string): string | undefined {
+  if (corsConfig === '*' || !corsConfig) {
+    return '*';
+  }
+  
+  const origins = corsConfig.split(',').map(origin => origin.trim());
+  
+  if (!requestOrigin) {
+    return undefined;
+  }
+  
+  // Check exact matches
+  if (origins.includes(requestOrigin)) {
+    return requestOrigin;
+  }
+  
+  // Check regex patterns
+  for (const pattern of origins) {
+    if (pattern.startsWith('/') && pattern.endsWith('/')) {
+      try {
+        const regex = new RegExp(pattern.slice(1, -1));
+        if (regex.test(requestOrigin)) {
+          return requestOrigin;
+        }
+      } catch (e) {
+        console.warn(`Invalid CORS regex pattern: ${pattern}`);
+      }
+    }
+  }
+  
+  return undefined;
+}
+
+export const applyCorsHeaders = (req: MedusaRequest, res: MedusaResponse) => {
+  // Get CORS config from environment variable
+  const corsConfig = process.env.STORE_CORS || '*';
+  const requestOrigin = req.headers.origin;
+  
+  // Get allowed origin based on config
+  const allowedOrigin = getAllowedOrigin(requestOrigin, corsConfig);
+  
+  // Only set Access-Control-Allow-Origin if we have a valid origin
+  if (allowedOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  }
+  
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, x-publishable-api-key, x-medusa-access-token, Accept, Origin, Cache-Control, Pragma');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Max-Age', '86400');
   res.setHeader('Access-Control-Expose-Headers', 'Content-Length, X-JSON');
+  res.setHeader('Vary', 'Origin');
 };
 
 export const handleCorsPreflight = (req: MedusaRequest, res: MedusaResponse) => {
-  applyCorsHeaders(res);
+  applyCorsHeaders(req, res);
   
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
@@ -36,7 +83,7 @@ export const handleCorsPreflight = (req: MedusaRequest, res: MedusaResponse) => 
 export const withCors = (handler: (req: MedusaRequest, res: MedusaResponse) => Promise<void> | void) => {
   return async (req: MedusaRequest, res: MedusaResponse) => {
     // Apply CORS headers
-    applyCorsHeaders(res);
+    applyCorsHeaders(req, res);
     
     // Handle preflight requests
     if (req.method === 'OPTIONS') {
