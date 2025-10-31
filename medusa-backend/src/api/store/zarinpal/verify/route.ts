@@ -48,14 +48,12 @@ export async function POST(
     let cart;
 
     if (cart_id) {
-      // Retrieve the cart
+      // Retrieve the cart with payment collection relations (proven to work in callback route)
+      // Avoid mixing payment_collection relations with deep item relations to prevent MikroORM errors
       cart = await cartModuleService.retrieveCart(cart_id, {
         relations: [
           "payment_collection",
           "payment_collection.payment_sessions",
-          "items",
-          "items.variant",
-          "items.variant.product",
         ],
       });
 
@@ -67,6 +65,21 @@ export async function POST(
       }
 
       resourceId = cart.id;
+      
+      // Fetch cart items separately if needed for response
+      // This avoids the MikroORM relation expansion conflict
+      try {
+        const cartWithItems = await cartModuleService.retrieveCart(cart_id, {
+          relations: ["items", "items.variant", "items.variant.product"],
+        });
+        // Merge items into cart object for response
+        if (cartWithItems && (cartWithItems as any).items) {
+          (cart as any).items = (cartWithItems as any).items;
+        }
+      } catch (itemsError) {
+        console.warn("[ZARINPAL-VERIFY] Could not fetch cart items, will return without item details:", itemsError);
+        // Continue without items - verification can still work
+      }
     }
 
     // Find the Zarinpal payment session
