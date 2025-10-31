@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -15,6 +15,15 @@ export default function TestPaymentPage() {
     payment: null
   })
   const [error, setError] = useState<string | null>(null)
+  const [cartId, setCartId] = useState<string>("")
+  const [verifyResult, setVerifyResult] = useState<any>(null)
+
+  useEffect(() => {
+    try {
+      const pending = localStorage.getItem('pending_resource_id')
+      if (pending) setCartId(pending)
+    } catch {}
+  }, [])
 
   const testProxy = async () => {
     setTestResults(prev => ({ ...prev, proxy: 'loading' }))
@@ -65,6 +74,13 @@ export default function TestPaymentPage() {
       if (result.success) {
         setTestResults(prev => ({ ...prev, payment: 'success' }))
         console.log('Payment test successful:', result)
+        try {
+          const newCartId = result?.cart?.id || result?.payment?.resource_id || result?.resourceId
+          if (newCartId) {
+            localStorage.setItem('pending_resource_id', newCartId)
+            setCartId(newCartId)
+          }
+        } catch {}
       } else {
         setTestResults(prev => ({ ...prev, payment: 'error' }))
         setError(result.error)
@@ -72,6 +88,42 @@ export default function TestPaymentPage() {
     } catch (err) {
       setTestResults(prev => ({ ...prev, payment: 'error' }))
       setError(err instanceof Error ? err.message : 'Unknown error')
+    }
+  }
+
+  const simulateCallback = async () => {
+    setError(null)
+    setVerifyResult(null)
+    if (!cartId) {
+      setError('Cart ID نامعتبر است. ابتدا پرداخت تستی ایجاد کنید یا Cart ID را وارد کنید.')
+      return
+    }
+    const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'
+    const url = `${backend}/store/zarinpal/callback?Authority=TEST_${Date.now()}&Status=OK&resource_id=${encodeURIComponent(cartId)}`
+    window.open(url, '_blank')
+  }
+
+  const directVerify = async () => {
+    setError(null)
+    setVerifyResult(null)
+    if (!cartId) {
+      setError('Cart ID نامعتبر است. ابتدا پرداخت تستی ایجاد کنید یا Cart ID را وارد کنید.')
+      return
+    }
+    try {
+      const response = await fetch('/api/payment/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ authority: `TEST_${Date.now()}`, Status: 'OK', cart_id: cartId })
+      })
+      const data = await response.json()
+      if (response.ok && data.success) {
+        setVerifyResult(data)
+      } else {
+        setError(data.error || 'خطا در تأیید پرداخت (آفلاین)')
+      }
+    } catch (e: any) {
+      setError(e?.message || 'Unknown error')
     }
   }
 
@@ -161,6 +213,33 @@ export default function TestPaymentPage() {
                 </CardContent>
               </Card>
             </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>شبیه‌سازی پس از پرداخت (آفلاین)</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-gray-600">Cart ID را وارد کنید یا با دکمهٔ بالا ایجاد کنید. سپس یکی از گزینه‌ها را انتخاب کنید:</p>
+                <input
+                  className="w-full border rounded px-3 py-2"
+                  placeholder="cart_..."
+                  value={cartId}
+                  onChange={(e) => setCartId(e.target.value)}
+                />
+                <div className="grid md:grid-cols-2 gap-3">
+                  <Button onClick={simulateCallback}>شبیه‌سازی Callback و بازگشت</Button>
+                  <Button variant="outline" onClick={directVerify}>تأیید مستقیم (بدون Callback)</Button>
+                </div>
+                {verifyResult && (
+                  <div className="text-right text-sm text-gray-700 bg-gray-50 p-3 rounded">
+                    <div>ref_id: {verifyResult?.data?.ref_id}</div>
+                    <div>amount: {verifyResult?.data?.amount} {verifyResult?.data?.currency_code}</div>
+                    <div>items: {verifyResult?.data?.items?.length || 0}</div>
+                    <div>status: {verifyResult?.data?.status}</div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {error && (
               <Alert variant="destructive">
