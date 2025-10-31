@@ -3,26 +3,37 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    console.log('[PROXY-INITIATE] Request body:', JSON.stringify(body, null, 2))
 
     const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
+    console.log('[PROXY-INITIATE] Backend URL:', `${backend}/store/simple-payment`)
     const response = await fetch(`${backend}/store/simple-payment`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
 
+    console.log('[PROXY-INITIATE] Backend response status:', response.status)
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
+      const errorText = await response.text().catch(() => '')
+      console.error('[PROXY-INITIATE] Backend error response:', errorText)
+      let errorData = {}
+      try {
+        errorData = JSON.parse(errorText)
+      } catch {
+        errorData = { error: errorText || `HTTP ${response.status}: ${response.statusText}` }
+      }
       return NextResponse.json(
-        { success: false, error: errorData.error || `HTTP ${response.status}: ${response.statusText}` },
+        { success: false, error: errorData.error || errorData.message || errorText || `HTTP ${response.status}: ${response.statusText}` },
         { status: response.status }
       )
     }
 
     const result = await response.json()
+    console.log('[PROXY-INITIATE] Backend success response:', JSON.stringify(result, null, 2))
     return NextResponse.json(result)
   } catch (error: any) {
-    console.error('Payment initiation proxy error:', error)
+    console.error('[PROXY-INITIATE] Proxy error:', error)
     return NextResponse.json({ success: false, error: error?.message || 'Unknown error' }, { status: 500 })
   }
 }

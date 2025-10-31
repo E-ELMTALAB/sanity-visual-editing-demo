@@ -47,14 +47,14 @@ export default function TestPaymentPage() {
       const json = await res.json()
       if (json.success) {
         setInitStatus('ok')
-        const id = json?.cart?.id || json?.payment?.resource_id || json?.resourceId
+        const id = json?.cart?.id || json?.payment?.resource_id || json?.resourceId || json?.data?.cart_id
         if (id) {
           try { localStorage.setItem('pending_resource_id', id) } catch {}
           setCartId(id)
         }
       } else {
         setInitStatus('err')
-        setError(json.error || 'Init failed')
+        setError(json.error || json.message || `Init failed: ${res.status} ${res.statusText}`)
       }
     } catch (e: any) {
       setInitStatus('err')
