@@ -44,18 +44,30 @@ function getAllowedOrigin(requestOrigin: string | undefined, corsConfig: string)
 
 export default defineMiddlewares({
   routes: [
-    // Special middleware for ALL Zarinpal routes - inject publishable API key before Medusa validation
-    // This covers: callback, verify, status, direct-verify, etc.
+    // Special middleware for ALL payment verification routes - inject publishable API key before Medusa validation
+    // This is a backup - routes also set it explicitly in handlers
     {
       matcher: "/store/zarinpal/*",
       middlewares: [
         (req, res, next) => {
-          // Zarinpal routes might be called without headers (callback from gateway, direct calls, etc.)
-          // We inject the publishable API key here BEFORE Medusa's framework validates it
           const PUBLISHABLE_API_KEY = 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
           if (!req.headers['x-publishable-api-key']) {
             req.headers['x-publishable-api-key'] = PUBLISHABLE_API_KEY
             console.log(`[MIDDLEWARE-ZARINPAL] Injected publishable API key for ${req.method} ${req.url}`)
+          }
+          next()
+        },
+      ],
+    },
+    // Also cover simple-verify route
+    {
+      matcher: "/store/simple-verify",
+      middlewares: [
+        (req, res, next) => {
+          const PUBLISHABLE_API_KEY = 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
+          if (!req.headers['x-publishable-api-key']) {
+            req.headers['x-publishable-api-key'] = PUBLISHABLE_API_KEY
+            console.log(`[MIDDLEWARE-SIMPLE-VERIFY] Injected publishable API key for ${req.method} ${req.url}`)
           }
           next()
         },

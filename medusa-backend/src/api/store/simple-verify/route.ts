@@ -15,6 +15,10 @@ import { IPaymentModuleService } from "@medusajs/framework/types";
  */
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
+    // Explicitly set publishable API key BEFORE any Medusa service calls
+    const PUBLISHABLE_API_KEY = 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
+    req.headers['x-publishable-api-key'] = PUBLISHABLE_API_KEY
+    
     const body = req.body as {
       authority: string;
       status: string;

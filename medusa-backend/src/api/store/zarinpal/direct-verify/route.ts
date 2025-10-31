@@ -15,6 +15,10 @@ import { applyCorsHeaders, handleCorsPreflight } from "../../../../middleware/gl
  * }
  */
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
+  // Explicitly set publishable API key BEFORE any Medusa service calls
+  const PUBLISHABLE_API_KEY = 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
+  req.headers['x-publishable-api-key'] = PUBLISHABLE_API_KEY
+  
   // Apply comprehensive CORS headers
   applyCorsHeaders(req, res);
   
