@@ -88,7 +88,7 @@ export async function POST(
 
     // If already authorized, treat as idempotent success
     if ((zarinpalSession as any).status === "authorized") {
-      return res.json({
+      res.json({
         success: true,
         message: "Payment already authorized",
         data: {
@@ -105,6 +105,7 @@ export async function POST(
           status: "authorized",
         },
       });
+      return;
     }
 
     // Authorize the payment with Zarinpal
@@ -128,9 +129,10 @@ export async function POST(
     // Sanity check: ensure collection amount equals cart total when available
     const cartTotal = (cart as any)?.total;
     if (typeof cartTotal === "number" && cartTotal !== paymentCollection.amount) {
-      return res.status(409).json({
+      res.status(409).json({
         error: "Amount mismatch between cart and payment collection",
       });
+      return;
     }
 
     // Payment verified successfully
@@ -151,6 +153,7 @@ export async function POST(
         status: "authorized",
       },
     });
+    return;
   } catch (error: any) {
     console.error("Zarinpal verify error:", error);
     res.status(500).json({
