@@ -12,13 +12,7 @@ export async function GET(
   res: MedusaResponse
 ): Promise<void> {
   try {
-    // Set publishable API key in request headers for Medusa service resolution
-    // Zarinpal callback doesn't send headers, so we add it here
-    const PUBLISHABLE_API_KEY = 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
-    if (!req.headers['x-publishable-api-key']) {
-      req.headers['x-publishable-api-key'] = PUBLISHABLE_API_KEY
-    }
-
+    // Publishable API key is injected by middleware before Medusa validation
     const { Authority, Status, resource_id } = req.query;
 
     if (!Authority) {
