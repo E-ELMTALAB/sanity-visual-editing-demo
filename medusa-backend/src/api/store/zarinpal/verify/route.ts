@@ -46,7 +46,13 @@ export async function POST(
     if (cart_id) {
       // Retrieve the cart
       cart = await cartModuleService.retrieveCart(cart_id, {
-        relations: ["payment_collection", "payment_collection.payment_sessions"],
+        relations: [
+          "payment_collection",
+          "payment_collection.payment_sessions",
+          "items",
+          "items.variant",
+          "items.variant.product",
+        ],
       });
 
       if (!cart) {
@@ -80,6 +86,27 @@ export async function POST(
       return;
     }
 
+    // If already authorized, treat as idempotent success
+    if ((zarinpalSession as any).status === "authorized") {
+      return res.json({
+        success: true,
+        message: "Payment already authorized",
+        data: {
+          ref_id: (zarinpalSession as any).data?.ref_id,
+          card_pan: (zarinpalSession as any).data?.card_pan,
+          cart_id: resourceId,
+          amount: paymentCollection.amount,
+          currency_code: paymentCollection.currency_code,
+          items: (cart as any)?.items?.map((it: any) => ({
+            id: it.id,
+            title: it.variant?.product?.title || it.title,
+            quantity: it.quantity,
+          })) || [],
+          status: "authorized",
+        },
+      });
+    }
+
     // Authorize the payment with Zarinpal
     const authorizedData: any = await paymentModuleService.authorizePaymentSession(
       zarinpalSession.id,
@@ -98,6 +125,14 @@ export async function POST(
       return;
     }
 
+    // Sanity check: ensure collection amount equals cart total when available
+    const cartTotal = (cart as any)?.total;
+    if (typeof cartTotal === "number" && cartTotal !== paymentCollection.amount) {
+      return res.status(409).json({
+        error: "Amount mismatch between cart and payment collection",
+      });
+    }
+
     // Payment verified successfully
     res.json({
       success: true,
@@ -106,6 +141,14 @@ export async function POST(
         ref_id: (authorizedData as any).data?.ref_id,
         card_pan: (authorizedData as any).data?.card_pan,
         cart_id: resourceId,
+        amount: paymentCollection.amount,
+        currency_code: paymentCollection.currency_code,
+        items: (cart as any)?.items?.map((it: any) => ({
+          id: it.id,
+          title: it.variant?.product?.title || it.title,
+          quantity: it.quantity,
+        })) || [],
+        status: "authorized",
       },
     });
   } catch (error: any) {

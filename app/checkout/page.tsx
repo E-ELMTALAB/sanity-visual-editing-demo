@@ -183,6 +183,7 @@ export default function CheckoutPage() {
       if (result.success && result.paymentUrl && result.resourceId) {
         // Store Medusa resource ID
         setMedusaCartId(result.resourceId)
+        try { localStorage.setItem('pending_resource_id', result.resourceId) } catch {}
         
         // Redirect to Zarinpal payment gateway
         window.location.href = result.paymentUrl

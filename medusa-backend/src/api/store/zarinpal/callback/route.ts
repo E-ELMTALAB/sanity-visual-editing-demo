@@ -27,16 +27,34 @@ export async function GET(
 
     // Retrieve the cart
     const cart = await cartModuleService.retrieveCart(resource_id as string, {
-      relations: ["payment_collection", "payment_collection.payment_sessions"]
+      relations: [
+        "payment_collection",
+        "payment_collection.payment_sessions",
+      ]
     });
 
     if (!cart) {
       return res.redirect(`${FRONTEND_URL}/payment/success?error=cart_not_found`);
     }
 
-    // For now, we'll skip payment collection lookup
-    // In a real implementation, you would find the payment collection and session here
-    // For testing purposes, we'll just redirect to success
+    const paymentCollection = (cart as any)?.payment_collection;
+    const zarinpalSession = paymentCollection?.payment_sessions?.find(
+      (s: any) => s.provider_id === "pp_zarinpal_zarinpal"
+    );
+
+    if (zarinpalSession) {
+      // Idempotent authorize; ignore errors here and let frontend handle display
+      try {
+        if ((zarinpalSession as any).status !== "authorized") {
+          await paymentModuleService.authorizePaymentSession(zarinpalSession.id, {
+            authority: Authority as string,
+            Status: (Status as string) || undefined,
+          });
+        }
+      } catch (e) {
+        // Fall through to redirect regardless
+      }
+    }
 
     // Redirect to frontend with payment details
     const redirectUrl = `${FRONTEND_URL}/payment/success?Authority=${Authority}&Status=${Status}&cart_id=${resource_id}`;

@@ -8,7 +8,7 @@ function PaymentSuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
-  const [orderData, setOrderData] = useState<any>(null)
+  const [verifyData, setVerifyData] = useState<any>(null)
   const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
@@ -16,7 +16,7 @@ function PaymentSuccessContent() {
       try {
         const authority = searchParams.get('Authority')
         const status = searchParams.get('Status')
-        const resourceId = localStorage.getItem('pending_resource_id')
+        const resourceId = localStorage.getItem('pending_resource_id') || searchParams.get('cart_id')
 
         if (!authority || !resourceId) {
           setStatus('error')
@@ -24,17 +24,16 @@ function PaymentSuccessContent() {
           return
         }
 
-        // Verify payment using simple verification endpoint
-        const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
-        const response = await fetch(`${medusaUrl}/store/simple-verify`, {
+        // Verify via Next proxy to Medusa backend to avoid CORS
+        const response = await fetch(`/api/payment/verify`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            authority: authority,
-            status: status,
-            resource_id: resourceId
+            authority,
+            Status: status || undefined,
+            cart_id: resourceId
           })
         })
 
@@ -42,7 +41,7 @@ function PaymentSuccessContent() {
 
         if (data.success) {
           setStatus('success')
-          setOrderData(data.order)
+          setVerifyData(data.data)
           // Clear pending data
           localStorage.removeItem('pending_resource_id')
           localStorage.removeItem('pending_payment_authority')
@@ -114,12 +113,12 @@ function PaymentSuccessContent() {
         <h1 className="text-2xl font-bold text-gray-800 mb-4">پرداخت موفق</h1>
         <p className="text-gray-600 mb-6">سفارش شما با موفقیت ثبت شد</p>
         
-        {orderData && (
+        {verifyData && (
           <div className="bg-gray-50 rounded-lg p-4 mb-6 text-right">
             <h3 className="font-bold text-gray-800 mb-2">جزئیات سفارش</h3>
-            <p className="text-sm text-gray-600">شماره سفارش: {orderData.display_id || orderData.id}</p>
-            <p className="text-sm text-gray-600">مبلغ: {orderData.total?.toLocaleString()} تومان</p>
-            <p className="text-sm text-gray-600">تعداد کالا: {orderData.items?.length || 0} عدد</p>
+            <p className="text-sm text-gray-600">کد پیگیری: {verifyData.ref_id}</p>
+            <p className="text-sm text-gray-600">مبلغ: {Number(verifyData.amount || 0).toLocaleString()} {verifyData.currency_code || ''}</p>
+            <p className="text-sm text-gray-600">تعداد کالا: {verifyData.items?.length || 0} عدد</p>
           </div>
         )}
 
