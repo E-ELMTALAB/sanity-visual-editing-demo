@@ -138,9 +138,10 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       }
     }
 
-    // Retrieve the complete cart with relations
+    // Retrieve the complete cart with minimal relations to avoid MikroORM errors
+    // Avoid mixing payment_collection with item relations
     const completeCart = await cartModuleService.retrieveCart(cart.id, {
-      relations: ["items", "items.variant", "items.variant.product", "payment_collection"]
+      relations: ["items"]
     });
 
     res.status(201).json({
