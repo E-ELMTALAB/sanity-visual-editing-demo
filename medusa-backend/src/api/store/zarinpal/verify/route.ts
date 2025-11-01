@@ -165,11 +165,7 @@ export async function POST(
         cart_id: resourceId,
         amount: paymentCollection.amount,
         currency_code: paymentCollection.currency_code,
-        items: (cart as any)?.items?.map((it: any) => ({
-          id: it.id,
-          title: it.variant?.product?.title || it.title,
-          quantity: it.quantity,
-        })) || [],
+        items: cartItems,
         status: "authorized",
       },
     });

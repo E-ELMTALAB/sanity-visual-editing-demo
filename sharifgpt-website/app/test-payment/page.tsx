@@ -35,26 +35,43 @@ export default function TestPaymentPage() {
     setInitStatus('loading')
     setError(null)
     try {
-      const res = await fetch('/api/payment/initiate', {
+      // Step 1: Create cart with products (backend validates variants/prices)
+      const createRes = await fetch('/api/cart/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: [{ id: 1, title: 'Test Product', price: 100000, quantity: 1 }],
+          items: [{ id: 1, title: 'Test Product', price: 100000, quantity: 1, image: 'test.jpg' }],
           customer_email: 'test@example.com',
           customer_phone: '+989123456789'
         })
       })
-      const json = await res.json()
-      if (json.success) {
+      const createJson = await createRes.json()
+      
+      if (!createJson.success || !createJson.cart?.id) {
+        throw new Error(createJson.error || 'Failed to create cart')
+      }
+      
+      const newCartId = createJson.cart.id
+      
+      // Step 2: Initiate payment for that cart
+      const payRes = await fetch('/api/payment/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cart_id: newCartId,
+          customer_email: 'test@example.com',
+          customer_phone: '+989123456789'
+        })
+      })
+      const payJson = await payRes.json()
+      
+      if (payJson.success) {
         setInitStatus('ok')
-        const id = json?.cart?.id || json?.payment?.resource_id || json?.resourceId || json?.data?.cart_id
-        if (id) {
-          try { localStorage.setItem('pending_resource_id', id) } catch {}
-          setCartId(id)
-        }
+        try { localStorage.setItem('pending_resource_id', newCartId) } catch {}
+        setCartId(newCartId)
       } else {
         setInitStatus('err')
-        setError(json.error || json.message || `Init failed: ${res.status} ${res.statusText}`)
+        setError(payJson.error || `Payment initiation failed: ${payRes.status}`)
       }
     } catch (e: any) {
       setInitStatus('err')
