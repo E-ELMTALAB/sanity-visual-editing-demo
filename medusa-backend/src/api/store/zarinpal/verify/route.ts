@@ -48,14 +48,8 @@ export async function POST(
     let cart;
 
     if (cart_id) {
-      // Retrieve the cart with payment collection relations (proven to work in callback route)
-      // Avoid mixing payment_collection relations with deep item relations to prevent MikroORM errors
-      cart = await cartModuleService.retrieveCart(cart_id, {
-        relations: [
-          "payment_collection",
-          "payment_collection.payment_sessions",
-        ],
-      });
+      // Retrieve the cart without nested relations to avoid MikroORM errors
+      cart = await cartModuleService.retrieveCart(cart_id);
 
       if (!cart) {
         res.status(404).json({
@@ -65,25 +59,16 @@ export async function POST(
       }
 
       resourceId = cart.id;
-      
-      // Fetch cart items separately if needed for response
-      // This avoids the MikroORM relation expansion conflict
-      try {
-        const cartWithItems = await cartModuleService.retrieveCart(cart_id, {
-          relations: ["items", "items.variant", "items.variant.product"],
-        });
-        // Merge items into cart object for response
-        if (cartWithItems && (cartWithItems as any).items) {
-          (cart as any).items = (cartWithItems as any).items;
-        }
-      } catch (itemsError) {
-        console.warn("[ZARINPAL-VERIFY] Could not fetch cart items, will return without item details:", itemsError);
-        // Continue without items - verification can still work
-      }
     }
 
-    // Find the Zarinpal payment session
-    const paymentCollection = (cart as any)?.payment_collection;
+    // Find payment collection for this cart using the payment module
+    // Avoid cart relations; query payment collections directly
+    const paymentCollections = await paymentModuleService.listPaymentCollections({});
+    
+    const paymentCollection = paymentCollections.find((pc: any) => 
+      pc.metadata?.resource_id === resourceId || 
+      pc.metadata?.cart_id === resourceId
+    );
     
     if (!paymentCollection) {
       res.status(400).json({
@@ -92,15 +77,37 @@ export async function POST(
       return;
     }
 
-    const zarinpalSession = paymentCollection.payment_sessions?.find(
-      (session: any) => session.provider_id === "pp_zarinpal_zarinpal"
-    );
+    // Find Zarinpal payment session for this collection
+    const paymentSessions = await paymentModuleService.listPaymentSessions({
+      payment_collection_id: paymentCollection.id,
+      provider_id: "pp_zarinpal_zarinpal",
+    });
 
-    if (!zarinpalSession) {
+    if (!paymentSessions || paymentSessions.length === 0) {
       res.status(400).json({
         error: "No Zarinpal payment session found",
       });
       return;
+    }
+
+    const zarinpalSession = paymentSessions[0];
+    
+    // Optionally fetch cart items separately for response (non-critical)
+    let cartItems: any[] = [];
+    try {
+      const cartWithItems = await cartModuleService.retrieveCart(resourceId as string, {
+        relations: ["items"],
+      });
+      if (cartWithItems && (cartWithItems as any).items) {
+        cartItems = (cartWithItems as any).items.map((it: any) => ({
+          id: it.id,
+          title: it.title || it.product_title || 'Product',
+          quantity: it.quantity,
+        }));
+      }
+    } catch (itemsError) {
+      console.warn("[ZARINPAL-VERIFY] Could not fetch cart items:", itemsError);
+      // Continue without items
     }
 
     // If already authorized, treat as idempotent success
@@ -114,11 +121,7 @@ export async function POST(
           cart_id: resourceId,
           amount: paymentCollection.amount,
           currency_code: paymentCollection.currency_code,
-          items: (cart as any)?.items?.map((it: any) => ({
-            id: it.id,
-            title: it.variant?.product?.title || it.title,
-            quantity: it.quantity,
-          })) || [],
+          items: cartItems,
           status: "authorized",
         },
       });
