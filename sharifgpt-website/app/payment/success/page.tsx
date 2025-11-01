@@ -3,10 +3,12 @@
 import { useEffect, useState, Suspense } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
+import { useCart } from "@/contexts/cart-context"
 
 function PaymentSuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { clearCart } = useCart()
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [verifyData, setVerifyData] = useState<any>(null)
   const [errorMessage, setErrorMessage] = useState('')
@@ -46,6 +48,8 @@ function PaymentSuccessContent() {
           localStorage.removeItem('pending_resource_id')
           localStorage.removeItem('pending_payment_authority')
           localStorage.removeItem('pending_payment_session_id')
+          // Clear cart after successful payment
+          clearCart()
         } else {
           setStatus('error')
           setErrorMessage(data.error || 'خطا در تأیید پرداخت')
