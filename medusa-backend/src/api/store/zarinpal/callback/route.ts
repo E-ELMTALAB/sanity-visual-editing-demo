@@ -29,34 +29,42 @@ export async function GET(
     const cartModuleService: ICartModuleService = req.scope.resolve(Modules.CART);
     const paymentModuleService: IPaymentModuleService = req.scope.resolve(Modules.PAYMENT);
 
-    // Retrieve the cart
-    const cart = await cartModuleService.retrieveCart(resource_id as string, {
-      relations: [
-        "payment_collection",
-        "payment_collection.payment_sessions",
-      ]
-    });
+    // Retrieve the cart without nested relations (Medusa v2 modular architecture)
+    const cart = await cartModuleService.retrieveCart(resource_id as string);
 
     if (!cart) {
       return res.redirect(`${FRONTEND_URL}/payment/success?error=cart_not_found`);
     }
 
-    const paymentCollection = (cart as any)?.payment_collection;
-    const zarinpalSession = paymentCollection?.payment_sessions?.find(
-      (s: any) => s.provider_id === "pp_zarinpal_zarinpal"
+    // Find payment collection using payment module (not cart relations)
+    const paymentCollections = await paymentModuleService.listPaymentCollections({});
+    const paymentCollection = paymentCollections.find((pc: any) => 
+      pc.metadata?.resource_id === resource_id || 
+      pc.metadata?.cart_id === resource_id
     );
 
-    if (zarinpalSession) {
-      // Idempotent authorize; ignore errors here and let frontend handle display
-      try {
-        if ((zarinpalSession as any).status !== "authorized") {
-          await paymentModuleService.authorizePaymentSession(zarinpalSession.id, {
-            authority: Authority as string,
-            Status: (Status as string) || undefined,
-          });
+    if (paymentCollection) {
+      // Find Zarinpal payment session
+      const paymentSessions = await paymentModuleService.listPaymentSessions({
+        payment_collection_id: paymentCollection.id,
+        provider_id: "pp_zarinpal_zarinpal",
+      });
+
+      const zarinpalSession = paymentSessions?.[0];
+
+      if (zarinpalSession) {
+        // Idempotent authorize; ignore errors here and let frontend handle display
+        try {
+          if ((zarinpalSession as any).status !== "authorized") {
+            await paymentModuleService.authorizePaymentSession(zarinpalSession.id, {
+              authority: Authority as string,
+              Status: (Status as string) || undefined,
+            });
+          }
+        } catch (e) {
+          // Fall through to redirect regardless
+          console.error("[CALLBACK] Authorization error (non-fatal):", e);
         }
-      } catch (e) {
-        // Fall through to redirect regardless
       }
     }
 
