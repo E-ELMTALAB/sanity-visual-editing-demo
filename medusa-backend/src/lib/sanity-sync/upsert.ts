@@ -30,6 +30,37 @@ type UpsertResult = {
   isUpdate?: boolean;
 };
 
+type DeleteResult = {
+  ok: boolean;
+  error?: string;
+};
+
+/**
+ * Delete a product by ID
+ */
+async function deleteProductREST(productId: string, backendUrl: string): Promise<DeleteResult> {
+  try {
+    const url = `${backendUrl}/delete-sample-product`;
+    
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ productId }),
+    });
+
+    const text = await res.text();
+    if (!res.ok) {
+      return { ok: false, error: `HTTP ${res.status}: ${text}` };
+    }
+
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, error: e.message };
+  }
+}
+
 export async function upsertProductREST(input: UpsertBody): Promise<UpsertResult> {
   let backendUrl = process.env.BACKEND_URL || process.env.MEDUSA_ADMIN_URL;
   if (!backendUrl) {
@@ -43,6 +74,8 @@ export async function upsertProductREST(input: UpsertBody): Promise<UpsertResult
 
   // First, try to find existing product by sanity_id (using unauthenticated endpoint)
   let existingProductId: string | undefined;
+  let wasDeleted = false;
+  
   if (input.sanityId) {
     const searchUrl = `${backendUrl}/store/products?metadata[sanity_id]=${encodeURIComponent(input.sanityId)}`;
     const searchRes = await fetch(searchUrl);
@@ -53,14 +86,24 @@ export async function upsertProductREST(input: UpsertBody): Promise<UpsertResult
     }
   }
 
-  const isUpdate = !!existingProductId;
-  // Use unauthenticated endpoints for both create and update to avoid admin auth overhead
-  const url = isUpdate 
-    ? `${backendUrl}/update-sample-product`
-    : `${backendUrl}/create-sample-product`;
+  // If product exists, delete it before creating a new one
+  if (existingProductId) {
+    console.log(`[upsert] Deleting existing product ${existingProductId} for sanity_id=${input.sanityId}`);
+    const deleteResult = await deleteProductREST(existingProductId, backendUrl);
+    
+    if (!deleteResult.ok) {
+      console.warn(`[upsert] Failed to delete product ${existingProductId}: ${deleteResult.error}`);
+      // Continue anyway - we'll try to create a new one
+    } else {
+      wasDeleted = true;
+      console.log(`[upsert] Successfully deleted product ${existingProductId}`);
+    }
+  }
+
+  // Always create a new product (either fresh or after deletion)
+  const url = `${backendUrl}/create-sample-product`;
 
   const body = {
-    ...(isUpdate && { productId: existingProductId }),
     title: input.title,
     subtitle: input.subtitle,
     description: input.description,
@@ -70,10 +113,9 @@ export async function upsertProductREST(input: UpsertBody): Promise<UpsertResult
     metadata: {
       sanity_id: input.sanityId,
       images: input.images,
-      tags: input.tags, // Store tags in metadata since we can't create them without auth
+      tags: input.tags,
     },
-    // Add variants if provided and not updating
-    ...(input.variants && !isUpdate && { variants: input.variants }),
+    variants: input.variants,
   };
 
   const res = await fetch(url, {
@@ -93,11 +135,11 @@ export async function upsertProductREST(input: UpsertBody): Promise<UpsertResult
     const json = JSON.parse(text);
     return { 
       ok: true, 
-      productId: json?.product?.id || existingProductId,
-      isUpdate 
+      productId: json?.product?.id,
+      isUpdate: wasDeleted // Count as update if we deleted the old one
     };
   } catch (e: any) {
-    return { ok: true, productId: existingProductId, isUpdate };
+    return { ok: true, isUpdate: wasDeleted };
   }
 }
 
