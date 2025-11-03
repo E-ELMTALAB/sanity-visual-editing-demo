@@ -50,24 +50,44 @@ export default function CartPage() {
     setIsProcessing(true)
 
     try {
-      // Use simple payment endpoint with explicit CORS handling
-      const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'
-      const paymentResponse = await fetch(`${medusaUrl}/store/simple-payment`, {
+      // Step 1: Create real Medusa cart with validated products
+      const createCartResponse = await fetch('/api/cart/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-publishable-api-key': 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4',
         },
         body: JSON.stringify({
           items: state.items.map(item => ({
             id: item.id,
             title: item.title,
             price: item.price,
-            quantity: item.quantity
+            image: item.image,
+            quantity: item.quantity,
+            selectedOption: item.selectedOption
           })),
           customer_email: customerEmail,
           customer_phone: customerPhone,
-          description: `پرداخت سفارش ${state.items.length} کالا`
+        })
+      })
+
+      const cartData = await createCartResponse.json()
+
+      if (!cartData.success || !cartData.cart?.id) {
+        throw new Error(cartData.error || 'خطا در ایجاد سبد خرید')
+      }
+
+      const cartId = cartData.cart.id
+
+      // Step 2: Initiate payment for the created cart
+      const paymentResponse = await fetch('/api/payment/initiate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cart_id: cartId,
+          customer_email: customerEmail,
+          customer_phone: customerPhone,
         })
       })
 
@@ -78,9 +98,9 @@ export default function CartPage() {
       }
 
       // Redirect to payment gateway
-      if (paymentData.payment.payment_url) {
-        // Store payment data in localStorage for verification after payment
-        localStorage.setItem('pending_resource_id', paymentData.payment.resource_id)
+      if (paymentData.payment?.payment_url) {
+        // Store cart ID for verification after payment
+        localStorage.setItem('pending_resource_id', cartId)
         localStorage.setItem('pending_payment_authority', paymentData.payment.authority)
         localStorage.setItem('pending_payment_session_id', paymentData.payment.session_id)
         
