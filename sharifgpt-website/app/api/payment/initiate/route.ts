@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('[PROXY-INITIATE] Request body:', JSON.stringify(body, null, 2))
 
-    const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
+    const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'
     const publishableApiKey = 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
     console.log('[PROXY-INITIATE] Backend URL:', `${backend}/store/cart/initiate-payment`)
     const response = await fetch(`${backend}/store/cart/initiate-payment`, {

@@ -112,7 +112,7 @@ export function useZarinpalPayment() {
       console.log('Total amount:', totalAmount)
 
       // Use the exact same Medusa endpoints that were tested successfully
-      const BASE_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
+      const BASE_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'
       const PK = 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
       
       // Step 1: Get regions
@@ -285,7 +285,7 @@ export function useZarinpalPayment() {
       console.log('Resource ID:', resourceId)
 
       // Use the exact same Medusa verification endpoint that was tested successfully
-      const BASE_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
+      const BASE_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'
       
       const response = await fetch(`${BASE_URL}/store/zarinpal/verify`, {
         method: 'POST',

@@ -51,7 +51,7 @@ export default function CartPage() {
 
     try {
       // Use simple payment endpoint with explicit CORS handling
-      const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
+      const medusaUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'
       const paymentResponse = await fetch(`${medusaUrl}/store/simple-payment`, {
         method: 'POST',
         headers: {

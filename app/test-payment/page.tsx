@@ -98,8 +98,8 @@ export default function TestPaymentPage() {
       setError('Cart ID نامعتبر است. ابتدا پرداخت تستی ایجاد کنید یا Cart ID را وارد کنید.')
       return
     }
-    const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'
-    const url = `${backend}/store/zarinpal/callback?Authority=TEST_${Date.now()}&Status=OK&resource_id=${encodeURIComponent(cartId)}`
+    const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'
+    const url = `${backend}/internal/zarinpal-callback?Authority=TEST_${Date.now()}&Status=OK&resource_id=${encodeURIComponent(cartId)}`
     window.open(url, '_blank')
   }
 

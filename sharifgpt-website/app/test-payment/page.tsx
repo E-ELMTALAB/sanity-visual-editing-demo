@@ -82,7 +82,7 @@ export default function TestPaymentPage() {
   const simulateCallback = () => {
     setError(null)
     if (!cartId) { setError('Cart ID لازم است'); return }
-    const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend-production-ea59.up.railway.app'
+    const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'
     const url = `${backend}/internal/zarinpal-callback?Authority=TEST_${Date.now()}&Status=OK&resource_id=${encodeURIComponent(cartId)}`
     window.open(url, '_blank')
   }
