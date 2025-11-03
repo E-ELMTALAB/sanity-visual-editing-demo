@@ -77,7 +77,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     }
 
     // Ensure minimum amount for Zarinpal (10,000 Rials minimum)
-    const cartAmount = cart.total || 0;
+    const cartAmount = Number(cart.total || 0);
     const minimumAmount = 10000;
     const paymentAmount = Math.max(cartAmount, minimumAmount);
 
