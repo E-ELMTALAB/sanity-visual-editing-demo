@@ -65,9 +65,9 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
     // Try to get cart details if cart_id exists
     let cartDetails = null;
-    const cartId = paymentCollection.metadata?.cart_id || paymentCollection.metadata?.resource_id;
+    const cartId = (paymentCollection.metadata?.cart_id || paymentCollection.metadata?.resource_id) as string | undefined;
     
-    if (cartId && cartId.startsWith('cart_01')) {
+    if (cartId && typeof cartId === 'string' && cartId.startsWith('cart_01')) {
       try {
         const cart = await cartModuleService.retrieveCart(cartId, {
           relations: ["items"]
