@@ -76,15 +76,21 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       });
     }
 
+    // Ensure minimum amount for Zarinpal (10,000 Rials minimum)
+    const cartAmount = cart.total || 0;
+    const minimumAmount = 10000;
+    const paymentAmount = Math.max(cartAmount, minimumAmount);
+
     // Create payment collection linked to this cart
     // Use standard Medusa API with cart_id in body (proper linking)
     const paymentCollection = await paymentModuleService.createPaymentCollections({
       currency_code: cart.currency_code,
-      amount: cart.total || 0,
+      amount: paymentAmount,
       metadata: {
         cart_id: cart_id,
         customer_email: customer_email || cart.email,
-        customer_phone: customer_phone
+        customer_phone: customer_phone,
+        original_amount: cartAmount
       }
     });
 
@@ -93,7 +99,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       paymentCollection.id,
       {
         provider_id: "pp_zarinpal_zarinpal",
-        amount: cart.total || 0,
+        amount: paymentAmount,
         currency_code: cart.currency_code,
         data: {
           email: customer_email || cart.email,
