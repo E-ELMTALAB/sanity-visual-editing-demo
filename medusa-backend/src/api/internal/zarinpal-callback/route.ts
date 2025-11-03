@@ -26,11 +26,15 @@ export async function GET(
     const cartModuleService: ICartModuleService = req.scope.resolve(Modules.CART);
     const paymentModuleService: IPaymentModuleService = req.scope.resolve(Modules.PAYMENT);
 
-    // Retrieve the cart without nested relations (Medusa v2 modular architecture)
-    const cart = await cartModuleService.retrieveCart(resource_id as string);
-
-    if (!cart) {
-      return res.redirect(`${FRONTEND_URL}/payment/success?error=cart_not_found`);
+    // Try to retrieve the cart (may not exist if using simple payment pattern)
+    // In Medusa v2, payment collections can exist without carts for payment-only flows
+    let cart = null;
+    try {
+      cart = await cartModuleService.retrieveCart(resource_id as string);
+    } catch (e: any) {
+      // Cart not found - this is OK for payment-only flows
+      // Continue to find payment collection by resource_id in metadata
+      console.log(`[CALLBACK] Cart not found: ${resource_id}, proceeding with payment-only verification`);
     }
 
     // Find payment collection using payment module (not cart relations)
