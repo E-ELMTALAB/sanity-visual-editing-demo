@@ -93,8 +93,17 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             }
           });
         } else {
-          // Create new product
+          // Create new product with options structure
           console.log(`[SYNC] Creating new product: ${handle}`);
+          
+          // In Medusa v2, we need to define options when creating the product
+          // if we want variants to have proper option values
+          const productOptions = sanityProduct.options && sanityProduct.options.length > 0
+            ? [{
+                title: "Subscription Type",
+                values: sanityProduct.options.map(opt => opt.name)
+              }]
+            : [];
           
           medusaProduct = await productModuleService.createProducts({
             title: sanityProduct.name,
@@ -103,6 +112,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             status: "published",
             is_giftcard: false,
             discountable: true,
+            options: productOptions,
             metadata: {
               sanity_id: sanityProduct._id,
               synced_at: new Date().toISOString()
@@ -121,6 +131,8 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
           });
 
           if (!existingVariants || existingVariants.length === 0) {
+            // For products without options, create a simple default variant
+            // No option values needed for single-variant products
             const defaultVariant = await productModuleService.createProductVariants({
               product_id: medusaProduct.id,
               title: "Default",
@@ -175,17 +187,25 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
                   }
                 });
               } else {
-                // Create new variant
+                // Create new variant with proper option values
                 console.log(`[SYNC] Creating variant: ${variantSku}`);
                 
-                // In Medusa v2, variants are created without prices in the initial call
-                // Prices are stored in metadata for reference by cart creation logic
+                // Get product options to properly link variant to option values
+                const productOptions = (medusaProduct as any).options || [];
+                const subscriptionOption = productOptions.find((po: any) => po.title === "Subscription Type");
+                
+                // In Medusa v2, variants need proper option value references
+                const variantOptions = subscriptionOption ? {
+                  [subscriptionOption.id]: variantTitle
+                } : undefined;
+                
                 variant = await productModuleService.createProductVariants({
                   product_id: medusaProduct.id,
                   title: variantTitle,
                   sku: variantSku,
                   manage_inventory: false,
                   allow_backorder: true,
+                  options: variantOptions,
                   metadata: {
                     sanity_option_id: option.id,
                     price_rials: priceInRials,
