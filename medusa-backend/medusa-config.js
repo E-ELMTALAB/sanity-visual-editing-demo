@@ -63,8 +63,8 @@ const medusaConfig = {
     backendUrl: BACKEND_URL,
     path: '/app', // Explicitly set the admin path
     disable: SHOULD_DISABLE_ADMIN,
-    autoRebuild: true, // Auto-rebuild admin on Railway if needed
-    outDir: '.medusa/server/public/admin', // Explicitly set admin build output directory
+    // Don't auto-rebuild in production - admin should be pre-built during build phase
+    autoRebuild: IS_DEV, // Only auto-rebuild in development
   },
   modules: [
     {
