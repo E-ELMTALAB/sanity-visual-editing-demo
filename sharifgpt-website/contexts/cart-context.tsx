@@ -6,10 +6,14 @@ import { createContext, useContext, useReducer, useEffect, useState } from "reac
 export interface CartItem {
   id: number
   title: string
-  price: number
+  price: number // Kept for backward compatibility, but prices fetched from Medusa
   image: string
   quantity: number
   selectedOption?: string
+  // New fields for backend price validation
+  sanity_slug?: string // Product slug from Sanity
+  variant_id?: string // Medusa variant ID
+  option_name?: string // Selected option name
 }
 
 interface CartState {
