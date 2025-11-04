@@ -64,6 +64,7 @@ const medusaConfig = {
     path: '/app', // Explicitly set the admin path
     disable: SHOULD_DISABLE_ADMIN,
     autoRebuild: true, // Auto-rebuild admin on Railway if needed
+    outDir: '.medusa/server/public/admin', // Explicitly set admin build output directory
   },
   modules: [
     {
