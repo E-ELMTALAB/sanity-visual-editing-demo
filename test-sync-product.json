@@ -2,29 +2,28 @@
   "products": [
     {
       "_id": "test-product-001",
-      "name": "ChatGPT Plus - تست",
+      "name": "ChatGPT Plus - Test",
       "slug": {
         "current": "chatgpt-plus-test"
       },
-      "description": "محصول تستی برای بررسی sync API",
+      "description": "Test product for sync API verification",
       "options": [
         {
           "id": "1month",
-          "name": "1 ماهه",
+          "name": "1 month subscription",
           "price": 100000
         },
         {
           "id": "3month",
-          "name": "3 ماهه",
+          "name": "3 month subscription",
           "price": 280000
         },
         {
           "id": "6month",
-          "name": "6 ماهه",
+          "name": "6 month subscription",
           "price": 500000
         }
       ]
     }
   ]
 }
-
