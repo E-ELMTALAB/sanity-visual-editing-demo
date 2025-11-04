@@ -63,6 +63,7 @@ const medusaConfig = {
     backendUrl: BACKEND_URL,
     path: '/app', // Explicitly set the admin path
     disable: SHOULD_DISABLE_ADMIN,
+    autoRebuild: true, // Auto-rebuild admin on Railway if needed
   },
   modules: [
     {
