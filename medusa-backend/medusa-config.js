@@ -32,6 +32,9 @@ import {
 loadEnv(process.env.NODE_ENV, process.cwd());
 
 console.log('[MEDUSA-CONFIG] Loading configuration...')
+console.log('[MEDUSA-CONFIG] BACKEND_URL:', BACKEND_URL)
+console.log('[MEDUSA-CONFIG] SHOULD_DISABLE_ADMIN:', SHOULD_DISABLE_ADMIN)
+console.log('[MEDUSA-CONFIG] Admin will be available at:', `${BACKEND_URL}/app`)
 console.log('[MEDUSA-CONFIG] ZARINPAL_MERCHANT_ID:', !!ZARINPAL_MERCHANT_ID ? 'SET' : 'NOT SET')
 console.log('[MEDUSA-CONFIG] ZARINPAL_OFFLINE:', ZARINPAL_OFFLINE)
 console.log('[MEDUSA-CONFIG] ZARINPAL_SANDBOX:', ZARINPAL_SANDBOX)
@@ -58,6 +61,7 @@ const medusaConfig = {
   },
   admin: {
     backendUrl: BACKEND_URL,
+    path: '/app', // Explicitly set the admin path
     disable: SHOULD_DISABLE_ADMIN,
   },
   modules: [
