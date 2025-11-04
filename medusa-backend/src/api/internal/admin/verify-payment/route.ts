@@ -46,17 +46,36 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     // Find all payment sessions to search for ref_id
     const allSessions = await paymentModuleService.listPaymentSessions({});
     
-    const matchingSession = allSessions.find((session: any) => 
-      session.data?.ref_id === ref_id ||
-      session.data?.ref_id === String(ref_id)
-    );
+    console.log(`[ADMIN-VERIFY] Searching for ref_id: ${ref_id}`);
+    console.log(`[ADMIN-VERIFY] Total sessions to search: ${allSessions.length}`);
+    
+    // Debug: log first 3 sessions to see structure
+    allSessions.slice(0, 3).forEach((session: any, idx) => {
+      console.log(`[ADMIN-VERIFY] Session ${idx + 1} data.ref_id:`, session.data?.ref_id);
+    });
+    
+    const matchingSession = allSessions.find((session: any) => {
+      const sessionRefId = session.data?.ref_id;
+      // Handle both string and number comparison
+      return sessionRefId === ref_id || 
+             sessionRefId === String(ref_id) ||
+             String(sessionRefId) === String(ref_id);
+    });
 
     if (!matchingSession) {
+      console.log(`[ADMIN-VERIFY] No matching session found for ref_id: ${ref_id}`);
       return res.status(404).json({
         success: false,
-        error: "Payment with this ref_id not found"
+        error: "Payment with this ref_id not found",
+        debug: {
+          searched_ref_id: ref_id,
+          total_sessions: allSessions.length,
+          sample_ref_ids: allSessions.slice(0, 5).map((s: any) => s.data?.ref_id)
+        }
       });
     }
+    
+    console.log(`[ADMIN-VERIFY] Found matching session:`, matchingSession.id);
 
     // Get payment collection for this session
     const paymentCollection = await paymentModuleService.retrievePaymentCollection(

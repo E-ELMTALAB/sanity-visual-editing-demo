@@ -81,6 +81,15 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     const minimumAmount = 10000;
     const paymentAmount = Math.max(cartAmount, minimumAmount);
 
+    // Prepare cart items for metadata (admin verification needs this)
+    const cartItemsMetadata = (cart.items || []).map((item: any) => ({
+      title: item.title || item.product_title || 'Unknown Product',
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+      variant_id: item.variant_id,
+      product_id: item.product_id,
+    }));
+
     // Create payment collection linked to this cart
     // Use standard Medusa API with cart_id in body (proper linking)
     const paymentCollection = await paymentModuleService.createPaymentCollections({
@@ -90,7 +99,8 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         cart_id: cart_id,
         customer_email: customer_email || cart.email,
         customer_phone: customer_phone,
-        original_amount: cartAmount
+        original_amount: cartAmount,
+        items: cartItemsMetadata // Store product info for admin verification
       }
     });
 
