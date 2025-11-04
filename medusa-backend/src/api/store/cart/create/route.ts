@@ -71,66 +71,146 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     // Add items to cart
     for (const item of items) {
       try {
-        // Try to find existing product by title or create a new one
         let product;
-        try {
+        let variant;
+        
+        // SECURE APPROACH: Look up product by sanity_slug (handle) if provided
+        if ((item as any).sanity_slug) {
+          const sanitySlug = (item as any).sanity_slug;
+          const optionName = (item as any).option_name || item.selectedOption;
+          
+          console.log(`[CART-CREATE] Looking up product by slug: ${sanitySlug}, option: ${optionName}`);
+          
+          // Find product by handle (matches Sanity slug)
+          const products = await productModuleService.listProducts({
+            handle: sanitySlug
+          });
+          
+          if (!products || products.length === 0) {
+            throw new Error(`Product not found with handle: ${sanitySlug}. Please sync from Sanity first.`);
+          }
+          
+          product = products[0];
+          
+          // Find variant by option name (title)
+          const variants = await productModuleService.listProductVariants({
+            product_id: product.id
+          });
+          
+          if (optionName) {
+            const matchedVariant = variants.find((v: any) => v.title === optionName);
+            if (!matchedVariant) {
+              throw new Error(`Variant "${optionName}" not found for product: ${product.title}`);
+            }
+            variant = matchedVariant;
+          } else {
+            variant = variants[0];
+          }
+          
+          if (!variant) {
+            throw new Error(`No variants found for product: ${product.title}`);
+          }
+          
+          // Get price from variant metadata (set by sync API)
+          // This is where the backend price authority lives
+          const variantPrice = (variant as any).metadata?.price_rials || 0;
+          
+          if (variantPrice === 0) {
+            console.warn(`[CART-CREATE] Warning: Variant ${variant.id} has no price in metadata. Was it synced from Sanity?`);
+            throw new Error(`Variant ${variant.title} has no price. Please sync product from Sanity.`);
+          }
+          
+          console.log(`[CART-CREATE] Using backend price: ${variantPrice} Rials (${(variant as any).metadata?.price_toman} Toman) for variant: ${variant.title}`);
+          
+          // Add line item to cart with BACKEND price from Medusa variant
+          await cartModuleService.addLineItems(cart.id, [{
+            variant_id: variant.id,
+            quantity: item.quantity,
+            title: item.title,
+            unit_price: variantPrice, // ✅ Price from Medusa backend (secure)
+            metadata: {
+              frontend_id: item.id,
+              selected_option: item.selectedOption,
+              image_url: item.image,
+              sanity_slug: sanitySlug
+            }
+          }]);
+          
+        } else {
+          // FALLBACK: Legacy approach for backward compatibility
+          // This creates products on-the-fly (less secure, for testing only)
+          console.warn(`[CART-CREATE] Using legacy mode for item: ${item.title} (no sanity_slug provided)`);
+          
           // Search for existing product by title
           const products = await productModuleService.listProducts({
             title: item.title
           });
           product = products[0];
-        } catch (error) {
-          console.log(`Product not found by title: ${item.title}`);
-        }
 
-        // If product doesn't exist, create it
-        if (!product) {
-          product = await productModuleService.createProducts({
+          // If product doesn't exist, create it
+          if (!product) {
+            product = await productModuleService.createProducts({
+              title: item.title,
+              description: `Product: ${item.title}`,
+              status: "published",
+              handle: `product-${item.id}-${Date.now()}`,
+              is_giftcard: false,
+              discountable: true,
+              metadata: {
+                frontend_id: item.id,
+                image_url: item.image,
+                selected_option: item.selectedOption
+              }
+            });
+
+            // Create a variant for the product
+            // Note: In Medusa v2, variants are created without prices initially
+            // Prices are managed separately via pricing module or admin
+            await productModuleService.createProductVariants({
+              product_id: product.id,
+              title: item.selectedOption || "Default",
+              sku: `SKU-${item.id}-${Date.now()}`,
+              manage_inventory: false,
+              allow_backorder: true
+            });
+          }
+
+          // Get the product variant
+          const variants = await productModuleService.listProductVariants({
+            product_id: product.id
+          });
+          
+          // Find variant by option name or use first
+          variant = variants[0];
+          if (item.selectedOption) {
+            const matchedVariant = variants.find((v: any) => v.title === item.selectedOption);
+            if (matchedVariant) {
+              variant = matchedVariant;
+            }
+          }
+
+          if (!variant) {
+            throw new Error(`No variant found for product: ${product.title}`);
+          }
+          
+          // Get price from variant metadata or fallback to frontend (legacy)
+          const variantPrice = (variant as any).metadata?.price_rials || item.price * 10;
+
+          console.log(`[CART-CREATE] Legacy mode - price: ${variantPrice} Rials (${Math.round(variantPrice/10)} Toman)`);
+
+          // Add line item to cart
+          await cartModuleService.addLineItems(cart.id, [{
+            variant_id: variant.id,
+            quantity: item.quantity,
             title: item.title,
-            description: `Product: ${item.title}`,
-            status: "published",
-            handle: `product-${item.id}-${Date.now()}`,
-            is_giftcard: false,
-            discountable: true,
+            unit_price: variantPrice,
             metadata: {
               frontend_id: item.id,
-              image_url: item.image,
-              selected_option: item.selectedOption
+              selected_option: item.selectedOption,
+              image_url: item.image
             }
-          });
-
-          // Create a variant for the product
-          await productModuleService.createProductVariants({
-            product_id: product.id,
-            title: item.selectedOption || "Default",
-            sku: `SKU-${item.id}-${Date.now()}`,
-            manage_inventory: false,
-            allow_backorder: true
-          });
+          }]);
         }
-
-        // Get the product variant
-        const variants = await productModuleService.listProductVariants({
-          product_id: product.id
-        });
-        const variant = variants[0];
-
-        if (!variant) {
-          throw new Error(`No variant found for product: ${product.title}`);
-        }
-
-        // Add line item to cart
-        await cartModuleService.addLineItems(cart.id, [{
-          variant_id: variant.id,
-          quantity: item.quantity,
-          title: item.title,
-          unit_price: item.price,
-          metadata: {
-            frontend_id: item.id,
-            selected_option: item.selectedOption,
-            image_url: item.image
-          }
-        }]);
 
       } catch (error) {
         console.error(`Error adding item ${item.title} to cart:`, error);
