@@ -27,30 +27,51 @@ export default defineType({
       group: 'content'
     }),
     
-    // Pricing Fields - Synced to Medusa
+    // Pricing Fields - DEPRECATED: Managed in Medusa Backend
     defineField({ 
       name: 'price', 
-      title: 'Price (USD)', 
+      title: 'Price (DEPRECATED - Manage in Medusa)', 
       type: 'number', 
       group: 'content',
-      description: 'Current selling price in USD. This will be synced to Medusa backend.',
+      description: '⚠️ DEPRECATED: Prices are now managed in Medusa backend. Use "Sync to Medusa" to push product data, then update prices in Medusa Admin Panel.',
       validation: (Rule) => Rule.min(0).precision(2),
+      readOnly: true,
     }),
     defineField({ 
       name: 'originalPrice', 
-      title: 'Original Price (USD)', 
+      title: 'Original Price (DEPRECATED)', 
       type: 'number', 
       group: 'content',
-      description: 'Original price before discount in USD (optional). Used to show price comparison.',
+      description: '⚠️ DEPRECATED: Manage discounts via Medusa Admin Panel.',
       validation: (Rule) => Rule.min(0).precision(2),
+      readOnly: true,
     }),
     defineField({ 
       name: 'discountPercentage', 
-      title: 'Discount Percentage', 
+      title: 'Discount Percentage (DEPRECATED)', 
       type: 'number', 
       group: 'content',
-      description: 'Discount percentage (0-100). Auto-calculated from price and originalPrice, or set manually.',
+      description: '⚠️ DEPRECATED: Manage discounts via Medusa Admin Panel → Discounts.',
       validation: (Rule) => Rule.min(0).max(100),
+      readOnly: true,
+    }),
+    
+    // Medusa Sync Fields
+    defineField({ 
+      name: 'medusaProductId', 
+      title: 'Medusa Product ID', 
+      type: 'string', 
+      group: 'sync',
+      description: 'Medusa backend product ID (auto-filled after sync)',
+      readOnly: true,
+    }),
+    defineField({ 
+      name: 'lastSyncedAt', 
+      title: 'Last Synced At', 
+      type: 'datetime', 
+      group: 'sync',
+      description: 'Last time this product was synced to Medusa',
+      readOnly: true,
     }),
     
     defineField({ name: 'features', title: 'Features', type: 'array', of: [{ type: 'string' }], group: 'content' }),
