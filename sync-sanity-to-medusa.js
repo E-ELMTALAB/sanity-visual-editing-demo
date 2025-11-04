@@ -2,31 +2,41 @@
  * Bulk Sync Script: Sanity → Medusa
  * 
  * This script fetches ALL products from your Sanity CMS and creates them in Medusa.
- * After running this once, you can manage prices/discounts/variants in Medusa Admin Panel.
+ * It uses the SAME Sanity configuration as your frontend - completely automatic!
  * 
  * Usage:
- * 1. Install dependencies: npm install @sanity/client node-fetch
- * 2. Update your Sanity project details below
- * 3. Run: node sync-sanity-to-medusa.js
+ * 1. Install dependencies: npm install next-sanity node-fetch
+ * 2. Run from project root: node sync-sanity-to-medusa.js
+ * 
+ * No configuration needed - it reads from the same files as your frontend!
  */
 
-const sanityClient = require('@sanity/client');
+const { createClient } = require('next-sanity');
 const fetch = require('node-fetch');
 
+// Import the EXACT same Sanity configuration as the frontend uses
+const sanityApi = require('./lib/sanity.api');
+
 // ============================================
-// CONFIGURATION - Update these values
+// CONFIGURATION - Uses EXACT same config as frontend
 // ============================================
 
-const SANITY_CONFIG = {
-  projectId: 'your-sanity-project-id',  // Find in sanity.config.ts
-  dataset: 'production',                 // Usually 'production'
-  token: 'your-sanity-token',           // Get from sanity.io/manage → API → Tokens
-  useCdn: false
-};
+// Create Sanity client using the EXACT same method as frontend
+const sanityClient = createClient({
+  projectId: sanityApi.projectId,
+  dataset: sanityApi.dataset,
+  apiVersion: sanityApi.apiVersion,
+  useCdn: false,
+  token: sanityApi.readToken || undefined,  // Optional for public data
+  perspective: 'published'
+});
 
 const MEDUSA_CONFIG = {
-  syncApiUrl: 'https://backend.sharifgpt.com/store/products/sync-from-sanity',
-  publishableKey: 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
+  syncApiUrl: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL 
+    ? `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/products/sync-from-sanity`
+    : 'https://backend.sharifgpt.com/store/products/sync-from-sanity',
+  publishableKey: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || 
+    'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
 };
 
 // ============================================
@@ -37,14 +47,25 @@ async function syncAllProductsFromSanity() {
   console.log('🚀 Starting Sanity → Medusa Product Sync...\n');
 
   try {
-    // 1. Initialize Sanity client
-    const sanity = sanityClient(SANITY_CONFIG);
-    console.log('✓ Connected to Sanity');
+    // 0. Validate configuration (same as frontend)
+    if (!sanityApi.projectId || sanityApi.projectId === 'placeholder') {
+      throw new Error('Sanity project ID not configured. Check lib/sanity.api.ts');
+    }
+    
+    console.log(`📋 Configuration (from lib/sanity.api.ts):`);
+    console.log(`   Sanity Project: ${sanityApi.projectId}`);
+    console.log(`   Sanity Dataset: ${sanityApi.dataset}`);
+    console.log(`   API Version: ${sanityApi.apiVersion}`);
+    console.log(`   Medusa Backend: ${MEDUSA_CONFIG.syncApiUrl}`);
+    console.log('');
 
-    // 2. Fetch all products from Sanity
+    // 1. Sanity client already initialized (using same method as frontend)
+    console.log('✓ Connected to Sanity (using next-sanity)');
+
+    // 2. Fetch all products from Sanity (same client method as frontend)
     console.log('📥 Fetching products from Sanity...');
     
-    const products = await sanity.fetch(`
+    const products = await sanityClient.fetch(`
       *[_type == "product"] {
         _id,
         name,
@@ -137,15 +158,18 @@ async function syncAllProductsFromSanity() {
   } catch (error) {
     console.error('\n❌ Sync Failed:', error.message);
     
-    if (error.message.includes('projectId')) {
-      console.error('\n💡 Tip: Update your Sanity project ID in the script');
+    if (error.message.includes('project ID')) {
+      console.error('\n💡 Tip: Your Sanity credentials are configured in lib/sanity.api.ts');
+      console.error('   Make sure environment variables are set:');
+      console.error('   - NEXT_PUBLIC_SANITY_PROJECT_ID');
+      console.error('   - NEXT_PUBLIC_SANITY_DATASET (optional, defaults to "production")');
     }
-    if (error.message.includes('token')) {
-      console.error('\n💡 Tip: Create a Sanity API token at sanity.io/manage');
+    if (error.message.includes('Cannot find module')) {
+      console.error('\n💡 Tip: Install dependencies: npm install next-sanity node-fetch');
     }
-    if (error.message.includes('fetch')) {
-      console.error('\n💡 Tip: Install dependencies: npm install @sanity/client node-fetch');
-    }
+    
+    console.error('\n📝 Note: This script uses the SAME Sanity config as your frontend');
+    console.error('   If your frontend works, this should work too!');
     
     process.exit(1);
   }
