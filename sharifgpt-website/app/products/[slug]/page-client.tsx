@@ -27,6 +27,11 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
   const { state: cartState, addItem } = useCart()
   const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false)
   const [showAddedToCart, setShowAddedToCart] = useState(false)
+  
+  // Medusa pricing state
+  const [medusaVariants, setMedusaVariants] = useState<any[]>([])
+  const [pricesLoading, setPricesLoading] = useState(true)
+  const [pricesError, setPricesError] = useState<string | null>(null)
 
   const handleProfileClick = () => {
     if (isAuthenticated) {
@@ -44,6 +49,8 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
 
   const handleAddToCart = () => {
     const selectedProductOption = product.options.find((opt: any) => opt.id === selectedOption)
+    
+    // Add item with Medusa variant information for secure backend validation
     addItem({
       id: product.id,
       title: product.title,
@@ -51,6 +58,10 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
       image: product.image,
       selectedOption: selectedProductOption?.name,
       quantity,
+      // New fields for backend validation
+      sanity_slug: productData?.slug?.current,
+      variant_id: selectedProductOption?.variant_id,
+      option_name: selectedProductOption?.name
     })
 
     setShowAddedToCart(true)
@@ -70,16 +81,71 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [])
+  
+  // Fetch prices from Medusa backend
+  useEffect(() => {
+    const fetchPrices = async () => {
+      if (!productData?.slug?.current) {
+        setPricesLoading(false)
+        return
+      }
+      
+      try {
+        setPricesLoading(true)
+        const response = await fetch('/api/products/prices', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slugs: [productData.slug.current] })
+        })
+        
+        const data = await response.json()
+        
+        if (data.success && data.prices[productData.slug.current]) {
+          setMedusaVariants(data.prices[productData.slug.current].variants || [])
+          setPricesError(null)
+        } else {
+          console.warn('[PRICE-FETCH] No prices found for product:', productData.slug.current)
+          setPricesError('Prices not available. Please sync product from Sanity.')
+          // Fallback to Sanity options if Medusa prices not available
+          if (Array.isArray(productData?.options)) {
+            setMedusaVariants(productData.options.map((opt: any, idx: number) => ({
+              variant_id: null,
+              name: opt.name,
+              price: opt.price,
+              sku: `fallback-${idx}`
+            })))
+          }
+        }
+      } catch (error: any) {
+        console.error('[PRICE-FETCH] Error fetching prices:', error)
+        setPricesError('Failed to load prices')
+        // Fallback to Sanity options
+        if (Array.isArray(productData?.options)) {
+          setMedusaVariants(productData.options.map((opt: any, idx: number) => ({
+            variant_id: null,
+            name: opt.name,
+            price: opt.price,
+            sku: `fallback-${idx}`
+          })))
+        }
+      } finally {
+        setPricesLoading(false)
+      }
+    }
+    
+    fetchPrices()
+  }, [productData?.slug?.current, productData?.options])
 
   // Transform Sanity data to component format
+  // Prices now come from Medusa, not Sanity
   const product = {
     id: productData?._id || 1,
     title: productData?.name || "محصول",
     description: productData?.description || "توضیحات محصول",
     category: productData?.category || "محصولات",
-    price: productData?.price || null,
-    originalPrice: productData?.originalPrice || null,
-    discount: productData?.discountPercentage || 0,
+    price: null, // Will be set from Medusa variants
+    originalPrice: null, // Will be set from Medusa variants
+    discount: 0, // Will be calculated from Medusa prices
     rating: typeof productData?.rating === 'number' ? productData.rating : 0,
     reviews: typeof productData?.reviewCount === 'number' ? productData.reviewCount : 0,
     image: productData?.image ? urlForImage(productData.image)?.width(800).height(600).url() : "/placeholder.svg",
@@ -87,14 +153,21 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
       ? productData.gallery.map((img: any) => urlForImage(img)?.width(800).height(600).url()).filter(Boolean)
       : productData?.image ? [urlForImage(productData.image)?.width(800).height(600).url()].filter(Boolean) : ["/placeholder.svg"],
     features: Array.isArray(productData?.features) ? productData.features : [],
-    options: Array.isArray(productData?.options) ? productData.options : [],
+    // Options now come from Medusa variants with accurate prices
+    options: medusaVariants.map((v, idx) => ({
+      id: idx + 1,
+      name: v.name,
+      price: v.price,
+      variant_id: v.variant_id,
+      sku: v.sku
+    })),
     badges: Array.isArray(productData?.badges) ? productData.badges : [],
     inStock: productData?.inStock !== false,
     relatedProducts: Array.isArray(productData?.relatedProducts) ? productData.relatedProducts.map((p: any) => ({
       id: p._id,
       title: p.name,
       slug: p.slug?.current,
-      price: p.price,
+      price: p.price, // TODO: Fetch from Medusa for related products too
       originalPrice: p.originalPrice,
       discountPercentage: p.discountPercentage,
       image: p.image ? urlForImage(p.image)?.width(400).height(300).url() : "/placeholder.svg",
@@ -118,18 +191,19 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
   const relatedProducts = product.relatedProducts
   const relatedArticles = product.relatedBlogs
 
-  const selectedPrice = product.options && product.options.length > 0 
-    ? (product.options.find((opt: any) => opt.id === selectedOption)?.price || product.options[0]?.price || product.price)
-    : product.price
-
-  const displayPrice = selectedPrice || 0
-  const displayOriginalPrice = product.originalPrice || 0
+  // Get selected variant or first variant from Medusa
+  const selectedVariant = selectedOption !== null && product.options[selectedOption]
+    ? product.options[selectedOption]
+    : product.options[0]
+  
+  const displayPrice = selectedVariant?.price || 0
+  const displayOriginalPrice = selectedVariant?.original_price || 0
 
   const actualDiscount = displayOriginalPrice > displayPrice 
     ? Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100)
     : 0
 
-  const displayDiscount = product.discount > 0 ? product.discount : actualDiscount
+  const displayDiscount = selectedVariant?.discount_percentage || actualDiscount
 
   return (
     <div className="bg-gray-50 min-h-screen" dir="rtl">
