@@ -3,9 +3,10 @@
  * 
  * This script runs during backend build to sync all Sanity products to Medusa.
  * No tokens needed - uses public Sanity API.
+ * Uses native fetch (Node.js 18+)
  */
 
-const fetch = require('node-fetch');
+// No need to import fetch - it's built-in to Node.js 18+
 
 // Sanity public API configuration (no token needed for public content)
 const SANITY_PROJECT_ID = process.env.SANITY_PROJECT_ID || 'i0r5wnv8';
