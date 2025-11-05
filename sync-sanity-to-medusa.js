@@ -14,20 +14,23 @@
 const { createClient } = require('next-sanity');
 const fetch = require('node-fetch');
 
-// Import the EXACT same Sanity configuration as the frontend uses
-const sanityApi = require('./lib/sanity.api');
+// ============================================
+// CONFIGURATION - Uses environment variables (no imports needed)
+// ============================================
 
-// ============================================
-// CONFIGURATION - Uses EXACT same config as frontend
-// ============================================
+// Read directly from environment variables (same as lib/sanity.api.ts does)
+const SANITY_PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'placeholder';
+const SANITY_DATASET = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production';
+const SANITY_API_VERSION = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2023-06-21';
+const SANITY_READ_TOKEN = process.env.SANITY_API_READ_TOKEN || '';
 
 // Create Sanity client using the EXACT same method as frontend
 const sanityClient = createClient({
-  projectId: sanityApi.projectId,
-  dataset: sanityApi.dataset,
-  apiVersion: sanityApi.apiVersion,
+  projectId: SANITY_PROJECT_ID,
+  dataset: SANITY_DATASET,
+  apiVersion: SANITY_API_VERSION,
   useCdn: false,
-  token: sanityApi.readToken || undefined,  // Optional for public data
+  token: SANITY_READ_TOKEN || undefined,  // Optional for public data
   perspective: 'published'
 });
 
@@ -47,15 +50,15 @@ async function syncAllProductsFromSanity() {
   console.log('🚀 Starting Sanity → Medusa Product Sync...\n');
 
   try {
-    // 0. Validate configuration (same as frontend)
-    if (!sanityApi.projectId || sanityApi.projectId === 'placeholder') {
-      throw new Error('Sanity project ID not configured. Check lib/sanity.api.ts');
+    // 0. Validate configuration
+    if (!SANITY_PROJECT_ID || SANITY_PROJECT_ID === 'placeholder') {
+      throw new Error('Sanity project ID not configured. Set NEXT_PUBLIC_SANITY_PROJECT_ID environment variable.');
     }
     
-    console.log(`📋 Configuration (from lib/sanity.api.ts):`);
-    console.log(`   Sanity Project: ${sanityApi.projectId}`);
-    console.log(`   Sanity Dataset: ${sanityApi.dataset}`);
-    console.log(`   API Version: ${sanityApi.apiVersion}`);
+    console.log(`📋 Configuration (from environment variables):`);
+    console.log(`   Sanity Project: ${SANITY_PROJECT_ID}`);
+    console.log(`   Sanity Dataset: ${SANITY_DATASET}`);
+    console.log(`   API Version: ${SANITY_API_VERSION}`);
     console.log(`   Medusa Backend: ${MEDUSA_CONFIG.syncApiUrl}`);
     console.log('');
 
