@@ -160,3 +160,4 @@ async function clearAllProducts() {
 // Run the cleanup
 clearAllProducts();
 
+

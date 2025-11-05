@@ -95,3 +95,4 @@ If direct backend calls still fail, the proxy endpoints are still available:
 The payment system should now work without CORS issues! 🎉
 
 
+

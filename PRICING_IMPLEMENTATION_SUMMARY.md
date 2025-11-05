@@ -459,3 +459,4 @@ DATABASE_URL=postgresql://...
 **Next**: Test sync API after backend rebuild  
 **Blocker**: None (all code pushed, waiting for deployment)
 
+

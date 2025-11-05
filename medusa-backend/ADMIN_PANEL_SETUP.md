@@ -104,17 +104,13 @@ build: {
 1. **Start the Medusa backend:**
    ```bash
    cd medusa-backend
-   npm run dev  # Use dev mode for local development
+   npm run dev
    ```
-
-   **Important:** Use `npm run dev` (development mode) for local work. It auto-builds the admin panel.
 
 2. **Access the admin panel:**
    ```
    http://localhost:9000/app
    ```
-
-   **Note:** Wait 30-60 seconds for the initial build to complete on first run.
 
 ### Production/Railway
 
@@ -254,32 +250,7 @@ export default ProductWidget
 
 ## 🔧 Troubleshooting
 
-### Issue 1: "Could not find index.html in the admin build directory"
-
-**Symptoms:** Error when starting server about missing index.html
-
-**Cause:** Running in production mode (`npm start`) without pre-building
-
-**Solutions:**
-
-**Option A: Use Development Mode (Recommended for Local)**
-```bash
-cd medusa-backend
-npm run dev  # Auto-builds admin panel
-```
-
-**Option B: Build Then Start (For Production)**
-```bash
-cd medusa-backend
-npm run build  # Build first
-npm run start  # Then start
-```
-
-**See:** `ADMIN_BUILD_ERROR_FIX.md` for detailed explanation
-
----
-
-### Issue 2: Admin Panel Not Loading (404)
+### Issue 1: Admin Panel Not Loading (404)
 
 **Symptoms:** Accessing `/app` returns 404
 
@@ -292,18 +263,18 @@ npm run start  # Then start
 
 2. Verify configuration logs show admin is enabled
 
-3. Make sure you're using the right mode:
+3. Rebuild the admin:
    ```bash
-   npm run dev  # For development (recommended)
-   ```
-
-4. If using production mode, build first:
-   ```bash
+   cd medusa-backend
    npm run build
-   npm run start
    ```
 
-### Issue 3: Admin Panel Loads but Can't Login
+4. Restart the backend:
+   ```bash
+   npm run dev
+   ```
+
+### Issue 2: Admin Panel Loads but Can't Login
 
 **Symptoms:** Login page loads but authentication fails
 
@@ -325,7 +296,7 @@ npm run start  # Then start
    echo $COOKIE_SECRET
    ```
 
-### Issue 4: Admin Panel Loads Blank Page
+### Issue 3: Admin Panel Loads Blank Page
 
 **Symptoms:** Page loads but shows blank screen
 
@@ -348,7 +319,7 @@ npm run start  # Then start
    npm run build
    ```
 
-### Issue 5: CORS Errors
+### Issue 4: CORS Errors
 
 **Symptoms:** Console shows CORS errors
 
