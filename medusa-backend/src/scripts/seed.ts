@@ -28,7 +28,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const salesChannelModuleService = container.resolve(Modules.SALES_CHANNEL);
   const storeModuleService = container.resolve(Modules.STORE);
 
-  const countries = ["gb", "de", "dk", "se", "fr", "es", "it"];
+  const countries = ["ir", "us", "ca", "gb", "de", "fr", "ae"];
 
   logger.info("Seeding store data...");
   const [store] = await storeModuleService.listStores();
@@ -58,11 +58,14 @@ export default async function seedDemoData({ container }: ExecArgs) {
       update: {
         supported_currencies: [
           {
-            currency_code: "eur",
+            currency_code: "irr",
             is_default: true,
           },
           {
             currency_code: "usd",
+          },
+          {
+            currency_code: "eur",
           },
         ],
         default_sales_channel_id: defaultSalesChannel[0].id,
@@ -74,9 +77,15 @@ export default async function seedDemoData({ container }: ExecArgs) {
     input: {
       regions: [
         {
-          name: "Europe",
-          currency_code: "eur",
-          countries,
+          name: "Iran",
+          currency_code: "irr",
+          countries: ["ir"],
+          payment_providers: ["pp_system_default"],
+        },
+        {
+          name: "International",
+          currency_code: "usd",
+          countries: ["us", "ca", "gb", "de", "fr", "ae"],
           payment_providers: ["pp_system_default"],
         },
       ],
@@ -101,10 +110,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
     input: {
       locations: [
         {
-          name: "European Warehouse",
+          name: "Iran Fulfillment Center",
           address: {
-            city: "Copenhagen",
-            country_code: "DK",
+            city: "Tehran",
+            country_code: "IR",
             address_1: "",
           },
         },
