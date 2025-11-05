@@ -19,10 +19,11 @@ const fetch = require('node-fetch');
 // ============================================
 
 // Read directly from environment variables (same as lib/sanity.api.ts does)
-const SANITY_PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'placeholder';
+// For local dev, you can hardcode these temporarily if env vars aren't set:
+const SANITY_PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'i0r5wnv8'; // Your actual project ID
 const SANITY_DATASET = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production';
 const SANITY_API_VERSION = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2023-06-21';
-const SANITY_READ_TOKEN = process.env.SANITY_API_READ_TOKEN || '';
+const SANITY_READ_TOKEN = process.env.SANITY_API_READ_TOKEN || ''; // Not needed for public content
 
 // Create Sanity client using the EXACT same method as frontend
 const sanityClient = createClient({
