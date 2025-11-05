@@ -80,13 +80,11 @@ export async function POST(request: NextRequest) {
         prices[slug] = {
           product_id: product.id,
           variants: variants.map((variant: any) => {
-            // Find IRR price
-            const irrPrice = variant.prices?.find(
-              (p: any) => p.currency_code === 'irr'
-            )
-            
-            const priceInRials = irrPrice?.amount || 0
-            const priceInToman = Math.round(priceInRials / 10)
+            // Read prices from metadata (where our sync stores them)
+            const priceInRials = variant.metadata?.price_rials || 
+                               variant.prices?.find((p: any) => p.currency_code === 'irr')?.amount || 
+                               100000  // Default to 100,000 Rials if no price found
+            const priceInToman = variant.metadata?.price_toman || Math.round(priceInRials / 10)
 
             return {
               variant_id: variant.id,

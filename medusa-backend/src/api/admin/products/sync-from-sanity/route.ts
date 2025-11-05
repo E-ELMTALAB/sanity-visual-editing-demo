@@ -133,7 +133,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
               manage_inventory: false,
               allow_backorder: true,
               metadata: {
-                price_rials: 100000, // Default 10,000 Toman = 100,000 Rial
+                price_rials: 100000,  // Default 100,000 Rials = 10,000 Toman
                 price_toman: 10000,
                 synced_at: new Date().toISOString()
               }
@@ -172,8 +172,9 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
               const variantTitle = option.name;
               const variantSku = `${handle}-${option.id}`;
               
-              // Convert Toman to Rial (1 Toman = 10 Rial)
-              const priceInRials = option.price * 10;
+              // Use price from Sanity, or default to 100000 Rials if missing
+              const priceInRials = option.price ? (option.price * 10) : 100000;
+              const priceInToman = Math.round(priceInRials / 10);
 
               // Find the matching option value by name
               const matchingOptionValue = productOption.values?.find(
@@ -205,13 +206,13 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
                 variant = existingVariants[0];
                 console.log(`[SYNC] Updating variant: ${variantSku}`);
                 
-                // Update variant metadata (price)
+                // Update variant metadata with prices
                 await productModuleService.updateProductVariants(variant.id, {
                   title: variantTitle,
                   metadata: {
                     sanity_option_id: option.id,
                     price_rials: priceInRials,
-                    price_toman: option.price,
+                    price_toman: priceInToman,
                     synced_at: new Date().toISOString()
                   }
                 });
@@ -231,7 +232,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
                   metadata: {
                     sanity_option_id: option.id,
                     price_rials: priceInRials,
-                    price_toman: option.price,
+                    price_toman: priceInToman,
                     synced_at: new Date().toISOString()
                   }
                 });
@@ -242,7 +243,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
                 title: variantTitle,
                 sku: variantSku,
                 option_value_id: matchingOptionValue.id,
-                price_toman: option.price,
+                price_toman: priceInToman,
                 price_rial: priceInRials
               });
             } catch (variantError: any) {
