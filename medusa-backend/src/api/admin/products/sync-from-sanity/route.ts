@@ -92,6 +92,14 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
           // Create new product
           console.log(`[SYNC] Creating new product: ${handle}`);
           
+          // In Medusa v2, options must be defined when creating the product
+          const productOptions = sanityProduct.options && sanityProduct.options.length > 0
+            ? [{
+                title: "Subscription Duration",
+                values: sanityProduct.options.map(opt => opt.name)
+              }]
+            : [];
+          
           medusaProduct = await productModuleService.createProducts({
             title: sanityProduct.name,
             description: sanityProduct.description || '',
@@ -99,6 +107,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             status: "published",
             is_giftcard: false,
             discountable: true,
+            options: productOptions,
             metadata: {
               sanity_id: sanityProduct._id,
               synced_at: new Date().toISOString()
@@ -138,25 +147,26 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             });
           }
         } else {
-          // Step 1: Get or create product option (e.g., "Subscription Duration")
-          let productOption;
-          const existingProduct = await productModuleService.retrieveProduct(medusaProduct.id, {
+          // Get product with options and their values
+          const productWithOptions = await productModuleService.retrieveProduct(medusaProduct.id, {
             relations: ["options", "options.values"]
           });
 
-          if (existingProduct.options && existingProduct.options.length > 0) {
-            productOption = existingProduct.options[0];
-            console.log(`[SYNC] Using existing product option: ${productOption.id}`);
-          } else {
-            // Create product option if it doesn't exist
-            productOption = await productModuleService.createProductOptions({
-              title: "Subscription Duration",
-              product_id: medusaProduct.id
+          const productOption = productWithOptions.options?.[0];
+
+          if (!productOption) {
+            console.error(`[SYNC] Product ${medusaProduct.id} has no options defined`);
+            results.push({
+              sanity_id: sanityProduct._id,
+              success: false,
+              error: "Product has no options defined"
             });
-            console.log(`[SYNC] Created product option: ${productOption.id}`);
+            continue;
           }
 
-          // Step 2: Create/update option values and variants
+          console.log(`[SYNC] Using product option: ${productOption.title} (${productOption.id})`);
+
+          // Create/update variants for each Sanity option
           for (const option of options) {
             try {
               const variantTitle = option.name;
@@ -165,25 +175,24 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
               // Convert Toman to Rial (1 Toman = 10 Rial)
               const priceInRials = option.price * 10;
 
-              // Step 2a: Get or create option value
-              let optionValue;
-              const existingOptionValues = await productModuleService.listProductOptionValues({
-                option_id: productOption.id,
-                value: variantTitle
-              });
+              // Find the matching option value by name
+              const matchingOptionValue = productOption.values?.find(
+                (val: any) => val.value === variantTitle
+              );
 
-              if (existingOptionValues && existingOptionValues.length > 0) {
-                optionValue = existingOptionValues[0];
-                console.log(`[SYNC] Using existing option value: ${optionValue.id}`);
-              } else {
-                optionValue = await productModuleService.createProductOptionValues({
-                  option_id: productOption.id,
-                  value: variantTitle
+              if (!matchingOptionValue) {
+                console.error(`[SYNC] No option value found for "${variantTitle}"`);
+                variantResults.push({
+                  option_id: option.id,
+                  success: false,
+                  error: `No option value found for "${variantTitle}"`
                 });
-                console.log(`[SYNC] Created option value: ${optionValue.id} = ${variantTitle}`);
+                continue;
               }
 
-              // Step 2b: Check if variant exists
+              console.log(`[SYNC] Using option value: ${matchingOptionValue.value} (${matchingOptionValue.id})`);
+
+              // Check if variant exists
               const existingVariants = await productModuleService.listProductVariants({
                 product_id: medusaProduct.id,
                 sku: variantSku
@@ -196,12 +205,9 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
                 variant = existingVariants[0];
                 console.log(`[SYNC] Updating variant: ${variantSku}`);
                 
-                // Update variant with proper option value linkage
+                // Update variant metadata (price)
                 await productModuleService.updateProductVariants(variant.id, {
                   title: variantTitle,
-                  options: {
-                    [productOption.id]: optionValue.id
-                  },
                   metadata: {
                     sanity_option_id: option.id,
                     price_rials: priceInRials,
@@ -210,7 +216,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
                   }
                 });
               } else {
-                // Create new variant with proper option value linkage
+                // Create new variant linked to option value
                 console.log(`[SYNC] Creating variant: ${variantSku}`);
                 
                 variant = await productModuleService.createProductVariants({
@@ -220,7 +226,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
                   manage_inventory: false,
                   allow_backorder: true,
                   options: {
-                    [productOption.id]: optionValue.id
+                    [productOption.id]: variantTitle
                   },
                   metadata: {
                     sanity_option_id: option.id,
@@ -235,7 +241,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
                 variant_id: variant.id,
                 title: variantTitle,
                 sku: variantSku,
-                option_value_id: optionValue.id,
+                option_value_id: matchingOptionValue.id,
                 price_toman: option.price,
                 price_rial: priceInRials
               });
