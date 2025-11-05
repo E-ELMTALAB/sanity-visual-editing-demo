@@ -32,6 +32,8 @@ async function syncProducts() {
         name,
         slug,
         description,
+        "imageUrl": image.asset->url,
+        "thumbnail": image.asset->url,
         options[] {
           id,
           name,

@@ -38,6 +38,8 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         name: string;
         slug: { current: string };
         description?: string;
+        imageUrl?: string;
+        thumbnail?: string;
         options?: Array<{
           id: string;
           name: string;
@@ -87,8 +89,10 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
           await productModuleService.updateProducts(medusaProduct.id, {
             title: sanityProduct.name,
             description: sanityProduct.description || '',
+            thumbnail: sanityProduct.thumbnail || sanityProduct.imageUrl || null,
             metadata: {
               sanity_id: sanityProduct._id,
+              image_url: sanityProduct.imageUrl || sanityProduct.thumbnail,
               synced_at: new Date().toISOString()
             }
           });
@@ -112,9 +116,11 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             status: "published",
             is_giftcard: false,
             discountable: true,
+            thumbnail: sanityProduct.thumbnail || sanityProduct.imageUrl || null,
             options: productOptions,
             metadata: {
               sanity_id: sanityProduct._id,
+              image_url: sanityProduct.imageUrl || sanityProduct.thumbnail,
               synced_at: new Date().toISOString()
             }
           });
