@@ -44,7 +44,8 @@ export async function POST(request: NextRequest) {
     for (const slug of slugs) {
       try {
         // Query Medusa Product Module for product by handle
-        const response = await fetch(`${backend}/store/products?handle=${slug}`, {
+        // Important: Must include fields=*variants.prices to get price data (Medusa v2 standard)
+        const response = await fetch(`${backend}/store/products?handle=${slug}&fields=*variants.prices`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
