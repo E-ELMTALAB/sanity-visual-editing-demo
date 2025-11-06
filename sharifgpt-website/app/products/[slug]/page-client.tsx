@@ -51,11 +51,20 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
     // selectedOption is an index (0, 1, 2...), not an ID
     const selectedProductOption = product.options[selectedOption]
     
+    console.log('[ADD-TO-CART] Debug:', {
+      selectedOption: selectedOption,
+      productOptionsLength: product.options.length,
+      selectedProductOption: selectedProductOption,
+      allOptions: product.options
+    })
+    
     const price = selectedProductOption?.price || 0
     
     // Warn if price is 0
     if (!price || price === 0) {
-      console.warn('[ADD-TO-CART] Price is 0 or null. Product may not be synced from Sanity to Medusa.')
+      console.error('[ADD-TO-CART] ❌ Price is 0 or null. Product may not be synced from Sanity to Medusa.')
+      console.error('[ADD-TO-CART] medusaVariants:', medusaVariants)
+      console.error('[ADD-TO-CART] product.options:', product.options)
       alert('قیمت این محصول در دسترس نیست. لطفاً با پشتیبانی تماس بگیرید.')
       return
     }
@@ -111,7 +120,9 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
         const data = await response.json()
         
         if (data.success && data.prices[productData.slug.current]) {
-          setMedusaVariants(data.prices[productData.slug.current].variants || [])
+          const variants = data.prices[productData.slug.current].variants || []
+          console.log('[PRICE-FETCH] ✅ Medusa variants loaded:', variants)
+          setMedusaVariants(variants)
           setPricesError(null)
         } else {
           console.warn('[PRICE-FETCH] No prices found for product:', productData.slug.current)
@@ -149,7 +160,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
     features: Array.isArray(productData?.features) ? productData.features : [],
     // Options now come from Medusa variants with accurate prices
     options: medusaVariants.map((v, idx) => ({
-      id: idx + 1,
+      id: idx,  // Use index as ID (0, 1, 2...) to match selectedOption
       name: v.name,
       price: v.price,
       variant_id: v.variant_id,
@@ -187,6 +198,15 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
 
   // Get selected variant from Medusa (selectedOption is array index)
   const selectedVariant = product.options[selectedOption] || product.options[0] || null
+  
+  // Debug logging
+  console.log('[PRODUCT-PAGE] State:', {
+    medusaVariantsCount: medusaVariants.length,
+    productOptionsCount: product.options.length,
+    selectedOption: selectedOption,
+    selectedVariant: selectedVariant,
+    selectedVariantPrice: selectedVariant?.price
+  })
   
   // Prices ONLY from Medusa - never from Sanity
   const displayPrice = selectedVariant?.price || 0
