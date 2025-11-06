@@ -114,29 +114,13 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
           setPricesError(null)
         } else {
           console.warn('[PRICE-FETCH] No prices found for product:', productData.slug.current)
-          setPricesError('Prices not available. Please sync product from Sanity.')
-          // Fallback to Sanity options if Medusa prices not available
-          if (Array.isArray(productData?.options)) {
-            setMedusaVariants(productData.options.map((opt: any, idx: number) => ({
-              variant_id: null,
-              name: opt.name,
-              price: opt.price,
-              sku: `fallback-${idx}`
-            })))
-          }
+          setPricesError('قیمت‌ها در دسترس نیستند. محصول در مدوسا همگام‌سازی نشده است.')
+          setMedusaVariants([]) // No fallback - must come from Medusa only
         }
       } catch (error: any) {
         console.error('[PRICE-FETCH] Error fetching prices:', error)
-        setPricesError('Failed to load prices')
-        // Fallback to Sanity options
-        if (Array.isArray(productData?.options)) {
-          setMedusaVariants(productData.options.map((opt: any, idx: number) => ({
-            variant_id: null,
-            name: opt.name,
-            price: opt.price,
-            sku: `fallback-${idx}`
-          })))
-        }
+        setPricesError('خطا در دریافت قیمت‌ها. لطفاً دوباره تلاش کنید.')
+        setMedusaVariants([]) // No fallback - prices must come from Medusa only
       } finally {
         setPricesLoading(false)
       }
@@ -176,9 +160,9 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
       id: p._id,
       title: p.name,
       slug: p.slug?.current,
-      price: p.price, // TODO: Fetch from Medusa for related products too
-      originalPrice: p.originalPrice,
-      discountPercentage: p.discountPercentage,
+      price: null, // Prices must come from Medusa - will be fetched when user visits product page
+      originalPrice: null,
+      discountPercentage: 0,
       image: p.image ? urlForImage(p.image)?.width(400).height(300).url() : "/placeholder.svg",
       category: p.category,
       rating: p.rating || 0,
