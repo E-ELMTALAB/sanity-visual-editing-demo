@@ -37,13 +37,21 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       }));
     }
 
+    // Add options if provided (Medusa v2 standard: options created with product)
+    if (body.options && Array.isArray(body.options) && body.options.length > 0) {
+      productData.options = body.options.map((opt: any) => ({
+        title: opt.title,
+        values: opt.values || []
+      }));
+    }
+
     // Create the product
     const products = await productModuleService.createProducts(productData);
     const product = Array.isArray(products) ? products[0] : products;
 
     console.log("✅ Product created:", product.id);
 
-    // Create variants with prices
+    // Create variants with prices (Medusa v2 standard)
     const createdVariants: any[] = [];
     if (body.variants && Array.isArray(body.variants) && body.variants.length > 0) {
       for (const variantData of body.variants) {
@@ -53,32 +61,40 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             title: variantData.title || product.title,
             sku: variantData.sku,
             inventory_quantity: variantData.inventory_quantity || 0,
-            manage_inventory: true,
-            allow_backorder: false,
+            manage_inventory: variantData.manage_inventory !== undefined ? variantData.manage_inventory : false,
+            allow_backorder: variantData.allow_backorder !== undefined ? variantData.allow_backorder : true,
             metadata: variantData.metadata || {},
           };
 
-          // Add options if provided
-          if (variantData.options) {
-            variantPayload.options = variantData.options;
+          // Add option linkage (map option to value string)
+          if (variantData.options && Array.isArray(variantData.options)) {
+            // Get product with options to find option IDs
+            const productWithOptions = await productModuleService.retrieveProduct(product.id, {
+              relations: ["options"]
+            });
+            
+            if (productWithOptions.options && productWithOptions.options.length > 0) {
+              const optionsMap: any = {};
+              variantData.options.forEach((opt: any, idx: number) => {
+                const productOption = productWithOptions.options[idx];
+                if (productOption) {
+                  optionsMap[productOption.id] = opt.value;
+                }
+              });
+              variantPayload.options = optionsMap;
+            }
           }
 
           const variants = await productModuleService.createProductVariants(variantPayload);
           const variant = Array.isArray(variants) ? variants[0] : variants;
 
-          // Store price information in variant metadata for now
-          // In Medusa v2, proper pricing requires using the pricing module
-          const variantWithPrice = {
+          createdVariants.push({
             ...variant,
-            prices: variantData.prices || [],
-            metadata: {
-              ...variant.metadata,
-              prices: JSON.stringify(variantData.prices || []),
-            }
-          };
-
-          createdVariants.push(variantWithPrice);
-          console.log(`✅ Variant created: ${variant.id} with price ${variantData.prices?.[0]?.amount || 0} cents`);
+            prices: variantData.prices || []
+          });
+          
+          const priceInfo = variantData.prices?.[0];
+          console.log(`✅ Variant created: ${variant.id} - ${variant.title} - Price: ${priceInfo?.amount || 0} ${priceInfo?.currency_code?.toUpperCase() || 'N/A'}`);
         } catch (error: any) {
           console.error(`❌ Failed to create variant: ${error.message}`);
         }
