@@ -470,7 +470,7 @@ export default function CartPage() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-gray-800 text-lg mb-2">{item.title}</h3>
                       {item.selectedOption && <p className="text-gray-600 mb-2">{item.selectedOption}</p>}
-                      <p className="text-blue-600 font-bold text-xl">{item.price.toLocaleString()} تومان</p>
+                      <p className="text-blue-600 font-bold text-xl">{(item.price || 0).toLocaleString()} تومان</p>
                     </div>
                     <div className="flex items-center space-x-4 space-x-reverse">
                       <div className="flex items-center border border-gray-300 rounded-lg">
@@ -491,7 +491,7 @@ export default function CartPage() {
                       <div className="text-right">
                         <p className="text-gray-600 text-sm">مجموع:</p>
                         <p className="font-bold text-lg text-blue-600">
-                          {(item.price * item.quantity).toLocaleString()} تومان
+                          {((item.price || 0) * item.quantity).toLocaleString()} تومان
                         </p>
                       </div>
                       <button

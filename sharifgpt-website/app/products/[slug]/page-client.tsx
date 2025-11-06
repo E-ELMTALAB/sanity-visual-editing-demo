@@ -50,11 +50,20 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
   const handleAddToCart = () => {
     const selectedProductOption = product.options.find((opt: any) => opt.id === selectedOption)
     
+    const price = selectedProductOption?.price || product.price || 0
+    
+    // Warn if price is 0
+    if (!price || price === 0) {
+      console.warn('[ADD-TO-CART] Price is 0 or null. Product may not be synced from Sanity to Medusa.')
+      alert('قیمت این محصول در دسترس نیست. لطفاً با پشتیبانی تماس بگیرید.')
+      return
+    }
+    
     // Add item with Medusa variant information for secure backend validation
     addItem({
       id: product.id,
       title: product.title,
-      price: selectedProductOption?.price || product.price,
+      price: price,
       image: product.image,
       selectedOption: selectedProductOption?.name,
       quantity,
