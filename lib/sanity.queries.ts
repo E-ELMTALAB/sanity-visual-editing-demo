@@ -270,8 +270,7 @@ export const productDocBySlugQuery = groq`
       coverImage,
       publishedAt,
       tags
-    },
-    "slug": slug.current,
+    }
   }
 `
 
