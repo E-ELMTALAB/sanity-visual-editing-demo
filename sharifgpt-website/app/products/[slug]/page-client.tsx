@@ -88,6 +88,11 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
     console.log('[ADD-TO-CART] Adding to cart...')
     
     // Add item with Medusa variant information for secure backend validation
+    // Handle both string and object formats for slug
+    const sanitySlug = typeof productData?.slug === 'string' 
+      ? productData.slug 
+      : productData?.slug?.current || ''
+    
     const cartItem = {
       id: product.id,
       title: product.title,
@@ -96,7 +101,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
       selectedOption: selectedProductOption?.name,
       quantity,
       // New fields for backend validation
-      sanity_slug: productData?.slug?.current || '',
+      sanity_slug: sanitySlug,
       variant_id: selectedProductOption?.variant_id,
       option_name: selectedProductOption?.name
     }
@@ -127,8 +132,13 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
   // Fetch prices from Medusa backend
   useEffect(() => {
     const fetchPrices = async () => {
-      const slug = productData?.slug?.current
+      // Handle both string and object formats for slug
+      const slug = typeof productData?.slug === 'string' 
+        ? productData.slug 
+        : productData?.slug?.current
       console.log('[PRICE-FETCH] Starting fetch for slug:', slug)
+      console.log('[PRICE-FETCH] productData.slug type:', typeof productData?.slug)
+      console.log('[PRICE-FETCH] productData.slug value:', productData?.slug)
       
       if (!slug) {
         console.error('[PRICE-FETCH] ❌ No slug found in productData')
@@ -171,7 +181,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
     }
     
     fetchPrices()
-  }, [productData?.slug?.current])
+  }, [productData?.slug])
 
   // Transform Sanity data to component format
   // Prices now come from Medusa, not Sanity
