@@ -175,9 +175,11 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             });
           }
 
-          // Get the product variant
+          // Get the product variant with prices (Medusa v2 standard)
           const variants = await productModuleService.listProductVariants({
             product_id: product.id
+          }, {
+            relations: ["prices"]
           });
           
           // Find variant by option name or use first
@@ -193,10 +195,15 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             throw new Error(`No variant found for product: ${product.title}`);
           }
           
-          // Get price from variant metadata or fallback to frontend (legacy)
-          const variantPrice = (variant as any).metadata?.price_rials || item.price * 10;
+          // Get price from standard Medusa pricing (following Medusa v2 conventions)
+          const irrPrice = (variant as any).prices?.find((p: any) => p.currency_code === 'irr');
+          const variantPrice = irrPrice?.amount || 0;
 
-          console.log(`[CART-CREATE] Legacy mode - price: ${variantPrice} Rials (${Math.round(variantPrice/10)} Toman)`);
+          if (!variantPrice || variantPrice === 0) {
+            throw new Error(`No IRR price found for variant: ${variant.title}. Please set price in Medusa admin.`);
+          }
+
+          console.log(`[CART-CREATE] Using Medusa price: ${variantPrice} Rials (${Math.round(variantPrice/10)} Toman)`);
 
           // Add line item to cart
           await cartModuleService.addLineItems(cart.id, [{

@@ -77,24 +77,24 @@ export async function POST(request: NextRequest) {
         const variants = product.variants || []
 
         // Transform variants to frontend-friendly format
+        // Following Medusa v2 standard: prices stored in smallest currency unit (Rials)
         prices[slug] = {
           product_id: product.id,
           variants: variants.map((variant: any) => {
-            // Read prices from metadata (where our sync stores them)
-            const priceInRials = variant.metadata?.price_rials || 
-                               variant.prices?.find((p: any) => p.currency_code === 'irr')?.amount || 
-                               100000  // Default to 100,000 Rials if no price found
-            const priceInToman = variant.metadata?.price_toman || Math.round(priceInRials / 10)
+            // Get price from standard Medusa prices array (currency_code + amount)
+            const irrPrice = variant.prices?.find((p: any) => p.currency_code === 'irr')
+            const priceInRials = irrPrice?.amount || 0
+            const priceInToman = Math.round(priceInRials / 10)
 
             return {
               variant_id: variant.id,
               name: variant.title,
               sku: variant.sku,
               price: priceInToman, // Display price in Toman
-              price_rials: priceInRials, // Actual price in Rials
+              price_rials: priceInRials, // Actual price in Rials (from Medusa)
               currency: 'IRT', // Toman
-              original_price: variant.metadata?.original_price_toman || null,
-              discount_percentage: variant.metadata?.discount_percentage || 0
+              original_price: null, // Can be added to Medusa prices if needed
+              discount_percentage: 0
             }
           })
         }
