@@ -552,7 +552,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
                           <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 bg-clip-text text-transparent">
                             {(displayPrice || 0).toLocaleString()} تومان
                           </span>
-                          {product.originalPrice > selectedPrice && (
+                          {product.originalPrice > displayPrice && (
                             <div className="bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full shadow-md border border-white/20">
                               <span className="font-bold text-xs">{displayDiscount}% تخفیف</span>
                             </div>
@@ -560,7 +560,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
                         </div>
 
                         {/* Original price with smaller styling */}
-                        {product.originalPrice > selectedPrice && (
+                        {product.originalPrice > displayPrice && (
                           <div className="flex items-center space-x-2 space-x-reverse">
                             <span className="text-sm text-gray-500 line-through bg-gray-100/60 backdrop-blur-sm px-2 py-0.5 rounded-md">
                               {(displayOriginalPrice || 0).toLocaleString()} تومان
@@ -653,7 +653,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
                           <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 bg-clip-text text-transparent">
                             {(displayPrice || 0).toLocaleString()} تومان
                           </span>
-                          {product.originalPrice > selectedPrice && (
+                          {product.originalPrice > displayPrice && (
                             <div className="bg-gradient-to-r from-red-500/90 to-pink-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full shadow-md border border-white/20">
                               <span className="font-bold text-xs">{displayDiscount}% تخفیف</span>
                             </div>
@@ -661,7 +661,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
                         </div>
 
                         {/* Original price with smaller styling */}
-                        {product.originalPrice > selectedPrice && (
+                        {product.originalPrice > displayPrice && (
                           <div className="flex items-center space-x-2 space-x-reverse">
                             <span className="text-sm text-gray-500 line-through bg-gray-100/60 backdrop-blur-sm px-2 py-0.5 rounded-md">
                               {(displayOriginalPrice || 0).toLocaleString()} تومان
