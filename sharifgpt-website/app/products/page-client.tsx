@@ -22,6 +22,7 @@ export default function ProductsPageClient({ productsData, faqsData }: ProductsP
   const [headerVisible, setHeaderVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [products, setProducts] = useState<any[]>(productsData || [])
+  const [productPrices, setProductPrices] = useState<Record<string, any>>({})
 
   const handleProfileClick = () => {
     if (isAuthenticated) {
@@ -42,6 +43,37 @@ export default function ProductsPageClient({ productsData, faqsData }: ProductsP
     if (productsData) {
       setProducts(productsData)
     }
+  }, [productsData])
+
+  // Fetch prices from Medusa for all products
+  useEffect(() => {
+    const fetchAllPrices = async () => {
+      if (!productsData || productsData.length === 0) return
+
+      try {
+        const slugs = productsData
+          .map((p: any) => p.slug?.current || p.slug)
+          .filter(Boolean)
+
+        if (slugs.length === 0) return
+
+        const response = await fetch('/api/products/prices', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slugs })
+        })
+
+        const data = await response.json()
+
+        if (data.success) {
+          setProductPrices(data.prices)
+        }
+      } catch (error) {
+        console.error('[PRODUCTS-LIST] Failed to fetch prices from Medusa:', error)
+      }
+    }
+
+    fetchAllPrices()
   }, [productsData])
 
   const categories = [
@@ -100,11 +132,17 @@ export default function ProductsPageClient({ productsData, faqsData }: ProductsP
   )
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
+    // Get Medusa prices for sorting (not Sanity prices)
+    const getPrice = (product: any) => {
+      const slug = product.slug?.current || product.slug
+      return productPrices[slug]?.variants?.[0]?.price || 0
+    }
+
     switch (sortBy) {
       case "price-low":
-        return (a.price || 0) - (b.price || 0)
+        return getPrice(a) - getPrice(b)
       case "price-high":
-        return (b.price || 0) - (a.price || 0)
+        return getPrice(b) - getPrice(a)
       case "rating":
         return (b.rating || 0) - (a.rating || 0)
       case "newest":
@@ -967,24 +1005,32 @@ export default function ProductsPageClient({ productsData, faqsData }: ProductsP
 
             {/* Products Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-2 sm:gap-3 mb-12">
-              {sortedProducts.map((product) => (
-                <ProductCard
-                  key={product._id || product.id}
-                  id={product._id || product.id}
-                  title={product.name || product.title}
-                  description={product.description}
-                  price={product.price}
-                  originalPrice={product.originalPrice}
-                  discountPercentage={product.discountPercentage || product.discount}
-                  image={product.image}
-                  badge={product.badges?.[0] || product.badge}
-                  rating={product.rating}
-                  reviews={product.reviewCount || product.reviews}
-                  features={product.features}
-                  href={`/products/${product.slug?.current || product.slug || product.id}`}
-                  buttonText="مشاهده محصول"
-                />
-              ))}
+              {sortedProducts.map((product) => {
+                // Get price from Medusa ONLY (never from Sanity)
+                const productSlug = product.slug?.current || product.slug
+                const medusaPricing = productPrices[productSlug]
+                const firstVariant = medusaPricing?.variants?.[0]
+                const medusaPrice = firstVariant?.price || 0
+
+                return (
+                  <ProductCard
+                    key={product._id || product.id}
+                    id={product._id || product.id}
+                    title={product.name || product.title}
+                    description={product.description}
+                    price={medusaPrice}
+                    originalPrice={firstVariant?.original_price || null}
+                    discountPercentage={firstVariant?.discount_percentage || 0}
+                    image={product.image}
+                    badge={product.badges?.[0] || product.badge}
+                    rating={product.rating}
+                    reviews={product.reviewCount || product.reviews}
+                    features={product.features}
+                    href={`/products/${productSlug || product.id}`}
+                    buttonText="مشاهده محصول"
+                  />
+                )
+              })}
             </div>
 
             {/* FAQ Section */}

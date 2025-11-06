@@ -16,7 +16,7 @@ interface ProductPageClientProps {
 export default function ProductPageClient({ productData, faqsData = [] }: ProductPageClientProps) {
   const [selectedTab, setSelectedTab] = useState("description")
   const [quantity, setQuantity] = useState(1)
-  const [selectedOption, setSelectedOption] = useState(productData?.options?.[0]?.id || "")
+  const [selectedOption, setSelectedOption] = useState<number>(0) // Initialize to 0 (first option index)
   const [selectedImage, setSelectedImage] = useState(0)
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null)
 
@@ -28,7 +28,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
   const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false)
   const [showAddedToCart, setShowAddedToCart] = useState(false)
   
-  // Medusa pricing state
+  // Medusa pricing state - ONLY source of truth for prices
   const [medusaVariants, setMedusaVariants] = useState<any[]>([])
   const [pricesLoading, setPricesLoading] = useState(true)
   const [pricesError, setPricesError] = useState<string | null>(null)
@@ -48,9 +48,10 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
   }
 
   const handleAddToCart = () => {
-    const selectedProductOption = product.options.find((opt: any) => opt.id === selectedOption)
+    // selectedOption is an index (0, 1, 2...), not an ID
+    const selectedProductOption = product.options[selectedOption]
     
-    const price = selectedProductOption?.price || product.price || 0
+    const price = selectedProductOption?.price || 0
     
     // Warn if price is 0
     if (!price || price === 0) {
@@ -184,11 +185,10 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
   const relatedProducts = product.relatedProducts
   const relatedArticles = product.relatedBlogs
 
-  // Get selected variant or first variant from Medusa
-  const selectedVariant = selectedOption !== null && product.options[selectedOption]
-    ? product.options[selectedOption]
-    : product.options[0]
+  // Get selected variant from Medusa (selectedOption is array index)
+  const selectedVariant = product.options[selectedOption] || product.options[0] || null
   
+  // Prices ONLY from Medusa - never from Sanity
   const displayPrice = selectedVariant?.price || 0
   const displayOriginalPrice = selectedVariant?.original_price || 0
 
