@@ -14,6 +14,15 @@ interface ProductPageClientProps {
 }
 
 export default function ProductPageClient({ productData, faqsData = [] }: ProductPageClientProps) {
+  // CLIENT-SIDE DEBUG - Log what we receive from server
+  console.log('[CLIENT] ============ RECEIVED PRODUCT DATA ============')
+  console.log('[CLIENT] productData exists:', !!productData)
+  console.log('[CLIENT] productData.name:', productData?.name)
+  console.log('[CLIENT] productData.slug (raw):', productData?.slug)
+  console.log('[CLIENT] productData.slug type:', typeof productData?.slug)
+  console.log('[CLIENT] productData.slug.current:', productData?.slug?.current)
+  console.log('[CLIENT] ==================================================')
+
   const [selectedTab, setSelectedTab] = useState("description")
   const [quantity, setQuantity] = useState(1)
   const [selectedOption, setSelectedOption] = useState<number>(0) // Initialize to 0 (first option index)
@@ -48,29 +57,38 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
   }
 
   const handleAddToCart = () => {
+    console.log('[ADD-TO-CART] ========== ADD TO CART TRIGGERED ==========')
+    console.log('[ADD-TO-CART] selectedOption:', selectedOption)
+    console.log('[ADD-TO-CART] selectedOption type:', typeof selectedOption)
+    console.log('[ADD-TO-CART] product.options:', product.options)
+    console.log('[ADD-TO-CART] product.options.length:', product.options.length)
+    
     // selectedOption is an index (0, 1, 2...), not an ID
     const selectedProductOption = product.options[selectedOption]
-    
-    console.log('[ADD-TO-CART] Debug:', {
-      selectedOption: selectedOption,
-      productOptionsLength: product.options.length,
-      selectedProductOption: selectedProductOption,
-      allOptions: product.options
-    })
+    console.log('[ADD-TO-CART] selectedProductOption:', selectedProductOption)
     
     const price = selectedProductOption?.price || 0
+    console.log('[ADD-TO-CART] Extracted price:', price)
     
     // Warn if price is 0
     if (!price || price === 0) {
-      console.error('[ADD-TO-CART] ❌ Price is 0 or null. Product may not be synced from Sanity to Medusa.')
+      console.error('[ADD-TO-CART] ❌ ❌ ❌ PRICE IS ZERO OR NULL ❌ ❌ ❌')
+      console.error('[ADD-TO-CART] selectedOption:', selectedOption)
+      console.error('[ADD-TO-CART] selectedProductOption:', selectedProductOption)
       console.error('[ADD-TO-CART] medusaVariants:', medusaVariants)
       console.error('[ADD-TO-CART] product.options:', product.options)
+      console.error('[ADD-TO-CART] pricesLoading:', pricesLoading)
+      console.error('[ADD-TO-CART] pricesError:', pricesError)
+      console.error('[ADD-TO-CART] ==========================================')
       alert('قیمت این محصول در دسترس نیست. لطفاً با پشتیبانی تماس بگیرید.')
       return
     }
     
+    console.log('[ADD-TO-CART] ✅ Price validation passed:', price)
+    console.log('[ADD-TO-CART] Adding to cart...')
+    
     // Add item with Medusa variant information for secure backend validation
-    addItem({
+    const cartItem = {
       id: product.id,
       title: product.title,
       price: price,
@@ -81,7 +99,12 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
       sanity_slug: productData?.slug?.current || '',
       variant_id: selectedProductOption?.variant_id,
       option_name: selectedProductOption?.name
-    })
+    }
+    
+    console.log('[ADD-TO-CART] Cart item to add:', cartItem)
+    addItem(cartItem)
+    console.log('[ADD-TO-CART] ✅ Item added to cart successfully!')
+    console.log('[ADD-TO-CART] =========================================')
 
     setShowAddedToCart(true)
     setTimeout(() => setShowAddedToCart(false), 3000)
@@ -152,6 +175,32 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
 
   // Transform Sanity data to component format
   // Prices now come from Medusa, not Sanity
+  console.log('[PRODUCT-OBJECT] ========== BUILDING PRODUCT OBJECT ==========')
+  console.log('[PRODUCT-OBJECT] medusaVariants length:', medusaVariants.length)
+  console.log('[PRODUCT-OBJECT] medusaVariants data:', medusaVariants)
+  
+  const transformedOptions = medusaVariants.map((v, idx) => {
+    console.log(`[PRODUCT-OBJECT] Transforming variant ${idx}:`, {
+      id: idx,
+      name: v.name,
+      price: v.price,
+      variant_id: v.variant_id
+    })
+    return {
+      id: idx,  // Use index as ID (0, 1, 2...) to match selectedOption
+      name: v.name,
+      price: v.price,
+      original_price: v.original_price || null,
+      discount_percentage: v.discount_percentage || 0,
+      variant_id: v.variant_id,
+      sku: v.sku
+    }
+  })
+  
+  console.log('[PRODUCT-OBJECT] Final options array:', transformedOptions)
+  console.log('[PRODUCT-OBJECT] Options count:', transformedOptions.length)
+  console.log('[PRODUCT-OBJECT] =============================================')
+
   const product = {
     id: productData?._id || 1,
     title: productData?.name || "محصول",
@@ -168,15 +217,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
       : productData?.image ? [urlForImage(productData.image)?.width(800).height(600).url()].filter(Boolean) : ["/placeholder.svg"],
     features: Array.isArray(productData?.features) ? productData.features : [],
     // Options now come from Medusa variants with accurate prices
-    options: medusaVariants.map((v, idx) => ({
-      id: idx,  // Use index as ID (0, 1, 2...) to match selectedOption
-      name: v.name,
-      price: v.price,
-      original_price: v.original_price || null,
-      discount_percentage: v.discount_percentage || 0,
-      variant_id: v.variant_id,
-      sku: v.sku
-    })),
+    options: transformedOptions,
     badges: Array.isArray(productData?.badges) ? productData.badges : [],
     inStock: productData?.inStock !== false,
     relatedProducts: Array.isArray(productData?.relatedProducts) ? productData.relatedProducts.map((p: any) => ({
@@ -210,18 +251,26 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
   // Get selected variant from Medusa (selectedOption is array index)
   const selectedVariant = product.options[selectedOption] || product.options[0] || null
   
-  // Debug logging
-  console.log('[PRODUCT-PAGE] State:', {
-    medusaVariantsCount: medusaVariants.length,
-    productOptionsCount: product.options.length,
-    selectedOption: selectedOption,
-    selectedVariant: selectedVariant,
-    selectedVariantPrice: selectedVariant?.price
-  })
+  // EXTENSIVE DEBUG LOGGING
+  console.log('[DISPLAY-LOGIC] ========== PRICE CALCULATION ==========')
+  console.log('[DISPLAY-LOGIC] medusaVariants.length:', medusaVariants.length)
+  console.log('[DISPLAY-LOGIC] product.options.length:', product.options.length)
+  console.log('[DISPLAY-LOGIC] product.options array:', product.options)
+  console.log('[DISPLAY-LOGIC] selectedOption (index):', selectedOption)
+  console.log('[DISPLAY-LOGIC] selectedOption type:', typeof selectedOption)
+  console.log('[DISPLAY-LOGIC] product.options[selectedOption]:', product.options[selectedOption])
+  console.log('[DISPLAY-LOGIC] product.options[0]:', product.options[0])
+  console.log('[DISPLAY-LOGIC] selectedVariant (final):', selectedVariant)
+  console.log('[DISPLAY-LOGIC] selectedVariant?.price:', selectedVariant?.price)
   
   // Prices ONLY from Medusa - never from Sanity
   const displayPrice = selectedVariant?.price || 0
   const displayOriginalPrice = selectedVariant?.original_price || 0
+  
+  console.log('[DISPLAY-LOGIC] displayPrice (final):', displayPrice)
+  console.log('[DISPLAY-LOGIC] displayOriginalPrice (final):', displayOriginalPrice)
+  console.log('[DISPLAY-LOGIC] =======================================')
+  console.log('')
 
   const actualDiscount = displayOriginalPrice > displayPrice 
     ? Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100)

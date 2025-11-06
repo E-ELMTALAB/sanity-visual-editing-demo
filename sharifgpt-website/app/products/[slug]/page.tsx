@@ -15,6 +15,20 @@ export default async function ProductPage({ params }: { params: { slug: string }
     client.fetch(faqsByPageQuery, { pageLocation: 'products' }),
   ])
 
+  // SERVER-SIDE DEBUG
+  console.log('[SERVER] ============ PRODUCT DATA FROM SANITY ============')
+  console.log('[SERVER] URL slug param:', params.slug)
+  console.log('[SERVER] Product exists:', !!productData)
+  if (productData) {
+    console.log('[SERVER] Product _id:', productData._id)
+    console.log('[SERVER] Product name:', productData.name)
+    console.log('[SERVER] Product slug (raw):', productData.slug)
+    console.log('[SERVER] Product slug type:', typeof productData.slug)
+    console.log('[SERVER] Product slug.current:', productData.slug?.current)
+    console.log('[SERVER] Full productData keys:', Object.keys(productData))
+    console.log('[SERVER] ================================================')
+  }
+
   if (!productData) return notFound()
 
   return (
