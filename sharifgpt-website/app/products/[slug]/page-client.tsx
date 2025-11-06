@@ -104,42 +104,51 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
   // Fetch prices from Medusa backend
   useEffect(() => {
     const fetchPrices = async () => {
-      if (!productData?.slug?.current) {
+      const slug = productData?.slug?.current
+      console.log('[PRICE-FETCH] Starting fetch for slug:', slug)
+      
+      if (!slug) {
+        console.error('[PRICE-FETCH] ❌ No slug found in productData')
         setPricesLoading(false)
         return
       }
       
       try {
         setPricesLoading(true)
+        console.log('[PRICE-FETCH] Calling API with slug:', slug)
+        
         const response = await fetch('/api/products/prices', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slugs: [productData.slug.current] })
+          body: JSON.stringify({ slugs: [slug] })
         })
         
+        console.log('[PRICE-FETCH] API response status:', response.status)
         const data = await response.json()
+        console.log('[PRICE-FETCH] API response data:', data)
         
-        if (data.success && data.prices[productData.slug.current]) {
-          const variants = data.prices[productData.slug.current].variants || []
+        if (data.success && data.prices[slug]) {
+          const variants = data.prices[slug].variants || []
           console.log('[PRICE-FETCH] ✅ Medusa variants loaded:', variants)
           setMedusaVariants(variants)
           setPricesError(null)
         } else {
-          console.warn('[PRICE-FETCH] No prices found for product:', productData.slug.current)
+          console.warn('[PRICE-FETCH] ❌ No prices found for slug:', slug)
+          console.warn('[PRICE-FETCH] Response:', data)
           setPricesError('قیمت‌ها در دسترس نیستند. محصول در مدوسا همگام‌سازی نشده است.')
-          setMedusaVariants([]) // No fallback - must come from Medusa only
+          setMedusaVariants([])
         }
       } catch (error: any) {
-        console.error('[PRICE-FETCH] Error fetching prices:', error)
+        console.error('[PRICE-FETCH] ❌ Error:', error)
         setPricesError('خطا در دریافت قیمت‌ها. لطفاً دوباره تلاش کنید.')
-        setMedusaVariants([]) // No fallback - prices must come from Medusa only
+        setMedusaVariants([])
       } finally {
         setPricesLoading(false)
       }
     }
     
     fetchPrices()
-  }, [productData?.slug?.current, productData?.options])
+  }, [productData?.slug?.current])
 
   // Transform Sanity data to component format
   // Prices now come from Medusa, not Sanity
