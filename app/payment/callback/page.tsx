@@ -20,7 +20,7 @@ interface PaymentResult {
 export default function PaymentCallbackPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { clearCart, medusaCartId } = useCart()
+  const { clearCart } = useCart()
   const { verifyPayment } = useZarinpalPayment()
   
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
@@ -33,7 +33,18 @@ export default function PaymentCallbackPage() {
         // Extract parameters from URL
         const authority = searchParams.get('Authority')
         const status = searchParams.get('Status')
-        const resourceId = searchParams.get('resource_id') || medusaCartId
+        
+        // Get cart ID from localStorage (stored before payment redirect)
+        const storedCartId = localStorage.getItem('pending_resource_id')
+        const resourceId = searchParams.get('resource_id') || storedCartId
+
+        console.log('[PAYMENT-CALLBACK] Verification data:', {
+          authority,
+          status,
+          storedCartId,
+          resourceIdFromURL: searchParams.get('resource_id'),
+          finalResourceId: resourceId
+        })
 
         if (!authority) {
           throw new Error('Authority parameter is missing')
@@ -43,7 +54,7 @@ export default function PaymentCallbackPage() {
           throw new Error('Resource ID is missing')
         }
 
-        console.log('Processing payment callback:', { authority, status, resourceId })
+        console.log('[PAYMENT-CALLBACK] Processing payment with:', { authority, status, resourceId })
 
         // Verify payment with Medusa backend
         const verificationResult = await verifyPayment(authority, status || '', resourceId)
@@ -58,6 +69,13 @@ export default function PaymentCallbackPage() {
           
           // Clear cart on successful payment
           clearCart()
+          
+          // Clean up payment-related localStorage items
+          localStorage.removeItem('pending_resource_id')
+          localStorage.removeItem('pending_payment_authority')
+          localStorage.removeItem('pending_payment_session_id')
+          
+          console.log('[PAYMENT-CALLBACK] ✅ Payment verified successfully, cart cleared')
           
           // Redirect to success page after 3 seconds
           setTimeout(() => {
@@ -78,7 +96,7 @@ export default function PaymentCallbackPage() {
     }
 
     processPayment()
-  }, [searchParams, medusaCartId, verifyPayment, clearCart, router])
+  }, [searchParams, verifyPayment, clearCart, router])
 
   const handleRetry = () => {
     router.push('/checkout')
