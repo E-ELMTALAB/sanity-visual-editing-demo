@@ -240,7 +240,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       unit_price: i.unit_price,
       variant_id: i.variant_id
     })));
-    console.log(`[CART-CREATE] ==========================================`);
+    console.log(`[CART-CREATE] =========================================`);
 
     res.status(201).json({
       success: true,
