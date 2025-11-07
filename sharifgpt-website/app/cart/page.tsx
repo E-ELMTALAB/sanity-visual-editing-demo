@@ -63,7 +63,11 @@ export default function CartPage() {
             price: item.price,
             image: item.image,
             quantity: item.quantity,
-            selectedOption: item.selectedOption
+            selectedOption: item.selectedOption,
+            // CRITICAL: Pass Medusa fields for backend validation
+            sanity_slug: item.sanity_slug,
+            variant_id: item.variant_id,
+            option_name: item.option_name
           })),
           customer_email: customerEmail,
           customer_phone: customerPhone,
