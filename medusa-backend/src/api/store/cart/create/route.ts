@@ -68,9 +68,15 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       }
     });
 
+    console.log(`[CART-CREATE] ========== ADDING ITEMS TO CART ==========`);
+    console.log(`[CART-CREATE] Cart ID: ${cart.id}`);
+    console.log(`[CART-CREATE] Number of items: ${items.length}`);
+    console.log(`[CART-CREATE] Items:`, JSON.stringify(items, null, 2));
+    
     // Add items to cart
     for (const item of items) {
       try {
+        console.log(`[CART-CREATE] --- Processing item: ${item.title} ---`);
         let product;
         let variant;
         
@@ -79,7 +85,9 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
           const sanitySlug = (item as any).sanity_slug;
           const optionName = (item as any).option_name || item.selectedOption;
           
-          console.log(`[CART-CREATE] Looking up product by slug: ${sanitySlug}, option: ${optionName}`);
+          console.log(`[CART-CREATE] sanity_slug: ${sanitySlug}`);
+          console.log(`[CART-CREATE] option_name: ${optionName}`);
+          console.log(`[CART-CREATE] Looking up product by handle: ${sanitySlug}`);
           
           // Find product by handle (matches Sanity slug)
           const products = await productModuleService.listProducts({
@@ -92,9 +100,11 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
           
           product = products[0];
           
-          // Find variant by option name (title)
+          // Find variant by option name (title) - fetch with prices relation
           const variants = await productModuleService.listProductVariants({
             product_id: product.id
+          }, {
+            relations: ["prices"]
           });
           
           if (optionName) {
@@ -111,16 +121,16 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             throw new Error(`No variants found for product: ${product.title}`);
           }
           
-          // Get price from variant metadata (set by sync API)
-          // This is where the backend price authority lives
-          const variantPrice = (variant as any).metadata?.price_rials || 0;
+          // Get price from standard Medusa pricing (Medusa v2 standard)
+          const irrPrice = (variant as any).prices?.find((p: any) => p.currency_code === 'irr');
+          const variantPrice = irrPrice?.amount || 0;
           
           if (variantPrice === 0) {
-            console.warn(`[CART-CREATE] Warning: Variant ${variant.id} has no price in metadata. Was it synced from Sanity?`);
-            throw new Error(`Variant ${variant.title} has no price. Please sync product from Sanity.`);
+            console.warn(`[CART-CREATE] Warning: Variant ${variant.id} has no IRR price. Please set price in Medusa admin.`);
+            throw new Error(`Variant ${variant.title} has no IRR price. Please set price in Medusa admin.`);
           }
           
-          console.log(`[CART-CREATE] Using backend price: ${variantPrice} Rials (${(variant as any).metadata?.price_toman} Toman) for variant: ${variant.title}`);
+          console.log(`[CART-CREATE] Using Medusa price: ${variantPrice} Rials (${Math.round(variantPrice/10)} Toman) for variant: ${variant.title}`);
           
           // Add line item to cart with BACKEND price from Medusa variant
           await cartModuleService.addLineItems(cart.id, [{
@@ -220,16 +230,31 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         }
 
       } catch (error) {
-        console.error(`Error adding item ${item.title} to cart:`, error);
+        console.error(`[CART-CREATE] ❌ Error adding item ${item.title} to cart:`, error);
         // Continue with other items even if one fails
       }
     }
 
+    console.log(`[CART-CREATE] ========== RETRIEVING FINAL CART ==========`);
+    
     // Retrieve the complete cart with minimal relations to avoid MikroORM errors
     // Avoid mixing payment_collection with item relations
     const completeCart = await cartModuleService.retrieveCart(cart.id, {
       relations: ["items"]
     });
+    
+    console.log(`[CART-CREATE] Final cart retrieved`);
+    console.log(`[CART-CREATE] Cart ID: ${completeCart.id}`);
+    console.log(`[CART-CREATE] Items in cart: ${completeCart.items?.length || 0}`);
+    console.log(`[CART-CREATE] Cart total: ${completeCart.total}`);
+    console.log(`[CART-CREATE] Cart items:`, completeCart.items?.map((i: any) => ({
+      id: i.id,
+      title: i.title,
+      quantity: i.quantity,
+      unit_price: i.unit_price,
+      variant_id: i.variant_id
+    })));
+    console.log(`[CART-CREATE] ==========================================`);
 
     res.status(201).json({
       success: true,
