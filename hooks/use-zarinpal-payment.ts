@@ -275,29 +275,38 @@ export function useZarinpalPayment() {
     resourceId?: string
   ) => {
     try {
+      console.log('[VERIFY-PAYMENT] ========== STARTING VERIFICATION ==========')
+      console.log('[VERIFY-PAYMENT] authority:', authority)
+      console.log('[VERIFY-PAYMENT] status:', status)
+      console.log('[VERIFY-PAYMENT] resourceId (received):', resourceId)
+      console.log('[VERIFY-PAYMENT] resourceId type:', typeof resourceId)
+      
       if (!resourceId) {
+        console.error('[VERIFY-PAYMENT] ❌ Resource ID is missing!')
         throw new Error('Resource ID is required for payment verification')
       }
 
-      console.log('Verifying payment with test endpoint...')
-      console.log('Authority:', authority)
-      console.log('Status:', status)
-      console.log('Resource ID:', resourceId)
-
       // Use the exact same Medusa verification endpoint that was tested successfully
       const BASE_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'
+      
+      const requestBody = {
+        authority: authority,
+        Status: status,
+        cart_id: resourceId
+      }
+      
+      console.log('[VERIFY-PAYMENT] Sending to backend:', `${BASE_URL}/store/zarinpal/verify`)
+      console.log('[VERIFY-PAYMENT] Request body:', requestBody)
       
       const response = await fetch(`${BASE_URL}/store/zarinpal/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          authority: authority,
-          Status: status,
-          cart_id: resourceId
-        })
+        body: JSON.stringify(requestBody)
       })
+      
+      console.log('[VERIFY-PAYMENT] Backend response status:', response.status)
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))

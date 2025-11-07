@@ -75,12 +75,17 @@ export default function CartPage() {
       })
 
       const cartData = await createCartResponse.json()
+      
+      console.log('[CHECKOUT] Cart creation response:', cartData)
 
       if (!cartData.success || !cartData.cart?.id) {
+        console.error('[CHECKOUT] Cart creation failed:', cartData)
         throw new Error(cartData.error || 'خطا در ایجاد سبد خرید')
       }
 
       const cartId = cartData.cart.id
+      console.log('[CHECKOUT] ✅ Cart created with ID:', cartId)
+      console.log('[CHECKOUT] Cart ID type:', typeof cartId)
 
       // Step 2: Initiate payment for the created cart
       const paymentResponse = await fetch('/api/payment/initiate', {
@@ -96,18 +101,28 @@ export default function CartPage() {
       })
 
       const paymentData = await paymentResponse.json()
+      
+      console.log('[CHECKOUT] Payment initiation response:', paymentData)
 
       if (!paymentData.success) {
+        console.error('[CHECKOUT] Payment initiation failed:', paymentData)
         throw new Error(paymentData.error || 'خطا در شروع پرداخت')
       }
 
       // Redirect to payment gateway
       if (paymentData.payment?.payment_url) {
         // Store cart ID for verification after payment
+        console.log('[CHECKOUT] Storing cart ID in localStorage:', cartId)
         localStorage.setItem('pending_resource_id', cartId)
         localStorage.setItem('pending_payment_authority', paymentData.payment.authority)
         localStorage.setItem('pending_payment_session_id', paymentData.payment.session_id)
         
+        console.log('[CHECKOUT] Stored values:', {
+          pending_resource_id: localStorage.getItem('pending_resource_id'),
+          pending_payment_authority: localStorage.getItem('pending_payment_authority')
+        })
+        
+        console.log('[CHECKOUT] Redirecting to payment gateway...')
         // Redirect to Zarinpal payment gateway
         window.location.href = paymentData.payment.payment_url
       } else {

@@ -31,6 +31,13 @@ export async function POST(
     }
     const { authority, Status, cart_id, order_id } = body;
 
+    console.log('[ZARINPAL-VERIFY] ========== VERIFICATION STARTED ==========');
+    console.log('[ZARINPAL-VERIFY] Request body:', body);
+    console.log('[ZARINPAL-VERIFY] authority:', authority);
+    console.log('[ZARINPAL-VERIFY] Status:', Status);
+    console.log('[ZARINPAL-VERIFY] cart_id:', cart_id);
+    console.log('[ZARINPAL-VERIFY] cart_id type:', typeof cart_id);
+
     if (!authority) {
       res.status(400).json({
         error: "Missing authority parameter",
@@ -47,9 +54,17 @@ export async function POST(
     let resourceId = cart_id || order_id;
     let cart;
 
+    console.log('[ZARINPAL-VERIFY] Attempting to retrieve cart with ID:', cart_id);
+    
     if (cart_id) {
       // Retrieve the cart without nested relations to avoid MikroORM errors
-      cart = await cartModuleService.retrieveCart(cart_id);
+      try {
+        cart = await cartModuleService.retrieveCart(cart_id);
+        console.log('[ZARINPAL-VERIFY] ✅ Cart found:', cart.id);
+      } catch (cartError: any) {
+        console.error('[ZARINPAL-VERIFY] ❌ Cart retrieval failed:', cartError.message);
+        throw cartError;
+      }
 
       if (!cart) {
         res.status(404).json({
