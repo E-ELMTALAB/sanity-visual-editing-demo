@@ -37,11 +37,6 @@
         }
       ]
     }
-  ],
-  "env": {
-    "VITE_SANITY_PROJECT_ID": "@sanity-project-id",
-    "VITE_SANITY_DATASET": "@sanity-dataset",
-    "VITE_SANITY_API_VERSION": "@sanity-api-version"
-  }
+  ]
 }
 
