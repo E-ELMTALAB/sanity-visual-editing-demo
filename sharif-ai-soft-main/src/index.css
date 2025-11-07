@@ -1,0 +1,188 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Light Mode - Vibrant & Energetic */
+    --background: 220 25% 97%;
+    --foreground: 220 20% 10%;
+    
+    --surface: 0 0% 100%;
+    --surface-2: 220 20% 98%;
+    
+    --text-strong: 220 20% 10%;
+    --text: 220 15% 25%;
+    --text-muted: 220 10% 50%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+    
+    /* Primary: Electric Blue */
+    --primary: 210 100% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 210 100% 65%;
+    --primary-lighter: 210 100% 75%;
+    
+    /* Secondary: Vibrant Purple */
+    --secondary: 270 80% 60%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 220 16% 92%;
+    --muted-foreground: 220 10% 40%;
+    
+    /* Accent: Neon Cyan */
+    --accent: 180 100% 50%;
+    --accent-foreground: 220 20% 10%;
+    
+    /* Status Colors - Vivid */
+    --success: 140 80% 50%;
+    --warning: 45 100% 55%;
+    --danger: 0 90% 60%;
+    
+    --destructive: 0 90% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 220 16% 88%;
+    --input: 220 16% 88%;
+    --ring: 210 100% 55%;
+    
+    /* Vibrant Shadows - Light Mode */
+    --shadow-neu-out: 0 4px 20px rgba(0, 0, 0, 0.08), 0 0 15px rgba(33, 150, 243, 0.1);
+    --shadow-neu-in: inset 0 2px 8px rgba(0, 0, 0, 0.06), inset 0 -1px 4px rgba(255, 255, 255, 0.5);
+    --shadow-neu-hover: 0 8px 30px rgba(0, 0, 0, 0.12), 0 0 20px rgba(33, 150, 243, 0.15);
+    --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.1), 0 0 25px rgba(156, 39, 176, 0.12);
+    
+    /* Border Radius */
+    --radius-lg: 1rem;
+    --radius-md: 0.75rem;
+    --radius-sm: 0.5rem;
+    --radius-pill: 999px;
+    --radius: 0.75rem;
+    
+    /* Typography */
+    --font-light: 300;
+    --font-normal: 400;
+    --font-semibold: 600;
+    
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Gradient Colors */
+    --gradient-primary: linear-gradient(135deg, hsl(210 100% 55%), hsl(270 80% 60%));
+    --gradient-secondary: linear-gradient(135deg, hsl(270 80% 60%), hsl(180 100% 50%));
+    --gradient-accent: linear-gradient(135deg, hsl(180 100% 50%), hsl(140 80% 50%));
+  }
+
+  .dark {
+    /* Dark Mode - Rich & Bold */
+    --background: 220 20% 12%;
+    --foreground: 0 0% 98%;
+    
+    --surface: 220 18% 16%;
+    --surface-2: 220 16% 20%;
+    
+    --text-strong: 0 0% 98%;
+    --text: 220 10% 85%;
+    --text-muted: 220 10% 65%;
+    
+    --card: 220 18% 16%;
+    --card-foreground: 0 0% 98%;
+    
+    --popover: 220 18% 16%;
+    --popover-foreground: 0 0% 98%;
+    
+    /* Primary: Electric Blue */
+    --primary: 210 100% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 210 100% 65%;
+    --primary-lighter: 210 100% 75%;
+    
+    /* Secondary: Vibrant Purple */
+    --secondary: 270 80% 60%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 220 16% 25%;
+    --muted-foreground: 220 10% 70%;
+    
+    /* Accent: Neon Cyan */
+    --accent: 180 100% 50%;
+    --accent-foreground: 220 20% 12%;
+    
+    /* Status Colors - Vivid */
+    --success: 140 80% 50%;
+    --warning: 45 100% 55%;
+    --danger: 0 90% 60%;
+    
+    --destructive: 0 90% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 220 16% 28%;
+    --input: 220 16% 28%;
+    --ring: 210 100% 55%;
+    
+    /* Vibrant Shadows - Dark Mode */
+    --shadow-neu-out: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(33, 150, 243, 0.15);
+    --shadow-neu-in: inset 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 -2px 8px rgba(255, 255, 255, 0.05);
+    --shadow-neu-hover: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(33, 150, 243, 0.25);
+    --shadow-elevated: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(156, 39, 176, 0.2);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    direction: rtl;
+    font-feature-settings: "ss01", "ss02";
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-text-strong;
+    font-weight: var(--font-semibold);
+  }
+  
+  /* Neumorphic Utilities */
+  .neu-out {
+    box-shadow: var(--shadow-neu-out);
+  }
+  
+  .neu-in {
+    box-shadow: var(--shadow-neu-in);
+  }
+  
+  .neu-hover:hover {
+    box-shadow: var(--shadow-neu-hover);
+  }
+  
+  .elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
