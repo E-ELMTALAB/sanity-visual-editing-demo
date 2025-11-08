@@ -758,16 +758,26 @@ export default function Home() {
     async function loadCourses() {
       try {
         console.log('[HOME] Fetching courses from Sanity...');
+        console.log('[HOME] Query:', homeCoursesQuery);
         setIsLoadingCourses(true);
         
         const data = await fetchFromSanity<{ bestsellingCourses?: any[] }>(homeCoursesQuery);
+        
+        console.log('[HOME] Raw Sanity response:', data);
+        console.log('[HOME] bestsellingCourses array:', data?.bestsellingCourses);
+        console.log('[HOME] Array length:', data?.bestsellingCourses?.length);
         
         if (data?.bestsellingCourses && data.bestsellingCourses.length > 0) {
           const transformedCourses = data.bestsellingCourses.map(transformSanityCourse);
           setFeaturedCourses(transformedCourses);
           console.log(`[HOME] ✅ Loaded ${transformedCourses.length} courses from Sanity`);
+          console.log('[HOME] Transformed courses:', transformedCourses);
         } else {
-          console.warn('[HOME] No courses found in Sanity, using fallback');
+          console.warn('[HOME] ⚠️ No courses found in Sanity home singleton');
+          console.warn('[HOME] This means either:');
+          console.warn('[HOME] 1. Home singleton has no bestsellingCourses');
+          console.warn('[HOME] 2. Courses are in course documents, not home singleton');
+          console.warn('[HOME] 3. Home document does not exist');
           setSanityError('No courses found in Sanity');
         }
       } catch (error) {
