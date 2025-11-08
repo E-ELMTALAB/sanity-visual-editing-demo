@@ -8,7 +8,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 // Sanity imports for fetching courses
 import { fetchFromSanity } from "@/lib/sanity.client";
-import { homeCoursesQuery } from "@/lib/sanity.queries";
+import { homeCoursesQuery, allCoursesQuery } from "@/lib/sanity.queries";
 import { getImageUrl } from "@/lib/sanity.image";
 import { validateSanityConfig } from "@/lib/sanity.config";
 import v0Image from "@/assets/v0.jpg";
@@ -508,7 +508,7 @@ const fallbackCourses = [
 ];
 
 /**
- * Transform Sanity course data to component format
+ * Transform Sanity course data from home singleton to component format
  */
 function transformSanityCourse(sanityCourse: any) {
   // Map Sanity level values to Persian
@@ -533,6 +533,35 @@ function transformSanityCourse(sanityCourse: any) {
     level: levelMap[sanityCourse.level] || 'مبتدی',
     price: sanityCourse.price || 0,
     installments: sanityCourse.originalPrice ? true : false,
+  };
+}
+
+/**
+ * Transform Sanity course document to component format
+ */
+function transformCourseDocument(course: any) {
+  // Map Sanity level values to Persian
+  const levelMap: Record<string, "مبتدی" | "متوسط" | "پیشرفته"> = {
+    'beginner': 'مبتدی',
+    'intermediate': 'متوسط',
+    'advanced': 'پیشرفته',
+    'beginner-intermediate': 'متوسط',
+    'beginner-advanced': 'پیشرفته',
+  };
+
+  // Extract duration hours from string like "40 ساعت" or just "40"
+  const durationMatch = course.duration?.match(/\d+/);
+  const durationHours = durationMatch ? parseInt(durationMatch[0]) : 8;
+
+  return {
+    slug: course.slug || `course-${course._id}`,
+    title: course.title || 'دوره آموزشی',
+    tags: course.category ? [course.category] : [],
+    image: course.featuredImage ? getImageUrl(course.featuredImage, 400) : undefined,
+    durationHours,
+    level: levelMap[course.level] || 'مبتدی',
+    price: course.price || 0,
+    installments: course.originalPrice ? true : false,
   };
 }
 
@@ -758,26 +787,32 @@ export default function Home() {
     async function loadCourses() {
       try {
         console.log('[HOME] Fetching courses from Sanity...');
-        console.log('[HOME] Query:', homeCoursesQuery);
         setIsLoadingCourses(true);
         
-        const data = await fetchFromSanity<{ bestsellingCourses?: any[] }>(homeCoursesQuery);
+        // Try home singleton first
+        console.log('[HOME] Trying home singleton query...');
+        const homeData = await fetchFromSanity<{ bestsellingCourses?: any[] }>(homeCoursesQuery);
         
-        console.log('[HOME] Raw Sanity response:', data);
-        console.log('[HOME] bestsellingCourses array:', data?.bestsellingCourses);
-        console.log('[HOME] Array length:', data?.bestsellingCourses?.length);
-        
-        if (data?.bestsellingCourses && data.bestsellingCourses.length > 0) {
-          const transformedCourses = data.bestsellingCourses.map(transformSanityCourse);
+        if (homeData?.bestsellingCourses && homeData.bestsellingCourses.length > 0) {
+          console.log(`[HOME] ✅ Found ${homeData.bestsellingCourses.length} courses in home singleton`);
+          const transformedCourses = homeData.bestsellingCourses.map(transformSanityCourse);
           setFeaturedCourses(transformedCourses);
-          console.log(`[HOME] ✅ Loaded ${transformedCourses.length} courses from Sanity`);
-          console.log('[HOME] Transformed courses:', transformedCourses);
+          console.log(`[HOME] ✅ Loaded ${transformedCourses.length} courses from home singleton`);
+          return;
+        }
+        
+        // If home singleton is empty, try course documents
+        console.log('[HOME] Home singleton empty, trying course documents query...');
+        const coursesData = await fetchFromSanity<any[]>(allCoursesQuery);
+        
+        if (coursesData && coursesData.length > 0) {
+          console.log(`[HOME] ✅ Found ${coursesData.length} course documents`);
+          const transformedCourses = coursesData.slice(0, 6).map(transformCourseDocument);
+          setFeaturedCourses(transformedCourses);
+          console.log(`[HOME] ✅ Loaded ${transformedCourses.length} courses from course documents`);
         } else {
-          console.warn('[HOME] ⚠️ No courses found in Sanity home singleton');
-          console.warn('[HOME] This means either:');
-          console.warn('[HOME] 1. Home singleton has no bestsellingCourses');
-          console.warn('[HOME] 2. Courses are in course documents, not home singleton');
-          console.warn('[HOME] 3. Home document does not exist');
+          console.warn('[HOME] ⚠️ No courses found in either home singleton or course documents');
+          console.warn('[HOME] Using fallback courses');
           setSanityError('No courses found in Sanity');
         }
       } catch (error) {
