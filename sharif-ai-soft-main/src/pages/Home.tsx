@@ -537,7 +537,7 @@ function transformSanityCourse(sanityCourse: any) {
 }
 
 // Mobile Featured Courses Carousel Component
-function MobileFeaturedCoursesCarousel() {
+function MobileFeaturedCoursesCarousel({ courses }: { courses: any[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
       loop: true,
@@ -583,7 +583,7 @@ function MobileFeaturedCoursesCarousel() {
       {/* Carousel Container */}
       <div className="overflow-hidden -mx-2" ref={emblaRef}>
         <div className="flex gap-4 px-2">
-          {featuredCourses.map((course) => (
+          {courses.map((course) => (
             <div 
               key={course.slug} 
               className="flex-[0_0_90%] min-w-0"
@@ -1162,7 +1162,7 @@ export default function Home() {
 
           {/* Mobile Carousel View */}
           <div className="block md:hidden">
-            <MobileFeaturedCoursesCarousel />
+            <MobileFeaturedCoursesCarousel courses={featuredCourses} />
           </div>
         </div>
       </section>
