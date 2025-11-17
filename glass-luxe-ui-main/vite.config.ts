@@ -25,11 +25,27 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === "production" ? false : true,
     minify: mode === "production" ? "esbuild" : false,
     rollupOptions: {
+      // Externalize Sanity packages when processing schema files from parent directory
+      // These will be loaded from node_modules at runtime by the Studio
+      external: (id) => {
+        // Don't externalize if it's a relative import or absolute path
+        if (id.startsWith('.') || id.startsWith('/')) {
+          return false;
+        }
+        // Externalize Sanity packages to avoid bundling issues when processing external schema files
+        if (
+          id.startsWith('@sanity/') ||
+          id === 'sanity' ||
+          id.startsWith('sanity-plugin-')
+        ) {
+          return true;
+        }
+        return false;
+      },
       output: {
         manualChunks: {
           vendor: ["react", "react-dom", "react-router-dom"],
           ui: ["@radix-ui/react-accordion", "@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu"],
-          sanity: ["@sanity/icons", "@sanity/ui", "sanity", "@sanity/vision"],
         },
       },
     },
