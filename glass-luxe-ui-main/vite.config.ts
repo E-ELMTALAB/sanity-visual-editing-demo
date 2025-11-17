@@ -32,29 +32,27 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === "production" ? false : true,
     minify: mode === "production" ? "esbuild" : false,
     rollupOptions: {
-      // Externalize only Sanity packages when processing schema files from parent directory
-      // React must remain bundled for the main app to work
-      // The Studio will load Sanity packages from node_modules at runtime
+      // Only externalize Studio-specific packages, NOT packages used by main app
+      // Main app needs @sanity/client and @sanity/image-url bundled
       external: (id) => {
         // Don't externalize if it's a relative import or absolute path
         if (id.startsWith('.') || id.startsWith('/')) {
           return false;
         }
-        // Only externalize Sanity packages - React must stay bundled
+        // Only externalize Studio-only packages (not used by main app)
+        // Main app packages (@sanity/client, @sanity/image-url) must stay bundled
         if (
-          id.startsWith('@sanity/') ||
-          id === 'sanity' ||
-          id.startsWith('sanity-plugin-')
+          id === 'sanity' || // Studio core
+          id.startsWith('sanity-plugin-') || // Studio plugins
+          id === '@sanity/icons' || // Only used in schemas/Studio
+          id === '@sanity/ui' || // Only used in schemas/Studio
+          id === '@sanity/vision' || // Only used in Studio
+          id.startsWith('react-lite-') || // Schema-specific
+          id.startsWith('get-youtube-') // Schema-specific
         ) {
           return true;
         }
-        // Externalize other schema dependencies that aren't needed by main app
-        if (
-          id.startsWith('react-lite-') ||
-          id.startsWith('get-youtube-')
-        ) {
-          return true;
-        }
+        // Keep @sanity/client, @sanity/image-url, and other @sanity/* packages bundled
         return false;
       },
       output: {
