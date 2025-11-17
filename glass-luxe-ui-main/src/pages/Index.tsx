@@ -1115,6 +1115,16 @@ const Index = () => {
         <EditorialBanners banners={editorialBanners} />
       )}
 
+      {/* Special Offers Section - Only render when Sanity data exists */}
+      {specialOfferProducts.length > 0 && (
+        <SpecialOffers 
+          products={specialOfferProducts} 
+          onAdd={handleAddToCart}
+          onViewAll={handleViewAllOffers}
+          className="mx-[10px]"
+        />
+      )}
+
       {/* Tabbed Product Grid Section - Only render when Sanity data exists */}
       {tabbedProducts.length > 0 && (
         <TabbedProductGrid
