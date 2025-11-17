@@ -25,6 +25,8 @@ export default defineConfig(({ mode }) => ({
       "react",
       "react-dom",
       "react/jsx-runtime",
+      "get-youtube-id",
+      "react-lite-youtube-embed",
     ],
   },
   build: {
@@ -51,6 +53,8 @@ export default defineConfig(({ mode }) => ({
       "@sanity/icons",
       "@sanity/ui",
       "sanity",
+      "get-youtube-id",
+      "react-lite-youtube-embed",
     ],
   },
 }));
