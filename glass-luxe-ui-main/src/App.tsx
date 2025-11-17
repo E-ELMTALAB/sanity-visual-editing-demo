@@ -22,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import Erfan from "./pages/team/Erfan";
 import Amir from "./pages/team/Amir";
 import Collection from "./pages/Collection";
+import Studio from "./pages/Studio";
 import { ScrollToTop } from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="/team/erfan" element={<Erfan />} />
               <Route path="/team/amir" element={<Amir />} />
               <Route path="/collections/:slug" element={<Collection />} />
+              <Route path="/studio/*" element={<Studio />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
