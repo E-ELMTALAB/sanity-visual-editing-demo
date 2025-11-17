@@ -6,6 +6,7 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   base: "/",
+  root: __dirname, // Explicitly set root to ensure proper module resolution
   server: {
     host: "::",
     port: 8080,
@@ -15,6 +16,9 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    // Ensure Vite can resolve dependencies when processing files outside project root
+    preserveSymlinks: false,
+    dedupe: ["@sanity/icons", "@sanity/ui", "sanity"],
   },
   build: {
     outDir: "dist",
@@ -25,6 +29,7 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           vendor: ["react", "react-dom", "react-router-dom"],
           ui: ["@radix-ui/react-accordion", "@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu"],
+          sanity: ["@sanity/icons", "@sanity/ui", "sanity", "@sanity/vision"],
         },
       },
     },
