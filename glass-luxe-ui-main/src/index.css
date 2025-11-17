@@ -1,0 +1,216 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark Glassmorphism Design System */
+
+@layer base {
+  :root {
+    /* Dark Background Base */
+    --bg-base-top: 218 45% 4%;      /* #060914 - very dark navy */
+    --bg-base-bot: 229 60% 6%;      /* #0A0F27 - deep indigo */
+    
+    /* Blurred Gradient Overlays */
+    --bg-blue: 212 100% 58% / 0.45;    /* rgba(40,130,255,0.45) */
+    --bg-purple: 265 100% 68% / 0.42;  /* rgba(160,90,255,0.42) */
+    --bg-cyan: 192 100% 62% / 0.20;    /* rgba(60,220,255,0.20) */
+    
+    /* Core Colors (HSL) */
+    --primary: 212 98% 70%;        /* #6EA8FE */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 262 77% 76%;      /* #B388FF */
+    --secondary-foreground: 0 0% 100%;
+    
+    --accent-magenta: 325 100% 66%; /* #FF5AC8 */
+    --accent-green: 145 76% 51%;    /* #30D158 */
+    --accent-blue: 208 100% 52%;    /* #0A84FF */
+    --accent-red: 5 100% 61%;       /* #FF453A */
+    
+    /* Glass Surface Colors - Enhanced for dark theme */
+    --surface-glass: 0 0% 100% / 0.14;
+    --border-glass: 0 0% 100% / 0.42;
+    
+    /* Text Colors */
+    --text-primary: 0 0% 100% / 0.92;
+    --text-secondary: 0 0% 100% / 0.72;
+    
+    /* Background Gradient */
+    --bg-gradient-from: 218 45% 4%;
+    --bg-gradient-to: 229 60% 6%;
+    
+    /* Standard tokens for compatibility */
+    --background: 218 45% 4%;
+    --foreground: 0 0% 100% / 0.92;
+    
+    --card: 0 0% 100% / 0.08;
+    --card-foreground: 0 0% 100% / 0.92;
+    
+    --popover: 0 0% 100% / 0.12;
+    --popover-foreground: 0 0% 100% / 0.92;
+    
+    --muted: 0 0% 100% / 0.06;
+    --muted-foreground: 0 0% 100% / 0.72;
+    
+    --accent: 262 77% 76%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 5 100% 61%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 0 0% 100% / 0.15;
+    --input: 0 0% 100% / 0.12;
+    --ring: 212 98% 70%;
+    
+    --radius: 1rem;
+    
+    --sidebar-background: 0 0% 100% / 0.06;
+    --sidebar-foreground: 0 0% 100% / 0.92;
+    --sidebar-primary: 212 98% 70%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 100% / 0.08;
+    --sidebar-accent-foreground: 0 0% 100% / 0.92;
+    --sidebar-border: 0 0% 100% / 0.15;
+    --sidebar-ring: 212 98% 70%;
+  }
+}
+
+@layer base {
+  html, body {
+    height: 100%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  /* SF Pro Typography */
+  body {
+    @apply text-foreground antialiased;
+    background: linear-gradient(180deg, hsl(var(--bg-base-top)) 0%, hsl(var(--bg-base-bot)) 100%);
+    color-scheme: dark;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+  }
+  
+  /* Blurred gradient overlay with radial spotlights */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: -20vh -20vw;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(80% 55% at 15% 10%, hsl(var(--bg-blue)) 0%, rgba(0,0,0,0) 60%),
+      radial-gradient(70% 60% at 85% 30%, hsl(var(--bg-purple)) 0%, rgba(0,0,0,0) 65%),
+      radial-gradient(60% 70% at 30% 90%, hsl(var(--bg-cyan)) 0%, rgba(0,0,0,0) 60%);
+    filter: blur(68px) saturate(140%);
+    opacity: 0.95;
+    transform: translateZ(0);
+    animation: glowDrift 22s ease-in-out infinite;
+    will-change: transform;
+  }
+  
+  /* Ultra-subtle noise to prevent banding */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .25 0'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>");
+    background-size: 220px 220px;
+  }
+  
+  /* Glow drift animation */
+  @keyframes glowDrift {
+    0%   { transform: translate3d(0,0,0) scale(1); }
+    50%  { transform: translate3d(2vw, -1vh, 0) scale(1.02); }
+    100% { transform: translate3d(0,0,0) scale(1); }
+  }
+  
+  /* RTL Support */
+  [dir="rtl"] {
+    direction: rtl;
+  }
+  
+  [dir="ltr"] {
+    direction: ltr;
+  }
+}
+
+@layer components {
+  /* Glassmorphism utility - Enhanced for dark theme */
+  .glass {
+    backdrop-filter: blur(22px) saturate(160%);
+    background: hsl(var(--surface-glass));
+    border: 1px solid hsl(var(--border-glass));
+    box-shadow: 
+      0 8px 34px rgba(0, 0, 0, 0.28),
+      inset 0 1px 0 hsl(0 0% 100% / 0.10);
+    border-radius: 1.25rem;
+  }
+  
+  /* Glass variants */
+  .glass-subtle {
+    backdrop-filter: blur(16px) saturate(140%);
+    background: hsl(0 0% 100% / 0.10);
+    border: 1px solid hsl(0 0% 100% / 0.30);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22);
+    border-radius: 1rem;
+  }
+  
+  .glass-strong {
+    backdrop-filter: blur(28px) saturate(180%);
+    background: hsl(0 0% 100% / 0.18);
+    border: 1px solid hsl(var(--border-glass));
+    box-shadow: 
+      0 10px 44px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 hsl(0 0% 100% / 0.15);
+    border-radius: 1.75rem;
+  }
+  
+  /* Focus styles */
+  .focus-ring {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+  
+  /* Safe area support */
+  .safe-area-inset-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Hero background image positioning */
+  .hero-bg {
+    background-position: 60% 50%; /* desktop/tablet: show a bit right */
+  }
+  
+  @media (max-width: 768px) {
+    .hero-bg {
+      background-position: 20% 50%; /* mobile: show more LEFT */
+    }
+  }
+}
+
+@layer utilities {
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
