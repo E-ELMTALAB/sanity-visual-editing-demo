@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === "production" ? false : true,
     minify: mode === "production" ? "esbuild" : false,
     rollupOptions: {
-      // Externalize Sanity packages when processing schema files from parent directory
+      // Externalize packages when processing schema files from parent directory
       // These will be loaded from node_modules at runtime by the Studio
       external: (id) => {
         // Don't externalize if it's a relative import or absolute path
@@ -37,6 +37,18 @@ export default defineConfig(({ mode }) => ({
           id.startsWith('@sanity/') ||
           id === 'sanity' ||
           id.startsWith('sanity-plugin-')
+        ) {
+          return true;
+        }
+        // Externalize React packages when imported from external schema files
+        // The Studio will load them from node_modules at runtime
+        if (
+          id === 'react' ||
+          id === 'react-dom' ||
+          id === 'react/jsx-runtime' ||
+          id.startsWith('react/') ||
+          id.startsWith('react-lite-') ||
+          id.startsWith('get-youtube-')
         ) {
           return true;
         }
