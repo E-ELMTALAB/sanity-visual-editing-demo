@@ -15,9 +15,15 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Explicitly resolve schema dependencies from project's node_modules
+      "get-youtube-id": path.resolve(__dirname, "./node_modules/get-youtube-id"),
+      "react-lite-youtube-embed": path.resolve(__dirname, "./node_modules/react-lite-youtube-embed"),
     },
     // Ensure Vite can resolve dependencies when processing files outside project root
     preserveSymlinks: false,
+    // Force Vite to look in project's node_modules when resolving modules
+    // This helps when processing external schema files
+    conditions: ['import', 'module', 'browser', 'default'],
     dedupe: [
       "@sanity/icons",
       "@sanity/ui",
