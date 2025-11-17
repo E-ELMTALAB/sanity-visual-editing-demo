@@ -18,21 +18,29 @@ export default defineConfig(({ mode }) => ({
     },
     // Ensure Vite can resolve dependencies when processing files outside project root
     preserveSymlinks: false,
-    dedupe: ["@sanity/icons", "@sanity/ui", "sanity"],
+    dedupe: [
+      "@sanity/icons",
+      "@sanity/ui",
+      "sanity",
+      "react",
+      "react-dom",
+      "react/jsx-runtime",
+    ],
   },
   build: {
     outDir: "dist",
     sourcemap: mode === "production" ? false : true,
     minify: mode === "production" ? "esbuild" : false,
     rollupOptions: {
-      // Externalize packages when processing schema files from parent directory
-      // These will be loaded from node_modules at runtime by the Studio
+      // Externalize only Sanity packages when processing schema files from parent directory
+      // React must remain bundled for the main app to work
+      // The Studio will load Sanity packages from node_modules at runtime
       external: (id) => {
         // Don't externalize if it's a relative import or absolute path
         if (id.startsWith('.') || id.startsWith('/')) {
           return false;
         }
-        // Externalize Sanity packages to avoid bundling issues when processing external schema files
+        // Only externalize Sanity packages - React must stay bundled
         if (
           id.startsWith('@sanity/') ||
           id === 'sanity' ||
@@ -40,13 +48,8 @@ export default defineConfig(({ mode }) => ({
         ) {
           return true;
         }
-        // Externalize React packages when imported from external schema files
-        // The Studio will load them from node_modules at runtime
+        // Externalize other schema dependencies that aren't needed by main app
         if (
-          id === 'react' ||
-          id === 'react-dom' ||
-          id === 'react/jsx-runtime' ||
-          id.startsWith('react/') ||
           id.startsWith('react-lite-') ||
           id.startsWith('get-youtube-')
         ) {
