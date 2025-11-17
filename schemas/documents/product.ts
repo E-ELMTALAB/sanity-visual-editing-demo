@@ -56,24 +56,6 @@ export default defineType({
       readOnly: true,
     }),
     
-    // Medusa Sync Fields
-    defineField({ 
-      name: 'medusaProductId', 
-      title: 'Medusa Product ID', 
-      type: 'string', 
-      group: 'sync',
-      description: 'Medusa backend product ID (auto-filled after sync)',
-      readOnly: true,
-    }),
-    defineField({ 
-      name: 'lastSyncedAt', 
-      title: 'Last Synced At', 
-      type: 'datetime', 
-      group: 'sync',
-      description: 'Last time this product was synced to Medusa',
-      readOnly: true,
-    }),
-    
     defineField({ name: 'features', title: 'Features', type: 'array', of: [{ type: 'string' }], group: 'content' }),
     defineField({ name: 'badges', title: 'Badges', type: 'array', of: [{ type: 'string' }], group: 'content' }),
     
