@@ -32,29 +32,8 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === "production" ? false : true,
     minify: mode === "production" ? "esbuild" : false,
     rollupOptions: {
-      // Only externalize Studio-specific packages, NOT packages used by main app
-      // Main app needs @sanity/client and @sanity/image-url bundled
-      external: (id) => {
-        // Don't externalize if it's a relative import or absolute path
-        if (id.startsWith('.') || id.startsWith('/')) {
-          return false;
-        }
-        // Only externalize Studio-only packages (not used by main app)
-        // Main app packages (@sanity/client, @sanity/image-url) must stay bundled
-        if (
-          id === 'sanity' || // Studio core
-          id.startsWith('sanity-plugin-') || // Studio plugins
-          id === '@sanity/icons' || // Only used in schemas/Studio
-          id === '@sanity/ui' || // Only used in schemas/Studio
-          id === '@sanity/vision' || // Only used in Studio
-          id.startsWith('react-lite-') || // Schema-specific
-          id.startsWith('get-youtube-') // Schema-specific
-        ) {
-          return true;
-        }
-        // Keep @sanity/client, @sanity/image-url, and other @sanity/* packages bundled
-        return false;
-      },
+      // Don't externalize anything - bundle all dependencies
+      // Externalization causes runtime errors in the browser
       output: {
         manualChunks: {
           vendor: ["react", "react-dom", "react-router-dom"],
