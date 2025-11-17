@@ -128,12 +128,15 @@ const Index = () => {
         const homeData = await fetchFromSanity<any>(homePageQuery);
         
         if (homeData) {
-          console.log('[HOMEPAGE] ✅ Found home singleton data');
+          console.log('[HOMEPAGE] ✅ Found home singleton data', homeData);
           
           // Transform and set hero slide (use first slide)
           if (homeData.heroSlides && homeData.heroSlides.length > 0) {
             const transformed = transformHeroSlide(homeData.heroSlides[0]);
             setHeroSlide(transformed);
+            console.log('[HOMEPAGE] ✅ Hero slide loaded');
+          } else {
+            console.log('[HOMEPAGE] ⚠️ No hero slides found');
           }
           
           // Transform and set categories
@@ -142,6 +145,9 @@ const Index = () => {
               .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
               .map(transformCategory);
             setCategories(transformed);
+            console.log('[HOMEPAGE] ✅ Categories loaded:', transformed.length);
+          } else {
+            console.log('[HOMEPAGE] ⚠️ No categories found');
           }
           
           // Transform and set best seller products
@@ -150,12 +156,16 @@ const Index = () => {
               .filter((item: any) => item?._id) // Filter out null references
               .map((item: any, i: number) => transformBestSellerProduct(item, i));
             setBestSellerProducts(transformed);
+            console.log('[HOMEPAGE] ✅ Best seller products loaded:', transformed.length);
           } else {
             // Fallback: try featured products (only if Home singleton is empty)
             const featuredProducts = await fetchFromSanity<any[]>(featuredProductsQuery);
             if (featuredProducts && featuredProducts.length > 0) {
               const transformed = featuredProducts.map((p: any, i: number) => transformBestSellerProduct(p, i));
               setBestSellerProducts(transformed);
+              console.log('[HOMEPAGE] ✅ Best seller products loaded from fallback:', transformed.length);
+            } else {
+              console.log('[HOMEPAGE] ⚠️ No best seller products found');
             }
           }
           
@@ -165,36 +175,52 @@ const Index = () => {
               .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
               .map(transformEditorialBanner);
             setEditorialBanners(transformed);
+            console.log('[HOMEPAGE] ✅ Editorial banners loaded:', transformed.length);
+          } else {
+            console.log('[HOMEPAGE] ⚠️ No editorial banners found');
           }
           
           // Transform and set special offer products
           if (homeData.discountedProducts && homeData.discountedProducts.length > 0) {
             const transformed = homeData.discountedProducts.map((p: any, i: number) => transformSpecialOfferProduct(p, i));
             setSpecialOfferProducts(transformed);
+            console.log('[HOMEPAGE] ✅ Special offer products loaded:', transformed.length);
+          } else {
+            console.log('[HOMEPAGE] ⚠️ No special offer products found');
           }
           
           // Transform and set social media products
           if (homeData.socialMediaProducts && homeData.socialMediaProducts.length > 0) {
             const transformed = homeData.socialMediaProducts.map((p: any, i: number) => transformSocialMediaProduct(p, i));
             setSocialMediaProducts(transformed);
+            console.log('[HOMEPAGE] ✅ Social media products loaded:', transformed.length);
+          } else {
+            console.log('[HOMEPAGE] ⚠️ No social media products found');
           }
           
           // Transform and set educational products
           if (homeData.educationalProducts && homeData.educationalProducts.length > 0) {
             const transformed = homeData.educationalProducts.map((p: any, i: number) => transformEducationalProduct(p, i));
             setEduProducts(transformed);
+            console.log('[HOMEPAGE] ✅ Educational products loaded:', transformed.length);
+          } else {
+            console.log('[HOMEPAGE] ⚠️ No educational products found');
           }
           
           // Transform and set courses
           if (homeData.bestsellingCourses && homeData.bestsellingCourses.length > 0) {
             const transformed = homeData.bestsellingCourses.map((c: any, i: number) => transformCourse(c, i));
             setCourses(transformed);
+            console.log('[HOMEPAGE] ✅ Courses loaded:', transformed.length);
           } else {
             // Fallback: try featured courses
             const featuredCourses = await fetchFromSanity<any[]>(featuredCoursesQuery);
             if (featuredCourses && featuredCourses.length > 0) {
               const transformed = featuredCourses.map((c: any, i: number) => transformCourse(c, i));
               setCourses(transformed);
+              console.log('[HOMEPAGE] ✅ Courses loaded from fallback:', transformed.length);
+            } else {
+              console.log('[HOMEPAGE] ⚠️ No courses found');
             }
           }
           
@@ -203,12 +229,16 @@ const Index = () => {
           if (blogPosts && blogPosts.length > 0) {
             const transformed = blogPosts.map((p: any, i: number) => transformBlogPost(p, i));
             setMagazinePosts(transformed);
+            console.log('[HOMEPAGE] ✅ Magazine posts loaded:', transformed.length);
           } else {
             // Fallback: try featured posts
             const featuredPosts = await fetchFromSanity<any[]>(featuredPostsQuery);
             if (featuredPosts && featuredPosts.length > 0) {
               const transformed = featuredPosts.map((p: any, i: number) => transformBlogPost(p, i));
               setMagazinePosts(transformed);
+              console.log('[HOMEPAGE] ✅ Magazine posts loaded from fallback:', transformed.length);
+            } else {
+              console.log('[HOMEPAGE] ⚠️ No magazine posts found');
             }
           }
           
@@ -230,14 +260,18 @@ const Index = () => {
             }
           }
           setTabbedProducts(allTabbedProducts);
+          console.log('[HOMEPAGE] ✅ Tabbed products loaded:', allTabbedProducts.length);
           
           // Transform and set collections banner
           if (homeData.collectionsBanner) {
             const transformed = transformCollectionsBanner(homeData.collectionsBanner);
             setCollectionsBanner(transformed);
+            console.log('[HOMEPAGE] ✅ Collections banner loaded');
+          } else {
+            console.log('[HOMEPAGE] ⚠️ No collections banner found');
           }
           
-          console.log('[HOMEPAGE] ✅ Loaded data from home singleton');
+          console.log('[HOMEPAGE] ✅ All data loaded from home singleton');
         } else {
           console.warn('[HOMEPAGE] ⚠️ No home singleton data found, using fallback');
         }
@@ -1163,6 +1197,16 @@ const Index = () => {
           subtitle={collectionsBanner.subtitle}
           image={collectionsBanner.image}
           ctaText={collectionsBanner.ctaText}
+        />
+      )}
+
+      {/* Educational Products Slider - Only render when Sanity data exists */}
+      {eduProducts.length > 0 && (
+        <EduProductsSlider
+          items={eduProducts}
+          onAdd={handleAddToCart}
+          onViewAll={handleViewAllEdu}
+          rtl={isRTL}
         />
       )}
 
