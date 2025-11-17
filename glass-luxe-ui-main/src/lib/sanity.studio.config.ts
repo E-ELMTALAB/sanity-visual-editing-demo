@@ -37,7 +37,7 @@ import { pageStructure, singletonPlugin } from '../../../plugins/settings'
 
 // Presentation tool for Visual Editing
 import { presentationTool } from 'sanity/presentation'
-import { locate } from '../../../plugins/locate'
+import { locations } from './presentation.resolve'
 
 const title = import.meta.env.VITE_SANITY_PROJECT_TITLE || 'Content Studio'
 
@@ -77,14 +77,15 @@ export default defineConfig({
   },
   plugins: [
     presentationTool({
-      locate,
+      resolve: {
+        locations,
+      },
       previewUrl: {
         initial: typeof window !== 'undefined' 
           ? window.location.origin 
           : 'http://localhost:5173',
-        draftMode: {
-          enable: '/api/draft',
-        },
+        // For Vite/React, we don't have server-side API routes
+        // Visual editing will work via query parameters and iframe detection
       },
       allowOrigins: [
         'http://localhost:*',

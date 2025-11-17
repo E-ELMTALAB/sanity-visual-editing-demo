@@ -8,7 +8,10 @@ export const client = createClient({
   useCdn: true,
   perspective: 'published',
   stega: {
-    enabled: process.env.VITE_SANITY_VISUAL_EDITING === 'true' || false,
+    // Enable stega when visual editing is enabled OR when we're in an iframe (Presentation tool)
+    enabled: 
+      process.env.VITE_SANITY_VISUAL_EDITING === 'true' ||
+      (typeof window !== 'undefined' && (window !== window.parent || !!window.opener)),
     studioUrl: '/studio',
     logger: console,
     filter: (props) => {
