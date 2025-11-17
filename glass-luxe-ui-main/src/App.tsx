@@ -24,6 +24,7 @@ import Amir from "./pages/team/Amir";
 import Collection from "./pages/Collection";
 import Studio from "./pages/Studio";
 import { ScrollToTop } from "./components/ScrollToTop";
+import AppVisualEditing from "./components/visual-editing/VisualEditing";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +78,8 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
+          {/* Visual Editing component for Sanity Studio Presentation tool */}
+          <AppVisualEditing />
         </TooltipProvider>
       </DirectionProvider>
     </HelmetProvider>

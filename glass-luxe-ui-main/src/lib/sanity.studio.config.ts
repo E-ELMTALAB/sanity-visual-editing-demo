@@ -35,10 +35,9 @@ import settings from '../../../schemas/singletons/settings'
 // Import plugins
 import { pageStructure, singletonPlugin } from '../../../plugins/settings'
 
-// Note: Presentation tool is commented out as it requires additional setup (locate plugin, etc.)
-// Uncomment and configure if you need Visual Editing features
-// import { presentationTool } from 'sanity/presentation'
-// import { locate } from '../../../plugins/locate'
+// Presentation tool for Visual Editing
+import { presentationTool } from 'sanity/presentation'
+import { locate } from '../../../plugins/locate'
 
 const title = import.meta.env.VITE_SANITY_PROJECT_TITLE || 'Content Studio'
 
@@ -77,6 +76,22 @@ export default defineConfig({
     ],
   },
   plugins: [
+    presentationTool({
+      locate,
+      previewUrl: {
+        initial: typeof window !== 'undefined' 
+          ? window.location.origin 
+          : 'http://localhost:5173',
+        draftMode: {
+          enable: '/api/draft',
+        },
+      },
+      allowOrigins: [
+        'http://localhost:*',
+        'https://*.vercel.app',
+        'https://*.netlify.app',
+      ],
+    }),
     structureTool({
       structure: pageStructure([home, settings]),
     }),

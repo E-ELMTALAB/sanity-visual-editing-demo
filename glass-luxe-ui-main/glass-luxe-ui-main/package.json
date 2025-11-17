@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@sanity/visual-editing": "^4.0.0"
+  }
+}
