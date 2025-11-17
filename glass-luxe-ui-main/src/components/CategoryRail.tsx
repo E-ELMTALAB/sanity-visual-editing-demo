@@ -10,7 +10,8 @@ interface CategoryItem {
   label: string;
   image: string;
 }
-const categories: CategoryItem[] = [{
+
+const fallbackCategories: CategoryItem[] = [{
   id: "ai",
   label: "هوش مصنوعی",
   image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=300&fit=crop"
@@ -31,7 +32,12 @@ const categories: CategoryItem[] = [{
   label: "سیم‌کارت",
   image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400&h=300&fit=crop"
 }];
-export function CategoryRail() {
+
+interface CategoryRailProps {
+  categories?: CategoryItem[];
+}
+
+export function CategoryRail({ categories = fallbackCategories }: CategoryRailProps) {
   const {
     isRTL
   } = useDirection();
@@ -48,7 +54,7 @@ export function CategoryRail() {
     setSelectedCategory(categoryId);
     toast({
       title: isRTL ? "فیلتر دسته‌بندی" : "Category Filter",
-      description: isRTL ? `محصولات ${categories.find(c => c.id === categoryId)?.label} انتخاب شد` : `Filtering by ${categoryId}`
+      description: isRTL ? `محصولات ${categories.find(c => c.id === categoryId)?.label || categoryId} انتخاب شد` : `Filtering by ${categoryId}`
     });
   };
   return <section className="relative py-8 px-4 md:px-6 lg:px-8 bg-transparent">

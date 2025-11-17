@@ -1,7 +1,26 @@
 import React from "react";
 import heroBg from "@/assets/hero-ai-cubes.png";
 
-export default function ImageHero() {
+interface HeroSlide {
+  title?: string;
+  subtitle?: string;
+  buttonText?: string;
+  buttonHref?: string;
+  image?: string;
+}
+
+interface ImageHeroProps {
+  slide?: HeroSlide;
+}
+
+export default function ImageHero({ slide }: ImageHeroProps) {
+  // Use Sanity data if available, otherwise use fallback
+  const title = slide?.title || "اکانت‌ها و اشتراک‌های مطمئن — سریع و تمیز";
+  const subtitle = slide?.subtitle || "خرید امن با پشتیبانی ۲۴/۷ و تعویض حساب تضمینی برای سرویس‌های هوش مصنوعی، سوشیال مدیا و آموزشی.";
+  const buttonText = slide?.buttonText || "عضویت در کانال تلگرام";
+  const buttonHref = slide?.buttonHref || "https://t.me/SharifGPT";
+  const backgroundImage = slide?.image || heroBg;
+
   return (
     <section dir="rtl"
       className="relative min-h-[92vh] w-full overflow-hidden bg-transparent
@@ -10,7 +29,7 @@ export default function ImageHero() {
       
       {/* Background image layer - left bias on mobile */}
       <img
-        src={heroBg}
+        src={backgroundImage}
         alt=""
         className="absolute inset-0 h-full w-full object-cover
                    object-[20%_50%] md:object-[60%_50%]
@@ -37,16 +56,16 @@ export default function ImageHero() {
               برند شریف‌GPT
             </span>
             <h1 className="mt-4 text-5xl sm:text-5xl md:text-6xl font-black leading-tight drop-shadow-[0_0_25px_rgba(255,255,255,0.5)] lg:drop-shadow-none">
-              اکانت‌ها و اشتراک‌های مطمئن — سریع و تمیز
+              {title}
             </h1>
             <p className="mt-4 max-w-xl text-white/85 text-sm md:text-base lg:text-lg leading-relaxed">
-              خرید امن با پشتیبانی ۲۴/۷ و تعویض حساب تضمینی برای سرویس‌های هوش مصنوعی، سوشیال مدیا و آموزشی.
+              {subtitle}
             </p>
 
             <div className="mt-8">
-              <a href="https://t.me/SharifGPT" target="_blank" rel="noopener"
+              <a href={buttonHref} target="_blank" rel="noopener"
                  className="inline-flex items-center rounded-full bg-white/20 backdrop-blur-md text-white px-6 py-3 text-base font-semibold border border-white/30 hover:bg-white/30 hover:border-white/40 transition-all shadow-lg hover:shadow-2xl hover:scale-105 w-fit">
-                عضویت در کانال تلگرام
+                {buttonText}
               </a>
             </div>
           </div>

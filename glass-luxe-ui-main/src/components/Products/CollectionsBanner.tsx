@@ -13,6 +13,10 @@ const TikTokIcon = () => (
 interface CollectionsBannerProps {
   onClick: () => void;
   className?: string;
+  title?: string;
+  subtitle?: string;
+  image?: string;
+  ctaText?: string;
 }
 
 const springTransition = {
@@ -21,8 +25,23 @@ const springTransition = {
   damping: 28,
 };
 
-export function CollectionsBanner({ onClick, className }: CollectionsBannerProps) {
+export function CollectionsBanner({ 
+  onClick, 
+  className,
+  title,
+  subtitle,
+  image,
+  ctaText
+}: CollectionsBannerProps) {
   const { isRTL } = useDirection();
+  
+  // Use Sanity data if available, otherwise use fallback
+  const bannerTitle = title || (isRTL ? "همه کلکسیون‌های سوشیال مدیا" : "All Social Media Collections");
+  const bannerSubtitle = subtitle || (isRTL 
+    ? "اکانت‌های اینستاگرام، تیک‌تاک، تلگرام و بیشتر" 
+    : "Instagram, TikTok, Telegram accounts and more");
+  const bannerImage = image || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=1200&h=800&fit=crop";
+  const bannerCtaText = ctaText || (isRTL ? "کشف همه کلکسیون‌ها" : "Discover All Collections");
 
   const platforms = [
     { icon: Instagram, label: "Instagram", color: "text-pink-400" },
@@ -43,8 +62,8 @@ export function CollectionsBanner({ onClick, className }: CollectionsBannerProps
           {/* Background Image */}
           <div className="absolute inset-0">
             <img
-              src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=1200&h=800&fit=crop"
-              alt="Social Media Collections"
+              src={bannerImage}
+              alt={bannerTitle}
               loading="lazy"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
@@ -81,7 +100,7 @@ export function CollectionsBanner({ onClick, className }: CollectionsBannerProps
               className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-3 md:mb-4"
               style={{ filter: 'drop-shadow(0 0 20px rgba(0,0,0,0.5))' }}
             >
-              {isRTL ? "همه کلکسیون‌های سوشیال مدیا" : "All Social Media Collections"}
+              {bannerTitle}
             </motion.h2>
             
             <motion.p
@@ -91,9 +110,7 @@ export function CollectionsBanner({ onClick, className }: CollectionsBannerProps
               className="text-base sm:text-lg md:text-xl text-white/90 mb-6 md:mb-8 max-w-2xl"
               style={{ filter: 'drop-shadow(0 0 15px rgba(0,0,0,0.4))' }}
             >
-              {isRTL 
-                ? "اکانت‌های اینستاگرام، تیک‌تاک، تلگرام و بیشتر" 
-                : "Instagram, TikTok, Telegram accounts and more"}
+              {bannerSubtitle}
             </motion.p>
 
             <motion.button
@@ -106,7 +123,7 @@ export function CollectionsBanner({ onClick, className }: CollectionsBannerProps
                 "flex items-center gap-2 group/btn"
               )}
             >
-              <span>{isRTL ? "کشف همه کلکسیون‌ها" : "Discover All Collections"}</span>
+              <span>{bannerCtaText}</span>
               <ArrowRight className={cn(
                 "h-4 w-4 transition-transform group-hover/btn:translate-x-1",
                 isRTL && "rotate-180"

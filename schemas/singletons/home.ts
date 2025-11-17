@@ -294,6 +294,97 @@ export default defineType({
       ],
       group: 'content',
     }),
+    // Best Seller Products (references to Product documents)
+    defineField({
+      name: 'bestSellerProducts',
+      title: 'Best Seller Products',
+      description: 'Select products to display in the Best Sellers section',
+      type: 'array',
+      validation: (Rule) => Rule.max(8),
+      of: [
+        defineArrayMember({
+          type: 'reference',
+          to: [{ type: 'product' }],
+          options: {
+            disableNew: true,
+          }
+        }),
+      ],
+      group: 'content',
+    }),
+    // Editorial Banners
+    defineField({
+      name: 'editorialBanners',
+      title: 'Editorial Banners',
+      description: 'Banner sections displayed in the homepage (max 3 banners)',
+      type: 'array',
+      validation: (Rule) => Rule.max(3),
+      of: [
+        defineArrayMember({
+          type: 'object',
+          name: 'editorialBanner',
+          title: 'Banner',
+          fields: [
+            defineField({ name: 'id', type: 'string', title: 'ID', validation: (Rule) => Rule.required() }),
+            defineField({ name: 'title', type: 'string', title: 'Title', validation: (Rule) => Rule.required() }),
+            defineField({ name: 'subtitle', type: 'string', title: 'Subtitle', validation: (Rule) => Rule.required() }),
+            defineField({ name: 'ctaText', type: 'string', title: 'CTA Button Text', validation: (Rule) => Rule.required() }),
+            defineField({ name: 'ctaLink', type: 'string', title: 'CTA Link (URL or route)', validation: (Rule) => Rule.required() }),
+            defineField({ name: 'backgroundImage', type: 'image', title: 'Background Image', options: { hotspot: true }, validation: (Rule) => Rule.required() }),
+            defineField({ name: 'order', type: 'number', title: 'Display Order', initialValue: 0 }),
+          ],
+        }),
+      ],
+      group: 'content',
+    }),
+    // Categories
+    defineField({
+      name: 'categories',
+      title: 'Categories',
+      description: 'Category items displayed in the Category Rail section',
+      type: 'array',
+      validation: (Rule) => Rule.max(10),
+      of: [
+        defineArrayMember({
+          type: 'object',
+          name: 'category',
+          title: 'Category',
+          fields: [
+            defineField({ name: 'id', type: 'string', title: 'ID', validation: (Rule) => Rule.required() }),
+            defineField({ name: 'label', type: 'string', title: 'Label (Persian)', validation: (Rule) => Rule.required() }),
+            defineField({ name: 'labelEn', type: 'string', title: 'Label (English)', validation: (Rule) => Rule.required() }),
+            defineField({ name: 'image', type: 'image', title: 'Category Image', options: { hotspot: true }, validation: (Rule) => Rule.required() }),
+            defineField({ name: 'slug', type: 'slug', title: 'Slug', options: { source: 'id', maxLength: 96 } }),
+            defineField({ name: 'order', type: 'number', title: 'Display Order', initialValue: 0 }),
+          ],
+        }),
+      ],
+      group: 'content',
+    }),
+    // Collections Banner
+    defineField({
+      name: 'collectionsBanner',
+      title: 'Collections Banner',
+      description: 'Banner promoting collections section',
+      type: 'object',
+      fields: [
+        defineField({ name: 'title', type: 'string', title: 'Title' }),
+        defineField({ name: 'subtitle', type: 'string', title: 'Subtitle' }),
+        defineField({ name: 'image', type: 'image', title: 'Banner Image', options: { hotspot: true } }),
+        defineField({ name: 'ctaText', type: 'string', title: 'CTA Button Text' }),
+        defineField({ name: 'ctaLink', type: 'string', title: 'CTA Link (URL or route)' }),
+        defineField({
+          name: 'featuredCollection',
+          title: 'Featured Collection',
+          type: 'reference',
+          to: [{ type: 'collection' }],
+          options: {
+            disableNew: true,
+          }
+        }),
+      ],
+      group: 'content',
+    }),
   ],
   preview: {
     select: {

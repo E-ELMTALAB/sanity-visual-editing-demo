@@ -23,6 +23,23 @@ import { MagazineFeatured } from "@/components/Magazine/MagazineFeatured";
 import { BlogsCarousel } from "@/components/Blog/BlogsCarousel";
 import { ChatbotPanel } from "@/components/FloatingDock/ChatbotPanel";
 import { SupportPanel } from "@/components/FloatingDock/SupportPanel";
+// Sanity imports
+import { fetchFromSanity } from "@/lib/sanity.client";
+import { validateSanityConfig } from "@/lib/sanity.config";
+import { homePageQuery, featuredProductsQuery, featuredCoursesQuery, featuredPostsQuery, productsByCategoryQuery } from "@/lib/sanity.queries";
+import {
+  transformHeroSlide,
+  transformBestSellerProduct,
+  transformEditorialBanner,
+  transformCategory,
+  transformSpecialOfferProduct,
+  transformSocialMediaProduct,
+  transformEducationalProduct,
+  transformCourse,
+  transformBlogPost,
+  transformTabbedProduct,
+  transformCollectionsBanner,
+} from "@/lib/sanity.transformers";
 
 // Code splitting for heavy components
 const Footer = lazy(() => import("@/components/Footer/Footer").then((m) => ({ default: m.Footer })));
@@ -58,6 +75,20 @@ const Index = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showFooter, setShowFooter] = useState(false);
   const footerTriggerRef = useRef<HTMLDivElement>(null);
+  
+  // Sanity data state
+  const [isLoading, setIsLoading] = useState(true);
+  const [heroSlide, setHeroSlide] = useState<any>(null);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [bestSellerProducts, setBestSellerProducts] = useState<any[]>([]);
+  const [editorialBanners, setEditorialBanners] = useState<any[]>([]);
+  const [specialOfferProducts, setSpecialOfferProducts] = useState<any[]>([]);
+  const [socialMediaProducts, setSocialMediaProducts] = useState<any[]>([]);
+  const [eduProducts, setEduProducts] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [magazinePosts, setMagazinePosts] = useState<any[]>([]);
+  const [tabbedProducts, setTabbedProducts] = useState<any[]>([]);
+  const [collectionsBanner, setCollectionsBanner] = useState<any>(null);
 
   // Intersection Observer for Footer - delay rendering until near viewport
   useEffect(() => {
@@ -75,6 +106,149 @@ const Index = () => {
     }
 
     return () => observer.disconnect();
+  }, []);
+
+  // Fetch data from Sanity
+  useEffect(() => {
+    const isConfigValid = validateSanityConfig();
+    
+    if (!isConfigValid) {
+      console.warn('[HOMEPAGE] Sanity not configured, using fallback data');
+      setIsLoading(false);
+      return;
+    }
+
+    async function loadHomepageData() {
+      try {
+        console.log('[HOMEPAGE] Fetching data from Sanity...');
+        setIsLoading(true);
+        
+        // Try Home singleton first
+        console.log('[HOMEPAGE] Trying home singleton query...');
+        const homeData = await fetchFromSanity<any>(homePageQuery);
+        
+        if (homeData) {
+          console.log('[HOMEPAGE] ✅ Found home singleton data');
+          
+          // Transform and set hero slide (use first slide)
+          if (homeData.heroSlides && homeData.heroSlides.length > 0) {
+            const transformed = transformHeroSlide(homeData.heroSlides[0]);
+            setHeroSlide(transformed);
+          }
+          
+          // Transform and set categories
+          if (homeData.categories && homeData.categories.length > 0) {
+            const transformed = homeData.categories
+              .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+              .map(transformCategory);
+            setCategories(transformed);
+          }
+          
+          // Transform and set best seller products
+          if (homeData.bestSellerProducts && homeData.bestSellerProducts.length > 0) {
+            const transformed = homeData.bestSellerProducts
+              .filter((item: any) => item?._id) // Filter out null references
+              .map((item: any, i: number) => transformBestSellerProduct(item, i));
+            setBestSellerProducts(transformed);
+          } else {
+            // Fallback: try featured products (only if Home singleton is empty)
+            const featuredProducts = await fetchFromSanity<any[]>(featuredProductsQuery);
+            if (featuredProducts && featuredProducts.length > 0) {
+              const transformed = featuredProducts.map((p: any, i: number) => transformBestSellerProduct(p, i));
+              setBestSellerProducts(transformed);
+            }
+          }
+          
+          // Transform and set editorial banners
+          if (homeData.editorialBanners && homeData.editorialBanners.length > 0) {
+            const transformed = homeData.editorialBanners
+              .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+              .map(transformEditorialBanner);
+            setEditorialBanners(transformed);
+          }
+          
+          // Transform and set special offer products
+          if (homeData.discountedProducts && homeData.discountedProducts.length > 0) {
+            const transformed = homeData.discountedProducts.map((p: any, i: number) => transformSpecialOfferProduct(p, i));
+            setSpecialOfferProducts(transformed);
+          }
+          
+          // Transform and set social media products
+          if (homeData.socialMediaProducts && homeData.socialMediaProducts.length > 0) {
+            const transformed = homeData.socialMediaProducts.map((p: any, i: number) => transformSocialMediaProduct(p, i));
+            setSocialMediaProducts(transformed);
+          }
+          
+          // Transform and set educational products
+          if (homeData.educationalProducts && homeData.educationalProducts.length > 0) {
+            const transformed = homeData.educationalProducts.map((p: any, i: number) => transformEducationalProduct(p, i));
+            setEduProducts(transformed);
+          }
+          
+          // Transform and set courses
+          if (homeData.bestsellingCourses && homeData.bestsellingCourses.length > 0) {
+            const transformed = homeData.bestsellingCourses.map((c: any, i: number) => transformCourse(c, i));
+            setCourses(transformed);
+          } else {
+            // Fallback: try featured courses
+            const featuredCourses = await fetchFromSanity<any[]>(featuredCoursesQuery);
+            if (featuredCourses && featuredCourses.length > 0) {
+              const transformed = featuredCourses.map((c: any, i: number) => transformCourse(c, i));
+              setCourses(transformed);
+            }
+          }
+          
+          // Transform and set blog posts (use magazinePosts or featuredBlogs)
+          const blogPosts = homeData.magazinePosts || homeData.featuredBlogs;
+          if (blogPosts && blogPosts.length > 0) {
+            const transformed = blogPosts.map((p: any, i: number) => transformBlogPost(p, i));
+            setMagazinePosts(transformed);
+          } else {
+            // Fallback: try featured posts
+            const featuredPosts = await fetchFromSanity<any[]>(featuredPostsQuery);
+            if (featuredPosts && featuredPosts.length > 0) {
+              const transformed = featuredPosts.map((p: any, i: number) => transformBlogPost(p, i));
+              setMagazinePosts(transformed);
+            }
+          }
+          
+          // Load tabbed products by category (AI, Social, Music, Education, SIM)
+          const categoryMap: Record<string, string> = {
+            'ai': 'ai',
+            'social': 'social-media',
+            'music': 'music',
+            'edu': 'education',
+            'sim': 'sim-card',
+          };
+          
+          const allTabbedProducts: any[] = [];
+          for (const [key, category] of Object.entries(categoryMap)) {
+            const categoryProducts = await fetchFromSanity<any[]>(productsByCategoryQuery, { category });
+            if (categoryProducts && categoryProducts.length > 0) {
+              const transformed = categoryProducts.map((p: any, i: number) => transformTabbedProduct(p, key, i));
+              allTabbedProducts.push(...transformed);
+            }
+          }
+          setTabbedProducts(allTabbedProducts);
+          
+          // Transform and set collections banner
+          if (homeData.collectionsBanner) {
+            const transformed = transformCollectionsBanner(homeData.collectionsBanner);
+            setCollectionsBanner(transformed);
+          }
+          
+          console.log('[HOMEPAGE] ✅ Loaded data from home singleton');
+        } else {
+          console.warn('[HOMEPAGE] ⚠️ No home singleton data found, using fallback');
+        }
+      } catch (error) {
+        console.error('[HOMEPAGE] ❌ Failed to fetch:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadHomepageData();
   }, []);
   const categories = isRTL
     ? ["همه محصولات", "هوش مصنوعی", "سوشیال مدیا", "موسیقی", "آموزشی", "سیمکارت"]
@@ -206,7 +380,8 @@ const Index = () => {
       currentPrice: 299000,
     },
   ];
-  const specialOfferProducts = [
+  // Fallback data when Sanity is unavailable
+  const fallbackSpecialOfferProducts = [
     {
       id: "offer-1",
       title: isRTL ? "هدفون بی‌سیم پریمیوم با نویزکنسلینگ" : "Premium Wireless Headphones with ANC",
@@ -272,7 +447,7 @@ const Index = () => {
       discountPct: 30,
     },
   ];
-  const socialMediaProducts = [
+  const fallbackSocialMediaProducts = [
     {
       id: "social-1",
       platform: "Instagram" as const,
@@ -404,7 +579,7 @@ const Index = () => {
       duration: isRTL ? "۶ ماه" : "6 Months",
     },
   ];
-  const courses = [
+  const fallbackCourses = [
     {
       id: "course-1",
       title: isRTL
@@ -480,7 +655,7 @@ const Index = () => {
       price: 2200000,
     },
   ];
-  const bestSellerProducts = [
+  const fallbackBestSellerProducts = [
     {
       id: "best-1",
       title: isRTL ? "اشتراک ChatGPT Plus - ۱ ماهه" : "ChatGPT Plus Subscription - 1 Month",
@@ -543,7 +718,7 @@ const Index = () => {
     },
   ];
 
-  const editorialBanners = [
+  const fallbackEditorialBanners = [
     {
       id: "banner-1",
       title: isRTL ? "ابزارهای هوش مصنوعی" : "AI Tools",
@@ -576,7 +751,7 @@ const Index = () => {
     },
   ];
 
-  const tabbedProducts = [
+  const fallbackTabbedProducts = [
     // AI Tools
     {
       id: "tab-ai-1",
@@ -884,7 +1059,7 @@ const Index = () => {
     },
   ];
 
-  const magazinePosts = [
+  const fallbackMagazinePosts = [
     {
       _id: "post-1",
       slug: "future-of-ai-in-ecommerce",
@@ -994,61 +1169,82 @@ const Index = () => {
       <Header onSearch={handleSearch} megaItems={megaItems} />
 
       {/* Hero Section */}
-      <ImageHero />
+      <ImageHero slide={heroSlide} />
 
       {/* Category Rail */}
-      <CategoryRail />
+      <CategoryRail categories={categories.length > 0 ? categories : undefined} />
 
-      {/* Best Sellers Section */}
-      <BestSellers products={bestSellerProducts} onAdd={handleAddToCart} />
+      {/* Best Sellers Section - Only render when Sanity data exists */}
+      {bestSellerProducts.length > 0 && (
+        <BestSellers products={bestSellerProducts} onAdd={handleAddToCart} />
+      )}
 
-      {/* Editorial Banners Section */}
-      <EditorialBanners banners={editorialBanners} />
+      {/* Editorial Banners Section - Only render when Sanity data exists */}
+      {editorialBanners.length > 0 && (
+        <EditorialBanners banners={editorialBanners} />
+      )}
 
-      {/* Tabbed Product Grid Section */}
-      <TabbedProductGrid
-        products={tabbedProducts}
-        onAdd={handleAddToCart}
-        onViewAll={(category) => {
-          toast({
-            title: isRTL ? "مشاهده همه" : "View All",
-            description: isRTL ? `مشاهده تمام محصولات ${category}` : `Viewing all ${category} products`,
-          });
-        }}
-      />
+      {/* Tabbed Product Grid Section - Only render when Sanity data exists */}
+      {tabbedProducts.length > 0 && (
+        <TabbedProductGrid
+          products={tabbedProducts}
+          onAdd={handleAddToCart}
+          onViewAll={(category) => {
+            toast({
+              title: isRTL ? "مشاهده همه" : "View All",
+              description: isRTL ? `مشاهده تمام محصولات ${category}` : `Viewing all ${category} products`,
+            });
+          }}
+        />
+      )}
 
-      {/* Social Media Products Grid */}
-      <SocialMediaProductsGrid
-        products={socialMediaProducts.map((item) => ({
-          id: item.id,
-          title: item.title,
-          image: item.image,
-          price: item.price,
-        }))}
-        onAdd={handleAddToCart}
-        onViewAll={handleViewAllSocial}
-        className="mx-[10px]"
-      />
+      {/* Social Media Products Grid - Only render when Sanity data exists */}
+      {socialMediaProducts.length > 0 && (
+        <SocialMediaProductsGrid
+          products={socialMediaProducts.map((item) => ({
+            id: item.id,
+            title: item.title,
+            image: item.image,
+            price: item.price,
+          }))}
+          onAdd={handleAddToCart}
+          onViewAll={handleViewAllSocial}
+          className="mx-[10px]"
+        />
+      )}
 
-      {/* Collections Banner */}
-      <CollectionsBanner onClick={handleCollectionsBanner} className="mx-[10px]" />
+      {/* Collections Banner - Only render when Sanity data exists */}
+      {collectionsBanner && (
+        <CollectionsBanner 
+          onClick={handleCollectionsBanner} 
+          className="mx-[10px]"
+          title={collectionsBanner.title}
+          subtitle={collectionsBanner.subtitle}
+          image={collectionsBanner.image}
+          ctaText={collectionsBanner.ctaText}
+        />
+      )}
 
-      {/* Courses Carousel */}
-      <CoursesCarousel
-        courses={courses}
-        onAdd={handleAddToCart}
-        onView={handleViewCourse}
-        onViewAll={handleViewAllCourses}
-        className="mx-[10px]"
-      />
+      {/* Courses Carousel - Only render when Sanity data exists */}
+      {courses.length > 0 && (
+        <CoursesCarousel
+          courses={courses}
+          onAdd={handleAddToCart}
+          onView={handleViewCourse}
+          onViewAll={handleViewAllCourses}
+          className="mx-[10px]"
+        />
+      )}
 
-      {/* Blogs Carousel */}
-      <BlogsCarousel
-        posts={magazinePosts}
-        onRead={handleReadPost}
-        onViewAll={handleViewMagazine}
-        className="mx-[10px]"
-      />
+      {/* Blogs Carousel - Only render when Sanity data exists */}
+      {magazinePosts.length > 0 && (
+        <BlogsCarousel
+          posts={magazinePosts}
+          onRead={handleReadPost}
+          onViewAll={handleViewMagazine}
+          className="mx-[10px]"
+        />
+      )}
 
       {/* Footer Trigger Point */}
       <div ref={footerTriggerRef} className="h-px" />
