@@ -250,9 +250,6 @@ const Index = () => {
 
     loadHomepageData();
   }, []);
-  const categories = isRTL
-    ? ["همه محصولات", "هوش مصنوعی", "سوشیال مدیا", "موسیقی", "آموزشی", "سیمکارت"]
-    : ["All Products", "AI", "Social Media", "Music", "Education", "SIM Cards"];
   const handleOpenCart = () => {
     toast({
       title: isRTL ? "سبد خرید" : "Shopping Cart",
@@ -511,72 +508,6 @@ const Index = () => {
       image: "https://images.unsplash.com/photo-1611605698290-a8b0e1b94723?w=600&h=600&fit=crop",
       price: 720000,
       rating: 5,
-    },
-  ];
-  const eduProducts = [
-    {
-      id: "edu-1",
-      provider: "Coursera" as const,
-      title: isRTL ? "اشتراک ۶ ماهه Coursera Plus" : "Coursera Plus 6-Month Subscription",
-      image: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=600&h=600&fit=crop",
-      price: 4500000,
-      duration: isRTL ? "۶ ماه" : "6 Months",
-    },
-    {
-      id: "edu-2",
-      provider: "Udemy" as const,
-      title: isRTL ? "بسته ۵ دوره پرفروش یودمی" : "Udemy 5 Best-Selling Courses Bundle",
-      image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&h=600&fit=crop",
-      price: 2800000,
-      duration: isRTL ? "دسترسی مادام‌العمر" : "Lifetime Access",
-    },
-    {
-      id: "edu-3",
-      provider: "YouTube Premium" as const,
-      title: isRTL ? "یوتیوب پریمیوم - ۱۲ ماهه" : "YouTube Premium - 12 Months",
-      image: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=600&h=600&fit=crop",
-      price: 1950000,
-      duration: isRTL ? "۱ سال" : "1 Year",
-    },
-    {
-      id: "edu-4",
-      provider: "Skillshare" as const,
-      title: isRTL ? "اشتراک سالانه Skillshare Premium" : "Skillshare Premium Annual Subscription",
-      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=600&fit=crop",
-      price: 3200000,
-      duration: isRTL ? "۱ سال" : "1 Year",
-    },
-    {
-      id: "edu-5",
-      provider: "Coursera" as const,
-      title: isRTL ? "دوره تخصصی علم داده - ۳ ماهه" : "Data Science Specialization - 3 Months",
-      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=600&fit=crop",
-      price: 2400000,
-      duration: isRTL ? "۳ ماه" : "3 Months",
-    },
-    {
-      id: "edu-6",
-      provider: "Udemy" as const,
-      title: isRTL ? "دوره جامع برنامه‌نویسی فول‌استک" : "Complete Full-Stack Programming Course",
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&h=600&fit=crop",
-      price: 980000,
-      duration: isRTL ? "دسترسی مادام‌العمر" : "Lifetime Access",
-    },
-    {
-      id: "edu-7",
-      provider: "YouTube Premium" as const,
-      title: isRTL ? "یوتیوب پریمیوم خانوادگی - ۶ ماه" : "YouTube Premium Family - 6 Months",
-      image: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&h=600&fit=crop",
-      price: 2700000,
-      duration: isRTL ? "۶ ماه" : "6 Months",
-    },
-    {
-      id: "edu-8",
-      provider: "Skillshare" as const,
-      title: isRTL ? "بسته طراحی گرافیک و UI/UX" : "Graphic Design & UI/UX Bundle",
-      image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&h=600&fit=crop",
-      price: 1800000,
-      duration: isRTL ? "۶ ماه" : "6 Months",
     },
   ];
   const fallbackCourses = [
