@@ -36,8 +36,8 @@ function getClient() {
     // Add token if we're in preview mode
     token: token,
     ignoreBrowserTokenWarning: !!token,
-    // Enable Content Source Maps (required for Visual Editing)
-    encodeSourceMap: visualEditing,
+    // Stega encoding embeds Content Source Maps in text content (required for Visual Editing)
+    // encodeSourceMap is not needed when using stega.enabled
     stega: {
       // Enable stega when visual editing is enabled (embeds metadata in text content)
       enabled: visualEditing,
