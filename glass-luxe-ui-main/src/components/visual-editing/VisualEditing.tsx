@@ -2,17 +2,15 @@
 // The component will only render when inside Sanity Studio's Presentation tool
 import { lazy, Suspense } from 'react'
 
-// Use a string template to prevent Vite from statically analyzing the import path
-// This import will only be resolved at runtime
+// Use @sanity/preview-kit/visual-editing as per official docs for non-Next.js apps
+// This import will only be resolved at runtime to avoid build issues
 const getVisualEditing = () => {
-  // Create import path dynamically to prevent static analysis
-  const basePath = '@sanity/visual-editing'
-  const reactPath = '/react'
-  return import(/* @vite-ignore */ `${basePath}${reactPath}`)
+  // Try @sanity/preview-kit/visual-editing first (recommended for non-Next.js)
+  return import(/* @vite-ignore */ '@sanity/preview-kit/visual-editing')
     .then(module => ({ default: module.VisualEditing }))
     .catch(() => {
-      // Fallback: try main package
-      return import(/* @vite-ignore */ basePath)
+      // Fallback: try @sanity/visual-editing/react
+      return import(/* @vite-ignore */ '@sanity/visual-editing/react')
         .then(module => ({ default: module.VisualEditing || (() => null) }))
         .catch(() => {
           // If all fails, return empty component

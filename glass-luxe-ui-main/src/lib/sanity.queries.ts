@@ -1,6 +1,8 @@
 // Home singleton query - Main homepage content
 export const homePageQuery = `
   *[_type == "home"][0]{
+    _id,
+    _type,
     // Hero Section
     heroSlides[]{
       _key,

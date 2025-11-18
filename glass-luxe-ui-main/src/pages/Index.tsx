@@ -118,6 +118,10 @@ const Index = () => {
       return;
     }
 
+    // Check if we're in visual editing mode (iframe from Presentation tool)
+    const isVisualEditing = typeof window !== 'undefined' && 
+      (window !== window.parent || !!window.opener || process.env.VITE_SANITY_VISUAL_EDITING === 'true')
+
     async function loadHomepageData() {
       try {
         console.log('[HOMEPAGE] Fetching data from Sanity...');
@@ -283,6 +287,22 @@ const Index = () => {
     }
 
     loadHomepageData();
+
+    // Refetch data when visual editing mode changes (e.g., when iframe loads)
+    // This ensures data is fetched with the correct client configuration
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isVisualEditing) {
+        console.log('[HOMEPAGE] Refetching data for visual editing mode');
+        loadHomepageData();
+      }
+    };
+
+    // Listen for when the page becomes visible (e.g., when iframe loads)
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
   const handleOpenCart = () => {
     toast({
