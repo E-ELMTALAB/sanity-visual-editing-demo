@@ -218,6 +218,9 @@ export default function BlogPost() {
   };
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareTitle = article?.title || "";
+  const prevPost = relatedPosts[0];
+  const nextPost = relatedPosts[1];
+  const remainingRelatedPosts = relatedPosts.slice(2);
   const handleShare = (platform: string) => {
     let url = "";
     switch (platform) {
@@ -241,25 +244,25 @@ export default function BlogPost() {
   };
   const structuredData = article
     ? {
-        "@context": "https://schema.org",
-        "@type": "Article",
+    "@context": "https://schema.org",
+    "@type": "Article",
         headline: article.title,
         image: article.cover,
         datePublished: article.publishedAt,
         dateModified: article.publishedAt,
-        author: {
-          "@type": "Person",
+    author: {
+      "@type": "Person",
           name: article.author?.name || "SharifGPT",
           image: article.author?.avatar,
-        },
-        publisher: {
-          "@type": "Organization",
-          name: "SharifGPT",
-          logo: {
-            "@type": "ImageObject",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "SharifGPT",
+      logo: {
+        "@type": "ImageObject",
             url: "https://sharifgpt.ai/logo.png",
           },
-        },
+    },
         description: article.excerpt || article.title,
       }
     : null;
@@ -303,7 +306,7 @@ export default function BlogPost() {
           <meta key={tag} property="article:tag" content={tag} />
         ))}
         {structuredData && (
-          <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
         )}
       </Helmet>
 
@@ -416,28 +419,39 @@ export default function BlogPost() {
                   )}
                 </div>
 
-                {/* Next/Prev Articles */}
-                <div className="grid md:grid-cols-2 gap-4 mt-12 pt-12 border-t border-white/10">
-                  <Link to="/blog/previous-article" className="glass border border-white/20 rounded-xl p-6 hover:border-primary/40 transition-all group">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                      <ArrowRight className="w-4 h-4" />
-                      <span>مقاله قبلی</span>
-                    </div>
-                    <h3 className="font-bold group-hover:text-primary transition-colors">
-                      اصول طراحی UI/UX برای مبتدیان
-                    </h3>
-                  </Link>
+                {(prevPost || nextPost) && (
+                  <div className="grid md:grid-cols-2 gap-4 mt-12 pt-12 border-t border-white/10">
+                    {prevPost && (
+                      <Link
+                        to={`/blog/${prevPost.slug}`}
+                        className="glass border border-white/20 rounded-xl p-6 hover:border-primary/40 transition-all group"
+                      >
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                          <ArrowRight className="w-4 h-4" />
+                          <span>مقاله قبلی</span>
+                        </div>
+                        <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">
+                          {prevPost.title}
+                        </h3>
+                      </Link>
+                    )}
 
-                  <Link to="/blog/next-article" className="glass border border-white/20 rounded-xl p-6 hover:border-primary/40 transition-all group text-left">
-                    <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground mb-2">
-                      <span>مقاله بعدی</span>
-                      <ArrowLeft className="w-4 h-4" />
-                    </div>
-                    <h3 className="font-bold group-hover:text-primary transition-colors">
-                      رنگ‌شناسی در طراحی دیجیتال
-                    </h3>
-                  </Link>
-                </div>
+                    {nextPost && (
+                      <Link
+                        to={`/blog/${nextPost.slug}`}
+                        className="glass border border-white/20 rounded-xl p-6 hover:border-primary/40 transition-all group text-left"
+                      >
+                        <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground mb-2">
+                          <span>مقاله بعدی</span>
+                          <ArrowLeft className="w-4 h-4" />
+                        </div>
+                        <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">
+                          {nextPost.title}
+                        </h3>
+                      </Link>
+                    )}
+                  </div>
+                )}
               </article>
 
               {/* Sidebar - Table of Contents */}
@@ -456,15 +470,15 @@ export default function BlogPost() {
             </div>
 
             {/* Related Posts */}
-            {relatedPosts.length > 0 && (
-              <section className="mt-16 w-full max-w-[820px] mx-auto">
-                <h2 className="text-3xl font-bold mb-8">مقالات مرتبط</h2>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {relatedPosts.map(post => (
+            {remainingRelatedPosts.length > 0 && (
+            <section className="mt-16 w-full max-w-[820px] mx-auto">
+              <h2 className="text-3xl font-bold mb-8">مقالات مرتبط</h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {remainingRelatedPosts.map(post => (
                     <BlogCard key={post.slug} post={post} />
                   ))}
-                </div>
-              </section>
+              </div>
+            </section>
             )}
           </div>
         </main>

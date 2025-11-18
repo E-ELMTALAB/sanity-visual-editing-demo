@@ -17,13 +17,13 @@ export const homePageQuery = `
     "bestSellerProducts": bestSellerProducts[]{
       _key,
       ...@->{
-        _id,
-        name,
-        slug,
+      _id,
+      name,
+      slug,
         image,
-        category,
+      category,
         badges,
-        "slug": slug.current
+      "slug": slug.current
       }
     },
     
@@ -124,15 +124,15 @@ export const homePageQuery = `
     "magazinePosts": magazinePosts[]{
       _key,
       ...@->{
-        _id,
-        title,
-        slug,
-        excerpt,
-        coverImage,
-        publishedAt,
-        readTime,
-        category,
-        "slug": slug.current
+      _id,
+      title,
+      slug,
+      excerpt,
+      coverImage,
+      publishedAt,
+      readTime,
+      category,
+      "slug": slug.current
       }
     },
     
@@ -140,15 +140,15 @@ export const homePageQuery = `
     "featuredBlogs": featuredBlogs[]{
       _key,
       ...@->{
-        _id,
-        title,
-        slug,
-        excerpt,
-        coverImage,
-        publishedAt,
-        readTime,
-        category,
-        "slug": slug.current
+      _id,
+      title,
+      slug,
+      excerpt,
+      coverImage,
+      publishedAt,
+      readTime,
+      category,
+      "slug": slug.current
       }
     }
   }

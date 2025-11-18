@@ -42,9 +42,9 @@ function getClient() {
   }
   
   const clientConfig: any = {
-    projectId,
-    dataset,
-    apiVersion,
+  projectId,
+  dataset,
+  apiVersion,
     // For normal viewing, use CDN for better performance
     // Disable CDN when visual editing is enabled (CDN strips stega metadata)
     useCdn: !visualEditing,
@@ -70,7 +70,7 @@ function getClient() {
         // Filter out specific fields that shouldn't have overlays
         if (props.sourcePath?.at(0) === 'duration') return false
         return props.filterDefault(props)
-      },
+  },
     }
   }
   

@@ -177,9 +177,14 @@ export function transformCourse(course: any, index: number) {
 
 // Transform blog post
 export function transformBlogPost(post: any, index: number) {
+  const slugValue =
+    typeof post?.slug === 'string'
+      ? post.slug
+      : post?.slug?.current || ''
+
   return {
     _id: post?._id || `post-${index}`,
-    slug: post?.slug || `post-${index}`,
+    slug: slugValue || `post-${index}`,
     title: post?.title || 'مقاله',
     excerpt: Array.isArray(post?.excerpt) ? portableTextToPlainText(post.excerpt) : post?.excerpt || '',
     readTime: post?.readTime || 5,
@@ -194,9 +199,14 @@ export function transformBlogPost(post: any, index: number) {
 }
 
 export function transformBlogPostDetail(post: any) {
+  const slugValue =
+    typeof post?.slug === 'string'
+      ? post.slug
+      : post?.slug?.current || ''
+
   return {
     _id: post?._id || '',
-    slug: post?.slug || post?.slug?.current || '',
+    slug: slugValue,
     title: post?.title || '',
     cover: post?.coverImage ? getImageUrl(post.coverImage, 1600) : '',
     author: {
@@ -249,27 +259,53 @@ export function transformProductDetail(product: any) {
           ]
         : []
 
+  const images = gallery.map((image: any) => image.url).filter(Boolean)
+  if (images.length === 0 && product?.image) {
+    images.push(getImageUrl(product.image, 1600))
+  }
+
   const variants = Array.isArray(product?.options)
     ? product.options.map((option: any, index: number) => ({
         id: option?.id || option?._key || `variant-${index}`,
         name: option?.name || option?.label || `گزینه ${index + 1}`,
+        nameFa: option?.nameFa || option?.name || option?.label || `گزینه ${index + 1}`,
         price: typeof option?.price === 'number' ? option.price : undefined,
+        oldPrice:
+          typeof option?.oldPrice === 'number'
+            ? option.oldPrice
+            : typeof option?.compareAtPrice === 'number'
+              ? option.compareAtPrice
+              : undefined,
+        inStock: option?.inStock !== false,
       }))
     : []
 
+  const badgeList = Array.isArray(product?.badges) ? product.badges.filter(Boolean) : []
+  const primaryBadge =
+    badgeList.find((badge: string) => ['sale', 'new', 'hot'].includes(badge)) ?? badgeList[0]
+
   return {
     id: product?._id || '',
+    handle: product?.slug?.current || product?.slug || '',
     title: product?.name || '',
+    titleFa: product?.titleFa || product?.name || '',
     description: product?.description || '',
+    descriptionFa: product?.descriptionFa || product?.description || '',
     category: product?.category || '',
-    badges: Array.isArray(product?.badges) ? product.badges : [],
+    categoryFa: product?.categoryFa || product?.category || '',
+    image: images[0] || '',
+    images,
+    badges: badgeList,
+    badge: primaryBadge,
     price: typeof product?.price === 'number' ? product.price : 0,
-    originalPrice: typeof product?.originalPrice === 'number' ? product.originalPrice : undefined,
+    originalPrice:
+      typeof product?.originalPrice === 'number' ? product.originalPrice : undefined,
     discountPct: typeof product?.discountPercentage === 'number' ? product.discountPercentage : undefined,
     rating: typeof product?.rating === 'number' ? product.rating : undefined,
     reviewCount: typeof product?.reviewCount === 'number' ? product.reviewCount : undefined,
     inStock: product?.inStock !== false,
     features: Array.isArray(product?.features) ? product.features : [],
+    featuresFa: Array.isArray(product?.featuresFa) ? product.featuresFa : Array.isArray(product?.features) ? product.features : [],
     gallery,
     variants,
     relatedProducts: Array.isArray(product?.relatedProducts)

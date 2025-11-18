@@ -393,32 +393,32 @@ export default function Products() {
                         هیچ محصولی مطابق فیلترهای شما یافت نشد.
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
                         {filteredProducts.map((product, index) => (
-                          <motion.div
-                            key={product.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{
-                              ...springTransition,
-                              delay: 0.3 + index * 0.05,
-                            }}
-                            className="w-full max-w-[280px] mx-auto sm:max-w-none"
-                          >
-                            <ProductCard
-                              id={product.id}
-                              slug={product.slug}
-                              title={product.title}
-                              image={product.image}
-                              price={product.price}
-                              oldPrice={product.oldPrice}
-                              discountPct={product.discountPct}
-                              onAdd={handleAddToCart}
-                              className="[&>div:first-child]:aspect-[4/5] sm:[&>div:first-child]:aspect-[3/4]"
-                            />
-                          </motion.div>
-                        ))}
-                      </div>
+                      <motion.div
+                        key={product.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          ...springTransition,
+                          delay: 0.3 + index * 0.05,
+                        }}
+                        className="w-full max-w-[280px] mx-auto sm:max-w-none"
+                      >
+                        <ProductCard
+                          id={product.id}
+                          slug={product.slug}
+                          title={product.title}
+                          image={product.image}
+                          price={product.price}
+                          oldPrice={product.oldPrice}
+                          discountPct={product.discountPct}
+                          onAdd={handleAddToCart}
+                          className="[&>div:first-child]:aspect-[4/5] sm:[&>div:first-child]:aspect-[3/4]"
+                        />
+                      </motion.div>
+                    ))}
+                    </div>
                     )}
                   </div>
                 </motion.div>

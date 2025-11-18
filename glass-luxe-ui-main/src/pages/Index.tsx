@@ -461,12 +461,12 @@ const Index = () => {
 
       {/* Best Sellers Section - Only render when Sanity data exists */}
       {bestSellerProducts.length > 0 && (
-        <BestSellers products={bestSellerProducts} onAdd={handleAddToCart} />
+      <BestSellers products={bestSellerProducts} onAdd={handleAddToCart} />
       )}
 
       {/* Editorial Banners Section - Only render when Sanity data exists */}
       {editorialBanners.length > 0 && (
-        <EditorialBanners banners={editorialBanners} />
+      <EditorialBanners banners={editorialBanners} />
       )}
 
       {/* Special Offers Section - Only render when Sanity data exists */}
@@ -481,31 +481,31 @@ const Index = () => {
 
       {/* Tabbed Product Grid Section - Only render when Sanity data exists */}
       {tabbedProducts.length > 0 && (
-        <TabbedProductGrid
-          products={tabbedProducts}
-          onAdd={handleAddToCart}
-          onViewAll={(category) => {
-            toast({
-              title: isRTL ? "مشاهده همه" : "View All",
-              description: isRTL ? `مشاهده تمام محصولات ${category}` : `Viewing all ${category} products`,
-            });
-          }}
-        />
+      <TabbedProductGrid
+        products={tabbedProducts}
+        onAdd={handleAddToCart}
+        onViewAll={(category) => {
+          toast({
+            title: isRTL ? "مشاهده همه" : "View All",
+            description: isRTL ? `مشاهده تمام محصولات ${category}` : `Viewing all ${category} products`,
+          });
+        }}
+      />
       )}
 
       {/* Social Media Products Grid - Only render when Sanity data exists */}
       {socialMediaProducts.length > 0 && (
-        <SocialMediaProductsGrid
-          products={socialMediaProducts.map((item) => ({
-            id: item.id,
-            title: item.title,
-            image: item.image,
-            price: item.price,
-          }))}
-          onAdd={handleAddToCart}
-          onViewAll={handleViewAllSocial}
-          className="mx-[10px]"
-        />
+      <SocialMediaProductsGrid
+        products={socialMediaProducts.map((item) => ({
+          id: item.id,
+          title: item.title,
+          image: item.image,
+          price: item.price,
+        }))}
+        onAdd={handleAddToCart}
+        onViewAll={handleViewAllSocial}
+        className="mx-[10px]"
+      />
       )}
 
       {/* Collections Banner - Only render when Sanity data exists */}
@@ -532,23 +532,23 @@ const Index = () => {
 
       {/* Courses Carousel - Only render when Sanity data exists */}
       {courses.length > 0 && (
-        <CoursesCarousel
-          courses={courses}
-          onAdd={handleAddToCart}
-          onView={handleViewCourse}
-          onViewAll={handleViewAllCourses}
-          className="mx-[10px]"
-        />
+      <CoursesCarousel
+        courses={courses}
+        onAdd={handleAddToCart}
+        onView={handleViewCourse}
+        onViewAll={handleViewAllCourses}
+        className="mx-[10px]"
+      />
       )}
 
       {/* Blogs Carousel - Only render when Sanity data exists */}
       {magazinePosts.length > 0 && (
-        <BlogsCarousel
-          posts={magazinePosts}
-          onRead={handleReadPost}
-          onViewAll={handleViewMagazine}
-          className="mx-[10px]"
-        />
+      <BlogsCarousel
+        posts={magazinePosts}
+        onRead={handleReadPost}
+        onViewAll={handleViewMagazine}
+        className="mx-[10px]"
+      />
       )}
 
       {/* Footer Trigger Point */}

@@ -122,16 +122,16 @@ export default function Faq() {
   const structuredData =
     faqs.length > 0
       ? {
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
           mainEntity: faqs.slice(0, 12).map((faq) => ({
-            "@type": "Question",
-            name: faq.question,
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: faq.answer,
-            },
-          })),
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
         }
       : null;
 
@@ -145,9 +145,9 @@ export default function Faq() {
         />
         <link rel="canonical" href="https://sharifgpt.ai/faq" />
         {structuredData && (
-          <script type="application/ld+json">
-            {JSON.stringify(structuredData)}
-          </script>
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
         )}
       </Helmet>
 
