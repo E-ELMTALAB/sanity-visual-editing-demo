@@ -159,15 +159,53 @@ const Index = () => {
             console.log('[HOMEPAGE] ⚠️ No categories found in home document');
           }
           
-          // Transform and set featured collections
+          // Transform and set featured collections with products
           if (homeData.featuredCollections && homeData.featuredCollections.length > 0) {
             console.log('[HOMEPAGE] 📋 Raw featured collections data:', homeData.featuredCollections);
-            const transformed = homeData.featuredCollections
+            
+            // Fetch products for each collection
+            const collectionsWithProducts = await Promise.all(
+              homeData.featuredCollections.map(async (fc: any) => {
+                const collection = fc?.collection;
+                if (!collection || !collection.key) return null;
+                
+                const maxProducts = fc.maxProducts || 6;
+                
+                // Fetch products for this collection
+                const productsQuery = `
+                  *[_type == "product" && collectionType == $collectionKey] | order(_createdAt desc)[0...${maxProducts}]{
+                    _id,
+                    name,
+                    "slug": slug.current,
+                    image,
+                    category,
+                    price,
+                    originalPrice,
+                    discountPercentage,
+                    badges
+                  }
+                `;
+                
+                const products = await fetchFromSanity<any[]>(productsQuery, { collectionKey: collection.key }) || [];
+                
+                return {
+                  ...fc,
+                  collection: {
+                    ...collection,
+                    products
+                  }
+                };
+              })
+            );
+            
+            const transformed = collectionsWithProducts
+              .filter(Boolean)
               .map(transformFeaturedCollection)
               .filter(Boolean) // Remove null entries
               .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+            
             setFeaturedCollections(transformed);
-            console.log('[HOMEPAGE] ✅ Featured collections transformed:', transformed);
+            console.log('[HOMEPAGE] ✅ Featured collections with products loaded:', transformed);
           } else {
             console.log('[HOMEPAGE] ⚠️ No featured collections found in home document');
           }

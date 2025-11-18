@@ -68,18 +68,7 @@ export const homePageQuery = `
         key,
         heroTitle,
         heroSubtitle,
-        coverImage,
-        "products": *[_type == "product" && collectionType == ^.key] | order(_createdAt desc)[0...^.^.maxProducts]{
-          _id,
-          name,
-          "slug": slug.current,
-          image,
-          category,
-          price,
-          originalPrice,
-          discountPercentage,
-          badges
-        }
+        coverImage
       }
     },
     
