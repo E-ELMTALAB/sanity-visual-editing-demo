@@ -229,6 +229,58 @@ export function transformCollectionDetail(collection: any) {
   }
 }
 
+export function transformProductDetail(product: any) {
+  const gallery =
+    Array.isArray(product?.gallery) && product.gallery.length > 0
+      ? product.gallery
+          .filter((image: any) => !!image)
+          .map((image: any, index: number) => ({
+            _key: image?._key || image?._id || `gallery-${index}`,
+            url: getImageUrl(image, 1600),
+            alt: image?.alt || product?.name || 'Product image',
+          }))
+      : product?.image
+        ? [
+            {
+              _key: 'primary',
+              url: getImageUrl(product.image, 1600),
+              alt: product?.name || 'Product image',
+            },
+          ]
+        : []
+
+  const variants = Array.isArray(product?.options)
+    ? product.options.map((option: any, index: number) => ({
+        id: option?.id || option?._key || `variant-${index}`,
+        name: option?.name || option?.label || `گزینه ${index + 1}`,
+        price: typeof option?.price === 'number' ? option.price : undefined,
+      }))
+    : []
+
+  return {
+    id: product?._id || '',
+    title: product?.name || '',
+    description: product?.description || '',
+    category: product?.category || '',
+    badges: Array.isArray(product?.badges) ? product.badges : [],
+    price: typeof product?.price === 'number' ? product.price : 0,
+    originalPrice: typeof product?.originalPrice === 'number' ? product.originalPrice : undefined,
+    discountPct: typeof product?.discountPercentage === 'number' ? product.discountPercentage : undefined,
+    rating: typeof product?.rating === 'number' ? product.rating : undefined,
+    reviewCount: typeof product?.reviewCount === 'number' ? product.reviewCount : undefined,
+    inStock: product?.inStock !== false,
+    features: Array.isArray(product?.features) ? product.features : [],
+    gallery,
+    variants,
+    relatedProducts: Array.isArray(product?.relatedProducts)
+      ? product.relatedProducts.map((item: any, index: number) => transformProductListItem(item, index))
+      : [],
+    relatedPosts: Array.isArray(product?.relatedBlogs)
+      ? product.relatedBlogs.map((item: any, index: number) => transformBlogPost(item, index))
+      : [],
+  }
+}
+
 // Transform tabbed product (from Product document)
 export function transformTabbedProduct(product: any, category: string, index: number) {
   return {
