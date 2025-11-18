@@ -25,31 +25,45 @@ function getClient() {
   const visualEditing = isVisualEditing()
   const token = getPreviewToken()
   
-  return createClient({
+  // Validate configuration
+  if (!projectId || projectId === 'placeholder') {
+    console.error('[SANITY] ❌ Invalid projectId:', projectId)
+    throw new Error('Sanity projectId is not configured. Please set VITE_SANITY_PROJECT_ID in your .env file.')
+  }
+  
+  const clientConfig: any = {
     projectId,
     dataset,
     apiVersion,
     // Disable CDN when visual editing is enabled (CDN strips stega metadata)
+    // For normal viewing, use CDN for better performance
     useCdn: !visualEditing,
     // Use previewDrafts perspective when in visual editing to see draft content
     perspective: visualEditing ? 'previewDrafts' : 'published',
-    // Add token if we're in preview mode
-    token: token,
-    ignoreBrowserTokenWarning: !!token,
-    // Stega encoding embeds Content Source Maps in text content (required for Visual Editing)
-    // encodeSourceMap is not needed when using stega.enabled
-    stega: {
-      // Enable stega when visual editing is enabled (embeds metadata in text content)
-      enabled: visualEditing,
+  }
+  
+  // Add token if we're in preview mode
+  if (token) {
+    clientConfig.token = token
+    clientConfig.ignoreBrowserTokenWarning = true
+  }
+  
+  // Stega encoding embeds Content Source Maps in text content (required for Visual Editing)
+  // Only enable stega when visual editing is active
+  if (visualEditing) {
+    clientConfig.stega = {
+      enabled: true,
       studioUrl: '/studio',
       logger: console,
-      filter: (props) => {
+      filter: (props: any) => {
         // Filter out specific fields that shouldn't have overlays
-        if (props.sourcePath.at(0) === 'duration') return false
+        if (props.sourcePath?.at(0) === 'duration') return false
         return props.filterDefault(props)
       },
-    },
-  })
+    }
+  }
+  
+  return createClient(clientConfig)
 }
 
 // Export a client instance that will be used
@@ -66,10 +80,35 @@ export async function fetchFromSanity<T>(query: string, params?: Record<string, 
   try {
     // Use fresh client to ensure visual editing state is current
     const currentClient = getSanityClient()
+    
+    // Log client configuration for debugging
+    const visualEditing = isVisualEditing()
+    console.log('[SANITY] Fetching with config:', {
+      projectId,
+      dataset,
+      apiVersion,
+      useCdn: !visualEditing,
+      perspective: visualEditing ? 'previewDrafts' : 'published',
+      stegaEnabled: visualEditing,
+    })
+    
     const result = await currentClient.fetch<T>(query, params)
+    
+    if (!result) {
+      console.warn('[SANITY] Query returned null/undefined. Query:', query.substring(0, 100) + '...')
+    } else {
+      console.log('[SANITY] ✅ Successfully fetched data:', result)
+    }
+    
     return result
   } catch (error) {
-    console.error('[SANITY] Failed to fetch data:', error)
+    console.error('[SANITY] ❌ Failed to fetch data:', error)
+    if (error instanceof Error) {
+      console.error('[SANITY] Error details:', {
+        message: error.message,
+        stack: error.stack,
+      })
+    }
     return null
   }
 }

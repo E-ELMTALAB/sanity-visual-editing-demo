@@ -129,7 +129,10 @@ const Index = () => {
         
         // Try Home singleton first
         console.log('[HOMEPAGE] Trying home singleton query...');
+        console.log('[HOMEPAGE] Query:', homePageQuery.substring(0, 200) + '...');
         const homeData = await fetchFromSanity<any>(homePageQuery);
+        
+        console.log('[HOMEPAGE] Query result:', homeData ? 'Data received' : 'null/undefined');
         
         if (homeData) {
           console.log('[HOMEPAGE] ✅ Found home singleton data', homeData);
