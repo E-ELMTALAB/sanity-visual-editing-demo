@@ -143,11 +143,12 @@ const Index = () => {
           
           // Transform and set best seller products
           if (homeData.bestSellerProducts && homeData.bestSellerProducts.length > 0) {
+            console.log('[HOMEPAGE] 📋 Raw best seller products:', homeData.bestSellerProducts);
             const transformed = homeData.bestSellerProducts
               .filter((item: any) => item?._id) // Filter out null references
               .map((item: any, i: number) => transformBestSellerProduct(item, i));
             setBestSellerProducts(transformed);
-            console.log('[HOMEPAGE] ✅ Best seller products loaded:', transformed.length);
+            console.log('[HOMEPAGE] ✅ Best seller products transformed:', transformed);
           } else {
             // Fallback: try featured products (only if Home singleton is empty)
             const featuredProducts = await fetchFromSanity<any[]>(featuredProductsQuery);

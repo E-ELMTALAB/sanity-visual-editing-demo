@@ -72,10 +72,12 @@ export function transformBestSellerProduct(product: any, index: number) {
   return {
     id: product?._id || `best-${index}`,
     title: product?.name || 'محصول',
-    image: product?.featuredImage ? getImageUrl(product.featuredImage, 400) : '',
+    image: product?.image ? getImageUrl(product.image, 400) : '',
     oldPrice: undefined, // Prices come from Medusa
     price: 0, // Prices come from Medusa
     badge: product?.badge || undefined,
+    badges: product?.badges || [],
+    slug: product?.slug || '',
   }
 }
 

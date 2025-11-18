@@ -17,13 +17,16 @@ export const homePageQuery = `
     "bestSellerProducts": bestSellerProducts[]{
       _key,
       ...@->{
-      _id,
-      name,
-      slug,
-        image,
-      category,
+        _id,
+        name,
+        slug,
+        image{
+          ...,
+          asset->
+        },
+        category,
         badges,
-      "slug": slug.current
+        "slug": slug.current
       }
     },
     
