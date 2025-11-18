@@ -420,20 +420,20 @@ export default function BlogPost() {
                 </div>
 
                 {(prevPost || nextPost) && (
-                  <div className="grid md:grid-cols-2 gap-4 mt-12 pt-12 border-t border-white/10">
+                <div className="grid md:grid-cols-2 gap-4 mt-12 pt-12 border-t border-white/10">
                     {prevPost && (
                       <Link
                         to={`/blog/${prevPost.slug}`}
                         className="glass border border-white/20 rounded-xl p-6 hover:border-primary/40 transition-all group"
                       >
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                          <ArrowRight className="w-4 h-4" />
-                          <span>مقاله قبلی</span>
-                        </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                      <ArrowRight className="w-4 h-4" />
+                      <span>مقاله قبلی</span>
+                    </div>
                         <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">
                           {prevPost.title}
-                        </h3>
-                      </Link>
+                    </h3>
+                  </Link>
                     )}
 
                     {nextPost && (
@@ -441,16 +441,16 @@ export default function BlogPost() {
                         to={`/blog/${nextPost.slug}`}
                         className="glass border border-white/20 rounded-xl p-6 hover:border-primary/40 transition-all group text-left"
                       >
-                        <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground mb-2">
-                          <span>مقاله بعدی</span>
-                          <ArrowLeft className="w-4 h-4" />
-                        </div>
+                    <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground mb-2">
+                      <span>مقاله بعدی</span>
+                      <ArrowLeft className="w-4 h-4" />
+                    </div>
                         <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">
                           {nextPost.title}
-                        </h3>
-                      </Link>
+                    </h3>
+                  </Link>
                     )}
-                  </div>
+                </div>
                 )}
               </article>
 

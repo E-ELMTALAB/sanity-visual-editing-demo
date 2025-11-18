@@ -39,39 +39,6 @@ export const homePageQuery = `
       order
     },
     
-    // Categories (linked to Collections)
-    categories[]{
-      _key,
-      label,
-      image,
-      order,
-      collection->{
-        _id,
-        title,
-        slug,
-        coverImage,
-        key
-      }
-    },
-    
-    // Featured Collections for Homepage
-    featuredCollections[]{
-      _key,
-      displayTitle,
-      maxProducts,
-      order,
-      collection->{
-        _id,
-        _type,
-        title,
-        "slug": slug.current,
-        key,
-        heroTitle,
-        heroSubtitle,
-        coverImage
-      }
-    },
-    
     // Collections Banner
     collectionsBanner{
       title,

@@ -61,10 +61,10 @@ export function CategoryRail({ categories = fallbackCategories }: CategoryRailPr
       navigate(category.href);
     } else {
       // Fallback to toast notification
-      toast({
-        title: isRTL ? "فیلتر دسته‌بندی" : "Category Filter",
+    toast({
+      title: isRTL ? "فیلتر دسته‌بندی" : "Category Filter",
         description: isRTL ? `محصولات ${category.label} انتخاب شد` : `Filtering by ${category.label}`
-      });
+    });
     }
   };
   return <section className="relative py-8 px-4 md:px-6 lg:px-8 bg-transparent">
