@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,8 @@ interface CategoryItem {
   id: string;
   label: string;
   image: string;
+  slug?: string;
+  href?: string;
 }
 
 const fallbackCategories: CategoryItem[] = [{
@@ -41,6 +44,7 @@ export function CategoryRail({ categories = fallbackCategories }: CategoryRailPr
   const {
     isRTL
   } = useDirection();
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [emblaRef, emblaApi] = useEmblaCarousel({
     direction: isRTL ? "rtl" : "ltr",
@@ -50,12 +54,18 @@ export function CategoryRail({ categories = fallbackCategories }: CategoryRailPr
   });
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
-  const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    toast({
-      title: isRTL ? "فیلتر دسته‌بندی" : "Category Filter",
-      description: isRTL ? `محصولات ${categories.find(c => c.id === categoryId)?.label || categoryId} انتخاب شد` : `Filtering by ${categoryId}`
-    });
+  const handleCategorySelect = (category: CategoryItem) => {
+    setSelectedCategory(category.id);
+    // Navigate to collection page if href is available
+    if (category.href) {
+      navigate(category.href);
+    } else {
+      // Fallback to toast notification
+      toast({
+        title: isRTL ? "فیلتر دسته‌بندی" : "Category Filter",
+        description: isRTL ? `محصولات ${category.label} انتخاب شد` : `Filtering by ${category.label}`
+      });
+    }
   };
   return <section className="relative py-8 px-4 md:px-6 lg:px-8 bg-transparent">
       <div className="max-w-[1100px] mx-auto">
@@ -68,7 +78,7 @@ export function CategoryRail({ categories = fallbackCategories }: CategoryRailPr
             <div className="flex gap-3 sm:gap-4 touch-pan-y py-[5px]">
               {categories.map(category => {
               const isActive = selectedCategory === category.id;
-              return <div key={category.id} onClick={() => handleCategorySelect(category.id)} className={cn("flex-[0_0_auto] w-[180px] sm:w-[200px] cursor-pointer group relative", "rounded-3xl ring-1 overflow-hidden transition-all duration-200", "hover:-translate-y-0.5 active:scale-[0.995]", isActive ? "ring-white/30" : "ring-white/10")}>
+              return <div key={category.id} onClick={() => handleCategorySelect(category)} className={cn("flex-[0_0_auto] w-[180px] sm:w-[200px] cursor-pointer group relative", "rounded-3xl ring-1 overflow-hidden transition-all duration-200", "hover:-translate-y-0.5 active:scale-[0.995]", isActive ? "ring-white/30" : "ring-white/10")}>
                     {/* Image Area */}
                     <div className="relative aspect-square rounded-2xl overflow-hidden">
                       <img src={category.image} alt={category.label} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover ring-1 ring-white/12 shadow-none transition-transform duration-200 group-hover:scale-[1.02]" />

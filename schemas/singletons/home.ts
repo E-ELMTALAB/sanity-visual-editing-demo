@@ -341,7 +341,7 @@ export default defineType({
     defineField({
       name: 'categories',
       title: 'Categories',
-      description: 'Category items displayed in the Category Rail section',
+      description: 'Category items displayed in the Category Rail section - linked to Collections',
       type: 'array',
       validation: (Rule) => Rule.max(10),
       of: [
@@ -350,13 +350,34 @@ export default defineType({
           name: 'category',
           title: 'Category',
           fields: [
-            defineField({ name: 'id', type: 'string', title: 'ID', validation: (Rule) => Rule.required() }),
-            defineField({ name: 'label', type: 'string', title: 'Label (Persian)', validation: (Rule) => Rule.required() }),
-            defineField({ name: 'labelEn', type: 'string', title: 'Label (English)', validation: (Rule) => Rule.required() }),
-            defineField({ name: 'image', type: 'image', title: 'Category Image', options: { hotspot: true }, validation: (Rule) => Rule.required() }),
-            defineField({ name: 'slug', type: 'slug', title: 'Slug', options: { source: 'id', maxLength: 96 } }),
+            defineField({ 
+              name: 'collection', 
+              type: 'reference', 
+              title: 'Collection', 
+              to: [{ type: 'collection' }],
+              validation: (Rule) => Rule.required(),
+              description: 'Link this category to a collection page'
+            }),
+            defineField({ name: 'label', type: 'string', title: 'Custom Label (Optional)', description: 'Override collection title with custom label' }),
+            defineField({ name: 'image', type: 'image', title: 'Custom Image (Optional)', options: { hotspot: true }, description: 'Override collection cover with custom image' }),
             defineField({ name: 'order', type: 'number', title: 'Display Order', initialValue: 0 }),
           ],
+          preview: {
+            select: {
+              title: 'collection.title',
+              customLabel: 'label',
+              media: 'image',
+              collectionImage: 'collection.coverImage',
+              order: 'order',
+            },
+            prepare({ title, customLabel, media, collectionImage, order }) {
+              return {
+                title: customLabel || title || 'Untitled',
+                subtitle: `Order: ${order}`,
+                media: media || collectionImage,
+              }
+            },
+          },
         }),
       ],
       group: 'content',

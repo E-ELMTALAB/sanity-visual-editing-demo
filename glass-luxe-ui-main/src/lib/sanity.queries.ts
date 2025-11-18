@@ -39,15 +39,19 @@ export const homePageQuery = `
       order
     },
     
-    // Categories
+    // Categories (linked to Collections)
     categories[]{
       _key,
-      id,
       label,
-      labelEn,
       image,
-      "slug": slug.current,
-      order
+      order,
+      collection->{
+        _id,
+        title,
+        slug,
+        coverImage,
+        key
+      }
     },
     
     // Collections Banner

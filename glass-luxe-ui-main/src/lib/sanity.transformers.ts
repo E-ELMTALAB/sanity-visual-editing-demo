@@ -95,12 +95,21 @@ export function transformEditorialBanner(banner: any) {
   }
 }
 
-// Transform category
+// Transform category (now linked to collections)
 export function transformCategory(category: any) {
+  const collection = category?.collection
+  const customLabel = category?.label
+  const customImage = category?.image
+  
+  // Use collection slug if available, otherwise fall back to collection key or _id
+  const collectionSlug = collection?.slug?.current || collection?.slug || collection?.key || collection?._id
+  
   return {
-    id: category?.id || category?._key || 'category-1',
-    label: category?.label || '',
-    image: category?.image ? getImageUrl(category.image, 400) : '',
+    id: collection?._id || category?._key || 'category-1',
+    label: customLabel || collection?.title || 'Collection',
+    image: customImage ? getImageUrl(customImage, 400) : (collection?.coverImage ? getImageUrl(collection.coverImage, 400) : ''),
+    slug: collectionSlug,
+    href: collectionSlug ? `/collections/${collectionSlug}` : '#',
   }
 }
 

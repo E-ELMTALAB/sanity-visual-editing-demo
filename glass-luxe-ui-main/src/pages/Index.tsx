@@ -354,10 +354,15 @@ const Index = () => {
   };
 
   const handleCollectionsBanner = () => {
-    toast({
-      title: isRTL ? "کلکسیون‌های سوشیال مدیا" : "Social Media Collections",
-      description: isRTL ? "مشاهده همه کلکسیون‌ها" : "View all collections",
-    });
+    // Navigate to collection if ctaLink is available, otherwise show toast
+    if (collectionsBanner?.ctaLink) {
+      navigate(collectionsBanner.ctaLink);
+    } else {
+      toast({
+        title: isRTL ? "کلکسیون‌های سوشیال مدیا" : "Social Media Collections",
+        description: isRTL ? "مشاهده همه کلکسیون‌ها" : "View all collections",
+      });
+    }
   };
   const handleViewAllEdu = () => {
     toast({
