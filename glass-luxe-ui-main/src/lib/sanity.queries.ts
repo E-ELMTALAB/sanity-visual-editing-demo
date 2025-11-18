@@ -120,30 +120,36 @@ export const homePageQuery = `
       "slug": slug.current
     },
     
-    // Magazine Posts (Blog Posts)
-    magazinePosts[]->{
-      _id,
-      title,
-      slug,
-      excerpt,
-      coverImage,
-      publishedAt,
-      readTime,
-      category,
-      "slug": slug.current
+    // Magazine Posts (Blog Posts) - _key is on the array item, then dereference
+    "magazinePosts": magazinePosts[]{
+      _key,
+      ...@->{
+        _id,
+        title,
+        slug,
+        excerpt,
+        coverImage,
+        publishedAt,
+        readTime,
+        category,
+        "slug": slug.current
+      }
     },
     
-    // Featured Blogs
-    featuredBlogs[]->{
-      _id,
-      title,
-      slug,
-      excerpt,
-      coverImage,
-      publishedAt,
-      readTime,
-      category,
-      "slug": slug.current
+    // Featured Blogs - _key is on the array item, then dereference
+    "featuredBlogs": featuredBlogs[]{
+      _key,
+      ...@->{
+        _id,
+        title,
+        slug,
+        excerpt,
+        coverImage,
+        publishedAt,
+        readTime,
+        category,
+        "slug": slug.current
+      }
     }
   }
 `

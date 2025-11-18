@@ -6,11 +6,21 @@ import { projectId, dataset, apiVersion } from './sanity.config'
 // This function is called each time to get the current state
 function isVisualEditing(): boolean {
   if (typeof window === 'undefined') return false
-  return (
-    window !== window.parent ||
-    !!window.opener ||
-    import.meta.env.VITE_SANITY_VISUAL_EDITING === 'true'
-  )
+  
+  // Check if we're in an iframe (Presentation tool)
+  const inIframe = window !== window.parent || !!window.opener
+  
+  // Check environment variable
+  const envEnabled = import.meta.env.VITE_SANITY_VISUAL_EDITING === 'true'
+  
+  const result = inIframe || envEnabled
+  
+  // Debug logging
+  if (result) {
+    console.log('[SANITY] Visual editing detected:', { inIframe, envEnabled })
+  }
+  
+  return result
 }
 
 // Get preview token from URL if present (set by Presentation tool)
@@ -35,12 +45,12 @@ function getClient() {
     projectId,
     dataset,
     apiVersion,
-    // Disable CDN when visual editing is enabled (CDN strips stega metadata)
     // For normal viewing, use CDN for better performance
+    // Disable CDN when visual editing is enabled (CDN strips stega metadata)
     useCdn: !visualEditing,
-    // Use drafts perspective when in visual editing to see draft content
-    // Note: 'previewDrafts' was renamed to 'drafts' in newer API versions
-    perspective: visualEditing ? 'drafts' : 'published',
+    // Always use 'published' perspective for normal viewing
+    // Only use 'drafts' when explicitly in visual editing mode with token
+    perspective: (visualEditing && token) ? 'drafts' : 'published',
   }
   
   // Add token if we're in preview mode
@@ -84,19 +94,38 @@ export async function fetchFromSanity<T>(query: string, params?: Record<string, 
     
     // Log client configuration for debugging
     const visualEditing = isVisualEditing()
+    const token = getPreviewToken()
+    const actualPerspective = (visualEditing && token) ? 'drafts' : 'published'
+    
     console.log('[SANITY] Fetching with config:', {
       projectId,
       dataset,
       apiVersion,
       useCdn: !visualEditing,
-      perspective: visualEditing ? 'drafts' : 'published',
+      perspective: actualPerspective,
       stegaEnabled: visualEditing,
+      hasToken: !!token,
+      inIframe: typeof window !== 'undefined' && (window !== window.parent || !!window.opener),
     })
     
     const result = await currentClient.fetch<T>(query, params)
     
     if (!result) {
       console.warn('[SANITY] Query returned null/undefined. Query:', query.substring(0, 100) + '...')
+      
+      // Test if we can connect to Sanity at all
+      try {
+        const testResult = await currentClient.fetch<number>('count(*[_type == "home"])')
+        console.log('[SANITY] Test query - home documents count:', testResult)
+        
+        if (testResult === 0) {
+          console.warn('[SANITY] ⚠️ No home documents found in Sanity. Please create a "home" document in Sanity Studio and publish it.')
+        } else {
+          console.warn('[SANITY] ⚠️ Home document exists but query returned null. Check if document is published (not just a draft).')
+        }
+      } catch (testError) {
+        console.error('[SANITY] Test query failed:', testError)
+      }
     } else {
       console.log('[SANITY] ✅ Successfully fetched data:', result)
     }
