@@ -113,6 +113,14 @@ export default defineType({
       group: 'content',
     }),
     defineField({
+      name: 'readTime',
+      title: 'Estimated Read Time (minutes)',
+      type: 'number',
+      description: 'Approximate minutes required to read this post',
+      validation: (rule) => rule.min(1).max(60),
+      group: 'content',
+    }),
+    defineField({
       name: 'category',
       title: 'Category',
       type: 'string',

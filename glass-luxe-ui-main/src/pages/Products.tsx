@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { Header } from "@/components/Header";
@@ -17,6 +17,10 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useDirection } from "@/contexts/DirectionContext";
 import type { CartItem } from "@/components/FloatingDock/CartDrawer";
+import { fetchFromSanity } from "@/lib/sanity.client";
+import { validateSanityConfig } from "@/lib/sanity.config";
+import { allProductsQuery, faqsByPageQuery } from "@/lib/sanity.queries";
+import { transformFaqItem, transformProductListItem } from "@/lib/sanity.transformers";
 
 const springTransition = {
   type: "spring" as const,
@@ -24,140 +28,30 @@ const springTransition = {
   damping: 28,
 };
 
-const PRODUCTS = [
-  {
-    id: "p1",
-    slug: "chatgpt-advanced",
-    title: "پکیج آموزش هوش مصنوعی ChatGPT پیشرفته",
-    image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&auto=format&fit=crop",
-    price: 899000,
-    oldPrice: 1200000,
-    discountPct: 25,
-  },
-  {
-    id: "p2",
-    slug: "python-ml",
-    title: "دوره جامع برنامه‌نویسی Python و یادگیری ماشین",
-    image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop",
-    price: 1499000,
-    oldPrice: 2000000,
-    discountPct: 25,
-  },
-  {
-    id: "p3",
-    slug: "prompt-engineering",
-    title: "کتاب الکترونیکی راهنمای کامل Prompt Engineering",
-    image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=800&auto=format&fit=crop",
-    price: 349000,
-    oldPrice: 450000,
-    discountPct: 22,
-  },
-  {
-    id: "p4",
-    slug: "gpt4-subscription",
-    title: "دسترسی اشتراک ماهانه سرویس GPT-4 Turbo",
-    image: "https://images.unsplash.com/photo-1676277791608-ac52e8e3e322?w=800&auto=format&fit=crop",
-    price: 599000,
-  },
-  {
-    id: "p5",
-    slug: "wordpress-ai-plugin",
-    title: "پلاگین تولید محتوای هوشمند برای وردپرس",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop",
-    price: 299000,
-    oldPrice: 399000,
-    discountPct: 25,
-  },
-  {
-    id: "p6",
-    slug: "data-science",
-    title: "دوره تخصصی Data Science با پروژه‌های واقعی",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop",
-    price: 1799000,
-    oldPrice: 2400000,
-    discountPct: 25,
-  },
-  {
-    id: "p7",
-    slug: "react-dashboard",
-    title: "قالب Dashboard مدیریتی با React و TypeScript",
-    image: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800&auto=format&fit=crop",
-    price: 449000,
-  },
-  {
-    id: "p8",
-    slug: "figma-ui-kit",
-    title: "پکیج طراحی UI/UX با Figma - 100 کامپوننت",
-    image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&auto=format&fit=crop",
-    price: 649000,
-    oldPrice: 850000,
-    discountPct: 24,
-  },
-  {
-    id: "p9",
-    slug: "nextjs-course",
-    title: "آموزش ویدیویی Next.js 14 - پروژه محور",
-    image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&auto=format&fit=crop",
-    price: 999000,
-    oldPrice: 1350000,
-    discountPct: 26,
-  },
-  {
-    id: "p10",
-    slug: "seo-tool",
-    title: "ابزار SEO هوشمند با قابلیت تحلیل رقبا",
-    image: "https://images.unsplash.com/photo-1562577309-4932fdd64cd1?w=800&auto=format&fit=crop",
-    price: 799000,
-  },
-  {
-    id: "p11",
-    slug: "devops-docker",
-    title: "دوره DevOps و CI/CD با Docker و Kubernetes",
-    image: "https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=800&auto=format&fit=crop",
-    price: 1599000,
-    oldPrice: 2100000,
-    discountPct: 24,
-  },
-  {
-    id: "p12",
-    slug: "react-components",
-    title: "کتابخانه کامپوننت React با Tailwind CSS",
-    image: "https://images.unsplash.com/photo-1618761714954-0b8cd0026356?w=800&auto=format&fit=crop",
-    price: 399000,
-  },
-];
+interface ProductListItem {
+  id: string;
+  slug: string;
+  title: string;
+  image: string;
+  price: number;
+  oldPrice?: number;
+  discountPct?: number;
+  category?: string;
+  categorySlug?: string;
+  rating?: number;
+  reviewCount?: number;
+}
 
-const CATEGORIES = [
-  { id: "all", label: "همه محصولات" },
-  { id: "courses", label: "دوره‌های آموزشی" },
-  { id: "ebooks", label: "کتاب‌های الکترونیکی" },
-  { id: "tools", label: "ابزارها و پلاگین‌ها" },
-  { id: "templates", label: "قالب و کامپوننت" },
-  { id: "subscriptions", label: "اشتراک‌ها" },
-];
+interface CategoryButton {
+  id: string;
+  label: string;
+  count: number;
+}
 
-const FAQ_ITEMS = [
-  {
-    q: "چگونه می‌توانم محصولات دیجیتال را خریداری کنم؟",
-    a: "برای خرید محصولات، کافی است روی دکمه 'افزودن به سبد' کلیک کنید و سپس از طریق سبد خرید، فرآیند پرداخت را تکمیل کنید. پس از پرداخت موفق، لینک دانلود محصول برای شما ارسال می‌شود."
-  },
-  {
-    q: "آیا امکان بازگشت وجه وجود دارد؟",
-    a: "بله، در صورتی که محصول خریداری شده مطابق توضیحات نباشد، می‌توانید تا 7 روز پس از خرید، درخواست بازگشت وجه خود را ثبت کنید. تیم پشتیبانی ما درخواست شما را بررسی خواهد کرد."
-  },
-  {
-    q: "آیا دوره‌های آموزشی دارای گواهینامه هستند؟",
-    a: "بله، تمامی دوره‌های آموزشی ما پس از اتمام و گذراندن آزمون نهایی، گواهینامه معتبر دریافت می‌کنند که می‌توانید آن را در رزومه و پروفایل لینکدین خود قرار دهید."
-  },
-  {
-    q: "چگونه می‌توانم با پشتیبانی تماس بگیرم؟",
-    a: "می‌توانید از طریق دکمه پشتیبانی در پایین صفحه، با تیم ما در ارتباط باشید. همچنین می‌توانید از طریق ایمیل support@sharifgpt.ir یا تلگرام با ما در تماس باشید."
-  },
-  {
-    q: "آیا محصولات قابل به‌روزرسانی هستند؟",
-    a: "بله، تمامی محصولات به صورت رایگان به‌روزرسانی می‌شوند و شما به عنوان خریدار، به آخرین نسخه محصول دسترسی خواهید داشت."
-  },
-];
+interface FaqItem {
+  q: string;
+  a: string;
+}
 
 export default function Products() {
   const { isRTL } = useDirection();
@@ -170,11 +64,128 @@ export default function Products() {
     priceRange: "",
     ratingMin: 0,
   });
-  
+  const [products, setProducts] = useState<ProductListItem[]>([]);
+  const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
+  useEffect(() => {
+    const isConfigValid = validateSanityConfig();
+    if (!isConfigValid) {
+      setIsLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadProductsPage() {
+      try {
+        setIsLoading(true);
+        const [productsResult, faqsResult] = await Promise.all([
+          fetchFromSanity<any[]>(allProductsQuery),
+          fetchFromSanity<any[]>(faqsByPageQuery, { page: "products" }),
+        ]);
+
+        if (!isMounted) return;
+
+        const transformedProducts = (productsResult ?? [])
+          .map((item, index) => transformProductListItem(item, index))
+          .filter((item) => item.slug && item.title && item.image);
+
+        const transformedFaqs = (faqsResult ?? [])
+          .map((faq) => transformFaqItem(faq))
+          .filter((faq) => faq.q && faq.a);
+
+        setProducts(transformedProducts);
+        setFaqItems(transformedFaqs);
+        setFetchError(null);
+      } catch (error) {
+        console.error("[PRODUCTS] Failed to fetch Sanity data", error);
+        if (isMounted) {
+          setFetchError("مشکلی در بارگذاری محصولات به وجود آمد");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadProductsPage();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const derivedCategories = useMemo(() => {
+    const map = new Map<string, CategoryButton>();
+    products.forEach((product) => {
+      if (!product.categorySlug || !product.category) return;
+      const current = map.get(product.categorySlug);
+      if (current) {
+        current.count += 1;
+      } else {
+        map.set(product.categorySlug, {
+          id: product.categorySlug,
+          label: product.category,
+          count: 1,
+        });
+      }
+    });
+    return Array.from(map.values());
+  }, [products]);
+
+  const categoryButtons: CategoryButton[] = useMemo(() => {
+    const allLabel = isRTL ? "همه محصولات" : "All Products";
+    return [
+      { id: "all", label: allLabel, count: products.length },
+      ...derivedCategories,
+    ];
+  }, [derivedCategories, isRTL, products.length]);
+
+  const sidebarCategories = useMemo(() => {
+    return derivedCategories.filter((category) => category.id && category.label);
+  }, [derivedCategories]);
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      const matchesActiveCategory =
+        activeCategory === "all" ||
+        product.categorySlug === activeCategory;
+
+      const matchesSidebarCategory =
+        filters.categories.length === 0 ||
+        filters.categories.includes(product.categorySlug || "");
+
+      const matchesPriceRange = (() => {
+        if (!filters.priceRange) return true;
+        if (filters.priceRange.includes("+")) {
+          const min = Number(filters.priceRange.replace("+", "")) || 0;
+          return product.price >= min;
+        }
+        const [minStr, maxStr] = filters.priceRange.split("-");
+        const min = Number(minStr) || 0;
+        const max = Number(maxStr) || Infinity;
+        return product.price >= min && product.price <= max;
+      })();
+
+      const matchesRating =
+        filters.ratingMin === 0 ||
+        (product.rating ?? 0) >= filters.ratingMin;
+
+      return (
+        matchesActiveCategory &&
+        matchesSidebarCategory &&
+        matchesPriceRange &&
+        matchesRating
+      );
+    });
+  }, [products, activeCategory, filters]);
+
   const handleAddToCart = (productId: string) => {
-    const product = PRODUCTS.find((p) => p.id === productId);
+    const product = products.find((p) => p.id === productId);
     if (!product) return;
 
     setCartItems((prev) => {
@@ -323,7 +334,10 @@ export default function Products() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
               {/* Filters Sidebar - Hidden on mobile */}
               <div className="hidden lg:block">
-                <FiltersSidebar onChange={handleFiltersChange} />
+                <FiltersSidebar
+                  onChange={handleFiltersChange}
+                  categories={sidebarCategories}
+                />
               </div>
 
               {/* Products Grid */}
@@ -335,7 +349,7 @@ export default function Products() {
                   transition={{ ...springTransition, delay: 0.1 }}
                   className="flex flex-wrap justify-center lg:justify-start gap-3"
                 >
-                  {CATEGORIES.map((category) => (
+                  {categoryButtons.map((category) => (
                     <Button
                       key={category.id}
                       variant={activeCategory === category.id ? "default" : "outline"}
@@ -355,43 +369,64 @@ export default function Products() {
                   transition={{ ...springTransition, delay: 0.2 }}
                 >
                   <SectionHeader
-                    title={`${PRODUCTS.length} محصول موجود`}
+                    title={
+                      isLoading
+                        ? "در حال بارگذاری محصولات..."
+                        : `${filteredProducts.length} محصول موجود`
+                    }
                     eyebrow="محصولات دیجیتال"
                     className="mb-8"
                   />
 
                   <div className="max-w-sm sm:max-w-none mx-auto">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
-                    {PRODUCTS.map((product, index) => (
-                      <motion.div
-                        key={product.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                          ...springTransition,
-                          delay: 0.3 + index * 0.05,
-                        }}
-                        className="w-full max-w-[280px] mx-auto sm:max-w-none"
-                      >
-                        <ProductCard
-                          id={product.id}
-                          slug={product.slug}
-                          title={product.title}
-                          image={product.image}
-                          price={product.price}
-                          oldPrice={product.oldPrice}
-                          discountPct={product.discountPct}
-                          onAdd={handleAddToCart}
-                          className="[&>div:first-child]:aspect-[4/5] sm:[&>div:first-child]:aspect-[3/4]"
-                        />
-                      </motion.div>
-                    ))}
-                    </div>
+                    {fetchError && !isLoading && (
+                      <p className="text-center text-sm text-destructive mb-6">
+                        {fetchError}
+                      </p>
+                    )}
+                    {isLoading ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-center text-sm text-muted-foreground">
+                        <p className="col-span-full">در حال بارگذاری ...</p>
+                      </div>
+                    ) : filteredProducts.length === 0 ? (
+                      <div className="text-center text-sm text-muted-foreground py-10">
+                        هیچ محصولی مطابق فیلترهای شما یافت نشد.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
+                        {filteredProducts.map((product, index) => (
+                          <motion.div
+                            key={product.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                              ...springTransition,
+                              delay: 0.3 + index * 0.05,
+                            }}
+                            className="w-full max-w-[280px] mx-auto sm:max-w-none"
+                          >
+                            <ProductCard
+                              id={product.id}
+                              slug={product.slug}
+                              title={product.title}
+                              image={product.image}
+                              price={product.price}
+                              oldPrice={product.oldPrice}
+                              discountPct={product.discountPct}
+                              onAdd={handleAddToCart}
+                              className="[&>div:first-child]:aspect-[4/5] sm:[&>div:first-child]:aspect-[3/4]"
+                            />
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
 
                 {/* FAQ Section */}
-                <FaqAccordion items={FAQ_ITEMS} className="mt-16" />
+                {faqItems.length > 0 && (
+                  <FaqAccordion items={faqItems} className="mt-16" />
+                )}
               </div>
             </div>
           </div>

@@ -161,12 +161,17 @@ export const allProductsQuery = `
   *[_type == "product"] | order(_createdAt desc) {
     _id,
     name,
-    slug,
     description,
     image,
     category,
     collectionType,
     badges,
+    price,
+    originalPrice,
+    discountPercentage,
+    rating,
+    reviewCount,
+    inStock,
     "slug": slug.current
   }
 `
@@ -176,10 +181,15 @@ export const featuredProductsQuery = `
   *[_type == "product"] | order(_createdAt desc) [0...8] {
     _id,
     name,
-    slug,
     image,
     category,
     badges,
+    price,
+    originalPrice,
+    discountPercentage,
+    rating,
+    reviewCount,
+    inStock,
     "slug": slug.current
   }
 `
@@ -189,10 +199,15 @@ export const productsByCategoryQuery = `
   *[_type == "product" && category == $category] | order(_createdAt desc) [0...8] {
     _id,
     name,
-    slug,
     image,
     category,
     badges,
+    price,
+    originalPrice,
+    discountPercentage,
+    rating,
+    reviewCount,
+    inStock,
     "slug": slug.current
   }
 `
@@ -251,12 +266,12 @@ export const allPostsQuery = `
   *[_type == "post"] | order(publishedAt desc) {
     _id,
     title,
-    slug,
     excerpt,
     coverImage,
     publishedAt,
     readTime,
     category,
+    author,
     "slug": slug.current
   }
 `
@@ -266,12 +281,12 @@ export const featuredPostsQuery = `
   *[_type == "post"] | order(publishedAt desc) [0...6] {
     _id,
     title,
-    slug,
     excerpt,
     coverImage,
     publishedAt,
     readTime,
     category,
+    author,
     "slug": slug.current
   }
 `
@@ -284,6 +299,185 @@ export const allCollectionsQuery = `
     slug,
     coverImage,
     "slug": slug.current
+  }
+`
+
+export const productBySlugQuery = `
+  *[_type == "product" && slug.current == $slug][0]{
+    _id,
+    name,
+    description,
+    category,
+    collectionType,
+    badges,
+    features,
+    rating,
+    reviewCount,
+    price,
+    originalPrice,
+    discountPercentage,
+    inStock,
+    image,
+    gallery[]{
+      _key,
+      asset->,
+      alt,
+      caption
+    },
+    options[]{
+      _key,
+      id,
+      name,
+      price
+    },
+    relatedProducts[]->{
+      _id,
+      name,
+      category,
+      badges,
+      price,
+      originalPrice,
+      discountPercentage,
+      rating,
+      reviewCount,
+      image,
+      "slug": slug.current
+    },
+    relatedBlogs[]->{
+      _id,
+      title,
+      coverImage,
+      category,
+      publishedAt,
+      readTime,
+      author,
+      "slug": slug.current
+    },
+    "slug": slug.current
+  }
+`
+
+export const postBySlugQuery = `
+  *[_type == "post" && slug.current == $slug][0]{
+    _id,
+    title,
+    author,
+    category,
+    tags,
+    rating,
+    reviewCount,
+    publishedAt,
+    coverImage{
+      ...,
+      asset->
+    },
+    excerpt,
+    body[]{
+      ...,
+      asset->
+    },
+    relatedPosts[]->{
+      _id,
+      title,
+      coverImage,
+      category,
+      publishedAt,
+      readTime,
+      "slug": slug.current
+    },
+    "slug": slug.current
+  }
+`
+
+export const collectionBySlugQuery = `
+  *[_type == "collection" && slug.current == $slug][0]{
+    _id,
+    title,
+    heroTitle,
+    heroSubtitle,
+    coverImage{
+      ...,
+      asset->
+    },
+    key,
+    faq[]{
+      _key,
+      question,
+      answer
+    },
+    "products": *[_type == "product" && collectionType == ^.key] | order(_createdAt desc){
+      _id,
+      name,
+      image,
+      category,
+      badges,
+      price,
+      originalPrice,
+      discountPercentage,
+      rating,
+      reviewCount,
+      inStock,
+      "slug": slug.current
+    },
+    "slug": slug.current
+  }
+`
+
+export const pageBySlugQuery = `
+  *[_type == "page" && slug.current == $slug][0]{
+    _id,
+    title,
+    overview,
+    body[]{
+      ...,
+      asset->
+    },
+    seo,
+    "slug": slug.current
+  }
+`
+
+export const instructorBySlugQuery = `
+  *[_type == "instructor" && slug.current == $slug][0]{
+    _id,
+    name,
+    title,
+    bio,
+    image{
+      ...,
+      asset->
+    },
+    experience,
+    expertise,
+    totalStudents,
+    totalCourses,
+    rating,
+    email,
+    website,
+    socialMedia,
+    "slug": slug.current
+  }
+`
+
+export const faqsByPageQuery = `
+  *[_type == "faq" && isActive == true && defined(pageLocations) && $page in pageLocations] 
+    | order(order asc){
+      _id,
+      question,
+      answer,
+      category,
+      order
+    }
+`
+
+export const allFaqsQuery = `
+  *[_type == "faq" && isActive == true] | order(order asc){
+    _id,
+    question,
+    answer,
+    category,
+    pageLocations,
+    order
   }
 `
 

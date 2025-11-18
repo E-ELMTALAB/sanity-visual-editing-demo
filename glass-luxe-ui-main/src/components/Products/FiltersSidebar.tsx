@@ -27,7 +27,24 @@ interface FiltersSidebarProps {
   className?: string;
 }
 
-const CATEGORIES = [
+interface CategoryOption {
+  id: string;
+  label: string;
+  count?: number;
+}
+
+interface PriceRangeOption {
+  id: string;
+  label: string;
+  value: string;
+}
+
+interface RatingOption {
+  value: number;
+  label: string;
+}
+
+const DEFAULT_CATEGORIES: CategoryOption[] = [
   { id: "all", label: "همه محصولات", count: 12 },
   { id: "ai", label: "هوش مصنوعی", count: 5 },
   { id: "social", label: "سوشیال مدیا", count: 3 },
@@ -36,19 +53,33 @@ const CATEGORIES = [
   { id: "simcard", label: "سیمکارت", count: 1 },
 ];
 
-const PRICE_RANGES = [
+const DEFAULT_PRICE_RANGES: PriceRangeOption[] = [
   { id: "low", label: "زیر 200,000 تومان", value: "0-200000" },
   { id: "mid", label: "200,000 - 300,000 تومان", value: "200000-300000" },
   { id: "high", label: "بالای 300,000 تومان", value: "300000+" },
 ];
 
-const RATING_OPTIONS = [
+const DEFAULT_RATING_OPTIONS: RatingOption[] = [
   { value: 5, label: "5 ستاره و بالاتر" },
   { value: 4, label: "4 ستاره و بالاتر" },
   { value: 3, label: "3 ستاره و بالاتر" },
 ];
 
-export function FiltersSidebar({ onChange, className }: FiltersSidebarProps) {
+interface FiltersSidebarProps {
+  onChange: (filters: FilterState) => void;
+  className?: string;
+  categories?: CategoryOption[];
+  priceRanges?: PriceRangeOption[];
+  ratingOptions?: RatingOption[];
+}
+
+export function FiltersSidebar({
+  onChange,
+  className,
+  categories = DEFAULT_CATEGORIES,
+  priceRanges = DEFAULT_PRICE_RANGES,
+  ratingOptions = DEFAULT_RATING_OPTIONS,
+}: FiltersSidebarProps) {
   const { isRTL } = useDirection();
   const [categoriesOpen, setCategoriesOpen] = useState(true);
   const [priceOpen, setPriceOpen] = useState(true);
@@ -200,7 +231,7 @@ export function FiltersSidebar({ onChange, className }: FiltersSidebarProps) {
       >
         <fieldset className="space-y-3">
           <legend className="sr-only">دسته‌بندی محصولات</legend>
-          {CATEGORIES.map((category) => (
+          {categories.map((category) => (
             <div key={category.id} className="flex items-center gap-3">
               <Checkbox
                 id={`category-${category.id}`}
@@ -216,7 +247,7 @@ export function FiltersSidebar({ onChange, className }: FiltersSidebarProps) {
               >
                 <span className="text-foreground">{category.label}</span>
                 <Badge variant="secondary" className="text-xs">
-                  {category.count}
+                  {category.count ?? 0}
                 </Badge>
               </Label>
             </div>
@@ -237,7 +268,7 @@ export function FiltersSidebar({ onChange, className }: FiltersSidebarProps) {
             onValueChange={handlePriceChange}
             className="space-y-3"
           >
-            {PRICE_RANGES.map((range) => (
+            {priceRanges.map((range) => (
               <div key={range.id} className="flex items-center gap-3">
                 <RadioGroupItem
                   value={range.value}
@@ -269,7 +300,7 @@ export function FiltersSidebar({ onChange, className }: FiltersSidebarProps) {
             onValueChange={handleRatingChange}
             className="space-y-3"
           >
-            {RATING_OPTIONS.map((option) => (
+            {ratingOptions.map((option) => (
               <div key={option.value} className="flex items-center gap-3">
                 <RadioGroupItem
                   value={option.value.toString()}

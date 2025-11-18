@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
@@ -6,119 +6,12 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer/Footer";
 import { ProductCard } from "@/components/Products/ProductCard";
 import { toast } from "sonner";
-import instagramBanner from "@/assets/instagram-banner.png";
+import { FaqAccordion } from "@/components/Products/FaqAccordion";
+import { fetchFromSanity } from "@/lib/sanity.client";
+import { validateSanityConfig } from "@/lib/sanity.config";
+import { collectionBySlugQuery } from "@/lib/sanity.queries";
+import { transformCollectionDetail, transformFaqItem } from "@/lib/sanity.transformers";
 
-// Mock collection data
-const mockCollections = {
-  "instagram": {
-    title: "کلکسیون اینستاگرام",
-    subtitle: "اکانت‌ها و سرویس‌های پرفروش اینستاگرام",
-    cover: instagramBanner,
-    products: [{
-      id: "p1",
-      title: "Instagram Premium",
-      image: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?q=80&w=800",
-      price: 249000,
-      oldPrice: 299000,
-      discountPct: 17
-    }, {
-      id: "p2",
-      title: "Business Suite",
-      image: "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?q=80&w=800",
-      price: 189000
-    }, {
-      id: "p3",
-      title: "Creator Account",
-      image: "https://images.unsplash.com/photo-1611162616475-46b635cb6868?q=80&w=800",
-      price: 159000,
-      oldPrice: 199000,
-      discountPct: 20
-    }, {
-      id: "p4",
-      title: "Professional Tools",
-      image: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=800",
-      price: 279000
-    }, {
-      id: "p5",
-      title: "Analytics Pro",
-      image: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?q=80&w=800",
-      price: 199000,
-      oldPrice: 249000,
-      discountPct: 20
-    }, {
-      id: "p6",
-      title: "Growth Package",
-      image: "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?q=80&w=800",
-      price: 329000
-    }, {
-      id: "p7",
-      title: "Influencer Kit",
-      image: "https://images.unsplash.com/photo-1611162616475-46b635cb6868?q=80&w=800",
-      price: 399000,
-      oldPrice: 499000,
-      discountPct: 20
-    }, {
-      id: "p8",
-      title: "Starter Pack",
-      image: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=800",
-      price: 149000
-    }]
-  },
-  "social-media": {
-    title: "کلکسیون شبکه‌های اجتماعی",
-    subtitle: "بهترین سرویس‌ها برای همه پلتفرم‌ها",
-    cover: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=2000",
-    products: [{
-      id: "s1",
-      title: "Multi-Platform Bundle",
-      image: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?q=80&w=800",
-      price: 449000,
-      oldPrice: 599000,
-      discountPct: 25
-    }, {
-      id: "s2",
-      title: "TikTok Creator",
-      image: "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?q=80&w=800",
-      price: 199000
-    }, {
-      id: "s3",
-      title: "YouTube Premium",
-      image: "https://images.unsplash.com/photo-1611162616475-46b635cb6868?q=80&w=800",
-      price: 179000,
-      oldPrice: 229000,
-      discountPct: 22
-    }, {
-      id: "s4",
-      title: "LinkedIn Pro",
-      image: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=800",
-      price: 299000
-    }, {
-      id: "s5",
-      title: "Twitter Blue",
-      image: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?q=80&w=800",
-      price: 139000
-    }, {
-      id: "s6",
-      title: "Telegram Premium",
-      image: "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?q=80&w=800",
-      price: 89000,
-      oldPrice: 119000,
-      discountPct: 25
-    }, {
-      id: "s7",
-      title: "Pinterest Business",
-      image: "https://images.unsplash.com/photo-1611162616475-46b635cb6868?q=80&w=800",
-      price: 159000
-    }, {
-      id: "s8",
-      title: "Snapchat Plus",
-      image: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=800",
-      price: 99000,
-      oldPrice: 129000,
-      discountPct: 23
-    }]
-  }
-};
 export default function Collection() {
   const {
     slug
@@ -126,7 +19,63 @@ export default function Collection() {
     slug: string;
   }>();
   const [cartCount, setCartCount] = useState(0);
-  const collection = mockCollections[slug as keyof typeof mockCollections] || mockCollections["instagram"];
+  const [collectionData, setCollectionData] = useState<ReturnType<typeof transformCollectionDetail> | null>(null);
+  const [products, setProducts] = useState<ReturnType<typeof transformCollectionDetail>["products"]>([]);
+  const [faqItems, setFaqItems] = useState<{ q: string; a: string }[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const isConfigValid = validateSanityConfig();
+    if (!isConfigValid || !slug) {
+      setIsLoading(false);
+      setFetchError("پیکربندی Sanity کامل نیست یا آدرس نامعتبر است");
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadCollection() {
+      try {
+        setIsLoading(true);
+        const result = await fetchFromSanity<any>(collectionBySlugQuery, { slug });
+        if (!isMounted) return;
+
+        if (!result) {
+          setFetchError("کلکسیون مورد نظر یافت نشد");
+          return;
+        }
+
+        const transformed = transformCollectionDetail(result);
+        setCollectionData(transformed);
+        setProducts(transformed.products);
+        const faqs = Array.isArray(result?.faq)
+          ? result.faq
+              .map((faq: any) => transformFaqItem(faq))
+              .filter((faq: { q: string; a: string }) => faq.q && faq.a)
+          : [];
+        setFaqItems(faqs);
+        setFetchError(null);
+      } catch (error) {
+        console.error("[COLLECTION] Failed to fetch data", error);
+        if (isMounted) {
+          setFetchError("خطا در بارگذاری کلکسیون");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadCollection();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [slug]);
+
+  const collection = collectionData;
   const handleAddToCart = (id: string) => {
     setCartCount(prev => prev + 1);
     toast.success("محصول به سبد خرید اضافه شد");
@@ -137,14 +86,30 @@ export default function Collection() {
   const handleSearch = (query: string) => {
     toast.info(`جستجو برای: ${query}`);
   };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">در حال بارگذاری...</div>
+      </div>
+    );
+  }
+
+  if (!collection) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-muted-foreground">{fetchError ?? "کلکسیون یافت نشد"}</div>
+      </div>
+    );
+  }
+
   return <>
       <Helmet>
-        <title>{collection.title} | شریف‌GPT</title>
-        <meta name="description" content={collection.subtitle} />
+        <title>{collection.heroTitle || collection.title} | شریف‌GPT</title>
+        <meta name="description" content={collection.heroSubtitle || collection.heroTitle} />
         <link rel="canonical" href={`https://sharifgpt.com/collections/${slug}`} />
-        <meta property="og:title" content={collection.title} />
-        <meta property="og:description" content={collection.subtitle} />
-        <meta property="og:image" content={collection.cover} />
+        <meta property="og:title" content={collection.heroTitle || collection.title} />
+        <meta property="og:description" content={collection.heroSubtitle || collection.heroTitle} />
+        {collection.cover && <meta property="og:image" content={collection.cover} />}
         <meta property="og:type" content="website" />
       </Helmet>
 
@@ -200,16 +165,23 @@ export default function Collection() {
                 {/* Glass card with title */}
                 <div className="glass rounded-3xl p-6 md:p-8 border border-white/20">
                   <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-3">
-                    {collection.title}
+                    {collection.heroTitle || collection.title}
                   </h1>
                   <p className="text-lg md:text-xl text-white/80">
-                    {collection.subtitle}
+                    {collection.heroSubtitle}
                   </p>
                 </div>
               </motion.div>
             </div>
           </div>
         </section>
+
+        {faqItems.length > 0 && (
+          <section className="container mx-auto px-4 md:px-6 pb-16">
+            <h2 className="text-2xl font-bold mb-6 text-foreground text-center">سوالات مرتبط</h2>
+            <FaqAccordion items={faqItems} />
+          </section>
+        )}
 
         {/* Products Grid Section */}
         <section className="container mx-auto px-4 md:px-6 py-8 pb-20">
@@ -227,14 +199,14 @@ export default function Collection() {
                 محصولات {collection.title}
               </h2>
               <p className="text-muted-foreground">
-                {collection.products.length} محصول
+                {products.length} محصول
               </p>
             </div>
 
             {/* Products Grid - matching homepage style */}
             <div className="max-w-sm sm:max-w-none mx-auto">
               <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5 lg:gap-6">
-                {collection.products.map((product, index) => <motion.div key={product.id} initial={{
+                {products.map((product, index) => <motion.div key={product.id} initial={{
                 opacity: 0,
                 y: 20
               }} animate={{
@@ -244,13 +216,22 @@ export default function Collection() {
                 duration: 0.4,
                 delay: 0.1 * index
               }} className="w-full max-w-[280px] mx-auto sm:max-w-none">
-                  <ProductCard id={product.id} title={product.title} image={product.image} price={product.price} oldPrice={product.oldPrice} discountPct={product.discountPct} onAdd={handleAddToCart} />
+                  <ProductCard
+                    id={product.id}
+                    title={product.title}
+                    image={product.image}
+                    price={product.price}
+                    oldPrice={product.oldPrice}
+                    discountPct={product.discountPct}
+                    slug={product.slug}
+                    onAdd={handleAddToCart}
+                  />
                 </motion.div>)}
               </div>
             </div>
 
             {/* View All Link */}
-            {collection.products.length > 12 && <motion.div initial={{
+            {products.length > 12 && <motion.div initial={{
             opacity: 0
           }} animate={{
             opacity: 1

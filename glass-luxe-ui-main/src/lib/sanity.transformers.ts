@@ -1,5 +1,61 @@
 import { getImageUrl } from './sanity.image'
 
+function slugifyValue(value?: string) {
+  if (!value) return ''
+  return value
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+}
+
+function portableTextToPlainText(blocks: any): string {
+  if (!Array.isArray(blocks)) return ''
+
+  return blocks
+    .map((block: any) => {
+      if (block?._type !== 'block' || !Array.isArray(block?.children)) {
+        return ''
+      }
+      return block.children.map((child: any) => child?.text || '').join('')
+    })
+    .join(' ')
+    .trim()
+}
+
+export function transformProductListItem(product: any, index: number) {
+  const price = typeof product?.price === 'number' ? product.price : 0
+  const oldPrice = typeof product?.originalPrice === 'number' ? product.originalPrice : undefined
+  const discountPctFromField = typeof product?.discountPercentage === 'number' ? product.discountPercentage : undefined
+  const calculatedDiscount =
+    !discountPctFromField && oldPrice && price
+      ? Math.max(0, Math.round(((oldPrice - price) / oldPrice) * 100))
+      : undefined
+
+  return {
+    id: product?._id || `product-${index}`,
+    slug: product?.slug || product?.slug?.current || '',
+    title: product?.name || 'محصول',
+    image: product?.image ? getImageUrl(product.image, 800) : '',
+    price,
+    oldPrice,
+    discountPct: discountPctFromField ?? calculatedDiscount,
+    category: product?.category || '',
+    categorySlug: slugifyValue(product?.category),
+    badges: Array.isArray(product?.badges) ? product.badges : [],
+    rating: typeof product?.rating === 'number' ? product.rating : 0,
+    reviewCount: typeof product?.reviewCount === 'number' ? product.reviewCount : 0,
+  }
+}
+
+export function transformFaqItem(faq: any) {
+  return {
+    q: faq?.question || '',
+    a: faq?.answer || '',
+  }
+}
+
 // Transform hero slide
 export function transformHeroSlide(slide: any) {
   return {
@@ -121,23 +177,11 @@ export function transformCourse(course: any, index: number) {
 
 // Transform blog post
 export function transformBlogPost(post: any, index: number) {
-  // Extract excerpt text from portable text
-  let excerptText = ''
-  if (post?.excerpt) {
-    if (Array.isArray(post.excerpt)) {
-      excerptText = post.excerpt
-        .map((block: any) => block?.children?.map((child: any) => child?.text || '').join('') || '')
-        .join(' ')
-    } else if (typeof post.excerpt === 'string') {
-      excerptText = post.excerpt
-    }
-  }
-
   return {
     _id: post?._id || `post-${index}`,
     slug: post?.slug || `post-${index}`,
     title: post?.title || 'مقاله',
-    excerpt: excerptText,
+    excerpt: Array.isArray(post?.excerpt) ? portableTextToPlainText(post.excerpt) : post?.excerpt || '',
     readTime: post?.readTime || 5,
     image: {
       asset: {
@@ -146,6 +190,42 @@ export function transformBlogPost(post: any, index: number) {
     },
     category: post?.category || 'tutorials',
     publishedAt: post?.publishedAt || new Date().toISOString(),
+  }
+}
+
+export function transformBlogPostDetail(post: any) {
+  return {
+    _id: post?._id || '',
+    slug: post?.slug || post?.slug?.current || '',
+    title: post?.title || '',
+    cover: post?.coverImage ? getImageUrl(post.coverImage, 1600) : '',
+    author: {
+      name: post?.author || '',
+      avatar: post?.authorAvatar ? getImageUrl(post.authorAvatar, 400) : '',
+    },
+    publishedAt: post?.publishedAt || '',
+    readTime: post?.readTime || 5,
+    tags: Array.isArray(post?.tags) ? post.tags : [],
+    body: Array.isArray(post?.body) ? post.body : [],
+    excerpt: Array.isArray(post?.excerpt) ? portableTextToPlainText(post.excerpt) : post?.excerpt || '',
+    category: post?.category || '',
+  }
+}
+
+export function transformCollectionDetail(collection: any) {
+  return {
+    _id: collection?._id || '',
+    title: collection?.title || '',
+    heroTitle: collection?.heroTitle || collection?.title || '',
+    heroSubtitle: collection?.heroSubtitle || '',
+    cover: collection?.coverImage ? getImageUrl(collection.coverImage, 2000) : '',
+    products: Array.isArray(collection?.products)
+      ? collection.products.map((product: any, index: number) =>
+          transformProductListItem(product, index),
+        )
+      : [],
+    faq: Array.isArray(collection?.faq) ? collection.faq : [],
+    slug: collection?.slug || collection?.slug?.current || '',
   }
 }
 

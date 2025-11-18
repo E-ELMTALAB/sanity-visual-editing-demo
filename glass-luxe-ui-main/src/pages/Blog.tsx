@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer/Footer";
@@ -8,98 +8,17 @@ import { BlogGrid } from "@/components/Blog/BlogGrid";
 import { BlogPost } from "@/components/Blog/BlogCard";
 import { useDirection } from "@/contexts/DirectionContext";
 import { toast } from "@/hooks/use-toast";
-
-// Mock data - replace with Sanity CMS query
-const mockPosts: BlogPost[] = [
-  {
-    _id: "1",
-    title: "راهنمای خرید کارت اعتباری مجازی",
-    slug: "virtual-card-guide",
-    image: {
-      asset: {
-        url: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&h=400&fit=crop",
-      },
-    },
-    excerpt: "همه چیز درباره کارت‌های اعتباری مجازی و نحوه استفاده از آن‌ها برای خریدهای آنلاین",
-    category: "cards",
-    readTime: 5,
-    publishedAt: "2024-03-15",
-  },
-  {
-    _id: "2",
-    title: "آموزش استفاده از ChatGPT Plus",
-    slug: "chatgpt-plus-tutorial",
-    image: {
-      asset: {
-        url: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&h=400&fit=crop",
-      },
-    },
-    excerpt: "راهنمای جامع استفاده از قابلیت‌های پیشرفته ChatGPT Plus",
-    category: "ai-tools",
-    readTime: 8,
-    publishedAt: "2024-03-12",
-  },
-  {
-    _id: "3",
-    title: "بهترین روش‌های خرید اشتراک Spotify",
-    slug: "spotify-subscription-guide",
-    image: {
-      asset: {
-        url: "https://images.unsplash.com/photo-1614680376593-902f74cf0d41?w=600&h=400&fit=crop",
-      },
-    },
-    excerpt: "چگونه اشتراک Spotify Premium را با کمترین قیمت تهیه کنیم",
-    category: "spotify",
-    readTime: 4,
-    publishedAt: "2024-03-10",
-  },
-  {
-    _id: "4",
-    title: "مقایسه سرویس‌های VPN برتر",
-    slug: "vpn-comparison",
-    image: {
-      asset: {
-        url: "https://images.unsplash.com/photo-1563906267088-b029e7101114?w=600&h=400&fit=crop",
-      },
-    },
-    excerpt: "بررسی و مقایسه کامل محبوب‌ترین سرویس‌های VPN در سال 2024",
-    category: "tutorials",
-    readTime: 10,
-    publishedAt: "2024-03-08",
-  },
-  {
-    _id: "5",
-    title: "راهنمای اشتراک YouTube Premium",
-    slug: "youtube-premium-guide",
-    image: {
-      asset: {
-        url: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=600&h=400&fit=crop",
-      },
-    },
-    excerpt: "تمام مزایا و روش‌های خرید اشتراک YouTube Premium",
-    category: "youtube",
-    readTime: 6,
-    publishedAt: "2024-03-05",
-  },
-  {
-    _id: "6",
-    title: "آخرین اخبار دنیای هوش مصنوعی",
-    slug: "ai-news-march-2024",
-    image: {
-      asset: {
-        url: "https://images.unsplash.com/photo-1655720828018-edd2daec9349?w=600&h=400&fit=crop",
-      },
-    },
-    excerpt: "مروری بر آخرین پیشرفت‌های صنعت هوش مصنوعی در ماه گذشته",
-    category: "ai-tools",
-    readTime: 7,
-    publishedAt: "2024-03-01",
-  },
-];
+import { fetchFromSanity } from "@/lib/sanity.client";
+import { validateSanityConfig } from "@/lib/sanity.config";
+import { allPostsQuery } from "@/lib/sanity.queries";
+import { transformBlogPost } from "@/lib/sanity.transformers";
 
 export default function Blog() {
   const { isRTL } = useDirection();
   const [cartCount] = useState(0);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const handleOpenCart = () => {
     toast({
@@ -152,6 +71,47 @@ export default function Blog() {
       }
     }
   };
+
+  useEffect(() => {
+    const isConfigValid = validateSanityConfig();
+    if (!isConfigValid) {
+      setIsLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadPosts() {
+      try {
+        setIsLoading(true);
+        const response = await fetchFromSanity<any[]>(allPostsQuery);
+
+        if (!isMounted) return;
+
+        const transformed = (response ?? [])
+          .map((item, index) => transformBlogPost(item, index))
+          .filter((post) => post.slug && post.title);
+
+        setPosts(transformed);
+        setFetchError(null);
+      } catch (error) {
+        console.error("[BLOG] Failed to fetch posts from Sanity", error);
+        if (isMounted) {
+          setFetchError("خطا در بارگذاری مقالات");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadPosts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <>
@@ -258,12 +218,16 @@ export default function Blog() {
               }
             />
 
+            {fetchError && !isLoading && (
+              <p className="text-sm text-destructive text-center">{fetchError}</p>
+            )}
+
             {/* Blog Grid */}
             <BlogGrid
-              posts={mockPosts}
-              total={mockPosts.length}
-              shown={mockPosts.length}
-              loading={false}
+              posts={posts}
+              total={posts.length}
+              shown={posts.length}
+              loading={isLoading}
             />
           </div>
         </main>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { Search, X, Send } from "lucide-react";
@@ -8,102 +8,79 @@ import { Footer } from "@/components/Footer/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
-import { FaqAccordion } from "@/components/Products/FaqAccordion";
 import { cn } from "@/lib/utils";
+import { fetchFromSanity } from "@/lib/sanity.client";
+import { validateSanityConfig } from "@/lib/sanity.config";
+import { allFaqsQuery } from "@/lib/sanity.queries";
 
-// Categories
-const categories = [
-  { id: "all", label: "همه" },
-  { id: "general", label: "عمومی" },
-  { id: "payment", label: "پرداخت" },
-  { id: "products", label: "محصولات" },
-  { id: "technical", label: "فنی" },
-  { id: "services", label: "خدمات" },
-];
+const categoryLabels: Record<string, string> = {
+  general: "عمومی",
+  payment: "پرداخت",
+  products: "محصولات",
+  technical: "فنی",
+  services: "خدمات",
+};
 
-// Mock FAQ data (would come from Sanity CMS in production)
-const allFaqs = [
-  {
-    question: "چگونه می‌توانم محصول خریداری کنم؟",
-    answer: "برای خرید محصول، کافیست محصول مورد نظر را انتخاب کنید، به سبد خرید اضافه کنید و مراحل پرداخت را تکمیل کنید. پس از پرداخت موفق، لینک دانلود و اطلاعات محصول به ایمیل شما ارسال می‌شود.",
-    category: "general",
-    order: 1,
-  },
-  {
-    question: "روش‌های پرداخت چیست؟",
-    answer: "ما از درگاه‌های پرداخت امن شامل کارت‌های بانکی ایرانی، زرین‌پال و استرایپ پشتیبانی می‌کنیم. همچنین امکان پرداخت اقساطی برای خریدهای بالای ۱ میلیون تومان وجود دارد.",
-    category: "payment",
-    order: 1,
-  },
-  {
-    question: "آیا امکان بازگشت وجه وجود دارد؟",
-    answer: "بله، طبق قوانین تعویض حساب تضمینی ما، در صورت بروز مشکل می‌توانید تا ۷۲ ساعت درخواست تعویض حساب یا بازگشت وجه دهید. شرایط دقیق را در صفحه قوانین تعویض حساب مطالعه کنید.",
-    category: "payment",
-    order: 2,
-  },
-  {
-    question: "چگونه به محصول خریداری شده دسترسی پیدا کنم؟",
-    answer: "پس از خرید، لینک دانلود و اطلاعات دسترسی به ایمیل شما ارسال می‌شود. همچنین می‌توانید از بخش 'سفارش‌های من' در حساب کاربری خود به تمام محصولات خریداری شده دسترسی داشته باشید.",
-    category: "products",
-    order: 1,
-  },
-  {
-    question: "محصولات چه مدت معتبر هستند؟",
-    answer: "تمامی محصولات دیجیتال ما دارای دسترسی نامحدود هستند. اشتراک‌ها و سرویس‌های ماهانه دارای تاریخ انقضا مشخص می‌باشند که در توضیحات محصول قید شده است.",
-    category: "products",
-    order: 2,
-  },
-  {
-    question: "آیا می‌توانم محصول را در چند دستگاه استفاده کنم؟",
-    answer: "بله، می‌توانید با یک حساب کاربری در حداکثر ۳ دستگاه همزمان از محصولات استفاده کنید. برای استفاده در دستگاه‌های بیشتر، نیاز به خرید لایسنس اضافی دارید.",
-    category: "products",
-    order: 3,
-  },
-  {
-    question: "مشکل فنی دارم، چه کنم؟",
-    answer: "برای رفع مشکلات فنی، ابتدا مستندات راهنما را بررسی کنید. اگر مشکل حل نشد، از طریق تلگرام یا ایمیل با تیم پشتیبانی تماس بگیرید. میانگین زمان پاسخ ما کمتر از چند دقیقه است.",
-    category: "technical",
-    order: 1,
-  },
-  {
-    question: "چگونه رمز عبور خود را بازیابی کنم؟",
-    answer: "در صفحه ورود، روی 'فراموشی رمز عبور' کلیک کنید. لینک بازیابی به ایمیل شما ارسال می‌شود. در صورت عدم دریافت ایمیل، پوشه اسپم را بررسی کنید یا با پشتیبانی تماس بگیرید.",
-    category: "technical",
-    order: 2,
-  },
-  {
-    question: "آیا دوره‌های آموزشی گواهینامه دارند؟",
-    answer: "بله، پس از اتمام دوره‌های آموزشی و قبولی در آزمون پایانی، گواهینامه معتبر به شما ارائه می‌شود که قابل مشاهده و دانلود از پنل کاربری است.",
-    category: "services",
-    order: 1,
-  },
-  {
-    question: "مدت زمان پشتیبانی چقدر است؟",
-    answer: "تمامی محصولات دارای پشتیبانی ۶ ماهه رایگان هستند. پس از این مدت، می‌توانید پشتیبانی را با پرداخت هزینه ناچیز تمدید کنید. پشتیبانی شامل رفع مشکلات فنی و پاسخ به سوالات است.",
-    category: "services",
-    order: 2,
-  },
-  {
-    question: "آیا امکان پرداخت اقساطی وجود دارد؟",
-    answer: "بله، برای خریدهای بالای ۱ میلیون تومان، امکان پرداخت در ۳ قسط ماهانه فراهم است. این گزینه در صفحه پرداخت نمایش داده می‌شود و نیاز به احراز هویت دارد.",
-    category: "payment",
-    order: 3,
-  },
-  {
-    question: "چگونه می‌توانم با تیم شما همکاری کنم؟",
-    answer: "برای همکاری و ارائه محتوا، لطفاً رزومه و نمونه کارهای خود را به ایمیل support@sharifgpt.com ارسال کنید. تیم منابع انسانی ما در اسرع وقت با شما تماس خواهد گرفت.",
-    category: "general",
-    order: 2,
-  },
-];
+interface SanityFaq {
+  question: string;
+  answer: string;
+  category?: string;
+  order?: number;
+}
 
 export default function Faq() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [faqs, setFaqs] = useState<SanityFaq[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const isConfigValid = validateSanityConfig();
+    if (!isConfigValid) {
+      setIsLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadFaqs() {
+      try {
+        setIsLoading(true);
+        const result = await fetchFromSanity<any[]>(allFaqsQuery);
+        if (!isMounted) return;
+
+        const transformed = (result ?? []).map((faq) => ({
+          question: faq?.question || "",
+          answer: faq?.answer || "",
+          category: faq?.category || "general",
+          order: typeof faq?.order === "number" ? faq.order : 0,
+        }));
+
+        setFaqs(transformed);
+        setFetchError(null);
+      } catch (error) {
+        console.error("[FAQ] Failed to fetch Sanity data", error);
+        if (isMounted) {
+          setFetchError("خطا در بارگذاری سوالات");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadFaqs();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Filter FAQs based on search and category
   const filteredFaqs = useMemo(() => {
-    let filtered = allFaqs;
+    let filtered = faqs;
 
     // Filter by category
     if (selectedCategory !== "all") {
@@ -120,22 +97,43 @@ export default function Faq() {
       );
     }
 
-    return filtered.map((faq) => ({ q: faq.question, a: faq.answer }));
-  }, [searchQuery, selectedCategory]);
+    return filtered
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map((faq) => ({ q: faq.question, a: faq.answer }));
+  }, [searchQuery, selectedCategory, faqs]);
+
+  const categoryOptions = useMemo(() => {
+    const unique = new Set<string>();
+    faqs.forEach((faq) => {
+      if (faq.category) {
+        unique.add(faq.category);
+      }
+    });
+    return [
+      { id: "all", label: "همه" },
+      ...Array.from(unique).map((id) => ({
+        id,
+        label: categoryLabels[id] || id,
+      })),
+    ];
+  }, [faqs]);
 
   // Prepare JSON-LD with first 12 FAQs
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: allFaqs.slice(0, 12).map((faq) => ({
-      "@type": "Question",
-      name: faq.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: faq.answer,
-      },
-    })),
-  };
+  const structuredData =
+    faqs.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqs.slice(0, 12).map((faq) => ({
+            "@type": "Question",
+            name: faq.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: faq.answer,
+            },
+          })),
+        }
+      : null;
 
   return (
     <>
@@ -146,9 +144,11 @@ export default function Faq() {
           content="پاسخ به سوالات متداول درباره خرید، پرداخت، محصولات و خدمات شریف‌GPT"
         />
         <link rel="canonical" href="https://sharifgpt.ai/faq" />
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
+        {structuredData && (
+          <script type="application/ld+json">
+            {JSON.stringify(structuredData)}
+          </script>
+        )}
       </Helmet>
 
       <div className="min-h-screen flex flex-col">
@@ -204,7 +204,7 @@ export default function Faq() {
               transition={{ delay: 0.1 }}
               className="flex flex-wrap items-center justify-center gap-3"
             >
-              {categories.map((category) => (
+              {categoryOptions.map((category) => (
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
@@ -221,13 +221,21 @@ export default function Faq() {
               ))}
             </motion.section>
 
+            {fetchError && !isLoading && (
+              <p className="text-center text-sm text-destructive">{fetchError}</p>
+            )}
+
             {/* FAQ List */}
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              {filteredFaqs.length > 0 ? (
+              {isLoading ? (
+                <SurfaceGlass className="p-12 text-center max-w-2xl mx-auto">
+                  <p className="text-muted-foreground">در حال بارگذاری سوالات...</p>
+                </SurfaceGlass>
+              ) : filteredFaqs.length > 0 ? (
                 <div className="max-w-3xl mx-auto space-y-4">
                   {filteredFaqs.map((item, index) => (
                     <SurfaceGlass
