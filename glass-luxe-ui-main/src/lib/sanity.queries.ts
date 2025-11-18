@@ -54,6 +54,35 @@ export const homePageQuery = `
       }
     },
     
+    // Featured Collections for Homepage
+    featuredCollections[]{
+      _key,
+      displayTitle,
+      maxProducts,
+      order,
+      collection->{
+        _id,
+        _type,
+        title,
+        "slug": slug.current,
+        key,
+        heroTitle,
+        heroSubtitle,
+        coverImage,
+        "products": *[_type == "product" && collectionType == ^.key] | order(_createdAt desc)[0...^.^.maxProducts]{
+          _id,
+          name,
+          "slug": slug.current,
+          image,
+          category,
+          price,
+          originalPrice,
+          discountPercentage,
+          badges
+        }
+      }
+    },
+    
     // Collections Banner
     collectionsBanner{
       title,

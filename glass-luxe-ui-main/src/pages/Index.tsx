@@ -39,6 +39,7 @@ import {
   transformBlogPost,
   transformTabbedProduct,
   transformCollectionsBanner,
+  transformFeaturedCollection,
 } from "@/lib/sanity.transformers";
 
 // Code splitting for heavy components
@@ -53,6 +54,7 @@ import { EditorialBanners } from "@/components/Products/EditorialBanners";
 import { TabbedProductGrid } from "@/components/Products/TabbedProductGrid";
 import { SocialMediaProductsGrid } from "@/components/Products/SocialMediaProductsGrid";
 import { CollectionsBanner } from "@/components/Products/CollectionsBanner";
+import { ProductCard } from "@/components/Products/ProductCard";
 import { useDirection } from "@/contexts/DirectionContext";
 import { toast } from "@/hooks/use-toast";
 import headphonesPortrait from "@/assets/headphones-portrait.jpg";
@@ -80,6 +82,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [heroSlide, setHeroSlide] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>([]);
+  const [featuredCollections, setFeaturedCollections] = useState<any[]>([]);
   const [bestSellerProducts, setBestSellerProducts] = useState<any[]>([]);
   const [editorialBanners, setEditorialBanners] = useState<any[]>([]);
   const [specialOfferProducts, setSpecialOfferProducts] = useState<any[]>([]);
@@ -146,13 +149,27 @@ const Index = () => {
           
           // Transform and set categories
           if (homeData.categories && homeData.categories.length > 0) {
+            console.log('[HOMEPAGE] 📋 Raw categories data:', homeData.categories);
             const transformed = homeData.categories
               .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
               .map(transformCategory);
             setCategories(transformed);
-            console.log('[HOMEPAGE] ✅ Categories loaded:', transformed.length);
+            console.log('[HOMEPAGE] ✅ Categories transformed:', transformed);
           } else {
-            console.log('[HOMEPAGE] ⚠️ No categories found');
+            console.log('[HOMEPAGE] ⚠️ No categories found in home document');
+          }
+          
+          // Transform and set featured collections
+          if (homeData.featuredCollections && homeData.featuredCollections.length > 0) {
+            console.log('[HOMEPAGE] 📋 Raw featured collections data:', homeData.featuredCollections);
+            const transformed = homeData.featuredCollections
+              .map(transformFeaturedCollection)
+              .filter(Boolean) // Remove null entries
+              .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+            setFeaturedCollections(transformed);
+            console.log('[HOMEPAGE] ✅ Featured collections transformed:', transformed);
+          } else {
+            console.log('[HOMEPAGE] ⚠️ No featured collections found in home document');
           }
           
           // Transform and set best seller products
@@ -269,11 +286,12 @@ const Index = () => {
           
           // Transform and set collections banner
           if (homeData.collectionsBanner) {
+            console.log('[HOMEPAGE] 📋 Raw collections banner data:', homeData.collectionsBanner);
             const transformed = transformCollectionsBanner(homeData.collectionsBanner);
             setCollectionsBanner(transformed);
-            console.log('[HOMEPAGE] ✅ Collections banner loaded');
+            console.log('[HOMEPAGE] ✅ Collections banner transformed:', transformed);
           } else {
-            console.log('[HOMEPAGE] ⚠️ No collections banner found');
+            console.log('[HOMEPAGE] ⚠️ No collections banner found in home document');
           }
           
           console.log('[HOMEPAGE] ✅ All data loaded from home singleton');
@@ -463,6 +481,49 @@ const Index = () => {
 
       {/* Category Rail */}
       <CategoryRail categories={categories.length > 0 ? categories : undefined} />
+
+      {/* Featured Collections - Dynamic sections based on Sanity */}
+      {featuredCollections.length > 0 && featuredCollections.map((collection) => (
+        <section key={collection._key || collection._id} className="py-8 px-4 md:px-6 lg:px-8">
+          <div className="max-w-[1100px] mx-auto">
+            <SectionHeader 
+              title={collection.title}
+              eyebrow={`کلکشن ${collection.title}`}
+              className="mb-8"
+            />
+            {collection.products.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5 lg:gap-6">
+                {collection.products.map((product: any) => (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <ProductCard
+                      {...product}
+                      onAdd={handleAddToCart}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            )}
+            {/* View All Link */}
+            {collection.slug && (
+              <div className="mt-8 text-center">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate(`/collections/${collection.slug}`)}
+                  className="glass border-white/20"
+                >
+                  {isRTL ? 'مشاهده همه محصولات' : 'View All Products'}
+                </Button>
+              </div>
+            )}
+          </div>
+        </section>
+      ))}
 
       {/* Best Sellers Section - Only render when Sanity data exists */}
       {bestSellerProducts.length > 0 && (

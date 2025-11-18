@@ -352,3 +352,33 @@ export function transformCollectionsBanner(banner: any) {
   }
 }
 
+// Transform featured collection with products (for homepage)
+export function transformFeaturedCollection(featuredCollection: any) {
+  const collection = featuredCollection?.collection
+  if (!collection) return null
+  
+  const products = collection.products?.map((product: any) => ({
+    id: product._id || '',
+    title: product.name || '',
+    image: product.image ? getImageUrl(product.image, 600) : '',
+    price: product.price || 0,
+    oldPrice: product.originalPrice || undefined,
+    discountPct: product.discountPercentage || undefined,
+    category: product.category || '',
+    slug: product.slug || '',
+    badges: product.badges || []
+  })) || []
+  
+  return {
+    _id: collection._id,
+    _key: featuredCollection._key,
+    title: featuredCollection.displayTitle || collection.heroTitle || collection.title || 'Collection',
+    slug: collection.slug || '',
+    key: collection.key || '',
+    coverImage: collection.coverImage ? getImageUrl(collection.coverImage, 1200) : '',
+    products,
+    order: featuredCollection.order || 0,
+    maxProducts: featuredCollection.maxProducts || 6,
+  }
+}
+

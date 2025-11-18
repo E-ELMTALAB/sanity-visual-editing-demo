@@ -382,6 +382,69 @@ export default defineType({
       ],
       group: 'content',
     }),
+    // Featured Collections (for homepage display)
+    defineField({
+      name: 'featuredCollections',
+      title: 'Featured Collections',
+      description: 'Select collections to showcase on the homepage with their products',
+      type: 'array',
+      validation: (Rule) => Rule.max(6),
+      of: [
+        defineArrayMember({
+          type: 'object',
+          name: 'featuredCollection',
+          title: 'Featured Collection',
+          fields: [
+            defineField({
+              name: 'collection',
+              title: 'Collection',
+              type: 'reference',
+              to: [{ type: 'collection' }],
+              validation: (Rule) => Rule.required(),
+              options: {
+                disableNew: true,
+              }
+            }),
+            defineField({
+              name: 'displayTitle',
+              title: 'Custom Display Title (Optional)',
+              type: 'string',
+              description: 'Override collection title for homepage display'
+            }),
+            defineField({
+              name: 'maxProducts',
+              title: 'Max Products to Display',
+              type: 'number',
+              initialValue: 6,
+              validation: (Rule) => Rule.min(1).max(12)
+            }),
+            defineField({
+              name: 'order',
+              title: 'Display Order',
+              type: 'number',
+              initialValue: 0,
+              description: 'Order in which this collection section appears on homepage'
+            }),
+          ],
+          preview: {
+            select: {
+              title: 'collection.title',
+              customTitle: 'displayTitle',
+              media: 'collection.coverImage',
+              order: 'order',
+            },
+            prepare({ title, customTitle, media, order }) {
+              return {
+                title: customTitle || title || 'Untitled Collection',
+                subtitle: `Order: ${order}`,
+                media,
+              }
+            },
+          },
+        }),
+      ],
+      group: 'content',
+    }),
     // Collections Banner
     defineField({
       name: 'collectionsBanner',
