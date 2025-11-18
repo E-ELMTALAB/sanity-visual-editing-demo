@@ -38,8 +38,9 @@ function getClient() {
     // Disable CDN when visual editing is enabled (CDN strips stega metadata)
     // For normal viewing, use CDN for better performance
     useCdn: !visualEditing,
-    // Use previewDrafts perspective when in visual editing to see draft content
-    perspective: visualEditing ? 'previewDrafts' : 'published',
+    // Use drafts perspective when in visual editing to see draft content
+    // Note: 'previewDrafts' was renamed to 'drafts' in newer API versions
+    perspective: visualEditing ? 'drafts' : 'published',
   }
   
   // Add token if we're in preview mode
@@ -88,7 +89,7 @@ export async function fetchFromSanity<T>(query: string, params?: Record<string, 
       dataset,
       apiVersion,
       useCdn: !visualEditing,
-      perspective: visualEditing ? 'previewDrafts' : 'published',
+      perspective: visualEditing ? 'drafts' : 'published',
       stegaEnabled: visualEditing,
     })
     

@@ -20,9 +20,9 @@ export const homePageQuery = `
         _id,
         name,
         slug,
-        featuredImage,
+        image,
         category,
-        badge,
+        badges,
         "slug": slug.current
       }
     },
@@ -152,41 +152,41 @@ export const homePageQuery = `
 
 // Query for Product documents (for Best Sellers and Tabbed Products)
 export const allProductsQuery = `
-  *[_type == "product" && isPublished == true] | order(_createdAt desc) {
+  *[_type == "product"] | order(_createdAt desc) {
     _id,
     name,
     slug,
     description,
-    featuredImage,
+    image,
     category,
     collectionType,
-    badge,
+    badges,
     "slug": slug.current
   }
 `
 
 // Query for featured products (best sellers fallback)
 export const featuredProductsQuery = `
-  *[_type == "product" && isPublished == true && isFeatured == true] | order(_createdAt desc) [0...8] {
+  *[_type == "product"] | order(_createdAt desc) [0...8] {
     _id,
     name,
     slug,
-    featuredImage,
+    image,
     category,
-    badge,
+    badges,
     "slug": slug.current
   }
 `
 
 // Query for products by category (for Tabbed Product Grid)
 export const productsByCategoryQuery = `
-  *[_type == "product" && isPublished == true && category == $category] | order(_createdAt desc) [0...8] {
+  *[_type == "product" && category == $category] | order(_createdAt desc) [0...8] {
     _id,
     name,
     slug,
-    featuredImage,
+    image,
     category,
-    badge,
+    badges,
     "slug": slug.current
   }
 `
@@ -242,7 +242,7 @@ export const featuredCoursesQuery = `
 
 // Query for Post documents (Blog posts fallback)
 export const allPostsQuery = `
-  *[_type == "post" && isPublished == true] | order(publishedAt desc) {
+  *[_type == "post"] | order(publishedAt desc) {
     _id,
     title,
     slug,
@@ -257,7 +257,7 @@ export const allPostsQuery = `
 
 // Query for featured posts (fallback)
 export const featuredPostsQuery = `
-  *[_type == "post" && isPublished == true && isFeatured == true] | order(publishedAt desc) [0...6] {
+  *[_type == "post"] | order(publishedAt desc) [0...6] {
     _id,
     title,
     slug,
@@ -272,7 +272,7 @@ export const featuredPostsQuery = `
 
 // Query for Collection documents
 export const allCollectionsQuery = `
-  *[_type == "collection" && isPublished == true] | order(_createdAt desc) {
+  *[_type == "collection"] | order(_createdAt desc) {
     _id,
     title,
     slug,
