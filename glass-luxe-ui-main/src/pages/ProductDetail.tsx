@@ -101,7 +101,7 @@ const ProductDetail = () => {
   const [medusaVariants, setMedusaVariants] = useState<MedusaVariant[]>([]);
   const [pricesLoading, setPricesLoading] = useState(false);
   const [pricesError, setPricesError] = useState<string | null>(null);
-  const { addItem } = useCart();
+  const { addItem, state: cartState } = useCart();
   const stickyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
