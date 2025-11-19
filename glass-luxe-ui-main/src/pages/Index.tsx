@@ -119,157 +119,114 @@ const Index = () => {
 
     async function loadHomepageData() {
       try {
-        console.log('[HOMEPAGE] Fetching data from Sanity...');
         setIsLoading(true);
-        
-        // Try Home singleton first
-        console.log('[HOMEPAGE] Trying home singleton query...');
-        console.log('[HOMEPAGE] Query:', homePageQuery.substring(0, 200) + '...');
-        const homeData = await fetchFromSanity<any>(homePageQuery);
-        
-        console.log('[HOMEPAGE] Query result:', homeData ? 'Data received' : 'null/undefined');
-        
-        if (homeData) {
-          console.log('[HOMEPAGE] ✅ Found home singleton data', homeData);
-          
-          // Transform and set hero slide (use first slide)
-          if (homeData.heroSlides && homeData.heroSlides.length > 0) {
-            const transformed = transformHeroSlide(homeData.heroSlides[0]);
-            setHeroSlide(transformed);
-            console.log('[HOMEPAGE] ✅ Hero slide loaded');
-          } else {
-            console.log('[HOMEPAGE] ⚠️ No hero slides found');
-          }
-          
-          // Transform and set best seller products
-          if (homeData.bestSellerProducts && homeData.bestSellerProducts.length > 0) {
-            console.log('[HOMEPAGE] 📋 Raw best seller products:', homeData.bestSellerProducts);
-            const transformed = homeData.bestSellerProducts
-              .filter((item: any) => item?._id) // Filter out null references
-              .map((item: any, i: number) => transformBestSellerProduct(item, i));
-            setBestSellerProducts(transformed);
-            console.log('[HOMEPAGE] ✅ Best seller products transformed:', transformed);
-          } else {
-            // Fallback: try featured products (only if Home singleton is empty)
-            const featuredProducts = await fetchFromSanity<any[]>(featuredProductsQuery);
-            if (featuredProducts && featuredProducts.length > 0) {
-              const transformed = featuredProducts.map((p: any, i: number) => transformBestSellerProduct(p, i));
-              setBestSellerProducts(transformed);
-              console.log('[HOMEPAGE] ✅ Best seller products loaded from fallback:', transformed.length);
-            } else {
-              console.log('[HOMEPAGE] ⚠️ No best seller products found');
-            }
-          }
-          
-          // Transform and set editorial banners
-          if (homeData.editorialBanners && homeData.editorialBanners.length > 0) {
-            const transformed = homeData.editorialBanners
-              .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
-              .map(transformEditorialBanner);
-            setEditorialBanners(transformed);
-            console.log('[HOMEPAGE] ✅ Editorial banners loaded:', transformed.length);
-          } else {
-            console.log('[HOMEPAGE] ⚠️ No editorial banners found');
-          }
-          
-          // Transform and set special offer products
-          if (homeData.discountedProducts && homeData.discountedProducts.length > 0) {
-            const transformed = homeData.discountedProducts.map((p: any, i: number) => transformSpecialOfferProduct(p, i));
-            setSpecialOfferProducts(transformed);
-            console.log('[HOMEPAGE] ✅ Special offer products loaded:', transformed.length);
-          } else {
-            console.log('[HOMEPAGE] ⚠️ No special offer products found');
-          }
-          
-          // Transform and set social media products
-          if (homeData.socialMediaProducts && homeData.socialMediaProducts.length > 0) {
-            const transformed = homeData.socialMediaProducts.map((p: any, i: number) => transformSocialMediaProduct(p, i));
-            setSocialMediaProducts(transformed);
-            console.log('[HOMEPAGE] ✅ Social media products loaded:', transformed.length);
-          } else {
-            console.log('[HOMEPAGE] ⚠️ No social media products found');
-          }
-          
-          // Transform and set educational products
-          if (homeData.educationalProducts && homeData.educationalProducts.length > 0) {
-            const transformed = homeData.educationalProducts.map((p: any, i: number) => transformEducationalProduct(p, i));
-            setEduProducts(transformed);
-            console.log('[HOMEPAGE] ✅ Educational products loaded:', transformed.length);
-          } else {
-            console.log('[HOMEPAGE] ⚠️ No educational products found');
-          }
-          
-          // Transform and set courses
-          if (homeData.bestsellingCourses && homeData.bestsellingCourses.length > 0) {
-            const transformed = homeData.bestsellingCourses.map((c: any, i: number) => transformCourse(c, i));
-            setCourses(transformed);
-            console.log('[HOMEPAGE] ✅ Courses loaded:', transformed.length);
-          } else {
-            // Fallback: try featured courses
-            const featuredCourses = await fetchFromSanity<any[]>(featuredCoursesQuery);
-            if (featuredCourses && featuredCourses.length > 0) {
-              const transformed = featuredCourses.map((c: any, i: number) => transformCourse(c, i));
-              setCourses(transformed);
-              console.log('[HOMEPAGE] ✅ Courses loaded from fallback:', transformed.length);
-            } else {
-              console.log('[HOMEPAGE] ⚠️ No courses found');
-            }
-          }
-          
-          // Transform and set blog posts (use magazinePosts or featuredBlogs)
-          const blogPosts = homeData.magazinePosts || homeData.featuredBlogs;
-          if (blogPosts && blogPosts.length > 0) {
-            const transformed = blogPosts.map((p: any, i: number) => transformBlogPost(p, i));
-            setMagazinePosts(transformed);
-            console.log('[HOMEPAGE] ✅ Magazine posts loaded:', transformed.length);
-          } else {
-            // Fallback: try featured posts
-            const featuredPosts = await fetchFromSanity<any[]>(featuredPostsQuery);
-            if (featuredPosts && featuredPosts.length > 0) {
-              const transformed = featuredPosts.map((p: any, i: number) => transformBlogPost(p, i));
-              setMagazinePosts(transformed);
-              console.log('[HOMEPAGE] ✅ Magazine posts loaded from fallback:', transformed.length);
-            } else {
-              console.log('[HOMEPAGE] ⚠️ No magazine posts found');
-            }
-          }
-          
-          // Load tabbed products by category (AI, Social, Music, Education, SIM)
-          const categoryMap: Record<string, string> = {
-            'ai': 'ai',
-            'social': 'social-media',
-            'music': 'music',
-            'edu': 'education',
-            'sim': 'sim-card',
-          };
-          
-          const allTabbedProducts: any[] = [];
-          for (const [key, category] of Object.entries(categoryMap)) {
-            const categoryProducts = await fetchFromSanity<any[]>(productsByCategoryQuery, { category });
-            if (categoryProducts && categoryProducts.length > 0) {
-              const transformed = categoryProducts.map((p: any, i: number) => transformTabbedProduct(p, key, i));
-              allTabbedProducts.push(...transformed);
-            }
-          }
-          setTabbedProducts(allTabbedProducts);
-          console.log('[HOMEPAGE] ✅ Tabbed products loaded:', allTabbedProducts.length);
-          
-          // Transform and set collections banner
-          if (homeData.collectionsBanner) {
-            console.log('[HOMEPAGE] 📋 Raw collections banner data:', homeData.collectionsBanner);
-            const transformed = transformCollectionsBanner(homeData.collectionsBanner);
-            setCollectionsBanner(transformed);
-            console.log('[HOMEPAGE] ✅ Collections banner transformed:', transformed);
-          } else {
-            console.log('[HOMEPAGE] ⚠️ No collections banner found in home document');
-          }
-          
-          console.log('[HOMEPAGE] ✅ All data loaded from home singleton');
+
+        const categoryMap: Record<string, string> = {
+          ai: "ai",
+          social: "social-media",
+          music: "music",
+          edu: "education",
+          sim: "sim-card",
+        };
+
+        const [
+          homeData,
+          featuredProductsData,
+          featuredCoursesData,
+          featuredPostsData,
+          tabbedProductGroups,
+        ] = await Promise.all([
+          fetchFromSanity<any>(homePageQuery),
+          fetchFromSanity<any[]>(featuredProductsQuery),
+          fetchFromSanity<any[]>(featuredCoursesQuery),
+          fetchFromSanity<any[]>(featuredPostsQuery),
+          Promise.all(
+            Object.entries(categoryMap).map(async ([key, category]) => {
+              try {
+                const categoryProducts = await fetchFromSanity<any[]>(productsByCategoryQuery, { category });
+                if (!categoryProducts?.length) {
+                  return [];
+                }
+                return categoryProducts.map((p: any, i: number) => transformTabbedProduct(p, key, i));
+              } catch (error) {
+                console.error(`[HOMEPAGE] Failed to fetch category ${category}`, error);
+                return [];
+              }
+            }),
+          ),
+        ]);
+
+        if (homeData?.heroSlides?.length) {
+          setHeroSlide(transformHeroSlide(homeData.heroSlides[0]));
         } else {
-          console.warn('[HOMEPAGE] ⚠️ No home singleton data found, using fallback');
+          setHeroSlide(null);
+        }
+
+        const sanitizedBestSellers = homeData?.bestSellerProducts?.filter((item: any) => item?._id) ?? [];
+        if (sanitizedBestSellers.length) {
+          setBestSellerProducts(sanitizedBestSellers.map((item: any, i: number) => transformBestSellerProduct(item, i)));
+        } else if (featuredProductsData?.length) {
+          setBestSellerProducts(featuredProductsData.map((p: any, i: number) => transformBestSellerProduct(p, i)));
+        } else {
+          setBestSellerProducts([]);
+        }
+
+        if (homeData?.editorialBanners?.length) {
+          const transformed = [...homeData.editorialBanners]
+            .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+            .map(transformEditorialBanner);
+          setEditorialBanners(transformed);
+        } else {
+          setEditorialBanners([]);
+        }
+
+        if (homeData?.discountedProducts?.length) {
+          setSpecialOfferProducts(homeData.discountedProducts.map((p: any, i: number) => transformSpecialOfferProduct(p, i)));
+        } else {
+          setSpecialOfferProducts([]);
+        }
+
+        if (homeData?.socialMediaProducts?.length) {
+          setSocialMediaProducts(homeData.socialMediaProducts.map((p: any, i: number) => transformSocialMediaProduct(p, i)));
+        } else {
+          setSocialMediaProducts([]);
+        }
+
+        if (homeData?.educationalProducts?.length) {
+          setEduProducts(homeData.educationalProducts.map((p: any, i: number) => transformEducationalProduct(p, i)));
+        } else {
+          setEduProducts([]);
+        }
+
+        if (homeData?.bestsellingCourses?.length) {
+          setCourses(homeData.bestsellingCourses.map((c: any, i: number) => transformCourse(c, i)));
+        } else if (featuredCoursesData?.length) {
+          setCourses(featuredCoursesData.map((c: any, i: number) => transformCourse(c, i)));
+        } else {
+          setCourses([]);
+        }
+
+        const blogPostsSource =
+          (homeData?.magazinePosts?.length ? homeData.magazinePosts : undefined) ??
+          (homeData?.featuredBlogs?.length ? homeData.featuredBlogs : undefined) ??
+          featuredPostsData;
+
+        if (blogPostsSource?.length) {
+          setMagazinePosts(blogPostsSource.map((p: any, i: number) => transformBlogPost(p, i)));
+        } else {
+          setMagazinePosts([]);
+        }
+
+        const flattenedTabbedProducts = tabbedProductGroups?.flat() ?? [];
+        setTabbedProducts(flattenedTabbedProducts);
+
+        if (homeData?.collectionsBanner) {
+          setCollectionsBanner(transformCollectionsBanner(homeData.collectionsBanner));
+        } else {
+          setCollectionsBanner(null);
         }
       } catch (error) {
-        console.error('[HOMEPAGE] ❌ Failed to fetch:', error);
+        console.error("[HOMEPAGE] ❌ Failed to fetch:", error);
       } finally {
         setIsLoading(false);
       }

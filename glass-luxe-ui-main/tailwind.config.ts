@@ -75,9 +75,9 @@ export default {
         "2xl": "2rem",     // 32px
       },
       fontFamily: {
-        sans: ["-apple-system", "BlinkMacSystemFont", "SF Pro Text", "SF Pro Display", "system-ui", "sans-serif"],
+        sans: ["Vazirmatn", "sans-serif"],
         vazirmatn: ["Vazirmatn", "sans-serif"],
-        display: ["Inter", "system-ui", "sans-serif"],
+        display: ["Vazirmatn", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {

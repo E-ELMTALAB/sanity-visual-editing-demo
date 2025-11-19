@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,28 +6,35 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { DirectionProvider } from "@/contexts/DirectionContext";
-import Index from "./pages/Index";
-import Products from "./pages/Products";
-import ProductDetail from "./pages/ProductDetail";
-import Blog from "./pages/Blog";
-import Cart from "./pages/Cart";
-import Checkout from "./pages/Checkout";
-import OrderConfirmation from "./pages/OrderConfirmation";
-import RefundPolicy from "./pages/RefundPolicy";
-import Support from "./pages/Support";
-import BlogPost from "./pages/BlogPost";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Faq from "./pages/Faq";
-import NotFound from "./pages/NotFound";
-import Erfan from "./pages/team/Erfan";
-import Amir from "./pages/team/Amir";
-import Collection from "./pages/Collection";
-import Studio from "./pages/Studio";
 import { ScrollToTop } from "./components/ScrollToTop";
 import AppVisualEditing from "./components/visual-editing/VisualEditing";
 
+const Index = lazy(() => import("./pages/Index"));
+const Products = lazy(() => import("./pages/Products"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const Blog = lazy(() => import("./pages/Blog"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
+const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
+const Support = lazy(() => import("./pages/Support"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Faq = lazy(() => import("./pages/Faq"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Erfan = lazy(() => import("./pages/team/Erfan"));
+const Amir = lazy(() => import("./pages/team/Amir"));
+const Collection = lazy(() => import("./pages/Collection"));
+const Studio = lazy(() => import("./pages/Studio"));
+
 const queryClient = new QueryClient();
+
+const RouteFallback = () => (
+  <div className="min-h-screen w-full flex items-center justify-center text-white/80">
+    در حال بارگذاری...
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -56,27 +64,29 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/products/:slug" element={<ProductDetail />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogPost />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/order/confirmation" element={<OrderConfirmation />} />
-              <Route path="/policies/refund-replacement" element={<RefundPolicy />} />
-              <Route path="/support" element={<Support />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/faq" element={<Faq />} />
-              <Route path="/team/erfan" element={<Erfan />} />
-              <Route path="/team/amir" element={<Amir />} />
-              <Route path="/collections/:slug" element={<Collection />} />
-              <Route path="/studio/*" element={<Studio />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <Suspense fallback={<RouteFallback />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/products/:slug" element={<ProductDetail />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogPost />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/order/confirmation" element={<OrderConfirmation />} />
+                <Route path="/policies/refund-replacement" element={<RefundPolicy />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/faq" element={<Faq />} />
+                <Route path="/team/erfan" element={<Erfan />} />
+                <Route path="/team/amir" element={<Amir />} />
+                <Route path="/collections/:slug" element={<Collection />} />
+                <Route path="/studio/*" element={<Studio />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
           </BrowserRouter>
           {/* Visual Editing component for Sanity Studio Presentation tool */}
           <AppVisualEditing />
