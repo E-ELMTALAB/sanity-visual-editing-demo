@@ -18,13 +18,46 @@ export default function PaymentCallback() {
   useEffect(() => {
     const verify = async () => {
       try {
+        // Check for error query params first (from backend redirect)
+        const errorParam = searchParams.get('error');
+        if (errorParam) {
+          setStatus('error');
+          switch (errorParam) {
+            case 'missing_authority':
+              setErrorMessage('کد پرداخت (Authority) یافت نشد');
+              break;
+            case 'missing_cart_id':
+              setErrorMessage('شناسه سبد خرید یافت نشد');
+              break;
+            case 'callback_error':
+              setErrorMessage('خطا در پردازش بازگشت از درگاه پرداخت');
+              break;
+            default:
+              setErrorMessage('خطا در پردازش پرداخت');
+          }
+          return;
+        }
+
         const authority = searchParams.get('Authority');
         const status = searchParams.get('Status');
-        const resourceId = localStorage.getItem('pending_resource_id') || searchParams.get('cart_id');
+        const cartIdFromUrl = searchParams.get('cart_id');
+        const resourceId = localStorage.getItem('pending_resource_id') || cartIdFromUrl;
 
-        if (!authority || !resourceId) {
+        console.log('[PAYMENT-CALLBACK] Authority:', authority);
+        console.log('[PAYMENT-CALLBACK] Status:', status);
+        console.log('[PAYMENT-CALLBACK] cart_id from URL:', cartIdFromUrl);
+        console.log('[PAYMENT-CALLBACK] resourceId from localStorage:', localStorage.getItem('pending_resource_id'));
+        console.log('[PAYMENT-CALLBACK] Final resourceId:', resourceId);
+
+        if (!authority) {
           setStatus('error');
-          setErrorMessage('اطلاعات پرداخت ناقص است');
+          setErrorMessage('کد پرداخت (Authority) یافت نشد');
+          return;
+        }
+
+        if (!resourceId) {
+          setStatus('error');
+          setErrorMessage('شناسه سبد خرید یافت نشد. لطفاً از طریق صفحه سفارشات اقدام کنید.');
           return;
         }
 
