@@ -463,6 +463,7 @@ const Index = () => {
           title={collectionsBanner.title}
           subtitle={collectionsBanner.subtitle}
           image={collectionsBanner.image}
+          imageSrcSet={collectionsBanner.imageSrcSet}
           ctaText={collectionsBanner.ctaText}
         />
       )}

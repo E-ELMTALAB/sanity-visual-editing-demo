@@ -16,6 +16,7 @@ interface CollectionsBannerProps {
   title?: string;
   subtitle?: string;
   image?: string;
+  imageSrcSet?: string;
   ctaText?: string;
 }
 
@@ -31,6 +32,7 @@ export function CollectionsBanner({
   title,
   subtitle,
   image,
+  imageSrcSet,
   ctaText
 }: CollectionsBannerProps) {
   const { isRTL } = useDirection();
@@ -40,7 +42,13 @@ export function CollectionsBanner({
   const bannerSubtitle = subtitle || (isRTL 
     ? "اکانت‌های اینستاگرام، تیک‌تاک، تلگرام و بیشتر" 
     : "Instagram, TikTok, Telegram accounts and more");
-  const bannerImage = image || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=1200&h=800&fit=crop";
+  const FALLBACK_IMAGE_BASE = "https://images.unsplash.com/photo-1611162617474-5b21e879e113";
+  const fallbackWidths = [640, 960, 1280, 1600];
+  const buildFallbackUrl = (width: number) =>
+    `${FALLBACK_IMAGE_BASE}?auto=format&fit=crop&q=70&w=${width}&h=${Math.round(width * (2 / 3))}`;
+  const bannerImage = image || buildFallbackUrl(1280);
+  const bannerImageSrcSet = imageSrcSet || fallbackWidths.map((width) => `${buildFallbackUrl(width)} ${width}w`).join(", ");
+  const bannerImageSizes = "(max-width: 768px) 100vw, 1100px";
   const bannerCtaText = ctaText || (isRTL ? "کشف همه کلکسیون‌ها" : "Discover All Collections");
 
   const platforms = [
@@ -63,8 +71,11 @@ export function CollectionsBanner({
           <div className="absolute inset-0">
             <img
               src={bannerImage}
+              srcSet={bannerImageSrcSet}
+              sizes={bannerImageSizes}
               alt={bannerTitle}
               loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
             {/* Dark overlay gradient */}

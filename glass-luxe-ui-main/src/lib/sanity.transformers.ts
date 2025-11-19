@@ -1,4 +1,4 @@
-import { getImageUrl } from './sanity.image'
+import { buildResponsiveImageSet, getImageUrl, urlForImage } from './sanity.image'
 
 function slugifyValue(value?: string) {
   if (!value) return ''
@@ -58,12 +58,17 @@ export function transformFaqItem(faq: any) {
 
 // Transform hero slide
 export function transformHeroSlide(slide: any) {
+  const responsiveImage = slide?.image
+    ? buildResponsiveImageSet(slide.image, [640, 960, 1280, 1600, 1920], { quality: 70 })
+    : null
+
   return {
     title: slide?.title || '',
     subtitle: slide?.subtitle || '',
     buttonText: slide?.buttonText || '',
     buttonHref: slide?.buttonHref || '#',
-    image: slide?.image ? getImageUrl(slide.image, 1200) : '',
+    image: responsiveImage?.src || (slide?.image ? getImageUrl(slide.image, 1600) : ''),
+    imageSrcSet: responsiveImage?.srcSet,
   }
 }
 
@@ -163,7 +168,7 @@ export function transformCourse(course: any, index: number) {
 
   // Handle instructor (can be string or object)
   let instructorName = 'مدرس'
-  let instructorAvatar = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop'
+  let instructorAvatar = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop&auto=format'
   
   if (typeof course?.instructor === 'string') {
     instructorName = course.instructor
@@ -344,13 +349,18 @@ export function transformTabbedProduct(product: any, category: string, index: nu
 // Transform collections banner
 export function transformCollectionsBanner(banner: any) {
   if (!banner) return null
+
+  const responsiveImage = banner?.image
+    ? buildResponsiveImageSet(banner.image, [640, 960, 1280, 1600], { quality: 70 })
+    : null
   
   return {
     title: banner?.title || '',
     subtitle: banner?.subtitle || '',
-    image: banner?.image ? getImageUrl(banner.image, 1200) : '',
+    image: responsiveImage?.src || (banner?.image ? getImageUrl(banner.image, 1600) : ''),
+    imageSrcSet: responsiveImage?.srcSet,
     ctaText: banner?.ctaText || '',
-    ctaLink: banner?.ctaLink || banner?.featuredCollection?.slug ? `/collections/${banner.featuredCollection.slug}` : '/collections',
+    ctaLink: banner?.ctaLink || (banner?.featuredCollection?.slug ? `/collections/${banner.featuredCollection.slug}` : '/collections'),
   }
 }
 

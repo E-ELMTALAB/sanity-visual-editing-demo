@@ -1,4 +1,5 @@
 import React from "react";
+import { Helmet } from "react-helmet-async";
 import heroBg from "@/assets/hero-ai-cubes.png";
 
 interface HeroSlide {
@@ -7,6 +8,7 @@ interface HeroSlide {
   buttonText?: string;
   buttonHref?: string;
   image?: string;
+  imageSrcSet?: string;
 }
 
 interface ImageHeroProps {
@@ -20,9 +22,25 @@ export default function ImageHero({ slide }: ImageHeroProps) {
   const buttonText = slide?.buttonText || "عضویت در کانال تلگرام";
   const buttonHref = slide?.buttonHref || "https://t.me/SharifGPT";
   const backgroundImage = slide?.image || heroBg;
+  const backgroundSrcSet = slide?.imageSrcSet;
+  const heroSizes = "(max-width: 1024px) 100vw, 1200px";
 
   return (
-    <section dir="rtl"
+    <>
+      <Helmet>
+        <link
+          rel="preload"
+          as="image"
+          href={backgroundImage}
+          {...(backgroundSrcSet
+            ? {
+                imageSrcSet: backgroundSrcSet,
+                imageSizes: heroSizes,
+              }
+            : {})}
+        />
+      </Helmet>
+      <section dir="rtl"
       className="relative min-h-[92vh] w-full overflow-hidden bg-transparent
                  [mask-image:linear-gradient(to_bottom,black_82%,transparent_100%)]
                  [-webkit-mask-image:linear-gradient(to_bottom,black_82%,transparent_100%)]">
@@ -30,7 +48,12 @@ export default function ImageHero({ slide }: ImageHeroProps) {
       {/* Background image layer - left bias on mobile */}
       <img
         src={backgroundImage}
+        srcSet={backgroundSrcSet}
+        sizes={backgroundSrcSet ? heroSizes : undefined}
         alt=""
+        loading="eager"
+        decoding="sync"
+        fetchPriority="high"
         className="absolute inset-0 h-full w-full object-cover
                    object-[20%_50%] md:object-[60%_50%]
                    [filter:brightness(.85)]
@@ -74,6 +97,7 @@ export default function ImageHero({ slide }: ImageHeroProps) {
           <div className="hidden lg:block" />
         </div>
       </div>
-    </section>
+      </section>
+    </>
   );
 }

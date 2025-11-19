@@ -26,3 +26,36 @@ export function getImageUrl(
   return urlBuilder.url() || ''
 }
 
+export function buildResponsiveImageSet(
+  source: SanityImageSource,
+  widths: number[] = [480, 768, 1024, 1440, 1920],
+  options?: { quality?: number }
+) {
+  if (!source) {
+    return { src: '', srcSet: '' }
+  }
+
+  const sortedWidths = [...widths].sort((a, b) => a - b)
+  const quality = options?.quality ?? 70
+
+  const srcSet = sortedWidths
+    .map((width) =>
+      urlForImage(source)
+        .width(width)
+        .quality(quality)
+        .url()
+    )
+    .filter(Boolean)
+    .map((url, index) => `${url} ${sortedWidths[index]}w`)
+    .join(', ')
+
+  const largestWidth = sortedWidths[sortedWidths.length - 1]
+  const src =
+    urlForImage(source)
+      .width(largestWidth)
+      .quality(quality)
+      .url() || ''
+
+  return { src, srcSet }
+}
+
