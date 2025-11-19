@@ -13,6 +13,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
+import { useCart } from "@/contexts/cart-context";
+import { createMedusaCart, initiatePayment } from "@/lib/medusa-cart";
 
 const contactSchema = z.object({
   email: z.string().email({ message: "ایمیل معتبر وارد کنید" }),
@@ -31,13 +33,9 @@ const paymentSchema = z.object({
   }),
 });
 
-const mockCartItems = [
-  { id: "1", title: "دوره جامع React و TypeScript", price: 2500000, quantity: 1 },
-  { id: "2", title: "پکیج آموزشی طراحی UI/UX", price: 1800000, quantity: 1 },
-];
-
 export default function Checkout() {
   const navigate = useNavigate();
+  const { state: cartState, clearCart } = useCart();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [showItems, setShowItems] = useState(true);
@@ -57,16 +55,34 @@ export default function Checkout() {
     cardCvv: string;
     termsAccepted: boolean;
   }>({
-    paymentMethod: "card",
+    paymentMethod: "zarinpal",
     cardNumber: "",
     cardExpiry: "",
     cardCvv: "",
     termsAccepted: false,
   });
 
-  const subtotal = mockCartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cartState.total;
   const discount = 0;
   const total = subtotal - discount;
+
+  // Redirect if cart is empty
+  if (cartState.items.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header onSearch={() => {}} active="checkout" />
+        <main className="flex-1 flex items-center justify-center py-16">
+          <div className="max-w-md w-full text-center">
+            <p className="text-xl mb-4">سبد خرید شما خالی است</p>
+            <Button asChild>
+              <a href="/products">مشاهده محصولات</a>
+            </Button>
+          </div>
+        </main>
+        <Footer links={{ products: "/products", magazine: "/magazine", courses: "/courses", pricing: "/pricing", support: "/support" }} socials={[]} />
+      </div>
+    );
+  }
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +99,22 @@ export default function Checkout() {
 
   const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (cartState.items.length === 0) {
+      toast.error("سبد خرید شما خالی است");
+      return;
+    }
+
+    if (!contactData.email.trim()) {
+      toast.error("لطفاً ایمیل خود را وارد کنید");
+      return;
+    }
+
+    if (!contactData.phone.trim()) {
+      toast.error("لطفاً شماره تلفن خود را وارد کنید");
+      return;
+    }
+
     try {
       const validData = {
         ...paymentData,
@@ -96,16 +128,58 @@ export default function Checkout() {
       paymentSchema.parse(validData);
       
       setIsLoading(true);
-      
-      // Simulate payment processing
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      const orderId = Math.random().toString(36).substring(7).toUpperCase();
-      toast.success("پرداخت با موفقیت انجام شد");
-      navigate(`/order/confirmation?oid=${orderId}`);
-    } catch (error) {
+
+      // Step 1: Create Medusa cart
+      const cartResponse = await createMedusaCart(
+        cartState.items.map(item => ({
+          id: item.id,
+          title: item.title,
+          price: item.price,
+          image: item.image,
+          quantity: item.quantity,
+          selectedOption: item.selectedOption,
+          sanity_slug: item.sanity_slug,
+          variant_id: item.variant_id,
+          option_name: item.option_name,
+        })),
+        contactData.email,
+        contactData.phone
+      );
+
+      if (!cartResponse.success || !cartResponse.cart?.id) {
+        throw new Error(cartResponse.error || 'خطا در ایجاد سبد خرید');
+      }
+
+      const cartId = cartResponse.cart.id;
+
+      // Step 2: Initiate payment
+      const paymentResponse = await initiatePayment(
+        cartId,
+        contactData.email,
+        contactData.phone
+      );
+
+      if (!paymentResponse.success) {
+        throw new Error(paymentResponse.error || 'خطا در شروع پرداخت');
+      }
+
+      // Store cart ID for verification after payment
+      localStorage.setItem('pending_resource_id', cartId);
+      localStorage.setItem('pending_payment_authority', paymentResponse.payment.authority);
+      localStorage.setItem('pending_payment_session_id', paymentResponse.payment.session_id);
+
+      // Redirect to Zarinpal payment gateway
+      if (paymentResponse.payment?.payment_url) {
+        window.location.href = paymentResponse.payment.payment_url;
+      } else {
+        throw new Error('لینک پرداخت دریافت نشد');
+      }
+    } catch (error: any) {
+      console.error('Checkout error:', error);
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
+      } else {
+        toast.error(error.message || 'خطا در پردازش سفارش');
       }
       setIsLoading(false);
     }
@@ -244,99 +318,16 @@ export default function Checkout() {
                       </div>
 
                       <form onSubmit={handlePaymentSubmit} className="space-y-6">
-                        {/* Payment Method Tabs */}
-                        <div className="flex gap-3">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setPaymentData({ ...paymentData, paymentMethod: "card" })
-                            }
-                            className={cn(
-                              "flex-1 glass border rounded-lg p-4 flex items-center justify-center gap-2 transition-all",
-                              paymentData.paymentMethod === "card"
-                                ? "border-primary bg-primary/10"
-                                : "border-white/20 hover:border-white/40"
-                            )}
-                          >
-                            <CreditCard className="w-5 h-5" />
-                            <span className="font-semibold">کارت بانکی</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setPaymentData({ ...paymentData, paymentMethod: "zarinpal" })
-                            }
-                            className={cn(
-                              "flex-1 glass border rounded-lg p-4 flex items-center justify-center gap-2 transition-all",
-                              paymentData.paymentMethod === "zarinpal"
-                                ? "border-primary bg-primary/10"
-                                : "border-white/20 hover:border-white/40"
-                            )}
-                          >
-                            <Wallet className="w-5 h-5" />
-                            <span className="font-semibold">زرین‌پال</span>
-                          </button>
-                        </div>
-
-                        {/* Card Fields */}
-                        {paymentData.paymentMethod === "card" && (
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="cardNumber">شماره کارت</Label>
-                              <Input
-                                id="cardNumber"
-                                type="text"
-                                placeholder="0000 0000 0000 0000"
-                                value={paymentData.cardNumber}
-                                onChange={(e) =>
-                                  setPaymentData({
-                                    ...paymentData,
-                                    cardNumber: e.target.value,
-                                  })
-                                }
-                                className="glass border-white/20"
-                                dir="ltr"
-                              />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="cardExpiry">تاریخ انقضا</Label>
-                                <Input
-                                  id="cardExpiry"
-                                  type="text"
-                                  placeholder="MM/YY"
-                                  value={paymentData.cardExpiry}
-                                  onChange={(e) =>
-                                    setPaymentData({
-                                      ...paymentData,
-                                      cardExpiry: e.target.value,
-                                    })
-                                  }
-                                  className="glass border-white/20"
-                                  dir="ltr"
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="cardCvv">CVV2</Label>
-                                <Input
-                                  id="cardCvv"
-                                  type="text"
-                                  placeholder="000"
-                                  value={paymentData.cardCvv}
-                                  onChange={(e) =>
-                                    setPaymentData({
-                                      ...paymentData,
-                                      cardCvv: e.target.value,
-                                    })
-                                  }
-                                  className="glass border-white/20"
-                                  dir="ltr"
-                                />
-                              </div>
-                            </div>
+                        {/* Payment Method - Only Zarinpal */}
+                        <div className="glass border border-primary/20 rounded-lg p-4 flex items-center gap-3 bg-primary/5">
+                          <Wallet className="w-6 h-6 text-primary" />
+                          <div>
+                            <p className="font-semibold">پرداخت از طریق زرین‌پال</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              پس از کلیک روی پرداخت نهایی، به درگاه پرداخت زرین‌پال هدایت می‌شوید
+                            </p>
                           </div>
-                        )}
+                        </div>
 
                         {/* Terms Checkbox */}
                         <div className="flex items-start gap-2">
@@ -396,18 +387,23 @@ export default function Checkout() {
                       exit={{ height: 0, opacity: 0 }}
                       className="space-y-3 mb-6 overflow-hidden"
                     >
-                      {mockCartItems.map((item) => (
+                      {cartState.items.map((item) => (
                         <div
-                          key={item.id}
+                          key={`${item.id}-${item.selectedOption || ''}`}
                           className="flex items-start gap-3 p-3 glass rounded-lg border border-white/10"
                         >
                           <div className="flex-1">
                             <p className="font-medium text-sm mb-1">{item.title}</p>
+                            {item.selectedOption && (
+                              <p className="text-xs text-muted-foreground mb-1">
+                                {item.selectedOption}
+                              </p>
+                            )}
                             <p className="text-xs text-muted-foreground">
                               تعداد: {item.quantity}
                             </p>
                           </div>
-                          <Price current={item.price} className="text-xs" />
+                          <Price current={item.price * item.quantity} className="text-xs" />
                         </div>
                       ))}
                     </motion.div>

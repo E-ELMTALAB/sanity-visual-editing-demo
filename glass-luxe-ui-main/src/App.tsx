@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { DirectionProvider } from "@/contexts/DirectionContext";
+import { CartProvider } from "@/contexts/cart-context";
 import { ScrollToTop } from "./components/ScrollToTop";
 import AppVisualEditing from "./components/visual-editing/VisualEditing";
 
@@ -27,6 +28,7 @@ const Erfan = lazy(() => import("./pages/team/Erfan"));
 const Amir = lazy(() => import("./pages/team/Amir"));
 const Collection = lazy(() => import("./pages/Collection"));
 const Studio = lazy(() => import("./pages/Studio"));
+const PaymentCallback = lazy(() => import("./pages/PaymentCallback"));
 
 const queryClient = new QueryClient();
 
@@ -40,7 +42,8 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <HelmetProvider>
       <DirectionProvider>
-        <TooltipProvider>
+        <CartProvider>
+          <TooltipProvider>
           {/* Global Unified Background */}
           <div id="unified-bg" className="fixed inset-0 -z-50 pointer-events-none" />
           <style>{`
@@ -73,6 +76,7 @@ const App = () => (
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/payment/callback" element={<PaymentCallback />} />
                 <Route path="/order/confirmation" element={<OrderConfirmation />} />
                 <Route path="/policies/refund-replacement" element={<RefundPolicy />} />
                 <Route path="/support" element={<Support />} />
@@ -91,6 +95,7 @@ const App = () => (
           {/* Visual Editing component for Sanity Studio Presentation tool */}
           <AppVisualEditing />
         </TooltipProvider>
+        </CartProvider>
       </DirectionProvider>
     </HelmetProvider>
   </QueryClientProvider>

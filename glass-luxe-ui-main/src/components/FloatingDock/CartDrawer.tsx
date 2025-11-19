@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -7,39 +8,47 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Price } from "@/components/ui/price";
 import { cn } from "@/lib/utils";
 import { useDirection } from "@/contexts/DirectionContext";
-
-export interface CartItem {
-  id: string;
-  title: string;
-  image: string;
-  price: number;
-  qty: number;
-  type?: "product" | "course";
-}
+import { useCart } from "@/contexts/cart-context";
 
 interface CartDrawerProps {
   open: boolean;
   onClose: () => void;
-  items: CartItem[];
-  onUpdateQty: (id: string, qty: number) => void;
-  onRemoveItem: (id: string) => void;
-  onCheckout: () => void;
 }
 
 export function CartDrawer({
   open,
   onClose,
-  items,
-  onUpdateQty,
-  onRemoveItem,
-  onCheckout,
 }: CartDrawerProps) {
   const { direction } = useDirection();
+  const { state, updateQuantity, removeItem } = useCart();
+  const navigate = useNavigate();
   const isRTL = direction === "rtl";
 
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const items = state.items.map(item => ({
+    id: item.id.toString(),
+    title: item.title,
+    image: item.image,
+    price: item.price,
+    qty: item.quantity,
+    selectedOption: item.selectedOption,
+  }));
+
+  const subtotal = state.total;
   const shipping = subtotal > 500000 ? 0 : 50000;
   const total = subtotal + shipping;
+
+  const handleUpdateQty = (id: string, qty: number) => {
+    updateQuantity(parseInt(id), qty);
+  };
+
+  const handleRemoveItem = (id: string) => {
+    removeItem(parseInt(id));
+  };
+
+  const handleCheckout = () => {
+    onClose();
+    navigate("/checkout");
+  };
 
   return (
     <Drawer open={open} onOpenChange={onClose} direction={isRTL ? "left" : "right"}>
@@ -111,8 +120,13 @@ export function CartDrawer({
                         <h4 className="text-sm font-medium text-foreground mb-1 truncate">
                           {item.title}
                         </h4>
+                        {item.selectedOption && (
+                          <p className="text-xs text-muted-foreground mb-1">
+                            {item.selectedOption}
+                          </p>
+                        )}
                         <Price
-                          current={item.price}
+                          current={item.price * item.qty}
                           className="text-sm text-primary mb-2"
                         />
                         <div className="flex items-center gap-2">
@@ -121,7 +135,7 @@ export function CartDrawer({
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7"
-                              onClick={() => onUpdateQty(item.id, Math.max(1, item.qty - 1))}
+                              onClick={() => handleUpdateQty(item.id, Math.max(1, item.qty - 1))}
                             >
                               <Minus className="w-3 h-3" />
                             </Button>
@@ -132,7 +146,7 @@ export function CartDrawer({
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7"
-                              onClick={() => onUpdateQty(item.id, item.qty + 1)}
+                              onClick={() => handleUpdateQty(item.id, item.qty + 1)}
                             >
                               <Plus className="w-3 h-3" />
                             </Button>
@@ -141,7 +155,7 @@ export function CartDrawer({
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => onRemoveItem(item.id)}
+                            onClick={() => handleRemoveItem(item.id)}
                           >
                             <Trash2 className="w-3 h-3" />
                           </Button>
@@ -181,7 +195,7 @@ export function CartDrawer({
                 >
                   ادامه خرید
                 </Button>
-                <Button onClick={onCheckout} className="flex-1">
+                <Button onClick={handleCheckout} className="flex-1">
                   تسویه حساب
                 </Button>
               </div>

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
@@ -18,45 +18,55 @@ import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { Price } from "@/components/ui/price";
 import { toast } from "sonner";
 
-const mockOrderItems = [
-  {
-    id: "1",
-    title: "دوره جامع React و TypeScript",
-    price: 2500000,
-    quantity: 1,
-    thumbnail: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=200&h=200&fit=crop",
-    hasLicense: true,
-    licenseKey: "REACT-TS-2024-ABC123XYZ",
-    productUrl: "/product/react-typescript-course",
-  },
-  {
-    id: "2",
-    title: "پکیج آموزشی طراحی UI/UX",
-    price: 1800000,
-    quantity: 1,
-    thumbnail: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=200&h=200&fit=crop",
-    hasLicense: true,
-    licenseKey: "UIUX-DESIGN-2024-DEF456ABC",
-    productUrl: "/product/ui-ux-design-package",
-  },
-];
+interface OrderItem {
+  id: string;
+  title: string;
+  quantity: number;
+}
 
 export default function OrderConfirmation() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const orderId = searchParams.get("oid");
+  const [orderData, setOrderData] = useState<{
+    ref_id?: string;
+    amount?: number;
+    currency_code?: string;
+    items?: OrderItem[];
+  } | null>(null);
 
   useEffect(() => {
     if (!orderId) {
-      navigate("/");
+      // Try to get order data from localStorage (set by PaymentCallback)
+      const storedData = localStorage.getItem('last_order_data');
+      if (storedData) {
+        try {
+          setOrderData(JSON.parse(storedData));
+        } catch (e) {
+          console.error('Error parsing order data:', e);
+        }
+      } else {
+        navigate("/");
+      }
+    } else {
+      // If orderId is provided, try to get data from localStorage
+      const storedData = localStorage.getItem('last_order_data');
+      if (storedData) {
+        try {
+          setOrderData(JSON.parse(storedData));
+        } catch (e) {
+          console.error('Error parsing order data:', e);
+        }
+      }
     }
   }, [orderId, navigate]);
 
-  const subtotal = mockOrderItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const discount = 300000;
+  const refId = orderData?.ref_id || orderId || 'N/A';
+  const amount = orderData?.amount || 0;
+  const currencyCode = orderData?.currency_code || 'IRR';
+  const orderItems = orderData?.items || [];
+  const subtotal = amount;
+  const discount = 0;
   const total = subtotal - discount;
 
   const orderDate = new Date();
@@ -117,7 +127,7 @@ export default function OrderConfirmation() {
                       شماره سفارش
                     </p>
                     <p className="font-bold" dir="ltr">
-                      #{orderId}
+                      #{refId}
                     </p>
                   </div>
                   <div>
@@ -133,18 +143,9 @@ export default function OrderConfirmation() {
                       کد پیگیری
                     </p>
                     <p className="font-bold text-sm" dir="ltr">
-                      PAY-{orderId?.slice(0, 6)}
+                      {refId}
                     </p>
                   </div>
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-white/10">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    ایمیل تایید ارسال شد به:
-                  </p>
-                  <p className="font-semibold" dir="ltr">
-                    user@example.com
-                  </p>
                 </div>
 
                 <Button
@@ -165,75 +166,30 @@ export default function OrderConfirmation() {
               {/* A) Order Items Section */}
               <SurfaceGlass className="p-6">
                 <h2 className="text-2xl font-bold mb-6">محصولات خریداری شده</h2>
-                <div className="space-y-4">
-                  {mockOrderItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="glass border border-white/20 rounded-xl p-4"
-                    >
-                      <div className="flex gap-4">
-                        {/* Thumbnail */}
-                        <div className="shrink-0">
-                          <img
-                            src={item.thumbnail}
-                            alt={item.title}
-                            className="w-20 h-20 rounded-lg object-cover ring-1 ring-white/12"
-                          />
-                        </div>
-
-                        {/* Details */}
-                        <div className="flex-1">
-                          <h3 className="font-bold text-lg mb-2">
-                            {item.title}
-                          </h3>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-                            <span>تعداد: {item.quantity}</span>
-                            <Price current={item.price} className="text-sm" />
-                          </div>
-
-                          {/* Action Buttons */}
-                          <div className="flex flex-wrap gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="gap-2"
-                              asChild
-                            >
-                              <Link to={item.productUrl}>
-                                <ExternalLink className="w-4 h-4" />
-                                مشاهده محصول
-                              </Link>
-                            </Button>
-
-                            {item.hasLicense && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="gap-2"
-                                onClick={() => copyLicense(item.licenseKey)}
-                              >
-                                <Copy className="w-4 h-4" />
-                                کپی لایسنس
-                              </Button>
-                            )}
-                          </div>
-
-                          {/* License Display */}
-                          {item.hasLicense && (
-                            <div className="mt-3 p-3 glass rounded-lg">
-                              <p className="text-xs text-muted-foreground mb-1">
-                                کلید لایسنس:
-                              </p>
-                              <code className="text-sm font-mono">
-                                {item.licenseKey}
-                              </code>
+                {orderItems.length > 0 ? (
+                  <div className="space-y-4">
+                    {orderItems.map((item, index) => (
+                      <div
+                        key={item.id || index}
+                        className="glass border border-white/20 rounded-xl p-4"
+                      >
+                        <div className="flex gap-4">
+                          {/* Details */}
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg mb-2">
+                              {item.title}
+                            </h3>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <span>تعداد: {item.quantity}</span>
                             </div>
-                          )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">جزئیات محصولات در دسترس نیست</p>
+                )}
               </SurfaceGlass>
 
               {/* B) Payment Summary Section */}
@@ -264,11 +220,16 @@ export default function OrderConfirmation() {
 
                   <div className="pt-4 mt-4 border-t border-white/10">
                     <p className="text-sm text-muted-foreground">
-                      روش پرداخت: کارت بانکی
+                      روش پرداخت: زرین‌پال
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
                       وضعیت: پرداخت موفق ✓
                     </p>
+                    {refId && refId !== 'N/A' && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        کد پیگیری: {refId}
+                      </p>
+                    )}
                   </div>
                 </div>
               </SurfaceGlass>

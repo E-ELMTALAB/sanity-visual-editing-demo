@@ -45,13 +45,14 @@ const Footer = lazy(() => import("@/components/Footer/Footer").then((m) => ({ de
 const FloatingDock = lazy(() =>
   import("@/components/FloatingDock/FloatingDock").then((m) => ({ default: m.FloatingDock })),
 );
-import { CartDrawer, CartItem } from "@/components/FloatingDock/CartDrawer";
+import { CartDrawer } from "@/components/FloatingDock/CartDrawer";
 import { BestSellers } from "@/components/Products/BestSellers";
 import { EditorialBanners } from "@/components/Products/EditorialBanners";
 import { TabbedProductGrid } from "@/components/Products/TabbedProductGrid";
 import { SocialMediaProductsGrid } from "@/components/Products/SocialMediaProductsGrid";
 import { CollectionsBanner } from "@/components/Products/CollectionsBanner";
 import { useDirection } from "@/contexts/DirectionContext";
+import { useCart } from "@/contexts/cart-context";
 import { toast } from "@/hooks/use-toast";
 import headphonesPortrait from "@/assets/headphones-portrait.jpg";
 import smartwatchPortrait from "@/assets/smartwatch-portrait.jpg";
@@ -70,8 +71,8 @@ const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showFooter, setShowFooter] = useState(false);
+  const { state: cartState } = useCart();
   const footerTriggerRef = useRef<HTMLDivElement>(null);
   
   // Sanity data state
@@ -541,7 +542,7 @@ const Index = () => {
           onOpenChat={() => setChatOpen(true)}
           onOpenSupport={() => setSupportOpen(true)}
           onOpenCart={() => setCartOpen(true)}
-          cartItemCount={cartItems.reduce((sum, item) => sum + item.qty, 0)}
+          cartItemCount={cartState.itemCount}
         />
       </Suspense>
 
@@ -552,32 +553,6 @@ const Index = () => {
       <CartDrawer
         open={cartOpen}
         onClose={() => setCartOpen(false)}
-        items={cartItems}
-        onUpdateQty={(id, qty) => {
-          setCartItems((items) =>
-            items.map((item) =>
-              item.id === id
-                ? {
-                    ...item,
-                    qty,
-                  }
-                : item,
-            ),
-          );
-        }}
-        onRemoveItem={(id) => {
-          setCartItems((items) => items.filter((item) => item.id !== id));
-          toast({
-            title: isRTL ? "محصول حذف شد" : "Item Removed",
-            description: isRTL ? "محصول از سبد خرید شما حذف شد." : "Item removed from cart.",
-          });
-        }}
-        onCheckout={() => {
-          toast({
-            title: isRTL ? "در حال انتقال به صفحه پرداخت" : "Redirecting to Checkout",
-            description: isRTL ? "لطفاً منتظر بمانید..." : "Please wait...",
-          });
-        }}
       />
     </div>
   );

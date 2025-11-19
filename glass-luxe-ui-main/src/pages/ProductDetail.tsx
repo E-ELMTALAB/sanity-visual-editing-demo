@@ -13,17 +13,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FaqAccordion } from "@/components/Products/FaqAccordion";
 import { FloatingDock } from "@/components/FloatingDock/FloatingDock";
-import { CartDrawer, CartItem } from "@/components/FloatingDock/CartDrawer";
+import { CartDrawer } from "@/components/FloatingDock/CartDrawer";
 import { ChatbotPanel } from "@/components/FloatingDock/ChatbotPanel";
 import { SupportPanel } from "@/components/FloatingDock/SupportPanel";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { useDirection } from "@/contexts/DirectionContext";
+import { useCart } from "@/contexts/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { fetchFromSanity } from "@/lib/sanity.client";
 import { validateSanityConfig } from "@/lib/sanity.config";
 import { productBySlugQuery, faqsByPageQuery } from "@/lib/sanity.queries";
 import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";
+import { fetchProductPrices, type MedusaVariant } from "@/lib/medusa-prices";
 const springTransition = {
   type: "spring" as const,
   stiffness: 220,
@@ -91,12 +93,15 @@ const ProductDetail = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [tocOpen, setTocOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
   const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [medusaVariants, setMedusaVariants] = useState<MedusaVariant[]>([]);
+  const [pricesLoading, setPricesLoading] = useState(false);
+  const [pricesError, setPricesError] = useState<string | null>(null);
+  const { addItem } = useCart();
   const stickyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -172,13 +177,56 @@ const ProductDetail = () => {
       isMounted = false;
     };
   }, []);
+
+  // Fetch prices from Medusa backend
+  useEffect(() => {
+    const fetchPrices = async () => {
+      if (!product?.handle && !slug) return;
+      
+      const productSlug = product?.handle || slug;
+      if (!productSlug) return;
+      
+      try {
+        setPricesLoading(true);
+        const prices = await fetchProductPrices([productSlug]);
+        const productPrices = prices[productSlug];
+        
+        if (productPrices?.variants?.length > 0) {
+          setMedusaVariants(productPrices.variants);
+          setPricesError(null);
+          // Update selected variant to first Medusa variant if available
+          if (!selectedVariant && productPrices.variants[0]?.variant_id) {
+            setSelectedVariant(productPrices.variants[0].variant_id);
+          }
+        } else {
+          setPricesError('قیمت‌ها در دسترس نیستند');
+          setMedusaVariants([]);
+        }
+      } catch (error: any) {
+        console.error('[PRODUCT-DETAIL] Price fetch error:', error);
+        setPricesError('خطا در دریافت قیمت‌ها');
+        setMedusaVariants([]);
+      } finally {
+        setPricesLoading(false);
+      }
+    };
+    
+    if (product) {
+      fetchPrices();
+    }
+  }, [product?.handle, slug, product]);
+
   // Get current price based on selected variant
   const getCurrentPrice = () => {
+    // Priority: Medusa variants > Product variants > Product price
+    if (medusaVariants.length > 0 && selectedVariant) {
+      const variant = medusaVariants.find(v => v.variant_id === selectedVariant);
+      if (variant?.price) return variant.price;
+    }
+    // Fallback to product price if Medusa prices not loaded
     if (product?.variants && selectedVariant) {
       const variant = product.variants.find(v => v.id === selectedVariant);
-      if (variant?.price) {
-        return variant.price;
-      }
+      if (variant?.price) return variant.price;
     }
     return product?.price || 0;
   };
@@ -194,7 +242,77 @@ const ProductDetail = () => {
   };
   const handleAddToCart = () => {
     if (!product) return;
-    navigate("/checkout");
+    
+    // Use Medusa variant if available
+    const selectedVariantData = medusaVariants.find(v => v.variant_id === selectedVariant);
+    
+    if (medusaVariants.length > 0) {
+      // If we have Medusa variants, validate price
+      if (!selectedVariantData || !selectedVariantData.price || selectedVariantData.price === 0) {
+        toast({
+          title: "خطا",
+          description: 'قیمت این محصول در دسترس نیست. لطفاً با پشتیبانی تماس بگیرید.',
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Get slug from product (handle both string and object formats)
+      const sanitySlug = typeof product.handle === 'string' 
+        ? product.handle 
+        : slug || '';
+      
+      const cartItem = {
+        id: parseInt(product.id) || Date.now(),
+        title: product.title,
+        price: selectedVariantData.price,
+        image: product.image || '/placeholder.svg',
+        quantity: quantity,
+        selectedOption: selectedVariantData.name,
+        sanity_slug: sanitySlug,
+        variant_id: selectedVariantData.variant_id,
+        option_name: selectedVariantData.name,
+      };
+      
+      addItem(cartItem);
+      toast({
+        title: "موفق",
+        description: "محصول به سبد خرید اضافه شد",
+      });
+    } else {
+      // Fallback: use product data without Medusa (for products not synced yet)
+      const sanitySlug = typeof product.handle === 'string' 
+        ? product.handle 
+        : slug || '';
+      
+      const selectedProductVariant = product.variants.find(v => v.id === selectedVariant);
+      const price = selectedProductVariant?.price || product.price || 0;
+      
+      if (price === 0) {
+        toast({
+          title: "خطا",
+          description: 'قیمت این محصول در دسترس نیست.',
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const cartItem = {
+        id: parseInt(product.id) || Date.now(),
+        title: product.title,
+        price: price,
+        image: product.image || '/placeholder.svg',
+        quantity: quantity,
+        selectedOption: selectedProductVariant?.name,
+        sanity_slug: sanitySlug,
+      };
+      
+      addItem(cartItem);
+      toast({
+        title: "موفق",
+        description: "محصول به سبد خرید اضافه شد",
+      });
+    }
   };
 
   if (isLoading) {
@@ -296,39 +414,54 @@ const ProductDetail = () => {
                   </motion.div>
                   
                   {/* Variants Selection */}
-                  {product.variants && product.variants.length > 0 && <div className="space-y-3 mt-4">
+                  {((medusaVariants.length > 0 ? medusaVariants : product.variants) && (medusaVariants.length > 0 ? medusaVariants : product.variants).length > 0) && <div className="space-y-3 mt-4">
                       <label className="text-sm font-medium text-foreground">
-                        {isRTL ? "╪º┘å╪¬╪«╪º╪¿ ┘à╪»╪¬ ╪▓┘à╪º┘å:" : "Select Duration:"}
+                        {isRTL ? "انتخاب مدت زمان:" : "Select Duration:"}
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
-                        {product.variants.map(variant => <button key={variant.id} onClick={() => setSelectedVariant(variant.id)} disabled={!variant.inStock} className={cn("relative p-4 rounded-xl border-2 transition-all duration-200 min-w-0 overflow-hidden", "hover:scale-[1.02] active:scale-[0.98]", selectedVariant === variant.id ? "border-primary bg-primary/10 shadow-lg shadow-primary/20" : "border-border/50 bg-surface-glass/30 hover:border-border", !variant.inStock && "opacity-50 cursor-not-allowed hover:scale-100")}>
-                            <div className="flex flex-col items-start gap-2 min-w-0">
-                              <span className="font-semibold text-foreground text-sm line-clamp-2">
-                                {isRTL ? variant.nameFa : variant.name}
-                              </span>
-                              <div className="flex items-baseline gap-2 flex-wrap min-w-0">
-                                <span className="text-base sm:text-lg font-bold text-primary">
-                                  {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(variant.price)}
+                        {(medusaVariants.length > 0 ? medusaVariants : product.variants).map((variant, idx) => {
+                          const variantId = medusaVariants.length > 0 ? variant.variant_id : variant.id;
+                          const variantName = medusaVariants.length > 0 ? variant.name : (isRTL ? variant.nameFa : variant.name);
+                          const variantPrice = medusaVariants.length > 0 ? variant.price : variant.price || 0;
+                          const variantOldPrice = medusaVariants.length > 0 ? undefined : variant.oldPrice;
+                          const variantInStock = medusaVariants.length > 0 ? true : variant.inStock !== false;
+                          
+                          return (
+                            <button 
+                              key={variantId || idx} 
+                              onClick={() => setSelectedVariant(variantId)} 
+                              disabled={!variantInStock} 
+                              className={cn("relative p-4 rounded-xl border-2 transition-all duration-200 min-w-0 overflow-hidden", "hover:scale-[1.02] active:scale-[0.98]", selectedVariant === variantId ? "border-primary bg-primary/10 shadow-lg shadow-primary/20" : "border-border/50 bg-surface-glass/30 hover:border-border", !variantInStock && "opacity-50 cursor-not-allowed hover:scale-100")}
+                            >
+                              <div className="flex flex-col items-start gap-2 min-w-0">
+                                <span className="font-semibold text-foreground text-sm line-clamp-2">
+                                  {variantName}
                                 </span>
-                                {variant.oldPrice && <>
-                                    <span className="text-xs sm:text-sm text-muted-foreground line-through">
-                                      {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(variant.oldPrice)}
-                                    </span>
-                                    <Badge variant="destructive" className="text-xs">
-                                      -{Math.round((variant.oldPrice - variant.price) / variant.oldPrice * 100)}%
-                                    </Badge>
-                                  </>}
+                                <div className="flex items-baseline gap-2 flex-wrap min-w-0">
+                                  <span className="text-base sm:text-lg font-bold text-primary">
+                                    {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(variantPrice)} تومان
+                                  </span>
+                                  {variantOldPrice && <>
+                                      <span className="text-xs sm:text-sm text-muted-foreground line-through">
+                                        {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(variantOldPrice)}
+                                      </span>
+                                      <Badge variant="destructive" className="text-xs">
+                                        -{Math.round((variantOldPrice - variantPrice) / variantOldPrice * 100)}%
+                                      </Badge>
+                                    </>}
+                                </div>
                               </div>
-                            </div>
-                            {selectedVariant === variant.id && <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                                <Check className="w-4 h-4 text-primary-foreground" />
-                              </div>}
-                            {!variant.inStock && <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-xl">
-                                <span className="text-sm font-medium text-muted-foreground">
-                                  {isRTL ? "┘å╪º┘à┘ê╪¼┘ê╪»" : "Out of Stock"}
-                                </span>
-                              </div>}
-                          </button>)}
+                              {selectedVariant === variantId && <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                                  <Check className="w-4 h-4 text-primary-foreground" />
+                                </div>}
+                              {!variantInStock && <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-xl">
+                                  <span className="text-sm font-medium text-muted-foreground">
+                                    {isRTL ? "ناموجود" : "Out of Stock"}
+                                  </span>
+                                </div>}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>}
                 </div>
@@ -612,17 +745,11 @@ const ProductDetail = () => {
         href: "https://t.me"
       }]} />
 
-        <FloatingDock onOpenChat={() => setChatOpen(true)} onOpenSupport={() => setSupportOpen(true)} onOpenCart={() => setCartOpen(true)} cartItemCount={cartItems.reduce((sum, item) => sum + item.qty, 0)} />
+        <FloatingDock onOpenChat={() => setChatOpen(true)} onOpenSupport={() => setSupportOpen(true)} onOpenCart={() => setCartOpen(true)} cartItemCount={cartState.itemCount} />
 
         <ChatbotPanel open={chatOpen} onClose={() => setChatOpen(false)} />
         <SupportPanel open={supportOpen} onClose={() => setSupportOpen(false)} />
-        <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} items={cartItems} onUpdateQty={(id, qty) => setCartItems(prev => prev.map(item => item.id === id ? {
-        ...item,
-        qty
-      } : item))} onRemoveItem={id => setCartItems(prev => prev.filter(item => item.id !== id))} onCheckout={() => toast({
-        title: isRTL ? "┘╛╪▒╪»╪º╪«╪¬" : "Checkout",
-        description: isRTL ? "╪»╪▒ ╪¡╪º┘ä ╪º┘å╪¬┘é╪º┘ä ╪¿┘ç ╪╡┘ü╪¡┘ç ┘╛╪▒╪»╪º╪«╪¬..." : "Redirecting to checkout..."
-      })} />
+        <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
       </div>
     </>;
 };

@@ -16,7 +16,8 @@ import { SupportPanel } from "@/components/FloatingDock/SupportPanel";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useDirection } from "@/contexts/DirectionContext";
-import type { CartItem } from "@/components/FloatingDock/CartDrawer";
+import { useCart } from "@/contexts/cart-context";
+import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
 import { fetchFromSanity } from "@/lib/sanity.client";
 import { validateSanityConfig } from "@/lib/sanity.config";
 import { allProductsQuery, faqsByPageQuery } from "@/lib/sanity.queries";
@@ -68,7 +69,8 @@ export default function Products() {
   const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [productPrices, setProductPrices] = useState<Record<string, ProductPrices>>({});
+  const { addItem, state: cartState } = useCart();
 
   useEffect(() => {
     const isConfigValid = validateSanityConfig();
@@ -113,11 +115,29 @@ export default function Products() {
     }
 
     loadProductsPage();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
+
+  // Fetch prices from Medusa for all products
+  useEffect(() => {
+    const fetchAllPrices = async () => {
+      if (!products || products.length === 0) return;
+      
+      const slugs = products
+        .map((p: any) => p.slug || p.handle)
+        .filter(Boolean);
+      
+      if (slugs.length === 0) return;
+      
+      try {
+        const prices = await fetchProductPrices(slugs);
+        setProductPrices(prices);
+      } catch (error) {
+        console.error('[PRODUCTS-LIST] Failed to fetch prices from Medusa:', error);
+      }
+    };
+    
+    fetchAllPrices();
+  }, [products]);
 
   const derivedCategories = useMemo(() => {
     const map = new Map<string, CategoryButton>();
@@ -188,46 +208,31 @@ export default function Products() {
     const product = products.find((p) => p.id === productId);
     if (!product) return;
 
-    setCartItems((prev) => {
-      const existing = prev.find((item) => item.id === productId);
-      if (existing) {
-        toast.success("تعداد محصول در سبد افزایش یافت");
-        return prev.map((item) =>
-          item.id === productId ? { ...item, qty: item.qty + 1 } : item
-        );
-      }
-      toast.success("محصول به سبد خرید اضافه شد");
-      return [
-        ...prev,
-        {
-          id: product.id,
-          title: product.title,
-          image: product.image,
-          price: product.price,
-          qty: 1,
-        },
-      ];
-    });
-  };
-
-  const handleUpdateQty = (id: string, qty: number) => {
-    if (qty <= 0) {
-      handleRemoveItem(id);
+    // Get Medusa price if available
+    const productSlug = product.slug;
+    const prices = productPrices[productSlug];
+    const firstVariant = prices?.variants?.[0];
+    
+    const price = firstVariant?.price || product.price || 0;
+    
+    if (price === 0) {
+      toast.error("قیمت این محصول در دسترس نیست");
       return;
     }
-    setCartItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, qty } : item))
-    );
-  };
 
-  const handleRemoveItem = (id: string) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
-    toast.success("محصول از سبد خرید حذف شد");
-  };
+    const cartItem = {
+      id: parseInt(product.id) || Date.now(),
+      title: product.title,
+      price: price,
+      image: product.image,
+      quantity: 1,
+      sanity_slug: productSlug,
+      variant_id: firstVariant?.variant_id,
+      option_name: firstVariant?.name,
+    };
 
-  const handleCheckout = () => {
-    toast.success("در حال انتقال به صفحه پرداخت...");
-    setCartOpen(false);
+    addItem(cartItem);
+    toast.success("محصول به سبد خرید اضافه شد");
   };
 
   const handleSearch = (query: string) => {
@@ -451,16 +456,12 @@ export default function Products() {
           onOpenChat={() => setChatOpen(true)}
           onOpenSupport={() => setSupportOpen(true)}
           onOpenCart={() => setCartOpen(true)}
-          cartItemCount={cartItems.reduce((sum, item) => sum + item.qty, 0)}
+          cartItemCount={cartState.itemCount}
         />
 
         <CartDrawer
           open={cartOpen}
           onClose={() => setCartOpen(false)}
-          items={cartItems}
-          onUpdateQty={handleUpdateQty}
-          onRemoveItem={handleRemoveItem}
-          onCheckout={handleCheckout}
         />
 
         <ChatbotPanel open={chatOpen} onClose={() => setChatOpen(false)} />
