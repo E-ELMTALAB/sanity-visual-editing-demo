@@ -240,8 +240,8 @@ const ProductDetail = () => {
     }
     return product?.originalPrice;
   };
-  const handleAddToCart = () => {
-    if (!product) return;
+  const addProductToCart = () => {
+    if (!product) return false;
     
     // Use Medusa variant if available
     const selectedVariantData = medusaVariants.find(v => v.variant_id === selectedVariant);
@@ -254,7 +254,7 @@ const ProductDetail = () => {
           description: 'قیمت این محصول در دسترس نیست. لطفاً با پشتیبانی تماس بگیرید.',
           variant: "destructive",
         });
-        return;
+        return false;
       }
       
       // Get slug from product (handle both string and object formats)
@@ -275,10 +275,7 @@ const ProductDetail = () => {
       };
       
       addItem(cartItem);
-      toast({
-        title: "موفق",
-        description: "محصول به سبد خرید اضافه شد",
-      });
+      return true;
     } else {
       // Fallback: use product data without Medusa (for products not synced yet)
       const sanitySlug = typeof product.handle === 'string' 
@@ -294,7 +291,7 @@ const ProductDetail = () => {
           description: 'قیمت این محصول در دسترس نیست.',
           variant: "destructive",
         });
-        return;
+        return false;
       }
       
       const cartItem = {
@@ -308,10 +305,23 @@ const ProductDetail = () => {
       };
       
       addItem(cartItem);
+      return true;
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (addProductToCart()) {
       toast({
         title: "موفق",
         description: "محصول به سبد خرید اضافه شد",
       });
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (addProductToCart()) {
+      // Navigate to checkout page
+      navigate("/checkout");
     }
   };
 
@@ -537,9 +547,9 @@ const ProductDetail = () => {
                     </div>
 
                     <div className="flex gap-2 sm:gap-3 min-w-0">
-                      <Button size="lg" onClick={handleAddToCart} className="flex-1 min-w-0 text-sm sm:text-base">
+                      <Button size="lg" onClick={handleBuyNow} className="flex-1 min-w-0 text-sm sm:text-base">
                         <ShoppingCart className="ltr:mr-1 rtl:ml-1 h-4 w-4 shrink-0" />
-                        <span className="truncate">{isRTL ? "╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä" : "Buy Now"}</span>
+                        <span className="truncate">{isRTL ? "خرید" : "Buy Now"}</span>
                       </Button>
                     </div>
 
@@ -723,9 +733,9 @@ const ProductDetail = () => {
                   <Price current={getCurrentPrice()} old={getCurrentOldPrice()} className="text-base sm:text-lg" />
                 </div>
               </div>
-              <Button size="default" onClick={handleAddToCart} className="flex-1 min-w-0 h-11 text-sm sm:text-base">
+              <Button size="default" onClick={handleBuyNow} className="flex-1 min-w-0 h-11 text-sm sm:text-base">
                 <ShoppingCart className="ltr:mr-1 rtl:ml-1 h-4 w-4 shrink-0" />
-                <span className="truncate">{(isRTL || forceRTL) ? "╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä" : "Buy Now"}</span>
+                <span className="truncate">{(isRTL || forceRTL) ? "خرید" : "Buy Now"}</span>
               </Button>
             </div>
           </div>
