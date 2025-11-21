@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { verifyPayment } from "@/lib/medusa-cart";
@@ -14,12 +14,19 @@ export default function PaymentCallback() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [verifyData, setVerifyData] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const hasVerifiedRef = useRef(false); // Use ref to prevent duplicate calls (doesn't cause re-renders)
 
   useEffect(() => {
-    const verifyPayment = async () => {
+    // Prevent multiple verification attempts
+    if (hasVerifiedRef.current) {
+      return;
+    }
+
+    const verifyPaymentAsync = async () => {
+      // Set flag immediately to prevent duplicate calls
+      hasVerifiedRef.current = true;
+      
       console.log('[PAYMENT-CALLBACK] ========== PAYMENT CALLBACK STARTED ==========');
-      console.log('[PAYMENT-CALLBACK] Current URL:', window.location.href);
-      console.log('[PAYMENT-CALLBACK] Search params:', Object.fromEntries(searchParams.entries()));
       
       try {
         // Check for error query params first (from backend redirect)
@@ -52,12 +59,9 @@ export default function PaymentCallback() {
         const resourceId = localStorage.getItem('pending_resource_id');
         const cartIdFromUrl = searchParams.get('cart_id'); // Only for logging/debugging
 
-        console.log('[PAYMENT-CALLBACK] Authority from URL:', authority);
-        console.log('[PAYMENT-CALLBACK] Status from URL:', status);
-        console.log('[PAYMENT-CALLBACK] cart_id from URL (for reference only):', cartIdFromUrl);
-        console.log('[PAYMENT-CALLBACK] pending_resource_id from localStorage:', resourceId);
-        console.log('[PAYMENT-CALLBACK] Using resourceId from localStorage ONLY:', resourceId);
-        console.log('[PAYMENT-CALLBACK] resourceId type:', typeof resourceId);
+        console.log('[PAYMENT-CALLBACK] Authority:', authority);
+        console.log('[PAYMENT-CALLBACK] Status:', status);
+        console.log('[PAYMENT-CALLBACK] Cart ID (localStorage):', resourceId);
 
         if (!authority) {
           console.error('[PAYMENT-CALLBACK] ❌ Missing Authority parameter');
@@ -69,22 +73,14 @@ export default function PaymentCallback() {
 
         if (!resourceId) {
           console.error('[PAYMENT-CALLBACK] ❌ Missing cart_id from localStorage');
-          console.error('[PAYMENT-CALLBACK] This means the cart_id was not stored before redirecting to payment gateway');
-          console.error('[PAYMENT-CALLBACK] Cart ID from URL (ignored):', cartIdFromUrl);
           setStatus('error');
           setErrorMessage('شناسه سبد خرید یافت نشد. لطفاً از طریق صفحه سفارشات اقدام کنید.');
           console.log('[PAYMENT-CALLBACK] =========================================');
           return;
         }
-
-        console.log('[PAYMENT-CALLBACK] Starting payment verification...');
         // Call verifyPayment with exact same parameters as sharifgpt-website
         // status can be null/empty, verifyPayment will handle it
         const result = await verifyPayment(authority, status || '', resourceId);
-
-        console.log('[PAYMENT-CALLBACK] Verification result:', result);
-        console.log('[PAYMENT-CALLBACK] Result type:', typeof result);
-        console.log('[PAYMENT-CALLBACK] Result keys:', result ? Object.keys(result) : 'result is null/undefined');
 
         // Check if result exists and has success property
         if (!result) {
@@ -96,45 +92,37 @@ export default function PaymentCallback() {
         }
 
         if (result.success) {
-          console.log('[PAYMENT-CALLBACK] ✅ Payment verification successful');
-          console.log('[PAYMENT-CALLBACK] Ref ID:', result.data?.ref_id);
-          console.log('[PAYMENT-CALLBACK] Amount:', result.data?.amount);
-          console.log('[PAYMENT-CALLBACK] Items count:', result.data?.items?.length || 0);
+          console.log('[PAYMENT-CALLBACK] ✅ Payment verified - Ref ID:', result.data?.ref_id);
           
           setStatus('success');
           setVerifyData(result.data);
           
           // Clear pending data (matches sharifgpt-website exactly)
-          console.log('[PAYMENT-CALLBACK] Clearing pending payment data from localStorage');
           localStorage.removeItem('pending_resource_id');
           localStorage.removeItem('pending_payment_authority');
           localStorage.removeItem('pending_payment_session_id');
           
           // Clear cart after successful payment (matches sharifgpt-website)
-          console.log('[PAYMENT-CALLBACK] Clearing cart');
           clearCart();
           
           console.log('[PAYMENT-CALLBACK] =========================================');
         } else {
-          console.error('[PAYMENT-CALLBACK] ❌ Payment verification failed');
-          console.error('[PAYMENT-CALLBACK] Error:', result.error);
-          console.error('[PAYMENT-CALLBACK] Full result:', JSON.stringify(result, null, 2));
+          console.error('[PAYMENT-CALLBACK] ❌ Payment verification failed:', result.error);
           setStatus('error');
           setErrorMessage(result.error || 'خطا در تأیید پرداخت');
           console.log('[PAYMENT-CALLBACK] =========================================');
         }
       } catch (error: any) {
-        console.error('[PAYMENT-CALLBACK] ❌ Payment verification error:', error);
-        console.error('[PAYMENT-CALLBACK] Error message:', error.message);
-        console.error('[PAYMENT-CALLBACK] Error stack:', error.stack);
+        console.error('[PAYMENT-CALLBACK] ❌ Payment verification error:', error.message);
         setStatus('error');
         setErrorMessage(error.message || 'خطا در پردازش پرداخت');
         console.log('[PAYMENT-CALLBACK] =========================================');
       }
     };
 
-    verifyPayment();
-  }, [searchParams, clearCart]);
+    verifyPaymentAsync();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount - searchParams don't change after redirect
 
   if (status === 'loading') {
     return (

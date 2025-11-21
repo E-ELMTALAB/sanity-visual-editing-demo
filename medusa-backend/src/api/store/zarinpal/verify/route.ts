@@ -10,6 +10,16 @@ export async function POST(
   req: MedusaRequest,
   res: MedusaResponse
 ): Promise<void> {
+  // Log immediately when route is hit
+  console.log('[ZARINPAL-VERIFY] ========== ROUTE HIT ==========');
+  console.log('[ZARINPAL-VERIFY] Request method:', req.method);
+  console.log('[ZARINPAL-VERIFY] Request URL:', req.url);
+  console.log('[ZARINPAL-VERIFY] Request headers:', {
+    'content-type': req.headers['content-type'],
+    'x-publishable-api-key': req.headers['x-publishable-api-key'] ? 'present' : 'missing',
+    'origin': req.headers['origin'],
+  });
+  
   // Explicitly set publishable API key BEFORE any Medusa service calls
   const PUBLISHABLE_API_KEY = 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
   req.headers['x-publishable-api-key'] = PUBLISHABLE_API_KEY
@@ -19,8 +29,11 @@ export async function POST(
   
   // Handle preflight requests
   if (handleCorsPreflight(req, res)) {
+    console.log('[ZARINPAL-VERIFY] CORS preflight request handled');
     return;
   }
+  
+  console.log('[ZARINPAL-VERIFY] Processing POST request...');
   
   try {
     const body = (req.body || {}) as {
