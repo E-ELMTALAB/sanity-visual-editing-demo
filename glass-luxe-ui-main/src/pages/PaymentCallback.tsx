@@ -16,11 +16,16 @@ export default function PaymentCallback() {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    const verify = async () => {
+    const verifyPayment = async () => {
+      console.log('[PAYMENT-CALLBACK] ========== PAYMENT CALLBACK STARTED ==========');
+      console.log('[PAYMENT-CALLBACK] Current URL:', window.location.href);
+      console.log('[PAYMENT-CALLBACK] Search params:', Object.fromEntries(searchParams.entries()));
+      
       try {
         // Check for error query params first (from backend redirect)
         const errorParam = searchParams.get('error');
         if (errorParam) {
+          console.error('[PAYMENT-CALLBACK] ❌ Error parameter found:', errorParam);
           setStatus('error');
           switch (errorParam) {
             case 'missing_authority':
@@ -35,57 +40,81 @@ export default function PaymentCallback() {
             default:
               setErrorMessage('خطا در پردازش پرداخت');
           }
+          console.log('[PAYMENT-CALLBACK] =========================================');
           return;
         }
 
+        // Match exact format from sharifgpt-website app/payment/success/page.tsx
         const authority = searchParams.get('Authority');
         const status = searchParams.get('Status');
-        const cartIdFromUrl = searchParams.get('cart_id');
-        const resourceId = localStorage.getItem('pending_resource_id') || cartIdFromUrl;
+        const resourceId = localStorage.getItem('pending_resource_id') || searchParams.get('cart_id');
 
-        console.log('[PAYMENT-CALLBACK] Authority:', authority);
-        console.log('[PAYMENT-CALLBACK] Status:', status);
-        console.log('[PAYMENT-CALLBACK] cart_id from URL:', cartIdFromUrl);
-        console.log('[PAYMENT-CALLBACK] resourceId from localStorage:', localStorage.getItem('pending_resource_id'));
+        console.log('[PAYMENT-CALLBACK] Authority from URL:', authority);
+        console.log('[PAYMENT-CALLBACK] Status from URL:', status);
+        console.log('[PAYMENT-CALLBACK] cart_id from URL:', searchParams.get('cart_id'));
+        console.log('[PAYMENT-CALLBACK] pending_resource_id from localStorage:', localStorage.getItem('pending_resource_id'));
         console.log('[PAYMENT-CALLBACK] Final resourceId:', resourceId);
+        console.log('[PAYMENT-CALLBACK] resourceId type:', typeof resourceId);
 
-        if (!authority) {
+        if (!authority || !resourceId) {
+          console.error('[PAYMENT-CALLBACK] ❌ Missing required parameters');
+          console.error('[PAYMENT-CALLBACK] Authority present:', !!authority);
+          console.error('[PAYMENT-CALLBACK] ResourceId present:', !!resourceId);
           setStatus('error');
-          setErrorMessage('کد پرداخت (Authority) یافت نشد');
+          setErrorMessage('اطلاعات پرداخت ناقص است');
+          console.log('[PAYMENT-CALLBACK] =========================================');
           return;
         }
 
-        if (!resourceId) {
-          setStatus('error');
-          setErrorMessage('شناسه سبد خرید یافت نشد. لطفاً از طریق صفحه سفارشات اقدام کنید.');
-          return;
-        }
-
+        console.log('[PAYMENT-CALLBACK] Starting payment verification...');
+        // Call verifyPayment with exact same parameters as sharifgpt-website
+        // status can be null/empty, verifyPayment will handle it
         const result = await verifyPayment(authority, status || '', resourceId);
 
+        console.log('[PAYMENT-CALLBACK] Verification result:', result);
+
         if (result.success) {
+          console.log('[PAYMENT-CALLBACK] ✅ Payment verification successful');
+          console.log('[PAYMENT-CALLBACK] Ref ID:', result.data?.ref_id);
+          console.log('[PAYMENT-CALLBACK] Amount:', result.data?.amount);
+          console.log('[PAYMENT-CALLBACK] Items count:', result.data?.items?.length || 0);
+          
           setStatus('success');
           setVerifyData(result.data);
+          
           // Store order data for OrderConfirmation page
+          console.log('[PAYMENT-CALLBACK] Storing order data in localStorage');
           localStorage.setItem('last_order_data', JSON.stringify(result.data));
+          
           // Clear pending data
+          console.log('[PAYMENT-CALLBACK] Clearing pending payment data from localStorage');
           localStorage.removeItem('pending_resource_id');
           localStorage.removeItem('pending_payment_authority');
           localStorage.removeItem('pending_payment_session_id');
+          
           // Clear cart after successful payment
+          console.log('[PAYMENT-CALLBACK] Clearing cart');
           clearCart();
+          
+          console.log('[PAYMENT-CALLBACK] =========================================');
         } else {
+          console.error('[PAYMENT-CALLBACK] ❌ Payment verification failed');
+          console.error('[PAYMENT-CALLBACK] Error:', result.error);
           setStatus('error');
           setErrorMessage(result.error || 'خطا در تأیید پرداخت');
+          console.log('[PAYMENT-CALLBACK] =========================================');
         }
       } catch (error: any) {
-        console.error('Payment verification error:', error);
+        console.error('[PAYMENT-CALLBACK] ❌ Payment verification error:', error);
+        console.error('[PAYMENT-CALLBACK] Error message:', error.message);
+        console.error('[PAYMENT-CALLBACK] Error stack:', error.stack);
         setStatus('error');
         setErrorMessage(error.message || 'خطا در پردازش پرداخت');
+        console.log('[PAYMENT-CALLBACK] =========================================');
       }
     };
 
-    verify();
+    verifyPayment();
   }, [searchParams, clearCart]);
 
   if (status === 'loading') {

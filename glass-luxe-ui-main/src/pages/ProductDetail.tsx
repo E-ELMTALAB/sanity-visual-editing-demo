@@ -241,14 +241,28 @@ const ProductDetail = () => {
     return product?.originalPrice;
   };
   const addProductToCart = () => {
-    if (!product) return false;
+    console.log('[PRODUCT-DETAIL] ========== ADD TO CART STARTED ==========');
+    console.log('[PRODUCT-DETAIL] Product ID:', product?.id);
+    console.log('[PRODUCT-DETAIL] Product title:', product?.title);
+    console.log('[PRODUCT-DETAIL] Selected variant:', selectedVariant);
+    console.log('[PRODUCT-DETAIL] Quantity:', quantity);
+    console.log('[PRODUCT-DETAIL] Medusa variants available:', medusaVariants.length);
+    
+    if (!product) {
+      console.error('[PRODUCT-DETAIL] ❌ No product data');
+      return false;
+    }
     
     // Use Medusa variant if available
     const selectedVariantData = medusaVariants.find(v => v.variant_id === selectedVariant);
     
     if (medusaVariants.length > 0) {
+      console.log('[PRODUCT-DETAIL] Using Medusa variant data');
+      console.log('[PRODUCT-DETAIL] Selected variant data:', selectedVariantData);
+      
       // If we have Medusa variants, validate price
       if (!selectedVariantData || !selectedVariantData.price || selectedVariantData.price === 0) {
+        console.error('[PRODUCT-DETAIL] ❌ Invalid or missing price');
         toast({
           title: "خطا",
           description: 'قیمت این محصول در دسترس نیست. لطفاً با پشتیبانی تماس بگیرید.',
@@ -262,6 +276,8 @@ const ProductDetail = () => {
         ? product.handle 
         : slug || '';
       
+      console.log('[PRODUCT-DETAIL] Sanity slug:', sanitySlug);
+      
       const cartItem = {
         id: parseInt(product.id) || Date.now(),
         title: product.title,
@@ -274,9 +290,13 @@ const ProductDetail = () => {
         option_name: selectedVariantData.name,
       };
       
+      console.log('[PRODUCT-DETAIL] Cart item to add:', cartItem);
       addItem(cartItem);
+      console.log('[PRODUCT-DETAIL] ✅ Item added to cart successfully');
+      console.log('[PRODUCT-DETAIL] =========================================');
       return true;
     } else {
+      console.log('[PRODUCT-DETAIL] Using fallback (no Medusa variants)');
       // Fallback: use product data without Medusa (for products not synced yet)
       const sanitySlug = typeof product.handle === 'string' 
         ? product.handle 
@@ -285,7 +305,11 @@ const ProductDetail = () => {
       const selectedProductVariant = product.variants.find(v => v.id === selectedVariant);
       const price = selectedProductVariant?.price || product.price || 0;
       
+      console.log('[PRODUCT-DETAIL] Fallback price:', price);
+      console.log('[PRODUCT-DETAIL] Sanity slug:', sanitySlug);
+      
       if (price === 0) {
+        console.error('[PRODUCT-DETAIL] ❌ Price is zero');
         toast({
           title: "خطا",
           description: 'قیمت این محصول در دسترس نیست.',
@@ -304,7 +328,10 @@ const ProductDetail = () => {
         sanity_slug: sanitySlug,
       };
       
+      console.log('[PRODUCT-DETAIL] Cart item to add (fallback):', cartItem);
       addItem(cartItem);
+      console.log('[PRODUCT-DETAIL] ✅ Item added to cart successfully (fallback)');
+      console.log('[PRODUCT-DETAIL] =========================================');
       return true;
     }
   };

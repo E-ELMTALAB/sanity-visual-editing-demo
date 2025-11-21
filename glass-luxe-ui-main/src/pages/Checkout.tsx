@@ -100,20 +100,30 @@ export default function Checkout() {
   const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('[CHECKOUT] ========== CHECKOUT PROCESS STARTED ==========');
+    console.log('[CHECKOUT] Cart items count:', cartState.items.length);
+    console.log('[CHECKOUT] Customer email:', contactData.email);
+    console.log('[CHECKOUT] Customer phone:', contactData.phone);
+    
     if (cartState.items.length === 0) {
+      console.error('[CHECKOUT] ❌ Cart is empty');
       toast.error("سبد خرید شما خالی است");
       return;
     }
 
     if (!contactData.email.trim()) {
+      console.error('[CHECKOUT] ❌ Email is missing');
       toast.error("لطفاً ایمیل خود را وارد کنید");
       return;
     }
 
     if (!contactData.phone.trim()) {
+      console.error('[CHECKOUT] ❌ Phone is missing');
       toast.error("لطفاً شماره تلفن خود را وارد کنید");
       return;
     }
+
+    setIsLoading(true);
 
     try {
       const validData = {
@@ -126,10 +136,10 @@ export default function Checkout() {
       };
       
       paymentSchema.parse(validData);
-      
-      setIsLoading(true);
+      console.log('[CHECKOUT] ✅ Payment data validation passed');
 
-      // Step 1: Create Medusa cart
+      // Step 1: Create real Medusa cart with validated products
+      console.log('[CHECKOUT] Step 1: Creating Medusa cart...');
       const cartResponse = await createMedusaCart(
         cartState.items.map(item => ({
           id: item.id,
@@ -146,36 +156,62 @@ export default function Checkout() {
         contactData.phone
       );
 
+      console.log('[CHECKOUT] Cart creation response:', cartResponse);
+
       if (!cartResponse.success || !cartResponse.cart?.id) {
+        console.error('[CHECKOUT] ❌ Cart creation failed:', cartResponse);
         throw new Error(cartResponse.error || 'خطا در ایجاد سبد خرید');
       }
 
       const cartId = cartResponse.cart.id;
+      console.log('[CHECKOUT] ✅ Cart created with ID:', cartId);
+      console.log('[CHECKOUT] Cart ID type:', typeof cartId);
 
-      // Step 2: Initiate payment
+      // Step 2: Initiate payment for the created cart
+      console.log('[CHECKOUT] Step 2: Initiating payment...');
       const paymentResponse = await initiatePayment(
         cartId,
         contactData.email,
         contactData.phone
       );
 
+      console.log('[CHECKOUT] Payment initiation response:', paymentResponse);
+
       if (!paymentResponse.success) {
+        console.error('[CHECKOUT] ❌ Payment initiation failed:', paymentResponse);
         throw new Error(paymentResponse.error || 'خطا در شروع پرداخت');
       }
 
-      // Store cart ID for verification after payment
-      localStorage.setItem('pending_resource_id', cartId);
-      localStorage.setItem('pending_payment_authority', paymentResponse.payment.authority);
-      localStorage.setItem('pending_payment_session_id', paymentResponse.payment.session_id);
-
-      // Redirect to Zarinpal payment gateway
+      // Redirect to payment gateway
       if (paymentResponse.payment?.payment_url) {
+        // Store cart ID for verification after payment
+        console.log('[CHECKOUT] Storing cart ID in localStorage:', cartId);
+        localStorage.setItem('pending_resource_id', cartId);
+        localStorage.setItem('pending_payment_authority', paymentResponse.payment.authority);
+        localStorage.setItem('pending_payment_session_id', paymentResponse.payment.session_id);
+        
+        console.log('[CHECKOUT] Stored values:', {
+          pending_resource_id: localStorage.getItem('pending_resource_id'),
+          pending_payment_authority: localStorage.getItem('pending_payment_authority')
+        });
+        
+        console.log('[CHECKOUT] Redirecting to payment gateway...');
+        console.log('[CHECKOUT] Payment URL:', paymentResponse.payment.payment_url);
+        console.log('[CHECKOUT] =========================================');
+        
+        // Redirect to Zarinpal payment gateway
         window.location.href = paymentResponse.payment.payment_url;
       } else {
+        console.error('[CHECKOUT] ❌ Payment URL not received');
         throw new Error('لینک پرداخت دریافت نشد');
       }
+
     } catch (error: any) {
-      console.error('Checkout error:', error);
+      console.error('[CHECKOUT] ❌ Checkout error:', error);
+      console.error('[CHECKOUT] Error message:', error.message);
+      console.error('[CHECKOUT] Error stack:', error.stack);
+      console.log('[CHECKOUT] =========================================');
+      
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
       } else {

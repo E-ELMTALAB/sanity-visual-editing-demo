@@ -205,17 +205,32 @@ export default function Products() {
   }, [products, activeCategory, filters]);
 
   const handleAddToCart = (productId: string) => {
+    console.log('[PRODUCTS-LIST] ========== ADD TO CART FROM LIST ==========');
+    console.log('[PRODUCTS-LIST] Product ID:', productId);
+    
     const product = products.find((p) => p.id === productId);
-    if (!product) return;
+    if (!product) {
+      console.error('[PRODUCTS-LIST] ❌ Product not found:', productId);
+      return;
+    }
+
+    console.log('[PRODUCTS-LIST] Product found:', product.title);
+    console.log('[PRODUCTS-LIST] Product slug:', product.slug);
 
     // Get Medusa price if available
     const productSlug = product.slug;
     const prices = productPrices[productSlug];
     const firstVariant = prices?.variants?.[0];
-    
+
+    console.log('[PRODUCTS-LIST] Medusa prices available:', !!prices);
+    console.log('[PRODUCTS-LIST] First variant:', firstVariant);
+
     const price = firstVariant?.price || product.price || 0;
-    
+
+    console.log('[PRODUCTS-LIST] Final price:', price);
+
     if (price === 0) {
+      console.error('[PRODUCTS-LIST] ❌ Price is zero');
       toast.error("قیمت این محصول در دسترس نیست");
       return;
     }
@@ -231,7 +246,10 @@ export default function Products() {
       option_name: firstVariant?.name,
     };
 
+    console.log('[PRODUCTS-LIST] Cart item to add:', cartItem);
     addItem(cartItem);
+    console.log('[PRODUCTS-LIST] ✅ Item added to cart successfully');
+    console.log('[PRODUCTS-LIST] =========================================');
     toast.success("محصول به سبد خرید اضافه شد");
   };
 
