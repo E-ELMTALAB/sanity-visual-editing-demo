@@ -132,7 +132,7 @@ const Cart = () => {
                 </p>
                 <Button asChild>
                   <Link to="/products">
-                    {isRTL ? "بازگشت به فروشگاه" : "Back to Store"}
+                    بازگشت به فروشگاه
                   </Link>
                 </Button>
               </motion.div> : <div className="grid lg:grid-cols-[1fr_360px] gap-6">

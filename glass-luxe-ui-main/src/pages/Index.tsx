@@ -257,45 +257,45 @@ const Index = () => {
   }, []);
   const handleOpenCart = () => {
     toast({
-      title: isRTL ? "سبد خرید" : "Shopping Cart",
-      description: isRTL ? "سبد خرید شما باز شد" : "Your cart has been opened",
+      title: "سبد خرید",
+      description: "سبد خرید شما باز شد",
     });
   };
   const handleSearch = (query: string) => {
     toast({
-      title: isRTL ? "جستجو" : "Search",
-      description: isRTL ? `جستجو برای: ${query}` : `Searching for: ${query}`,
+      title: "جستجو",
+      description: `جستجو برای: ${query}`,
     });
   };
   const handleOpenProduct = (productId: string) => {
     toast({
-      title: isRTL ? "محصول" : "Product",
-      description: isRTL ? `محصول ${productId} به سبد اضافه شد` : `Product ${productId} added to cart`,
+      title: "محصول",
+      description: `محصول ${productId} به سبد اضافه شد`,
     });
   };
   const handleCategoryChange = (category: string) => {
     setActiveCategory(category);
     toast({
-      title: isRTL ? "دسته‌بندی" : "Category",
-      description: isRTL ? `دسته‌بندی به ${category} تغییر کرد` : `Category changed to ${category}`,
+      title: "دسته‌بندی",
+      description: `دسته‌بندی به ${category} تغییر کرد`,
     });
   };
   const handleAddToCart = (productId: string) => {
     toast({
-      title: isRTL ? "به سبد اضافه شد" : "Added to Cart",
-      description: isRTL ? `محصول ${productId} به سبد خرید اضافه شد` : `Product ${productId} added to cart`,
+      title: "به سبد اضافه شد",
+      description: `محصول ${productId} به سبد خرید اضافه شد`,
     });
   };
   const handleViewAllOffers = () => {
     toast({
-      title: isRTL ? "تخفیفات ویژه" : "Special Offers",
-      description: isRTL ? "مشاهده همه تخفیفات" : "View all special offers",
+      title: "تخفیفات ویژه",
+      description: "مشاهده همه تخفیفات",
     });
   };
   const handleViewAllSocial = () => {
     toast({
-      title: isRTL ? "محصولات سوشیال مدیا" : "Social Media Products",
-      description: isRTL ? "مشاهده همه محصولات سوشیال مدیا" : "View all social media products",
+      title: "محصولات سوشیال مدیا",
+      description: "مشاهده همه محصولات سوشیال مدیا",
     });
   };
 
@@ -305,39 +305,39 @@ const Index = () => {
       navigate(collectionsBanner.ctaLink);
     } else {
     toast({
-      title: isRTL ? "کلکسیون‌های سوشیال مدیا" : "Social Media Collections",
-      description: isRTL ? "مشاهده همه کلکسیون‌ها" : "View all collections",
+      title: "کلکسیون‌های سوشیال مدیا",
+      description: "مشاهده همه کلکسیون‌ها",
     });
     }
   };
   const handleViewAllEdu = () => {
     toast({
-      title: isRTL ? "محصولات آموزشی" : "Educational Products",
-      description: isRTL ? "مشاهده همه محصولات آموزشی" : "View all educational products",
+      title: "محصولات آموزشی",
+      description: "مشاهده همه محصولات آموزشی",
     });
   };
   const handleViewAllCourses = () => {
     toast({
-      title: isRTL ? "دوره‌ها" : "Courses",
-      description: isRTL ? "مشاهده همه دوره‌ها" : "View all courses",
+      title: "دوره‌ها",
+      description: "مشاهده همه دوره‌ها",
     });
   };
   const handleViewCourse = (courseId: string) => {
     toast({
-      title: isRTL ? "مشاهده دوره" : "View Course",
-      description: isRTL ? `مشاهده جزئیات دوره ${courseId}` : `Viewing course details ${courseId}`,
+      title: "مشاهده دوره",
+      description: `مشاهده جزئیات دوره ${courseId}`,
     });
   };
   const handleReadPost = (slug: string) => {
     toast({
-      title: isRTL ? "مقاله" : "Article",
-      description: isRTL ? `خواندن مقاله: ${slug}` : `Reading article: ${slug}`,
+      title: "مقاله",
+      description: `خواندن مقاله: ${slug}`,
     });
   };
   const handleViewMagazine = () => {
     toast({
-      title: isRTL ? "مجله" : "Magazine",
-      description: isRTL ? "مشاهده همه مقالات مجله" : "View all magazine articles",
+      title: "مجله",
+      description: "مشاهده همه مقالات مجله",
     });
   };
 
@@ -348,42 +348,42 @@ const Index = () => {
   const megaItems = {
     cols: [
       {
-        title: "AI Business Solutions",
+        title: "راهکارهای هوش مصنوعی کسب‌وکار",
         titleFa: "راهکارهای هوش مصنوعی کسب‌وکار",
         links: [
           {
-            label: "Project Management",
+            label: "مدیریت پروژه",
             labelFa: "مدیریت پروژه",
             href: "/products?cat=project-management",
           },
           {
-            label: "Data Analysis",
+            label: "تحلیل داده",
             labelFa: "تحلیل داده",
             href: "/products?cat=data-analysis",
           },
           {
-            label: "Automation",
+            label: "اتوماسیون",
             labelFa: "اتوماسیون",
             href: "/products?cat=automation",
           },
         ],
       },
       {
-        title: "Creative & Technical",
+        title: "خلاقیت و فناوری",
         titleFa: "خلاقیت و فناوری",
         links: [
           {
-            label: "Content Generation",
+            label: "تولید محتوا",
             labelFa: "تولید محتوا",
             href: "/products?cat=content",
           },
           {
-            label: "Video Production",
+            label: "تولید ویدیو",
             labelFa: "تولید ویدیو",
             href: "/products?cat=video",
           },
           {
-            label: "Graphic Design AI",
+            label: "گرافیک با AI",
             labelFa: "گرافیک با AI",
             href: "/products?cat=graphic",
           },
@@ -392,10 +392,10 @@ const Index = () => {
     ],
     featured: {
       image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&auto=format&fit=crop",
-      title: "Master ChatGPT: Advanced Techniques Course",
+      title: "دوره پیشرفته ChatGPT: تکنیک‌های حرفه‌ای",
       titleFa: "دوره پیشرفته ChatGPT: تکنیک‌های حرفه‌ای",
       href: "/products/p1",
-      badge: "Featured",
+      badge: "پیشنهاد ویژه",
       badgeFa: "پیشنهاد ویژه",
     },
   };
@@ -434,8 +434,8 @@ const Index = () => {
         onAdd={handleAddToCart}
         onViewAll={(category) => {
           toast({
-            title: isRTL ? "مشاهده همه" : "View All",
-            description: isRTL ? `مشاهده تمام محصولات ${category}` : `Viewing all ${category} products`,
+            title: "مشاهده همه",
+            description: `مشاهده تمام محصولات ${category}`,
           });
         }}
       />

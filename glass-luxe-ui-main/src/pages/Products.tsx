@@ -158,12 +158,11 @@ export default function Products() {
   }, [products]);
 
   const categoryButtons: CategoryButton[] = useMemo(() => {
-    const allLabel = isRTL ? "همه محصولات" : "All Products";
     return [
-      { id: "all", label: allLabel, count: products.length },
+      { id: "all", label: "همه محصولات", count: products.length },
       ...derivedCategories,
     ];
-  }, [derivedCategories, isRTL, products.length]);
+  }, [derivedCategories, products.length]);
 
   const sidebarCategories = useMemo(() => {
     return derivedCategories.filter((category) => category.id && category.label);
@@ -288,30 +287,30 @@ export default function Products() {
   const megaItems = {
     cols: [
       {
-        title: "AI Business Solutions",
+        title: "راهکارهای هوش مصنوعی کسب‌وکار",
         titleFa: "راهکارهای هوش مصنوعی کسب‌وکار",
         links: [
-          { label: "Project Management", labelFa: "مدیریت پروژه", href: "/products?cat=project-management" },
-          { label: "Data Analysis", labelFa: "تحلیل داده", href: "/products?cat=data-analysis" },
-          { label: "Automation", labelFa: "اتوماسیون", href: "/products?cat=automation" },
+          { label: "مدیریت پروژه", labelFa: "مدیریت پروژه", href: "/products?cat=project-management" },
+          { label: "تحلیل داده", labelFa: "تحلیل داده", href: "/products?cat=data-analysis" },
+          { label: "اتوماسیون", labelFa: "اتوماسیون", href: "/products?cat=automation" },
         ],
       },
       {
-        title: "Creative & Technical",
+        title: "خلاقیت و فناوری",
         titleFa: "خلاقیت و فناوری",
         links: [
-          { label: "Content Generation", labelFa: "تولید محتوا", href: "/products?cat=content" },
-          { label: "Video Production", labelFa: "تولید ویدیو", href: "/products?cat=video" },
-          { label: "Graphic Design AI", labelFa: "گرافیک با AI", href: "/products?cat=graphic" },
+          { label: "تولید محتوا", labelFa: "تولید محتوا", href: "/products?cat=content" },
+          { label: "تولید ویدیو", labelFa: "تولید ویدیو", href: "/products?cat=video" },
+          { label: "گرافیک با AI", labelFa: "گرافیک با AI", href: "/products?cat=graphic" },
         ],
       },
     ],
     featured: {
       image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&auto=format&fit=crop",
-      title: "Master ChatGPT: Advanced Techniques Course",
+      title: "دوره پیشرفته ChatGPT: تکنیک‌های حرفه‌ای",
       titleFa: "دوره پیشرفته ChatGPT: تکنیک‌های حرفه‌ای",
       href: "/products/p1",
-      badge: "Featured",
+      badge: "پیشنهاد ویژه",
       badgeFa: "پیشنهاد ویژه",
     },
   };

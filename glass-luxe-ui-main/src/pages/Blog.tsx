@@ -22,15 +22,15 @@ export default function Blog() {
 
   const handleOpenCart = () => {
     toast({
-      title: isRTL ? "سبد خرید" : "Shopping Cart",
-      description: isRTL ? "سبد خرید شما باز شد" : "Your cart has been opened",
+      title: "سبد خرید",
+      description: "سبد خرید شما باز شد",
     });
   };
 
   const handleSearch = (query: string) => {
     toast({
-      title: isRTL ? "جستجو" : "Search",
-      description: isRTL ? `جستجو برای: ${query}` : `Searching for: ${query}`,
+      title: "جستجو",
+      description: `جستجو برای: ${query}`,
     });
   };
 
@@ -56,10 +56,8 @@ export default function Blog() {
   const blogSchema = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    "name": isRTL ? "مقالات و راهنماها | SharifGPT" : "Articles & Guides | SharifGPT",
-    "description": isRTL 
-      ? "مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال" 
-      : "Educational articles, guides, and digital world news",
+    "name": "مقالات و راهنماها | SharifGPT",
+    "description": "مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال",
     "url": canonicalUrl,
     "publisher": {
       "@type": "Organization",
