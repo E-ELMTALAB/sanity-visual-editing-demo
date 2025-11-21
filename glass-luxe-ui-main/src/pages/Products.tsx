@@ -62,8 +62,6 @@ export default function Products() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [filters, setFilters] = useState({
     categories: [] as string[],
-    priceRange: "",
-    ratingMin: 0,
   });
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
@@ -178,28 +176,7 @@ export default function Products() {
         filters.categories.length === 0 ||
         filters.categories.includes(product.categorySlug || "");
 
-      const matchesPriceRange = (() => {
-        if (!filters.priceRange) return true;
-        if (filters.priceRange.includes("+")) {
-          const min = Number(filters.priceRange.replace("+", "")) || 0;
-          return product.price >= min;
-        }
-        const [minStr, maxStr] = filters.priceRange.split("-");
-        const min = Number(minStr) || 0;
-        const max = Number(maxStr) || Infinity;
-        return product.price >= min && product.price <= max;
-      })();
-
-      const matchesRating =
-        filters.ratingMin === 0 ||
-        (product.rating ?? 0) >= filters.ratingMin;
-
-      return (
-        matchesActiveCategory &&
-        matchesSidebarCategory &&
-        matchesPriceRange &&
-        matchesRating
-      );
+      return matchesActiveCategory && matchesSidebarCategory;
     });
   }, [products, activeCategory, filters]);
 
@@ -258,8 +235,6 @@ export default function Products() {
 
   const handleFiltersChange = (newFilters: {
     categories: string[];
-    priceRange: string;
-    ratingMin: number;
   }) => {
     setFilters(newFilters);
     console.log("Filters changed:", newFilters);
