@@ -246,11 +246,11 @@ export default function Products() {
       option_name: firstVariant?.name,
     };
 
-    console.log('[PRODUCTS-LIST] Cart item to add:', cartItem);
-    addItem(cartItem);
-    console.log('[PRODUCTS-LIST] ✅ Item added to cart successfully');
+    console.log('[PRODUCTS-LIST] Cart item to set (replacing cart):', cartItem);
+    setSingleItem(cartItem);
+    console.log('[PRODUCTS-LIST] ✅ Cart replaced with single product');
     console.log('[PRODUCTS-LIST] =========================================');
-    toast.success("محصول به سبد خرید اضافه شد");
+    toast.success("محصول آماده خرید است");
   };
 
   const handleSearch = (query: string) => {

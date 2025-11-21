@@ -101,7 +101,7 @@ const ProductDetail = () => {
   const [medusaVariants, setMedusaVariants] = useState<MedusaVariant[]>([]);
   const [pricesLoading, setPricesLoading] = useState(false);
   const [pricesError, setPricesError] = useState<string | null>(null);
-  const { addItem, state: cartState } = useCart();
+  const { addItem, setSingleItem, state: cartState } = useCart();
   const stickyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -290,9 +290,9 @@ const ProductDetail = () => {
         option_name: selectedVariantData.name,
       };
       
-      console.log('[PRODUCT-DETAIL] Cart item to add:', cartItem);
-      addItem(cartItem);
-      console.log('[PRODUCT-DETAIL] ✅ Item added to cart successfully');
+      console.log('[PRODUCT-DETAIL] Cart item to set (replacing cart):', cartItem);
+      setSingleItem(cartItem);
+      console.log('[PRODUCT-DETAIL] ✅ Cart replaced with single product');
       console.log('[PRODUCT-DETAIL] =========================================');
       return true;
     } else {
@@ -328,9 +328,9 @@ const ProductDetail = () => {
         sanity_slug: sanitySlug,
       };
       
-      console.log('[PRODUCT-DETAIL] Cart item to add (fallback):', cartItem);
-      addItem(cartItem);
-      console.log('[PRODUCT-DETAIL] ✅ Item added to cart successfully (fallback)');
+      console.log('[PRODUCT-DETAIL] Cart item to set (fallback, replacing cart):', cartItem);
+      setSingleItem(cartItem);
+      console.log('[PRODUCT-DETAIL] ✅ Cart replaced with single product (fallback)');
       console.log('[PRODUCT-DETAIL] =========================================');
       return true;
     }

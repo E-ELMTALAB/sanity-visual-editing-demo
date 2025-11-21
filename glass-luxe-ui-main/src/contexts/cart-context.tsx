@@ -25,7 +25,8 @@ type CartAction =
   | { type: "REMOVE_ITEM"; payload: number }
   | { type: "UPDATE_QUANTITY"; payload: { id: number; quantity: number } }
   | { type: "CLEAR_CART" }
-  | { type: "LOAD_CART"; payload: CartItem[] };
+  | { type: "LOAD_CART"; payload: CartItem[] }
+  | { type: "SET_SINGLE_ITEM"; payload: CartItem } // New: Replace cart with single item;
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
@@ -81,6 +82,15 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       return { items: action.payload, total, itemCount };
     }
 
+    case "SET_SINGLE_ITEM": {
+      console.log('[CART-CONTEXT] Setting single item (replacing cart):', action.payload);
+      const newItems = [action.payload];
+      const total = action.payload.price * action.payload.quantity;
+      const itemCount = action.payload.quantity;
+      console.log('[CART-CONTEXT] Cart replaced. Total:', total, 'Item count:', itemCount);
+      return { items: newItems, total, itemCount };
+    }
+
     default:
       return state;
   }
@@ -92,6 +102,7 @@ interface CartContextType {
   removeItem: (id: number) => void;
   updateQuantity: (id: number, quantity: number) => void;
   clearCart: () => void;
+  setSingleItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void; // New: Set single item
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -140,8 +151,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: "CLEAR_CART" });
   };
 
+  const setSingleItem = (item: Omit<CartItem, "quantity"> & { quantity?: number }) => {
+    dispatch({
+      type: "SET_SINGLE_ITEM",
+      payload: { ...item, quantity: item.quantity || 1 },
+    });
+  };
+
   return (
-    <CartContext.Provider value={{ state, addItem, removeItem, updateQuantity, clearCart }}>
+    <CartContext.Provider value={{ state, addItem, removeItem, updateQuantity, clearCart, setSingleItem }}>
       {children}
     </CartContext.Provider>
   );
