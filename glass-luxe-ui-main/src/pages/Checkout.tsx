@@ -19,10 +19,6 @@ const contactSchema = z.object({
   email: z.string().email({ message: "ایمیل معتبر وارد کنید" }),
   fullName: z.string().min(3, { message: "نام کامل باید حداقل ۳ کاراکتر باشد" }),
   phone: z.string().regex(/^09\d{9}$/, { message: "شماره موبایل معتبر وارد کنید" }),
-  needsInvoice: z.boolean(),
-  termsAccepted: z.boolean().refine((val) => val === true, {
-    message: "باید قوانین را بپذیرید",
-  }),
 });
 
 export default function Checkout() {
@@ -36,8 +32,6 @@ export default function Checkout() {
     email: "",
     fullName: "",
     phone: "",
-    needsInvoice: false,
-    termsAccepted: false,
   });
 
   const subtotal = cartState.total;
@@ -223,36 +217,6 @@ export default function Checkout() {
                       dir="ltr"
                       required
                     />
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="invoice"
-                      checked={contactData.needsInvoice}
-                      onCheckedChange={(checked) =>
-                        setContactData({ ...contactData, needsInvoice: checked as boolean })
-                      }
-                    />
-                    <Label htmlFor="invoice" className="cursor-pointer">
-                      نیاز به فاکتور رسمی دارم
-                    </Label>
-                  </div>
-
-                  {/* Terms Checkbox */}
-                  <div className="flex items-start gap-2 pt-4 border-t border-white/10">
-                    <Checkbox
-                      id="terms"
-                      checked={contactData.termsAccepted}
-                      onCheckedChange={(checked) =>
-                        setContactData({
-                          ...contactData,
-                          termsAccepted: checked as boolean,
-                        })
-                      }
-                    />
-                    <Label htmlFor="terms" className="cursor-pointer text-sm leading-relaxed">
-                      قوانین و مقررات را مطالعه کرده و می‌پذیرم
-                    </Label>
                   </div>
 
                   {/* Payment Button */}
