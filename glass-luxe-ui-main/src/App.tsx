@@ -29,6 +29,7 @@ const Amir = lazy(() => import("./pages/team/Amir"));
 const Collection = lazy(() => import("./pages/Collection"));
 const Studio = lazy(() => import("./pages/Studio"));
 const PaymentCallback = lazy(() => import("./pages/PaymentCallback"));
+const AdminVerify = lazy(() => import("./pages/AdminVerify"));
 
 const queryClient = new QueryClient();
 
@@ -88,6 +89,7 @@ const App = () => (
                 <Route path="/team/amir" element={<Amir />} />
                 <Route path="/collections/:slug" element={<Collection />} />
                 <Route path="/studio/*" element={<Studio />} />
+                <Route path="/admin/verify" element={<AdminVerify />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
