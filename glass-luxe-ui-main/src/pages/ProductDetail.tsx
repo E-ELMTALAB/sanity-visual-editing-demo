@@ -26,7 +26,7 @@ import { validateSanityConfig } from "@/lib/sanity.config";
 import { productBySlugQuery, faqsByPageQuery } from "@/lib/sanity.queries";
 import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";
 import { fetchProductPrices, type MedusaVariant } from "@/lib/medusa-prices";
-import { MarkdownContent, extractHeadings } from "@/components/MarkdownContent";
+import EnhancedMarkdownRenderer from "@/components/EnhancedMarkdownRenderer";
 const springTransition = {
   type: "spring" as const,
   stiffness: 220,
@@ -83,6 +83,28 @@ interface FaqItem {
   q: string;
   a: string;
 }
+
+// Helper function to extract headings from markdown content
+const extractHeadingsFromMarkdown = (content: string): Array<{ level: number; text: string; id: string }> => {
+  if (!content) return [];
+  
+  const lines = content.split('\n');
+  const headings: Array<{ level: number; text: string; id: string }> = [];
+  let headingCounter = 0;
+  
+  lines.forEach(line => {
+    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const text = headingMatch[2].trim();
+      const id = `heading-${headingCounter++}`;
+      headings.push({ level, text, id });
+    }
+  });
+  
+  return headings;
+};
+
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -104,17 +126,26 @@ const ProductDetail = () => {
   const [pricesError, setPricesError] = useState<string | null>(null);
   const { addItem, setSingleItem, state: cartState } = useCart();
   const stickyRef = useRef<HTMLDivElement>(null);
-  const [headings, setHeadings] = useState<Array<{ level: number; text: string; id: string }>>([]);
+  const [tocHeadings, setTocHeadings] = useState<Array<{ level: number; text: string; id: string }>>([]);
+
+  // Extract headings from description when product loads
+  useEffect(() => {
+    if (product) {
+      const descriptionContent = (isRTL ? product.descriptionFa : product.description) || '';
+      const headings = extractHeadingsFromMarkdown(descriptionContent);
+      setTocHeadings(headings);
+    }
+  }, [product, isRTL]);
 
   useEffect(() => {
     const configValid = validateSanityConfig();
     if (!slug) {
-      setError("????? ????? ????? ????");
+      setError("Ø´Ù†Ø§Ø³Ù‡ Ù…Ø­ØµÙˆÙ„ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª");
       setIsLoading(false);
       return;
     }
     if (!configValid) {
-      setError("????? ?? Sanity ???????? ???? ???");
+      setError("Ø§ØªØµØ§Ù„ Ø¨Ù‡ Sanity Ù¾ÛŒÚ©Ø±Ø¨Ù†Ø¯ÛŒ Ù†Ø´Ø¯Ù‡ Ø§Ø³Øª");
       setIsLoading(false);
       return;
     }
@@ -128,7 +159,7 @@ const ProductDetail = () => {
         if (!isMounted) return;
 
         if (!result) {
-          setError("????? ???? ??? ???? ???");
+          setError("Ù…Ø­ØµÙˆÙ„ Ù…ÙˆØ±Ø¯ Ù†Ø¸Ø± ÛŒØ§ÙØª Ù†Ø´Ø¯");
           setProduct(null);
           return;
         }
@@ -138,17 +169,10 @@ const ProductDetail = () => {
         setSelectedVariant(transformed.variants[0]?.id ?? null);
         setSelectedImage(0);
         setError(null);
-        
-        // Extract headings from description for TOC
-        const description = transformed.descriptionFa || transformed.description;
-        if (description) {
-          const extractedHeadings = extractHeadings(description);
-          setHeadings(extractedHeadings);
-        }
       } catch (err) {
         console.error("[PRODUCT DETAIL]", err);
         if (isMounted) {
-          setError("??? ?? ???????? ??????? ?????");
+          setError("Ø®Ø·Ø§ Ø¯Ø± Ø¨Ø§Ø±Ú¯Ø°Ø§Ø±ÛŒ Ø§Ø·Ù„Ø§Ø¹Ø§Øª Ù…Ø­ØµÙˆÙ„");
         }
       } finally {
         if (isMounted) {
@@ -208,12 +232,12 @@ const ProductDetail = () => {
             setSelectedVariant(productPrices.variants[0].variant_id);
           }
         } else {
-          setPricesError('??????? ?? ????? ??????');
+          setPricesError('Ù‚ÛŒÙ…Øªâ€ŒÙ‡Ø§ Ø¯Ø± Ø¯Ø³ØªØ±Ø³ Ù†ÛŒØ³ØªÙ†Ø¯');
           setMedusaVariants([]);
         }
       } catch (error: any) {
         console.error('[PRODUCT-DETAIL] Price fetch error:', error);
-        setPricesError('??? ?? ?????? ???????');
+        setPricesError('Ø®Ø·Ø§ Ø¯Ø± Ø¯Ø±ÛŒØ§ÙØª Ù‚ÛŒÙ…Øªâ€ŒÙ‡Ø§');
         setMedusaVariants([]);
       } finally {
         setPricesLoading(false);
@@ -258,7 +282,7 @@ const ProductDetail = () => {
     console.log('[PRODUCT-DETAIL] Medusa variants available:', medusaVariants.length);
     
     if (!product) {
-      console.error('[PRODUCT-DETAIL] ? No product data');
+      console.error('[PRODUCT-DETAIL] âŒ No product data');
       return false;
     }
     
@@ -271,10 +295,10 @@ const ProductDetail = () => {
       
       // If we have Medusa variants, validate price
       if (!selectedVariantData || !selectedVariantData.price || selectedVariantData.price === 0) {
-        console.error('[PRODUCT-DETAIL] ? Invalid or missing price');
+        console.error('[PRODUCT-DETAIL] âŒ Invalid or missing price');
         toast({
-          title: "???",
-          description: '???? ??? ????? ?? ????? ????. ????? ?? ???????? ???? ??????.',
+          title: "Ø®Ø·Ø§",
+          description: 'Ù‚ÛŒÙ…Øª Ø§ÛŒÙ† Ù…Ø­ØµÙˆÙ„ Ø¯Ø± Ø¯Ø³ØªØ±Ø³ Ù†ÛŒØ³Øª. Ù„Ø·ÙØ§Ù‹ Ø¨Ø§ Ù¾Ø´ØªÛŒØ¨Ø§Ù†ÛŒ ØªÙ…Ø§Ø³ Ø¨Ú¯ÛŒØ±ÛŒØ¯.',
           variant: "destructive",
         });
         return false;
@@ -301,7 +325,7 @@ const ProductDetail = () => {
       
       console.log('[PRODUCT-DETAIL] Cart item to set (replacing cart):', cartItem);
       setSingleItem(cartItem);
-      console.log('[PRODUCT-DETAIL] ? Cart replaced with single product');
+      console.log('[PRODUCT-DETAIL] âœ… Cart replaced with single product');
       console.log('[PRODUCT-DETAIL] =========================================');
       return true;
     } else {
@@ -318,10 +342,10 @@ const ProductDetail = () => {
       console.log('[PRODUCT-DETAIL] Sanity slug:', sanitySlug);
       
       if (price === 0) {
-        console.error('[PRODUCT-DETAIL] ? Price is zero');
+        console.error('[PRODUCT-DETAIL] âŒ Price is zero');
         toast({
-          title: "???",
-          description: '???? ??? ????? ?? ????? ????.',
+          title: "Ø®Ø·Ø§",
+          description: 'Ù‚ÛŒÙ…Øª Ø§ÛŒÙ† Ù…Ø­ØµÙˆÙ„ Ø¯Ø± Ø¯Ø³ØªØ±Ø³ Ù†ÛŒØ³Øª.',
           variant: "destructive",
         });
         return false;
@@ -339,7 +363,7 @@ const ProductDetail = () => {
       
       console.log('[PRODUCT-DETAIL] Cart item to set (fallback, replacing cart):', cartItem);
       setSingleItem(cartItem);
-      console.log('[PRODUCT-DETAIL] ? Cart replaced with single product (fallback)');
+      console.log('[PRODUCT-DETAIL] âœ… Cart replaced with single product (fallback)');
       console.log('[PRODUCT-DETAIL] =========================================');
       return true;
     }
@@ -348,8 +372,8 @@ const ProductDetail = () => {
   const handleAddToCart = () => {
     if (addProductToCart()) {
       toast({
-        title: "????",
-        description: "????? ?? ??? ???? ????? ??",
+        title: "Ù…ÙˆÙÙ‚",
+        description: "Ù…Ø­ØµÙˆÙ„ Ø¨Ù‡ Ø³Ø¨Ø¯ Ø®Ø±ÛŒØ¯ Ø§Ø¶Ø§ÙÙ‡ Ø´Ø¯",
       });
     }
   };
@@ -357,7 +381,7 @@ const ProductDetail = () => {
   const handleBuyNow = () => {
     if (addProductToCart()) {
       // Navigate to checkout page
-      navigate("/checkout");
+    navigate("/checkout");
     }
   };
 
@@ -365,7 +389,7 @@ const ProductDetail = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">
-          ?? ??? ????????...
+          Ø¯Ø± Ø­Ø§Ù„ Ø¨Ø§Ø±Ú¯Ø°Ø§Ø±ÛŒ...
         </div>
       </div>
     );
@@ -375,7 +399,7 @@ const ProductDetail = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-muted-foreground">
-          {error ?? "????? ???? ???"}
+          {error ?? "Ù…Ø­ØµÙˆÙ„ ÛŒØ§ÙØª Ù†Ø´Ø¯"}
         </div>
       </div>
     );
@@ -407,12 +431,12 @@ const ProductDetail = () => {
     itemListElement: [{
       "@type": "ListItem",
       position: 1,
-      name: (isRTL || forceRTL) ? "+«+º+å+ç" : "Home",
+      name: (isRTL || forceRTL) ? "â•ªÂ«â•ªÂºâ”˜Ã¥â”˜Ã§" : "Home",
       item: window.location.origin
     }, {
       "@type": "ListItem",
       position: 2,
-      name: (isRTL || forceRTL) ? "+à+¡+¦+ê+ä+º+¬" : "Products",
+      name: (isRTL || forceRTL) ? "â”˜Ã â•ªÂ¡â•ªâ•¡â”˜Ãªâ”˜Ã¤â•ªÂºâ•ªÂ¬" : "Products",
       item: `${window.location.origin}/products`
     }, {
       "@type": "ListItem",
@@ -452,9 +476,9 @@ const ProductDetail = () => {
                     <img src={currentImage} alt={isRTL ? product.titleFa : product.title} className="w-full h-full object-cover" />
                     {product.badge && <div className="absolute top-4 ltr:left-4 rtl:right-4">
                         <Badge variant={product.badge}>
-                          {product.badge === "sale" && (isRTL ? "+¬+«+ü¦î+ü" : "Sale")}
-                          {product.badge === "new" && (isRTL ? "+¼+»¦î+»" : "New")}
-                          {product.badge === "hot" && (isRTL ? "+»+º+¦" : "Hot")}
+                          {product.badge === "sale" && (isRTL ? "â•ªÂ¬â•ªÂ«â”˜Ã¼â–ˆÃ®â”˜Ã¼" : "Sale")}
+                          {product.badge === "new" && (isRTL ? "â•ªÂ¼â•ªÂ»â–ˆÃ®â•ªÂ»" : "New")}
+                          {product.badge === "hot" && (isRTL ? "â•ªÂ»â•ªÂºâ•ªâ•‘" : "Hot")}
                         </Badge>
                       </div>}
                   </motion.div>
@@ -462,7 +486,7 @@ const ProductDetail = () => {
                   {/* Variants Selection */}
                   {((medusaVariants.length > 0 ? medusaVariants : product.variants) && (medusaVariants.length > 0 ? medusaVariants : product.variants).length > 0) && <div className="space-y-3 mt-4">
                       <label className="text-sm font-medium text-foreground">
-                        {isRTL ? "?????? ??? ????:" : "Select Duration:"}
+                        {isRTL ? "Ø§Ù†ØªØ®Ø§Ø¨ Ù…Ø¯Øª Ø²Ù…Ø§Ù†:" : "Select Duration:"}
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
                         {(medusaVariants.length > 0 ? medusaVariants : product.variants).map((variant, idx) => {
@@ -479,32 +503,32 @@ const ProductDetail = () => {
                               disabled={!variantInStock} 
                               className={cn("relative p-4 rounded-xl border-2 transition-all duration-200 min-w-0 overflow-hidden", "hover:scale-[1.02] active:scale-[0.98]", selectedVariant === variantId ? "border-primary bg-primary/10 shadow-lg shadow-primary/20" : "border-border/50 bg-surface-glass/30 hover:border-border", !variantInStock && "opacity-50 cursor-not-allowed hover:scale-100")}
                             >
-                              <div className="flex flex-col items-start gap-2 min-w-0">
-                                <span className="font-semibold text-foreground text-sm line-clamp-2">
+                            <div className="flex flex-col items-start gap-2 min-w-0">
+                              <span className="font-semibold text-foreground text-sm line-clamp-2">
                                   {variantName}
+                              </span>
+                              <div className="flex items-baseline gap-2 flex-wrap min-w-0">
+                                <span className="text-base sm:text-lg font-bold text-primary">
+                                    {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(variantPrice)} ØªÙˆÙ…Ø§Ù†
                                 </span>
-                                <div className="flex items-baseline gap-2 flex-wrap min-w-0">
-                                  <span className="text-base sm:text-lg font-bold text-primary">
-                                    {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(variantPrice)} ?????
-                                  </span>
                                   {variantOldPrice && <>
-                                      <span className="text-xs sm:text-sm text-muted-foreground line-through">
+                                    <span className="text-xs sm:text-sm text-muted-foreground line-through">
                                         {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(variantOldPrice)}
-                                      </span>
-                                      <Badge variant="destructive" className="text-xs">
+                                    </span>
+                                    <Badge variant="destructive" className="text-xs">
                                         -{Math.round((variantOldPrice - variantPrice) / variantOldPrice * 100)}%
-                                      </Badge>
-                                    </>}
-                                </div>
+                                    </Badge>
+                                  </>}
                               </div>
+                            </div>
                               {selectedVariant === variantId && <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                                  <Check className="w-4 h-4 text-primary-foreground" />
-                                </div>}
+                                <Check className="w-4 h-4 text-primary-foreground" />
+                              </div>}
                               {!variantInStock && <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-xl">
-                                  <span className="text-sm font-medium text-muted-foreground">
-                                    {isRTL ? "???????" : "Out of Stock"}
-                                  </span>
-                                </div>}
+                                <span className="text-sm font-medium text-muted-foreground">
+                                    {isRTL ? "Ù†Ø§Ù…ÙˆØ¬ÙˆØ¯" : "Out of Stock"}
+                                </span>
+                              </div>}
                             </button>
                           );
                         })}
@@ -517,11 +541,11 @@ const ProductDetail = () => {
                   {/* Breadcrumb */}
                   <nav className="mb-3 text-xs sm:text-sm text-muted-foreground flex items-center gap-2 flex-wrap min-w-0">
                     <Link to="/" className="hover:text-foreground transition-colors whitespace-nowrap">
-                      {(isRTL || forceRTL) ? "+«+º+å+ç" : "Home"}
+                      {(isRTL || forceRTL) ? "â•ªÂ«â•ªÂºâ”˜Ã¥â”˜Ã§" : "Home"}
                     </Link>
                     <ChevronRight className={cn("w-3 h-3 sm:w-4 sm:h-4 shrink-0", (isRTL || forceRTL) && "rotate-180")} />
                     <Link to="/products" className="hover:text-foreground transition-colors whitespace-nowrap">
-                      {(isRTL || forceRTL) ? "+à+¡+¦+ê+ä+º+¬" : "Products"}
+                      {(isRTL || forceRTL) ? "â”˜Ã â•ªÂ¡â•ªâ•¡â”˜Ãªâ”˜Ã¤â•ªÂºâ•ªÂ¬" : "Products"}
                     </Link>
                     <ChevronRight className={cn("w-3 h-3 sm:w-4 sm:h-4 shrink-0", (isRTL || forceRTL) && "rotate-180")} />
                     <span className="text-foreground line-clamp-1 min-w-0">{(isRTL || forceRTL) ? product.titleFa : product.title}</span>
@@ -539,7 +563,7 @@ const ProductDetail = () => {
                       </div>
                       <span className="font-semibold">4.9</span>
                       <span className="text-muted-foreground">
-                        {(isRTL || forceRTL) ? "(¦¦¦¦¦¦ +å+++¦)" : "(120 reviews)"}
+                        {(isRTL || forceRTL) ? "(â–ˆâ–’â–ˆâ–“â–ˆâ–‘ â”˜Ã¥â•ªâ••â•ªâ–’)" : "(120 reviews)"}
                       </span>
                     </a>
 
@@ -551,10 +575,10 @@ const ProductDetail = () => {
                       <Price current={getCurrentPrice()} old={getCurrentOldPrice()} className="text-xl sm:text-2xl whitespace-nowrap" />
                     </div>
                     {getCurrentOldPrice() && <p className="text-xs sm:text-sm text-green-600 dark:text-green-400 font-medium break-words">
-                        {(isRTL || forceRTL) ? "+¦+¦+ü+çGÇî+¼+ê¦î¦î +¦+à+º: " : "You save: "}
+                        {(isRTL || forceRTL) ? "â•ªâ•¡â•ªâ–’â”˜Ã¼â”˜Ã§Î“Ã‡Ã®â•ªÂ¼â”˜Ãªâ–ˆÃ®â–ˆÃ® â•ªâ”¤â”˜Ã â•ªÂº: " : "You save: "}
                         {new Intl.NumberFormat((isRTL || forceRTL) ? "fa-IR" : "en-US").format(getCurrentOldPrice()! - getCurrentPrice())}
                         {" "}
-                        {(isRTL || forceRTL) ? "+¬+ê+à+º+å" : "Toman"}
+                        {(isRTL || forceRTL) ? "â•ªÂ¬â”˜Ãªâ”˜Ã â•ªÂºâ”˜Ã¥" : "Toman"}
                         {" "}
                         ({Math.round((getCurrentOldPrice()! - getCurrentPrice()) / getCurrentOldPrice()! * 100)}%)
                       </p>}
@@ -585,13 +609,13 @@ const ProductDetail = () => {
                     <div className="flex gap-2 sm:gap-3 min-w-0">
                       <Button size="lg" onClick={handleBuyNow} className="flex-1 min-w-0 text-sm sm:text-base">
                         <ShoppingCart className="ltr:mr-1 rtl:ml-1 h-4 w-4 shrink-0" />
-                        <span className="truncate">{isRTL ? "????" : "Buy Now"}</span>
+                        <span className="truncate">{isRTL ? "Ø®Ø±ÛŒØ¯" : "Buy Now"}</span>
                       </Button>
                     </div>
 
                   {/* Policy Microcopy */}
                   <p className="text-xs text-muted-foreground text-center break-words">
-                    {(isRTL || forceRTL) ? "+++¦+¬¦î+¿+º+å¦î ¦¦¦¦/¦+ GÇó +¬+¦+ê¦î+¦ +¡+¦+º+¿ +¬+¦+à¦î+å¦î GÇó +¬+¡+ê¦î+ä +ü+ê+¦¦î" : "24/7 Support GÇó Guaranteed Exchange GÇó Fast Delivery"}
+                    {(isRTL || forceRTL) ? "â”˜â•›â•ªâ”¤â•ªÂ¬â–ˆÃ®â•ªÂ¿â•ªÂºâ”˜Ã¥â–ˆÃ® â–ˆâ–“â–ˆâ”¤/â–ˆâ•– Î“Ã‡Ã³ â•ªÂ¬â•ªâ•£â”˜Ãªâ–ˆÃ®â•ªâ•¢ â•ªÂ¡â•ªâ”‚â•ªÂºâ•ªÂ¿ â•ªÂ¬â•ªâ•¢â”˜Ã â–ˆÃ®â”˜Ã¥â–ˆÃ® Î“Ã‡Ã³ â•ªÂ¬â•ªÂ¡â”˜Ãªâ–ˆÃ®â”˜Ã¤ â”˜Ã¼â”˜Ãªâ•ªâ–’â–ˆÃ®" : "24/7 Support Î“Ã‡Ã³ Guaranteed Exchange Î“Ã‡Ã³ Fast Delivery"}
                   </p>
                   </div>
 
@@ -600,19 +624,19 @@ const ProductDetail = () => {
                     <div className="flex flex-col items-center text-center gap-1 sm:gap-2 min-w-0">
                       <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
                       <span className="text-xs text-muted-foreground break-words">
-                        {(isRTL || forceRTL) ? "+º+¦+¦+º+ä +¦+¦¦î+¦" : "Fast Shipping"}
+                        {(isRTL || forceRTL) ? "â•ªÂºâ•ªâ–’â•ªâ”‚â•ªÂºâ”˜Ã¤ â•ªâ”‚â•ªâ–’â–ˆÃ®â•ªâ•£" : "Fast Shipping"}
                       </span>
                     </div>
                     <div className="flex flex-col items-center text-center gap-1 sm:gap-2 min-w-0">
                       <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
                       <span className="text-xs text-muted-foreground break-words">
-                        {(isRTL || forceRTL) ? "+»+º+¦+º+å+¬¦î +º+¦+º+ä+¬" : "Authentic Guarantee"}
+                        {(isRTL || forceRTL) ? "â”ŒÂ»â•ªÂºâ•ªâ–’â•ªÂºâ”˜Ã¥â•ªÂ¬â–ˆÃ® â•ªÂºâ•ªâ•¡â•ªÂºâ”˜Ã¤â•ªÂ¬" : "Authentic Guarantee"}
                       </span>
                     </div>
                     <div className="flex flex-col items-center text-center gap-1 sm:gap-2 min-w-0">
                       <RefreshCw className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
                       <span className="text-xs text-muted-foreground break-words">
-                        {(isRTL || forceRTL) ? "+¿+º+¦+»+¦+¬ +ó+¦+º+å" : "Easy Returns"}
+                        {(isRTL || forceRTL) ? "â•ªÂ¿â•ªÂºâ•ªâ–“â”ŒÂ»â•ªâ”¤â•ªÂ¬ â•ªÃ³â•ªâ”‚â•ªÂºâ”˜Ã¥" : "Easy Returns"}
                       </span>
                     </div>
                   </div>
@@ -632,118 +656,88 @@ const ProductDetail = () => {
                   <div className="md:hidden">
                     <button onClick={() => setTocOpen(!tocOpen)} className="w-full flex items-center justify-between p-4 glass rounded-lg hover:bg-surface-glass/50 transition-colors">
                       <span className="font-semibold">
-                        {(isRTL || forceRTL) ? "+ü+ç+¦+¦+¬ +à+++º+ä+¿" : "Table of Contents"}
+                        {(isRTL || forceRTL) ? "â”˜Ã¼â”˜Ã§â•ªâ–’â•ªâ”‚â•ªÂ¬ â”˜Ã â•ªâ•–â•ªÂºâ”˜Ã¤â•ªÂ¿" : "Table of Contents"}
                       </span>
                       <ChevronDown className={cn("w-5 h-5 transition-transform", tocOpen && "rotate-180")} />
                     </button>
-                    {tocOpen && <nav className="mt-3 space-y-2 p-4 glass rounded-lg">
-                        <a href="#overview" className="block text-sm hover:text-primary transition-colors">
-                          {(isRTL || forceRTL) ? "+å+»+º+ç¦î +¬+ä¦î" : "Overview"}
-                        </a>
-                        <a href="#features" className="block text-sm hover:text-primary transition-colors">
-                          {(isRTL || forceRTL) ? "+ê¦î+ÿ+»¦îGÇî+ç+º¦î +¬+ä¦î+»¦î" : "Key Features"}
-                        </a>
-                        <a href="#usage" className="block text-sm hover:text-primary transition-colors">
-                          {(isRTL || forceRTL) ? "+å+¡+ê+ç +º+¦+¬+ü+º+»+ç" : "How to Use"}
-                        </a>
-                        <a href="#faq" className="block text-sm hover:text-primary transition-colors">
-                          {(isRTL || forceRTL) ? "+¦+ê+º+ä+º+¬ +à+¬+»+º+ê+ä" : "FAQ"}
-                        </a>
-                      </nav>}
+                    {tocOpen && (
+                      <nav className="mt-3 space-y-1 p-4 glass rounded-lg" dir="rtl">
+                        {tocHeadings.length > 0 ? (
+                          tocHeadings.map((heading) => (
+                            <a 
+                              key={heading.id}
+                              href={`#${heading.id}`}
+                              className={cn(
+                                "block text-sm hover:text-primary transition-colors text-right",
+                                heading.level === 1 ? "font-bold" :
+                                heading.level === 2 ? "font-semibold" :
+                                heading.level === 3 ? "pr-4 text-xs" :
+                                "pr-6 text-xs"
+                              )}
+                            >
+                              {heading.text}
+                            </a>
+                          ))
+                        ) : (
+                          <p className="text-sm text-muted-foreground text-right">
+                            {(isRTL || forceRTL) ? "â•ªâ•£â”˜Ã¥â•ªÂºâ”˜Ãªâ–ˆÃ®â”˜Ã¥ â•ªÂ»â•ªâ–’ â•ªÂ»â•ªâ”‚â•ªÂ¬â•ªâ–’â•ªâ”‚ â”˜Ã¥â–ˆÃ®â•ªâ”‚â•ªÂ¬" : "No headings available"}
+                          </p>
+                        )}
+                      </nav>
+                    )}
                   </div>
 
                   {/* Desktop Sticky TOC */}
-                  <nav className={cn("hidden md:block space-y-3", (isRTL || forceRTL) && "text-right")}>
-                    <h3 className="font-bold text-lg mb-4">
-                      {(isRTL || forceRTL) ? "+ü+ç+¦+¦+¬ +à+++º+ä+¿" : "Table of Contents"}
+                  <nav className={cn("hidden md:block space-y-1", (isRTL || forceRTL) && "text-right")} dir="rtl">
+                    <h3 className="font-bold text-lg mb-4 text-foreground">
+                      {(isRTL || forceRTL) ? "â”˜Ã¼â”˜Ã§â•ªâ–’â•ªâ”‚â•ªÂ¬ â”˜Ã â•ªâ•–â•ªÂºâ”˜Ã¤â•ªÂ¿" : "Table of Contents"}
                     </h3>
-                    <a href="#overview" className={cn("block text-sm py-2 px-3 rounded-lg transition-colors hover:bg-surface-glass/50", activeSection === "overview" && "bg-surface-glass text-primary font-medium")}> 
-                      {(isRTL || forceRTL) ? "+å+»+º+ç¦î +¬+ä¦î" : "Overview"}
-                    </a>
-                    <a href="#features" className={cn("block text-sm py-2 px-3 rounded-lg transition-colors hover:bg-surface-glass/50", activeSection === "features" && "bg-surface-glass text-primary font-medium")}>
-                      {(isRTL || forceRTL) ? "+ê¦î+ÿ+»¦îGÇî+ç+º¦î +¬+ä¦î+»¦î" : "Key Features"}
-                    </a>
-                    <a href="#usage" className={cn("block text-sm py-2 px-3 rounded-lg transition-colors hover:bg-surface-glass/50", activeSection === "usage" && "bg-surface-glass text-primary font-medium")}>
-                      {(isRTL || forceRTL) ? "+å+¡+ê+ç +º+¦+¬+ü+º+»+ç" : "How to Use"}
-                    </a>
-                    <a href="#faq" className={cn("block text-sm py-2 px-3 rounded-lg transition-colors hover:bg-surface-glass/50", activeSection === "faq" && "bg-surface-glass text-primary font-medium")}>
-                      {(isRTL || forceRTL) ? "+¦+ê+º+ä+º+¬ +à+¬+»+º+ê+ä" : "FAQ"}
-                    </a>
+                    {tocHeadings.length > 0 ? (
+                      tocHeadings.map((heading) => (
+                        <a 
+                          key={heading.id}
+                          href={`#${heading.id}`}
+                          className={cn(
+                            "block text-sm py-2 rounded-lg transition-colors hover:bg-surface-glass/50 text-right",
+                            heading.level === 1 ? "pr-3 font-bold text-base" :
+                            heading.level === 2 ? "pr-3 font-semibold" :
+                            heading.level === 3 ? "pr-6 text-xs" :
+                            "pr-9 text-xs",
+                            activeSection === heading.id && "bg-surface-glass text-primary font-medium"
+                          )}
+                        >
+                          {heading.text}
+                        </a>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-right pr-3">
+                        {(isRTL || forceRTL) ? "â•ªâ•£â”˜Ã¥â•ªÂºâ”˜Ãªâ–ˆÃ®â”˜Ã¥ â•ªÂ»â•ªâ–’ â•ªÂ»â•ªâ”‚â•ªÂ¬â•ªâ–’â•ªâ”‚ â”˜Ã¥â–ˆÃ®â•ªâ”‚â•ªÂ¬" : "No headings available"}
+                      </p>
+                    )}
                   </nav>
                 </div>
 
                 {/* Description Content */}
-                <div className={cn("prose prose-invert max-w-none", (isRTL || forceRTL) && "text-right")} dir={(isRTL || forceRTL) ? "rtl" : "ltr"}>
-                  <section id="overview" className="scroll-mt-24 mb-12">
-                    <h2 className="text-2xl font-bold mb-4">
-                      {(isRTL || forceRTL) ? "+å+»+º+ç¦î +¬+ä¦î" : "Overview"}
-                    </h2>
-                    <p className="text-foreground/80 leading-relaxed mb-4">
-                      {(isRTL || forceRTL) ? product.descriptionFa : product.description}
-                    </p>
-                    <p className="text-foreground/80 leading-relaxed">
-                      {(isRTL || forceRTL) ? "+º¦î+å +à+¡+¦+ê+ä +¿+º +º+¦+¬+ü+º+»+ç +º+¦ +¼+»¦î+»+¬+¦¦î+å +¬+¬+å+ê+ä+ê+ÿ¦îGÇî+ç+º¦î +¦+ê+¦ +++¦+º+¡¦î +¦+»+ç +ê +¿+¦+º¦î +º+¦+º+ª+ç +¿+ç+¬+¦¦î+å +¬+¼+¦+¿+ç +¬+º+¦+¿+¦¦î +¿+ç¦î+å+çGÇî+¦+º+¦¦î +¦+»+ç +º+¦+¬. +¿+º +«+¦¦î+» +º¦î+å +à+¡+¦+ê+ä+î +¦+à+º +º+¦ +++¦+¬¦î+¿+º+å¦î +¬+º+à+ä +ê +¿+çGÇî+¦+ê+¦+¦+¦+º+å¦îGÇî+ç+º¦î +à+å+++à +¿+ç+¦+çGÇî+à+å+» +«+ê+º+ç¦î+» +¦+»." : "This product is designed using the latest technologies and optimized to provide the best user experience. With your purchase, you'll benefit from full support and regular updates."}
-                    </p>
-                  </section>
-
-                  <section id="features" className="scroll-mt-24 mb-12">
-                    <h2 className="text-2xl font-bold mb-4">
-                      {(isRTL || forceRTL) ? "+ê¦î+ÿ+»¦îGÇî+ç+º¦î +¬+ä¦î+»¦î" : "Key Features"}
-                    </h2>
-                    <ul className="space-y-3">
-                      {((isRTL || forceRTL) ? product.featuresFa : product.features).map((feature, idx) => <li key={idx} className="flex items-start gap-3">
-                          <Check className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                          <span className="text-foreground/80">{feature}</span>
-                        </li>)}
-                    </ul>
-                  </section>
-
-                  <section id="usage" className="scroll-mt-24 mb-12">
-                    <h2 className="text-2xl font-bold mb-4">
-                      {(isRTL || forceRTL) ? "+å+¡+ê+ç +º+¦+¬+ü+º+»+ç" : "How to Use"}
-                    </h2>
-                    <div className="space-y-4 text-foreground/80">
-                      <div>
-                        <h3 className="text-lg font-semibold mb-2">
-                          {(isRTL || forceRTL) ? "¦¦. +¦+¦+ê+¦ +¬+º+¦" : "1. Getting Started"}
-                        </h3>
-                        <p className="leading-relaxed">
-                          {(isRTL || forceRTL) ? "+++¦ +º+¦ +»+¦¦î+º+ü+¬ +à+¡+¦+ê+ä+î +à+¦+º+¡+ä +¦+º+çGÇî+º+å+»+º+¦¦î +º+ê+ä¦î+ç +¦+º +++¿+é +»+¦+¬+ê+¦+º+ä+¦+à+ä +à+ê+¼+ê+» +º+å+¼+º+à +»+ç¦î+»." : "After receiving the product, follow the initial setup instructions provided."}
-                        </p>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold mb-2">
-                          {(isRTL || forceRTL) ? "¦¦. ++¦î+¬+¦+¿+å+»¦î" : "2. Configuration"}
-                        </h3>
-                        <p className="leading-relaxed">
-                          {(isRTL || forceRTL) ? "+¬+å++¦î+à+º+¬ +à+¡+¦+ê+ä +¦+º +¿+¦ +º+¦+º+¦ +å¦î+º+¦ +«+ê+» +¦+«+¦¦îGÇî+¦+º+¦¦î +¬+å¦î+»." : "Customize the product settings based on your needs."}
-                        </p>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold mb-2">
-                          {(isRTL || forceRTL) ? "¦¦. +º+¦+¬+ü+º+»+ç +¦+ê+¦+º+å+ç" : "3. Daily Use"}
-                        </h3>
-                        <p className="leading-relaxed">
-                          {(isRTL || forceRTL) ? "+º+¦ +¬+à+º+à¦î +é+º+¿+ä¦î+¬GÇî+ç+º¦î +à+¡+¦+ê+ä +»+¦ +ü+¦+º+ä¦î+¬GÇî+ç+º¦î +¦+ê+¦+à+¦+ç +«+ê+» +¿+ç+¦+çGÇî+à+å+» +¦+ê¦î+»." : "Take advantage of all product features in your daily activities."}
-                        </p>
-                      </div>
-                    </div>
-                  </section>
-
+                <div className={cn("max-w-none", (isRTL || forceRTL) && "text-right")} dir={(isRTL || forceRTL) ? "rtl" : "ltr"}>
+                  {/* Render Markdown Content */}
+                  <EnhancedMarkdownRenderer content={(isRTL || forceRTL) ? product.descriptionFa : product.description} />
+                  
                   {/* FAQ Section */}
-                  <section id="faq" className="scroll-mt-24">
-                    <h2 className="text-2xl font-bold mb-6">
-                      {(isRTL || forceRTL) ? "+¦+ê+º+ä+º+¬ +à+¬+»+º+ê+ä" : "Frequently Asked Questions"}
-                    </h2>
-                    <FaqAccordion items={faqs} />
-                  </section>
+                  {faqs.length > 0 && (
+                    <section id="faq" className="scroll-mt-24 mt-12">
+                      <h2 className="text-2xl font-bold mb-6 text-white">
+                        {(isRTL || forceRTL) ? "â•ªâ”‚â”˜Ãªâ•ªÂºâ”˜Ã¤â•ªÂºâ•ªÂ¬ â”˜Ã â•ªÂ¬â•ªÂ»â•ªÂºâ”˜Ãªâ”˜Ã¤" : "Frequently Asked Questions"}
+                      </h2>
+                      <FaqAccordion items={faqs} />
+                    </section>
+                  )}
                 </div>
               </div>
             </SurfaceGlass>
 
             {/* Related Products */}
             {relatedProducts.length > 0 && <section className="space-y-6">
-                <SectionHeader title={isRTL ? "+à+¡+¦+ê+ä+º+¬ +à+¦+¬+¿++" : "Related Products"} eyebrow={isRTL ? "++¦î+¦+å+ç+º+»+ç+º" : "Suggestions"} />
+                <SectionHeader title={isRTL ? "â”˜Ã â•ªÂ¡â•ªâ•¡â”˜Ãªâ”˜Ã¤â•ªÂºâ•ªÂ¬ â”˜Ã â•ªâ–’â•ªÂ¬â•ªÂ¿â•ªâ•–" : "Related Products"} eyebrow={isRTL ? "â”˜â•›â–ˆÃ®â•ªâ”¤â”˜Ã¥â”˜Ã§â•ªÂºâ•ªÂ»â”˜Ã§â•ªÂº" : "Suggestions"} />
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
                   {relatedProducts.map(prod => <ProductCard key={prod.id} id={prod.id} title={prod.title} image={prod.image} price={prod.price} oldPrice={prod.oldPrice} discountPct={prod.discountPct} onAdd={() => handleAddToCart()} />)}
                 </div>
@@ -751,7 +745,7 @@ const ProductDetail = () => {
 
             {/* Related Blog Posts */}
             {relatedPosts.length > 0 && <section className="space-y-6">
-                <SectionHeader title={isRTL ? "+à+é+º+ä+º+¬ +à+¦+¬+¿++" : "Related Articles"} eyebrow={isRTL ? "+à+++º+ä+¦+ç +¿¦î+¦+¬+¦" : "Read More"} />
+                <SectionHeader title={isRTL ? "â”˜Ã â”˜Ã©â•ªÂºâ”˜Ã¤â•ªÂºâ•ªÂ¬ â”˜Ã â•ªâ–’â•ªÂ¬â•ªÂ¿â•ªâ•–" : "Related Articles"} eyebrow={isRTL ? "â”˜Ã â•ªâ•–â•ªÂºâ”˜Ã¤â•ªâ•£â”˜Ã§ â•ªÂ¿â–ˆÃ®â•ªâ”¤â•ªÂ¬â•ªâ–’" : "Read More"} />
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
                   {relatedPosts.map(post => <BlogCard key={post._id} post={post} />)}
                 </div>
@@ -763,7 +757,7 @@ const ProductDetail = () => {
             <div className="flex items-center gap-3 p-3 sm:p-4 min-w-0 max-w-full">
               <div className="flex flex-col shrink-0 min-w-0">
                 <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {(isRTL || forceRTL) ? "+é¦î+à+¬:" : "Price:"}
+                  {(isRTL || forceRTL) ? "â”˜Ã©â–ˆÃ®â”˜Ã â•ªÂ¬:" : "Price:"}
                 </span>
                 <div className="min-w-0">
                   <Price current={getCurrentPrice()} old={getCurrentOldPrice()} className="text-base sm:text-lg" />
@@ -771,7 +765,7 @@ const ProductDetail = () => {
               </div>
               <Button size="default" onClick={handleBuyNow} className="flex-1 min-w-0 h-11 text-sm sm:text-base">
                 <ShoppingCart className="ltr:mr-1 rtl:ml-1 h-4 w-4 shrink-0" />
-                <span className="truncate">{(isRTL || forceRTL) ? "????" : "Buy Now"}</span>
+                <span className="truncate">{(isRTL || forceRTL) ? "Ø®Ø±ÛŒØ¯" : "Buy Now"}</span>
               </Button>
             </div>
           </div>
@@ -800,4 +794,3 @@ const ProductDetail = () => {
     </>;
 };
 export default ProductDetail;
-
