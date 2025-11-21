@@ -431,13 +431,13 @@ const ProductDetail = () => {
     itemListElement: [{
       "@type": "ListItem",
       position: 1,
-      name: (isRTL || forceRTL) ? "╪«╪º┘å┘ç" : "Home",
-      item: window.location.origin
-    }, {
-      "@type": "ListItem",
-      position: 2,
-      name: (isRTL || forceRTL) ? "┘à╪¡╪╡┘ê┘ä╪º╪¬" : "Products",
-      item: `${window.location.origin}/products`
+        name: "╪«╪º┘å┘ç",
+        item: window.location.origin
+      }, {
+        "@type": "ListItem",
+        position: 2,
+        name: "┘à╪¡╪╡┘ê┘ä╪º╪¬",
+        item: `${window.location.origin}/products`
     }, {
       "@type": "ListItem",
       position: 3,
@@ -541,11 +541,11 @@ const ProductDetail = () => {
                   {/* Breadcrumb */}
                   <nav className="mb-3 text-xs sm:text-sm text-muted-foreground flex items-center gap-2 flex-wrap min-w-0">
                     <Link to="/" className="hover:text-foreground transition-colors whitespace-nowrap">
-                      {(isRTL || forceRTL) ? "╪«╪º┘å┘ç" : "Home"}
+                      ╪«╪º┘å┘ç
                     </Link>
                     <ChevronRight className={cn("w-3 h-3 sm:w-4 sm:h-4 shrink-0", (isRTL || forceRTL) && "rotate-180")} />
                     <Link to="/products" className="hover:text-foreground transition-colors whitespace-nowrap">
-                      {(isRTL || forceRTL) ? "┘à╪¡╪╡┘ê┘ä╪º╪¬" : "Products"}
+                      ┘à╪¡╪╡┘ê┘ä╪º╪¬
                     </Link>
                     <ChevronRight className={cn("w-3 h-3 sm:w-4 sm:h-4 shrink-0", (isRTL || forceRTL) && "rotate-180")} />
                     <span className="text-foreground line-clamp-1 min-w-0">{(isRTL || forceRTL) ? product.titleFa : product.title}</span>
