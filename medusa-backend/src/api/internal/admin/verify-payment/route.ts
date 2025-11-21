@@ -1,7 +1,7 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { Modules } from "@medusajs/framework/utils";
 import { IPaymentModuleService, ICartModuleService } from "@medusajs/framework/types";
-import { applyCorsHeaders, handleCorsPreflight } from "../../../middleware/global-cors";
+import { applyCorsHeaders, handleCorsPreflight } from "../../../../middleware/global-cors";
 
 /**
  * POST /internal/admin/verify-payment
