@@ -2,11 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
-import { Clock, Share2, Facebook, Twitter, Linkedin, Link2, ChevronLeft, ArrowRight, ArrowLeft } from "lucide-react";
+import { Clock, Share2, Facebook, Twitter, Linkedin, Link2, ChevronLeft, ArrowRight, ArrowLeft, ChevronDown } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer/Footer";
 import { Button } from "@/components/ui/button";
 import { BlogCard } from "@/components/Blog/BlogCard";
+import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { PortableText } from "@portabletext/react";
@@ -14,6 +15,8 @@ import { fetchFromSanity } from "@/lib/sanity.client";
 import { validateSanityConfig } from "@/lib/sanity.config";
 import { postBySlugQuery } from "@/lib/sanity.queries";
 import { transformBlogPost, transformBlogPostDetail } from "@/lib/sanity.transformers";
+import EnhancedMarkdownRenderer from "@/components/EnhancedMarkdownRenderer";
+import { useDirection } from "@/contexts/DirectionContext";
 
 interface ArticleDetail {
   _id: string;
@@ -28,8 +31,30 @@ interface ArticleDetail {
   readTime?: number;
   tags?: string[];
   body?: any[];
+  bodyMarkdown?: string; // Markdown content for blog posts
   excerpt?: string;
 }
+
+// Helper function to extract headings from markdown content (same as ProductDetail)
+const extractHeadingsFromMarkdown = (content: string): Array<{ level: number; text: string; id: string }> => {
+  if (!content) return [];
+  
+  const lines = content.split('\n');
+  const headings: Array<{ level: number; text: string; id: string }> = [];
+  let headingCounter = 0;
+  
+  lines.forEach(line => {
+    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const text = headingMatch[2].trim();
+      const id = `heading-${headingCounter++}`;
+      headings.push({ level, text, id });
+    }
+  });
+  
+  return headings;
+};
 
 const portableTextComponents = {
   block: {
@@ -83,18 +108,27 @@ const portableTextComponents = {
     },
   },
 }
+const springTransition = {
+  type: "spring" as const,
+  stiffness: 220,
+  damping: 28,
+};
+
 export default function BlogPost() {
   const {
     slug
   } = useParams();
   const navigate = useNavigate();
+  const { isRTL } = useDirection();
   const [readingProgress, setReadingProgress] = useState(0);
   const [activeHeading, setActiveHeading] = useState("");
+  const [tocOpen, setTocOpen] = useState(false);
   const [headings, setHeadings] = useState<{
     id: string;
     text: string;
     level: number;
   }[]>([]);
+  const [tocHeadings, setTocHeadings] = useState<Array<{ level: number; text: string; id: string }>>([]);
   const [article, setArticle] = useState<ArticleDetail | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -151,25 +185,34 @@ export default function BlogPost() {
     };
   }, [slug]);
 
-  // Extract headings for ToC
+  // Extract headings from markdown content (same as ProductDetail)
   useEffect(() => {
-    const updateHeadings = () => {
-      if (!articleRef.current) return;
-      const headingElements = articleRef.current.querySelectorAll("h2, h3");
-      const extractedHeadings = Array.from(headingElements).map((heading, index) => {
-        const id = `heading-${index}`;
-        heading.id = id;
-        return {
-          id,
-          text: heading.textContent || "",
-          level: parseInt(heading.tagName[1])
-        };
-      });
-      setHeadings(extractedHeadings);
-    };
+    if (article?.bodyMarkdown) {
+      const headings = extractHeadingsFromMarkdown(article.bodyMarkdown);
+      setTocHeadings(headings);
+      // Also update the old headings format for compatibility
+      setHeadings(headings.map(h => ({ id: h.id, text: h.text, level: h.level })));
+    } else if (article?.body) {
+      // Fallback: Extract from rendered DOM if using PortableText
+      const updateHeadings = () => {
+        if (!articleRef.current) return;
+        const headingElements = articleRef.current.querySelectorAll("h2, h3");
+        const extractedHeadings = Array.from(headingElements).map((heading, index) => {
+          const id = `heading-${index}`;
+          heading.id = id;
+          return {
+            id,
+            text: heading.textContent || "",
+            level: parseInt(heading.tagName[1])
+          };
+        });
+        setHeadings(extractedHeadings);
+        setTocHeadings(extractedHeadings.map(h => ({ level: h.level, text: h.text, id: h.id })));
+      };
 
-    const raf = requestAnimationFrame(updateHeadings);
-    return () => cancelAnimationFrame(raf);
+      const raf = requestAnimationFrame(updateHeadings);
+      return () => cancelAnimationFrame(raf);
+    }
   }, [article]);
 
   // Reading progress tracking
@@ -409,8 +452,12 @@ export default function BlogPost() {
                 </div>
 
                 {/* Article Body */}
-                <div ref={articleRef} className="prose prose-invert prose-lg max-w-none">
-                  {article?.body && article.body.length > 0 ? (
+                <div ref={articleRef} className="prose prose-invert prose-lg max-w-none" dir="rtl">
+                  {article?.bodyMarkdown ? (
+                    // Use EnhancedMarkdownRenderer if markdown content exists
+                    <EnhancedMarkdownRenderer content={article.bodyMarkdown} />
+                  ) : article?.body && article.body.length > 0 ? (
+                    // Fallback to PortableText for Sanity rich text
                     <PortableText value={article.body} components={portableTextComponents} />
                   ) : (
                     <p className="text-muted-foreground text-sm">
@@ -454,19 +501,110 @@ export default function BlogPost() {
                 )}
               </article>
 
-              {/* Sidebar - Table of Contents */}
+              {/* Sidebar - Table of Contents (same style as ProductDetail) */}
               <aside className="hidden lg:block w-[280px] xl:w-[320px] shrink-0">
                 <div className="sticky top-24">
-                  <div className="glass border border-white/20 rounded-xl p-6">
-                    <h3 className="font-bold text-lg mb-4">فهرست مطالب</h3>
-                    <nav className="space-y-2">
-                      {headings.map(heading => <button key={heading.id} onClick={() => scrollToHeading(heading.id)} className={cn("w-full text-right px-3 py-2 rounded-lg transition-all text-sm", heading.level === 3 && "pr-6", activeHeading === heading.id ? "bg-primary/20 text-primary font-semibold" : "text-muted-foreground hover:bg-surface-glass hover:text-foreground")}>
-                          {heading.text}
-                        </button>)}
+                  <SurfaceGlass className="p-6">
+                    <h3 className="font-bold text-lg mb-4 text-foreground">فهرست مطالب</h3>
+                    <nav className="space-y-1" dir="rtl">
+                      {tocHeadings.length > 0 ? (
+                        tocHeadings.map((heading) => (
+                          <button
+                            key={heading.id}
+                            onClick={() => scrollToHeading(heading.id)}
+                            className={cn(
+                              "block w-full text-right py-2 rounded-lg transition-colors text-sm",
+                              heading.level === 1 ? "pr-3 font-bold text-base" :
+                              heading.level === 2 ? "pr-3 font-semibold" :
+                              heading.level === 3 ? "pr-6 text-xs" :
+                              "pr-9 text-xs",
+                              activeHeading === heading.id ? "bg-surface-glass text-primary font-medium" : "text-muted-foreground hover:bg-surface-glass/50 hover:text-foreground"
+                            )}
+                          >
+                            {heading.text}
+                          </button>
+                        ))
+                      ) : headings.length > 0 ? (
+                        // Fallback to old headings format
+                        headings.map(heading => (
+                          <button
+                            key={heading.id}
+                            onClick={() => scrollToHeading(heading.id)}
+                            className={cn(
+                              "block w-full text-right py-2 rounded-lg transition-colors text-sm",
+                              heading.level === 3 && "pr-6",
+                              activeHeading === heading.id ? "bg-surface-glass text-primary font-medium" : "text-muted-foreground hover:bg-surface-glass/50 hover:text-foreground"
+                            )}
+                          >
+                            {heading.text}
+                          </button>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground text-right pr-3">
+                          فهرست مطالب در دسترس نیست
+                        </p>
+                      )}
                     </nav>
-                  </div>
+                  </SurfaceGlass>
                 </div>
               </aside>
+
+              {/* Mobile TOC (same as ProductDetail) */}
+              <div className="lg:hidden mb-6">
+                <button
+                  onClick={() => setTocOpen(!tocOpen)}
+                  className="w-full flex items-center justify-between p-4 glass rounded-lg hover:bg-surface-glass/50 transition-colors"
+                >
+                  <span className="font-semibold">فهرست مطالب</span>
+                  <ChevronDown className={cn("w-5 h-5 transition-transform", tocOpen && "rotate-180")} />
+                </button>
+                {tocOpen && (
+                  <nav className="mt-3 space-y-1 p-4 glass rounded-lg" dir="rtl">
+                    {tocHeadings.length > 0 ? (
+                      tocHeadings.map((heading) => (
+                        <button
+                          key={heading.id}
+                          onClick={() => {
+                            scrollToHeading(heading.id);
+                            setTocOpen(false);
+                          }}
+                          className={cn(
+                            "block w-full text-right py-2 rounded-lg transition-colors text-sm",
+                            heading.level === 1 ? "font-bold" :
+                            heading.level === 2 ? "font-semibold" :
+                            heading.level === 3 ? "pr-4 text-xs" :
+                            "pr-6 text-xs",
+                            activeHeading === heading.id ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {heading.text}
+                        </button>
+                      ))
+                    ) : headings.length > 0 ? (
+                      headings.map(heading => (
+                        <button
+                          key={heading.id}
+                          onClick={() => {
+                            scrollToHeading(heading.id);
+                            setTocOpen(false);
+                          }}
+                          className={cn(
+                            "block w-full text-right py-2 rounded-lg transition-colors text-sm",
+                            heading.level === 3 && "pr-4 text-xs",
+                            activeHeading === heading.id ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {heading.text}
+                        </button>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-right">
+                        فهرست مطالب در دسترس نیست
+                      </p>
+                    )}
+                  </nav>
+                )}
+              </div>
             </div>
 
             {/* Related Posts */}
