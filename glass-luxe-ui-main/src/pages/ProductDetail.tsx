@@ -563,7 +563,7 @@ const ProductDetail = () => {
                       </div>
                       <span className="font-semibold">4.9</span>
                       <span className="text-muted-foreground">
-                        {(isRTL || forceRTL) ? "(█▒█▓█░ ┘å╪╕╪▒)" : "(120 reviews)"}
+                        (█▒█▓█░ ┘å╪╕╪▒)
                       </span>
                     </a>
 
@@ -575,12 +575,7 @@ const ProductDetail = () => {
                       <Price current={getCurrentPrice()} old={getCurrentOldPrice()} className="text-xl sm:text-2xl whitespace-nowrap" />
                     </div>
                     {getCurrentOldPrice() && <p className="text-xs sm:text-sm text-green-600 dark:text-green-400 font-medium break-words">
-                        {(isRTL || forceRTL) ? "╪╡╪▒┘ü┘çΓÇî╪¼┘ê█î█î ╪┤┘à╪º: " : "You save: "}
-                        {new Intl.NumberFormat((isRTL || forceRTL) ? "fa-IR" : "en-US").format(getCurrentOldPrice()! - getCurrentPrice())}
-                        {" "}
-                        {(isRTL || forceRTL) ? "╪¬┘ê┘à╪º┘å" : "Toman"}
-                        {" "}
-                        ({Math.round((getCurrentOldPrice()! - getCurrentPrice()) / getCurrentOldPrice()! * 100)}%)
+                        ╪╡╪▒┘ü┘çΓÇî╪¼┘ê█î█î ╪┤┘à╪º: {new Intl.NumberFormat("fa-IR").format(getCurrentOldPrice()! - getCurrentPrice())} ╪¬┘ê┘à╪º┘å ({Math.round((getCurrentOldPrice()! - getCurrentPrice()) / getCurrentOldPrice()! * 100)}%)
                       </p>}
                   </div>
 
@@ -609,13 +604,13 @@ const ProductDetail = () => {
                     <div className="flex gap-2 sm:gap-3 min-w-0">
                       <Button size="lg" onClick={handleBuyNow} className="flex-1 min-w-0 text-sm sm:text-base">
                         <ShoppingCart className="ltr:mr-1 rtl:ml-1 h-4 w-4 shrink-0" />
-                        <span className="truncate">{isRTL ? "خرید" : "Buy Now"}</span>
+                        <span className="truncate">خرید</span>
                       </Button>
                     </div>
 
                   {/* Policy Microcopy */}
                   <p className="text-xs text-muted-foreground text-center break-words">
-                    {(isRTL || forceRTL) ? "┘╛╪┤╪¬█î╪¿╪º┘å█î █▓█┤/█╖ ΓÇó ╪¬╪╣┘ê█î╪╢ ╪¡╪│╪º╪¿ ╪¬╪╢┘à█î┘å█î ΓÇó ╪¬╪¡┘ê█î┘ä ┘ü┘ê╪▒█î" : "24/7 Support ΓÇó Guaranteed Exchange ΓÇó Fast Delivery"}
+                    ┘╛╪┤╪¬█î╪¿╪º┘å█î █▓█┤/█╖ • ╪¬╪╣┘ê█î╪╢ ╪¡╪│╪º╪¿ ╪¬╪╢┘à█î┘å█î • ╪¬╪¡┘ê█î┘ä ┘ü┘ê╪▒█î
                   </p>
                   </div>
 
@@ -624,19 +619,19 @@ const ProductDetail = () => {
                     <div className="flex flex-col items-center text-center gap-1 sm:gap-2 min-w-0">
                       <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
                       <span className="text-xs text-muted-foreground break-words">
-                        {(isRTL || forceRTL) ? "╪º╪▒╪│╪º┘ä ╪│╪▒█î╪╣" : "Fast Shipping"}
+                        ╪º╪▒╪│╪º┘ä ╪│╪▒█î╪╣
                       </span>
                     </div>
                     <div className="flex flex-col items-center text-center gap-1 sm:gap-2 min-w-0">
                       <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
                       <span className="text-xs text-muted-foreground break-words">
-                        {(isRTL || forceRTL) ? "┌»╪º╪▒╪º┘å╪¬█î ╪º╪╡╪º┘ä╪¬" : "Authentic Guarantee"}
+                        ┌»╪º╪▒╪º┘å╪¬█î ╪º╪╡╪º┘ä╪¬
                       </span>
                     </div>
                     <div className="flex flex-col items-center text-center gap-1 sm:gap-2 min-w-0">
                       <RefreshCw className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
                       <span className="text-xs text-muted-foreground break-words">
-                        {(isRTL || forceRTL) ? "╪¿╪º╪▓┌»╪┤╪¬ ╪ó╪│╪º┘å" : "Easy Returns"}
+                        ╪¿╪º╪▓┌»╪┤╪¬ ╪ó╪│╪º┘å
                       </span>
                     </div>
                   </div>
@@ -656,7 +651,7 @@ const ProductDetail = () => {
                   <div className="md:hidden">
                     <button onClick={() => setTocOpen(!tocOpen)} className="w-full flex items-center justify-between p-4 glass rounded-lg hover:bg-surface-glass/50 transition-colors">
                       <span className="font-semibold">
-                        {(isRTL || forceRTL) ? "┘ü┘ç╪▒╪│╪¬ ┘à╪╖╪º┘ä╪¿" : "Table of Contents"}
+                        ┘ü┘ç╪▒╪│╪¬ ┘à╪╖╪º┘ä╪¿
                       </span>
                       <ChevronDown className={cn("w-5 h-5 transition-transform", tocOpen && "rotate-180")} />
                     </button>
@@ -676,11 +671,11 @@ const ProductDetail = () => {
                               )}
                             >
                               {heading.text}
-                            </a>
+                        </a>
                           ))
                         ) : (
                           <p className="text-sm text-muted-foreground text-right">
-                            {(isRTL || forceRTL) ? "╪╣┘å╪º┘ê█î┘å ╪»╪▒ ╪»╪│╪¬╪▒╪│ ┘å█î╪│╪¬" : "No headings available"}
+                            ╪╣┘å╪º┘ê█î┘å ╪»╪▒ ╪»╪│╪¬╪▒╪│ ┘å█î╪│╪¬
                           </p>
                         )}
                       </nav>
@@ -688,9 +683,9 @@ const ProductDetail = () => {
                   </div>
 
                   {/* Desktop Sticky TOC */}
-                  <nav className={cn("hidden md:block space-y-1", (isRTL || forceRTL) && "text-right")} dir="rtl">
+                  <nav className="hidden md:block space-y-1 text-right" dir="rtl">
                     <h3 className="font-bold text-lg mb-4 text-foreground">
-                      {(isRTL || forceRTL) ? "┘ü┘ç╪▒╪│╪¬ ┘à╪╖╪º┘ä╪¿" : "Table of Contents"}
+                      ┘ü┘ç╪▒╪│╪¬ ┘à╪╖╪º┘ä╪¿
                     </h3>
                     {tocHeadings.length > 0 ? (
                       tocHeadings.map((heading) => (
@@ -707,11 +702,11 @@ const ProductDetail = () => {
                           )}
                         >
                           {heading.text}
-                        </a>
+                    </a>
                       ))
                     ) : (
                       <p className="text-sm text-muted-foreground text-right pr-3">
-                        {(isRTL || forceRTL) ? "╪╣┘å╪º┘ê█î┘å ╪»╪▒ ╪»╪│╪¬╪▒╪│ ┘å█î╪│╪¬" : "No headings available"}
+                        ╪╣┘å╪º┘ê█î┘å ╪»╪▒ ╪»╪│╪¬╪▒╪│ ┘å█î╪│╪¬
                       </p>
                     )}
                   </nav>
@@ -721,15 +716,15 @@ const ProductDetail = () => {
                 <div className={cn("max-w-none", (isRTL || forceRTL) && "text-right")} dir={(isRTL || forceRTL) ? "rtl" : "ltr"}>
                   {/* Render Markdown Content */}
                   <EnhancedMarkdownRenderer content={(isRTL || forceRTL) ? product.descriptionFa : product.description} />
-                  
+
                   {/* FAQ Section */}
                   {faqs.length > 0 && (
                     <section id="faq" className="scroll-mt-24 mt-12">
                       <h2 className="text-2xl font-bold mb-6 text-white">
-                        {(isRTL || forceRTL) ? "╪│┘ê╪º┘ä╪º╪¬ ┘à╪¬╪»╪º┘ê┘ä" : "Frequently Asked Questions"}
+                        ╪│┘ê╪º┘ä╪º╪¬ ┘à╪¬╪»╪º┘ê┘ä
                       </h2>
-                      <FaqAccordion items={faqs} />
-                    </section>
+                    <FaqAccordion items={faqs} />
+                  </section>
                   )}
                 </div>
               </div>
@@ -737,7 +732,7 @@ const ProductDetail = () => {
 
             {/* Related Products */}
             {relatedProducts.length > 0 && <section className="space-y-6">
-                <SectionHeader title={isRTL ? "┘à╪¡╪╡┘ê┘ä╪º╪¬ ┘à╪▒╪¬╪¿╪╖" : "Related Products"} eyebrow={isRTL ? "┘╛█î╪┤┘å┘ç╪º╪»┘ç╪º" : "Suggestions"} />
+                <SectionHeader title="┘à╪¡╪╡┘ê┘ä╪º╪¬ ┘à╪▒╪¬╪¿╪╖" eyebrow="┘╛█î╪┤┘å┘ç╪º╪»┘ç╪º" />
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
                   {relatedProducts.map(prod => <ProductCard key={prod.id} id={prod.id} title={prod.title} image={prod.image} price={prod.price} oldPrice={prod.oldPrice} discountPct={prod.discountPct} onAdd={() => handleAddToCart()} />)}
                 </div>
@@ -745,7 +740,7 @@ const ProductDetail = () => {
 
             {/* Related Blog Posts */}
             {relatedPosts.length > 0 && <section className="space-y-6">
-                <SectionHeader title={isRTL ? "┘à┘é╪º┘ä╪º╪¬ ┘à╪▒╪¬╪¿╪╖" : "Related Articles"} eyebrow={isRTL ? "┘à╪╖╪º┘ä╪╣┘ç ╪¿█î╪┤╪¬╪▒" : "Read More"} />
+                <SectionHeader title="┘à┘é╪º┘ä╪º╪¬ ┘à╪▒╪¬╪¿╪╖" eyebrow="┘à╪╖╪º┘ä╪╣┘ç ╪¿█î╪┤╪¬╪▒" />
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
                   {relatedPosts.map(post => <BlogCard key={post._id} post={post} />)}
                 </div>
@@ -757,7 +752,7 @@ const ProductDetail = () => {
             <div className="flex items-center gap-3 p-3 sm:p-4 min-w-0 max-w-full">
               <div className="flex flex-col shrink-0 min-w-0">
                 <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {(isRTL || forceRTL) ? "┘é█î┘à╪¬:" : "Price:"}
+                  ┘é█î┘à╪¬:
                 </span>
                 <div className="min-w-0">
                   <Price current={getCurrentPrice()} old={getCurrentOldPrice()} className="text-base sm:text-lg" />
@@ -765,7 +760,7 @@ const ProductDetail = () => {
               </div>
               <Button size="default" onClick={handleBuyNow} className="flex-1 min-w-0 h-11 text-sm sm:text-base">
                 <ShoppingCart className="ltr:mr-1 rtl:ml-1 h-4 w-4 shrink-0" />
-                <span className="truncate">{(isRTL || forceRTL) ? "خرید" : "Buy Now"}</span>
+                <span className="truncate">خرید</span>
               </Button>
             </div>
           </div>
