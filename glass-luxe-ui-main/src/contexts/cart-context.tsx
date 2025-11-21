@@ -122,20 +122,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [state.items]);
 
   const addItem = (item: Omit<CartItem, "quantity"> & { quantity?: number }) => {
-    console.log('[CART-CONTEXT] Adding item to cart:', {
-      id: item.id,
-      title: item.title,
-      price: item.price,
-      quantity: item.quantity || 1,
-      sanity_slug: item.sanity_slug,
-      variant_id: item.variant_id,
-      option_name: item.option_name
-    });
     dispatch({
       type: "ADD_ITEM",
       payload: { ...item, quantity: item.quantity || 1 },
     });
-    console.log('[CART-CONTEXT] ✅ Item added successfully');
   };
 
   const removeItem = (id: number) => {
