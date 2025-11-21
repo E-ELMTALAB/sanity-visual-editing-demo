@@ -186,8 +186,17 @@ export async function verifyPayment(authority: string, status: string, cartId: s
       } catch {
         errorData = { error: errorText || `HTTP ${response.status}` };
       }
-      // Match error format from sharifgpt-website API route
-      throw new Error(errorData.error || `HTTP ${response.status}`);
+      
+      // Return error response in same format as success (don't throw)
+      // This matches sharifgpt-website behavior where API route returns { success: false, error: "..." }
+      const errorResult = {
+        success: false,
+        error: errorData.error || errorData.message || `HTTP ${response.status}`,
+        details: errorData
+      };
+      console.log('[MEDUSA-VERIFY] Returning error result:', errorResult);
+      console.log('[MEDUSA-VERIFY] =========================================');
+      return errorResult;
     }
     
     const result = await response.json();

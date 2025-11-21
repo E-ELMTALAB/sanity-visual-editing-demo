@@ -72,6 +72,17 @@ export default function PaymentCallback() {
         const result = await verifyPayment(authority, status || '', resourceId);
 
         console.log('[PAYMENT-CALLBACK] Verification result:', result);
+        console.log('[PAYMENT-CALLBACK] Result type:', typeof result);
+        console.log('[PAYMENT-CALLBACK] Result keys:', result ? Object.keys(result) : 'result is null/undefined');
+
+        // Check if result exists and has success property
+        if (!result) {
+          console.error('[PAYMENT-CALLBACK] ❌ Verification result is null or undefined');
+          setStatus('error');
+          setErrorMessage('خطا در دریافت پاسخ از سرور');
+          console.log('[PAYMENT-CALLBACK] =========================================');
+          return;
+        }
 
         if (result.success) {
           console.log('[PAYMENT-CALLBACK] ✅ Payment verification successful');
@@ -100,6 +111,7 @@ export default function PaymentCallback() {
         } else {
           console.error('[PAYMENT-CALLBACK] ❌ Payment verification failed');
           console.error('[PAYMENT-CALLBACK] Error:', result.error);
+          console.error('[PAYMENT-CALLBACK] Full result:', JSON.stringify(result, null, 2));
           setStatus('error');
           setErrorMessage(result.error || 'خطا در تأیید پرداخت');
           console.log('[PAYMENT-CALLBACK] =========================================');
