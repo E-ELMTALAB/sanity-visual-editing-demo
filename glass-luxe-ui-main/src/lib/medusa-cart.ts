@@ -216,7 +216,13 @@ export async function verifyPayment(authority: string, status: string, cartId: s
     console.error('[MEDUSA-VERIFY] ❌ Payment verification error:', error.message);
     console.error('[MEDUSA-VERIFY] Error stack:', error.stack);
     console.log('[MEDUSA-VERIFY] =========================================');
-    throw error;
+    
+    // Return error object instead of throwing to match sharifgpt-website behavior
+    return {
+      success: false,
+      error: error.message || 'خطا در پردازش پرداخت',
+      details: error
+    };
   }
 }
 

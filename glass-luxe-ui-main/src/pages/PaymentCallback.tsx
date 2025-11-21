@@ -104,17 +104,13 @@ export default function PaymentCallback() {
           setStatus('success');
           setVerifyData(result.data);
           
-          // Store order data for OrderConfirmation page
-          console.log('[PAYMENT-CALLBACK] Storing order data in localStorage');
-          localStorage.setItem('last_order_data', JSON.stringify(result.data));
-          
-          // Clear pending data
+          // Clear pending data (matches sharifgpt-website exactly)
           console.log('[PAYMENT-CALLBACK] Clearing pending payment data from localStorage');
           localStorage.removeItem('pending_resource_id');
           localStorage.removeItem('pending_payment_authority');
           localStorage.removeItem('pending_payment_session_id');
           
-          // Clear cart after successful payment
+          // Clear cart after successful payment (matches sharifgpt-website)
           console.log('[PAYMENT-CALLBACK] Clearing cart');
           clearCart();
           
@@ -189,43 +185,46 @@ export default function PaymentCallback() {
     );
   }
 
+  // Match exact UI from sharifgpt-website app/payment/success/page.tsx
   return (
     <>
       <Helmet>
         <title>پرداخت موفق - SharifGPT</title>
       </Helmet>
-      <div className="min-h-screen flex flex-col">
-        <Header onSearch={() => {}} />
-        <main className="flex-1 flex items-center justify-center py-16">
-          <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">پرداخت موفق</h1>
-            <p className="text-gray-600 mb-6">سفارش شما با موفقیت ثبت شد</p>
-            
-            {verifyData && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-6 text-right">
-                <h3 className="font-bold text-gray-800 mb-2">جزئیات سفارش</h3>
-                <p className="text-sm text-gray-600">کد پیگیری: {verifyData.ref_id}</p>
-                <p className="text-sm text-gray-600">مبلغ: {Number(verifyData.amount || 0).toLocaleString()} {verifyData.currency_code || ''}</p>
-                <p className="text-sm text-gray-600">تعداد کالا: {verifyData.items?.length || 0} عدد</p>
-              </div>
-            )}
-
-            <div className="space-y-3">
-              <Button asChild className="w-full">
-                <Link to={`/order/confirmation?oid=${verifyData?.ref_id || 'N/A'}`}>مشاهده جزئیات سفارش</Link>
-              </Button>
-              <Button asChild variant="outline" className="w-full">
-                <Link to="/products">ادامه خرید</Link>
-              </Button>
-            </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center" dir="rtl">
+        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
           </div>
-        </main>
-        <Footer links={{ products: "/products", magazine: "/magazine", courses: "/courses", pricing: "/pricing", support: "/support" }} socials={[]} />
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">پرداخت موفق</h1>
+          <p className="text-gray-600 mb-6">سفارش شما با موفقیت ثبت شد</p>
+          
+          {verifyData && (
+            <div className="bg-gray-50 rounded-lg p-4 mb-6 text-right">
+              <h3 className="font-bold text-gray-800 mb-2">جزئیات سفارش</h3>
+              <p className="text-sm text-gray-600">کد پیگیری: {verifyData.ref_id}</p>
+              <p className="text-sm text-gray-600">مبلغ: {Number(verifyData.amount || 0).toLocaleString()} {verifyData.currency_code || ''}</p>
+              <p className="text-sm text-gray-600">تعداد کالا: {verifyData.items?.length || 0} عدد</p>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <Link
+              to="/products"
+              className="block w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              ادامه خرید
+            </Link>
+            <Link
+              to="/"
+              className="block w-full px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              بازگشت به خانه
+            </Link>
+          </div>
+        </div>
       </div>
     </>
   );
