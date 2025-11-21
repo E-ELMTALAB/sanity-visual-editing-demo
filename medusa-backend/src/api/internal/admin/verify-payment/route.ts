@@ -1,6 +1,7 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { Modules } from "@medusajs/framework/utils";
 import { IPaymentModuleService, ICartModuleService } from "@medusajs/framework/types";
+import { applyCorsHeaders, handleCorsPreflight } from "../../../middleware/global-cors";
 
 /**
  * POST /internal/admin/verify-payment
@@ -15,6 +16,13 @@ import { IPaymentModuleService, ICartModuleService } from "@medusajs/framework/t
  * }
  */
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
+  // Apply CORS headers
+  applyCorsHeaders(req, res);
+  
+  // Handle preflight requests
+  if (handleCorsPreflight(req, res)) {
+    return;
+  }
   try {
     const body = req.body as {
       ref_id: string;
@@ -141,5 +149,10 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       stack: process.env.NODE_ENV === "development" ? error.stack : undefined
     });
   }
+};
+
+export const OPTIONS = async (req: MedusaRequest, res: MedusaResponse) => {
+  applyCorsHeaders(req, res);
+  res.status(200).end();
 };
 
