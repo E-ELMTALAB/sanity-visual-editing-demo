@@ -15,12 +15,41 @@ interface ImageHeroProps {
   slide?: HeroSlide;
 }
 
+// Helper function to normalize URLs - ensures external URLs are properly formatted
+const normalizeUrl = (url: string | undefined): string => {
+  if (!url) return "#";
+  
+  // If already starts with http:// or https://, return as is
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  
+  // If starts with //, add https:
+  if (url.startsWith("//")) {
+    return `https:${url}`;
+  }
+  
+  // If it looks like an external URL (contains . or starts with common protocols), add https://
+  // This handles cases like t.me/sharifgpt, www.example.com, etc.
+  if (url.includes(".") && !url.startsWith("/")) {
+    return `https://${url}`;
+  }
+  
+  // Otherwise, treat as relative URL (starts with /)
+  return url;
+};
+
 export default function ImageHero({ slide }: ImageHeroProps) {
   // Use Sanity data if available, otherwise use fallback
   const title = slide?.title || "اکانت‌ها و اشتراک‌های مطمئن — سریع و تمیز";
   const subtitle = slide?.subtitle || "خرید امن با پشتیبانی ۲۴/۷ و تعویض حساب تضمینی برای سرویس‌های هوش مصنوعی، سوشیال مدیا و آموزشی.";
   const buttonText = slide?.buttonText || "عضویت در کانال تلگرام";
-  const buttonHref = slide?.buttonHref || "https://t.me/SharifGPT";
+  const rawButtonHref = slide?.buttonHref || "https://t.me/SharifGPT";
+  const buttonHref = normalizeUrl(rawButtonHref);
+  
+  // Determine if it's an external URL (for target and rel attributes)
+  const isExternalUrl = buttonHref.startsWith("http://") || buttonHref.startsWith("https://");
+  
   const backgroundImage = slide?.image || heroBg;
   const backgroundSrcSet = slide?.imageSrcSet;
   const heroSizes = "(max-width: 1024px) 100vw, 1200px";
@@ -86,8 +115,10 @@ export default function ImageHero({ slide }: ImageHeroProps) {
             </p>
 
             <div className="mt-8">
-              <a href={buttonHref} target="_blank" rel="noopener"
-                 className="inline-flex items-center rounded-full bg-white/20 backdrop-blur-md text-white px-6 py-3 text-base font-semibold border border-white/30 hover:bg-white/30 hover:border-white/40 transition-all shadow-lg hover:shadow-2xl hover:scale-105 w-fit">
+              <a 
+                href={buttonHref} 
+                {...(isExternalUrl ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                className="inline-flex items-center rounded-full bg-white/20 backdrop-blur-md text-white px-6 py-3 text-base font-semibold border border-white/30 hover:bg-white/30 hover:border-white/40 transition-all shadow-lg hover:shadow-2xl hover:scale-105 w-fit">
                 {buttonText}
               </a>
             </div>
