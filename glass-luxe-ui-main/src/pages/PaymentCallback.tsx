@@ -45,23 +45,34 @@ export default function PaymentCallback() {
         }
 
         // Match exact format from sharifgpt-website app/payment/success/page.tsx
+        // IMPORTANT: Only use cart_id from localStorage, NOT from URL
+        // The URL cart_id might be wrong or different from the one we created
         const authority = searchParams.get('Authority');
         const status = searchParams.get('Status');
-        const resourceId = localStorage.getItem('pending_resource_id') || searchParams.get('cart_id');
+        const resourceId = localStorage.getItem('pending_resource_id');
+        const cartIdFromUrl = searchParams.get('cart_id'); // Only for logging/debugging
 
         console.log('[PAYMENT-CALLBACK] Authority from URL:', authority);
         console.log('[PAYMENT-CALLBACK] Status from URL:', status);
-        console.log('[PAYMENT-CALLBACK] cart_id from URL:', searchParams.get('cart_id'));
-        console.log('[PAYMENT-CALLBACK] pending_resource_id from localStorage:', localStorage.getItem('pending_resource_id'));
-        console.log('[PAYMENT-CALLBACK] Final resourceId:', resourceId);
+        console.log('[PAYMENT-CALLBACK] cart_id from URL (for reference only):', cartIdFromUrl);
+        console.log('[PAYMENT-CALLBACK] pending_resource_id from localStorage:', resourceId);
+        console.log('[PAYMENT-CALLBACK] Using resourceId from localStorage ONLY:', resourceId);
         console.log('[PAYMENT-CALLBACK] resourceId type:', typeof resourceId);
 
-        if (!authority || !resourceId) {
-          console.error('[PAYMENT-CALLBACK] ❌ Missing required parameters');
-          console.error('[PAYMENT-CALLBACK] Authority present:', !!authority);
-          console.error('[PAYMENT-CALLBACK] ResourceId present:', !!resourceId);
+        if (!authority) {
+          console.error('[PAYMENT-CALLBACK] ❌ Missing Authority parameter');
           setStatus('error');
-          setErrorMessage('اطلاعات پرداخت ناقص است');
+          setErrorMessage('کد پرداخت (Authority) یافت نشد');
+          console.log('[PAYMENT-CALLBACK] =========================================');
+          return;
+        }
+
+        if (!resourceId) {
+          console.error('[PAYMENT-CALLBACK] ❌ Missing cart_id from localStorage');
+          console.error('[PAYMENT-CALLBACK] This means the cart_id was not stored before redirecting to payment gateway');
+          console.error('[PAYMENT-CALLBACK] Cart ID from URL (ignored):', cartIdFromUrl);
+          setStatus('error');
+          setErrorMessage('شناسه سبد خرید یافت نشد. لطفاً از طریق صفحه سفارشات اقدام کنید.');
           console.log('[PAYMENT-CALLBACK] =========================================');
           return;
         }
