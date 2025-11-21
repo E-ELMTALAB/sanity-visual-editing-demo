@@ -171,12 +171,19 @@ export function Header({ onSearch, megaItems, active }: HeaderProps) {
               {/* Right Actions */}
               <div className="flex items-center gap-2">
                 {/* Contact Button */}
-                <Button variant="ghost" size="sm" className="hidden lg:flex items-center gap-2 glass rounded-full px-4">
-                  <div className="relative">
-                    <Headphones className="h-4 w-4" />
-                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                  </div>
-                  <span className="text-sm font-medium">پشتیبانی</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="hidden lg:flex items-center gap-2 glass rounded-full px-4"
+                  asChild
+                >
+                  <a href="/contact">
+                    <div className="relative">
+                      <Headphones className="h-4 w-4" />
+                      <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                    </div>
+                    <span className="text-sm font-medium">پشتیبانی</span>
+                  </a>
                 </Button>
 
                 {/* Search */}
@@ -328,6 +335,24 @@ export function Header({ onSearch, megaItems, active }: HeaderProps) {
                     </motion.a>
                   );
                 })}
+                
+                {/* Customer Service Link (Mobile) */}
+                <motion.a
+                  href="/contact"
+                  initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ ...springTransition, delay: navItems.length * 0.05 }}
+                  className="block px-4 py-3 text-base font-medium hover:bg-surface-glass rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none text-muted-foreground"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Headphones className="h-5 w-5" />
+                      <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                    </div>
+                    <span>پشتیبانی</span>
+                  </div>
+                </motion.a>
               </nav>
 
               {/* Language Section */}
