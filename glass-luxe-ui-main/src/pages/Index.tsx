@@ -88,7 +88,8 @@ const Index = () => {
   const [magazinePosts, setMagazinePosts] = useState<any[]>([]);
   const [tabbedProducts, setTabbedProducts] = useState<any[]>([]);
   const [collectionsBanner, setCollectionsBanner] = useState<any>(null);
-  const [seoContent, setSeoContent] = useState<string>('');
+  const [seoContent, setSeoContent] = useState<string | null>(null);
+  const [seoContentLoaded, setSeoContentLoaded] = useState(false);
 
   // Intersection Observer for Footer - delay rendering until near viewport
   useEffect(() => {
@@ -123,6 +124,7 @@ const Index = () => {
     async function loadHomepageData() {
       try {
         setIsLoading(true);
+        setSeoContentLoaded(false);
 
         const categoryMap: Record<string, string> = {
           ai: "ai",
@@ -229,11 +231,15 @@ const Index = () => {
           setCollectionsBanner(null);
         }
 
-        if (homeData?.seoContent) {
-          setSeoContent(homeData.seoContent);
+        if (homeData?.seoContent && typeof homeData.seoContent === 'string') {
+          const trimmedContent = homeData.seoContent.trim();
+          console.log('[SEO Content] Setting content:', trimmedContent.substring(0, 50) + '...');
+          setSeoContent(trimmedContent);
         } else {
-          setSeoContent('');
+          console.log('[SEO Content] No valid content found:', typeof homeData?.seoContent, homeData?.seoContent);
+          setSeoContent(null);
         }
+        setSeoContentLoaded(true);
       } catch (error) {
         console.error("[HOMEPAGE] ❌ Failed to fetch:", error);
       } finally {
@@ -508,8 +514,8 @@ const Index = () => {
       />
       )}
 
-      {/* SEO Content Section - Only render when Sanity data exists */}
-      {seoContent && (
+      {/* SEO Content Section - Only render when Sanity data exists and is loaded */}
+      {seoContentLoaded && seoContent && (
         <section className="container mx-auto px-4 md:px-6 py-16">
           <div className="max-w-4xl mx-auto">
             <EnhancedMarkdownRenderer content={seoContent} />

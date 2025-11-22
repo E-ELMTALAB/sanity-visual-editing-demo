@@ -2,14 +2,21 @@ import React from 'react';
 
 // Enhanced Markdown Renderer with heading IDs for table of contents
 const EnhancedMarkdownRenderer = ({ content }) => {
-  if (!content) {
+  // Ensure content is a string
+  if (!content || typeof content !== 'string') {
+    return null;
+  }
+
+  // Trim whitespace and check if empty
+  const trimmedContent = content.trim();
+  if (!trimmedContent) {
     return null;
   }
 
   // Helper to parse inline markdown like **bold**, *italic*, `code`, [links], and images
   const renderInlineMarkdown = (text) => {
-    if (!text) return '';
-    
+    if (!text || typeof text !== 'string') return '';
+
     // Split text by markdown delimiters, keeping the delimiters
     const parts = text.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`|\[.*?\]\(.*?\)|!\[.*?\]\(.*?\))/g);
 
@@ -80,7 +87,7 @@ const EnhancedMarkdownRenderer = ({ content }) => {
 
   // Process content into blocks
   const blocks = [];
-  const lines = content.split('\n');
+  const lines = trimmedContent.split('\n');
   let currentList = [];
   let currentOrderedList = [];
   let currentCodeBlock = [];
