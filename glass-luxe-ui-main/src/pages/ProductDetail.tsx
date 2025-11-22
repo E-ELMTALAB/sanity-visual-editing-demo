@@ -431,12 +431,12 @@ const ProductDetail = () => {
     itemListElement: [{
       "@type": "ListItem",
       position: 1,
-        name: "╪«╪º┘å┘ç",
+        name: "خانه",
         item: window.location.origin
       }, {
         "@type": "ListItem",
         position: 2,
-        name: "┘à╪¡╪╡┘ê┘ä╪º╪¬",
+        name: "محصولات",
         item: `${window.location.origin}/products`
     }, {
       "@type": "ListItem",
@@ -476,9 +476,9 @@ const ProductDetail = () => {
                     <img src={currentImage} alt={isRTL ? product.titleFa : product.title} className="w-full h-full object-cover" />
                     {product.badge && <div className="absolute top-4 ltr:left-4 rtl:right-4">
                         <Badge variant={product.badge}>
-                          {product.badge === "sale" && (isRTL ? "╪¬╪«┘ü█î┘ü" : "Sale")}
-                          {product.badge === "new" && (isRTL ? "╪¼╪»█î╪»" : "New")}
-                          {product.badge === "hot" && (isRTL ? "╪»╪º╪║" : "Hot")}
+                          {product.badge === "sale" && (isRTL ? "تخفیف" : "Sale")}
+                          {product.badge === "new" && (isRTL ? "جدید" : "New")}
+                          {product.badge === "hot" && (isRTL ? "داغ" : "Hot")}
                         </Badge>
                       </div>}
                   </motion.div>
@@ -541,11 +541,11 @@ const ProductDetail = () => {
                   {/* Breadcrumb */}
                   <nav className="mb-3 text-xs sm:text-sm text-muted-foreground flex items-center gap-2 flex-wrap min-w-0">
                     <Link to="/" className="hover:text-foreground transition-colors whitespace-nowrap">
-                      ╪«╪º┘å┘ç
+                      خانه
                     </Link>
                     <ChevronRight className={cn("w-3 h-3 sm:w-4 sm:h-4 shrink-0", (isRTL || forceRTL) && "rotate-180")} />
                     <Link to="/products" className="hover:text-foreground transition-colors whitespace-nowrap">
-                      ┘à╪¡╪╡┘ê┘ä╪º╪¬
+                      محصولات
                     </Link>
                     <ChevronRight className={cn("w-3 h-3 sm:w-4 sm:h-4 shrink-0", (isRTL || forceRTL) && "rotate-180")} />
                     <span className="text-foreground line-clamp-1 min-w-0">{(isRTL || forceRTL) ? product.titleFa : product.title}</span>
@@ -563,7 +563,7 @@ const ProductDetail = () => {
                       </div>
                       <span className="font-semibold">4.9</span>
                       <span className="text-muted-foreground">
-                        (█▒█▓█░ ┘å╪╕╪▒)
+                        (128 نظر)
                       </span>
                     </a>
 
@@ -575,7 +575,7 @@ const ProductDetail = () => {
                       <Price current={getCurrentPrice()} old={getCurrentOldPrice()} className="text-xl sm:text-2xl whitespace-nowrap" />
                     </div>
                     {getCurrentOldPrice() && <p className="text-xs sm:text-sm text-green-600 dark:text-green-400 font-medium break-words">
-                        ╪╡╪▒┘ü┘çΓÇî╪¼┘ê█î█î ╪┤┘à╪º: {new Intl.NumberFormat("fa-IR").format(getCurrentOldPrice()! - getCurrentPrice())} ╪¬┘ê┘à╪º┘å ({Math.round((getCurrentOldPrice()! - getCurrentPrice()) / getCurrentOldPrice()! * 100)}%)
+                        پس‌انداز: {new Intl.NumberFormat("fa-IR").format(getCurrentOldPrice()! - getCurrentPrice())} تومان ({Math.round((getCurrentOldPrice()! - getCurrentPrice()) / getCurrentOldPrice()! * 100)}%)
                       </p>}
                   </div>
 
@@ -610,7 +610,7 @@ const ProductDetail = () => {
 
                   {/* Policy Microcopy */}
                   <p className="text-xs text-muted-foreground text-center break-words">
-                    ┘╛╪┤╪¬█î╪¿╪º┘å█î █▓█┤/█╖ • ╪¬╪╣┘ê█î╪╢ ╪¡╪│╪º╪¿ ╪¬╪╢┘à█î┘å█î • ╪¬╪¡┘ê█î┘ä ┘ü┘ê╪▒█î
+                    تحویل فوری دیجیتال • پشتیبانی ۲۴ ساعته • ضمانت بازگشت وجه • دسترسی دائمی
                   </p>
                   </div>
 
@@ -619,19 +619,19 @@ const ProductDetail = () => {
                     <div className="flex flex-col items-center text-center gap-1 sm:gap-2 min-w-0">
                       <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
                       <span className="text-xs text-muted-foreground break-words">
-                        ╪º╪▒╪│╪º┘ä ╪│╪▒█î╪╣
+                        تحویل فوری
                       </span>
                     </div>
                     <div className="flex flex-col items-center text-center gap-1 sm:gap-2 min-w-0">
                       <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
                       <span className="text-xs text-muted-foreground break-words">
-                        ┌»╪º╪▒╪º┘å╪¬█î ╪º╪╡╪º┘ä╪¬
+                        پرداخت امن
                       </span>
                     </div>
                     <div className="flex flex-col items-center text-center gap-1 sm:gap-2 min-w-0">
                       <RefreshCw className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
                       <span className="text-xs text-muted-foreground break-words">
-                        ╪¿╪º╪▓┌»╪┤╪¬ ╪ó╪│╪º┘å
+                        پشتیبانی کامل
                       </span>
                     </div>
                   </div>
@@ -651,7 +651,7 @@ const ProductDetail = () => {
                   <div className="md:hidden">
                     <button onClick={() => setTocOpen(!tocOpen)} className="w-full flex items-center justify-between p-4 glass rounded-lg hover:bg-surface-glass/50 transition-colors">
                       <span className="font-semibold">
-                        ┘ü┘ç╪▒╪│╪¬ ┘à╪╖╪º┘ä╪¿
+                        فهرست مطالب
                       </span>
                       <ChevronDown className={cn("w-5 h-5 transition-transform", tocOpen && "rotate-180")} />
                     </button>
@@ -675,7 +675,7 @@ const ProductDetail = () => {
                           ))
                         ) : (
                           <p className="text-sm text-muted-foreground text-right">
-                            ╪╣┘å╪º┘ê█î┘å ╪»╪▒ ╪»╪│╪¬╪▒╪│ ┘å█î╪│╪¬
+                            هیچ سرفصلی یافت نشد
                           </p>
                         )}
                       </nav>
@@ -685,7 +685,7 @@ const ProductDetail = () => {
                   {/* Desktop Sticky TOC */}
                   <nav className="hidden md:block space-y-1 text-right" dir="rtl">
                     <h3 className="font-bold text-lg mb-4 text-foreground">
-                      ┘ü┘ç╪▒╪│╪¬ ┘à╪╖╪º┘ä╪¿
+                      فهرست مطالب
                     </h3>
                     {tocHeadings.length > 0 ? (
                       tocHeadings.map((heading) => (
@@ -706,7 +706,7 @@ const ProductDetail = () => {
                       ))
                     ) : (
                       <p className="text-sm text-muted-foreground text-right pr-3">
-                        ╪╣┘å╪º┘ê█î┘å ╪»╪▒ ╪»╪│╪¬╪▒╪│ ┘å█î╪│╪¬
+                        هیچ سرفصلی یافت نشد
                       </p>
                     )}
                   </nav>
@@ -721,7 +721,7 @@ const ProductDetail = () => {
                   {faqs.length > 0 && (
                     <section id="faq" className="scroll-mt-24 mt-12">
                       <h2 className="text-2xl font-bold mb-6 text-white">
-                        ╪│┘ê╪º┘ä╪º╪¬ ┘à╪¬╪»╪º┘ê┘ä
+                        سوالات متداول
                       </h2>
                     <FaqAccordion items={faqs} />
                   </section>
@@ -732,7 +732,7 @@ const ProductDetail = () => {
 
             {/* Related Products */}
             {relatedProducts.length > 0 && <section className="space-y-6">
-                <SectionHeader title="┘à╪¡╪╡┘ê┘ä╪º╪¬ ┘à╪▒╪¬╪¿╪╖" eyebrow="┘╛█î╪┤┘å┘ç╪º╪»┘ç╪º" />
+                <SectionHeader title="محصولات مرتبط" eyebrow="ممکن است دوست داشته باشید" />
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
                   {relatedProducts.map(prod => <ProductCard key={prod.id} id={prod.id} title={prod.title} image={prod.image} price={prod.price} oldPrice={prod.oldPrice} discountPct={prod.discountPct} onAdd={() => handleAddToCart()} />)}
                 </div>
@@ -740,7 +740,7 @@ const ProductDetail = () => {
 
             {/* Related Blog Posts */}
             {relatedPosts.length > 0 && <section className="space-y-6">
-                <SectionHeader title="┘à┘é╪º┘ä╪º╪¬ ┘à╪▒╪¬╪¿╪╖" eyebrow="┘à╪╖╪º┘ä╪╣┘ç ╪¿█î╪┤╪¬╪▒" />
+                <SectionHeader title="مقالات مرتبط" eyebrow="اطلاعات بیشتر بدانید" />
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
                   {relatedPosts.map(post => <BlogCard key={post._id} post={post} />)}
                 </div>
@@ -752,7 +752,7 @@ const ProductDetail = () => {
             <div className="flex items-center gap-3 p-3 sm:p-4 min-w-0 max-w-full">
               <div className="flex flex-col shrink-0 min-w-0">
                 <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  ┘é█î┘à╪¬:
+                  قیمت:
                 </span>
                 <div className="min-w-0">
                   <Price current={getCurrentPrice()} old={getCurrentOldPrice()} className="text-base sm:text-lg" />

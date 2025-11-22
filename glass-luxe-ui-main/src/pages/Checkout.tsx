@@ -158,7 +158,7 @@ export default function Checkout() {
     <div className="min-h-screen flex flex-col">
       <Header onSearch={() => {}} active="checkout" />
 
-      <main className="flex-1 py-10">
+      <main className="flex-1 pt-24 pb-10">
         <div className="max-w-[1100px] mx-auto px-4 md:px-6 lg:px-8">
           <div className="grid lg:grid-cols-[1fr_360px] gap-6">
             {/* Left Column - Contact & Payment Form */}
