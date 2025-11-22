@@ -408,8 +408,6 @@ export default function Products() {
                           title={product.title}
                           image={product.image}
                           price={product.price}
-                          oldPrice={product.oldPrice}
-                          discountPct={product.discountPct}
                           onAdd={handleAddToCart}
                           className="[&>div:first-child]:aspect-[4/5] sm:[&>div:first-child]:aspect-[3/4]"
                         />

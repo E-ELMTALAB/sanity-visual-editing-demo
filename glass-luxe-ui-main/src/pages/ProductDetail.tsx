@@ -40,7 +40,6 @@ interface ProductVariant {
   name: string;
   nameFa: string;
   price?: number;
-  oldPrice?: number;
   inStock?: boolean;
 }
 
@@ -49,8 +48,6 @@ interface RelatedProductCardData {
   title: string;
   image: string;
   price: number;
-  oldPrice?: number;
-  discountPct?: number;
   slug?: string;
 }
 
@@ -264,15 +261,6 @@ const ProductDetail = () => {
     return product?.price || 0;
   };
 
-  const getCurrentOldPrice = () => {
-    if (product?.variants && selectedVariant) {
-      const variant = product.variants.find(v => v.id === selectedVariant);
-      if (variant?.oldPrice) {
-        return variant.oldPrice;
-      }
-    }
-    return product?.originalPrice;
-  };
   const addProductToCart = () => {
     console.log('[PRODUCT-DETAIL] ========== ADD TO CART STARTED ==========');
     console.log('[PRODUCT-DETAIL] Product ID:', product?.id);
@@ -493,7 +481,6 @@ const ProductDetail = () => {
                           const variantId = medusaVariants.length > 0 ? variant.variant_id : variant.id;
                           const variantName = medusaVariants.length > 0 ? variant.name : (isRTL ? variant.nameFa : variant.name);
                           const variantPrice = medusaVariants.length > 0 ? variant.price : variant.price || 0;
-                          const variantOldPrice = medusaVariants.length > 0 ? undefined : variant.oldPrice;
                           const variantInStock = medusaVariants.length > 0 ? true : variant.inStock !== false;
                           
                           return (
@@ -511,14 +498,6 @@ const ProductDetail = () => {
                                 <span className="text-base sm:text-lg font-bold text-primary">
                                     {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(variantPrice)} تومان
                                 </span>
-                                  {variantOldPrice && <>
-                                    <span className="text-xs sm:text-sm text-muted-foreground line-through">
-                                        {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(variantOldPrice)}
-                                    </span>
-                                    <Badge variant="destructive" className="text-xs">
-                                        -{Math.round((variantOldPrice - variantPrice) / variantOldPrice * 100)}%
-                                    </Badge>
-                                  </>}
                               </div>
                             </div>
                               {selectedVariant === variantId && <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
@@ -572,11 +551,8 @@ const ProductDetail = () => {
 
                   <div className="space-y-2 min-w-0">
                     <div className="overflow-x-auto">
-                      <Price current={getCurrentPrice()} old={getCurrentOldPrice()} className="text-xl sm:text-2xl whitespace-nowrap" />
+                      <Price current={getCurrentPrice()} className="text-xl sm:text-2xl whitespace-nowrap" />
                     </div>
-                    {getCurrentOldPrice() && <p className="text-xs sm:text-sm text-green-600 dark:text-green-400 font-medium break-words">
-                        پس‌انداز: {new Intl.NumberFormat("fa-IR").format(getCurrentOldPrice()! - getCurrentPrice())} تومان ({Math.round((getCurrentOldPrice()! - getCurrentPrice()) / getCurrentOldPrice()! * 100)}%)
-                      </p>}
                   </div>
 
                   {/* Features */}
@@ -734,7 +710,7 @@ const ProductDetail = () => {
             {relatedProducts.length > 0 && <section className="space-y-6">
                 <SectionHeader title="محصولات مرتبط" eyebrow="ممکن است دوست داشته باشید" />
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
-                  {relatedProducts.map(prod => <ProductCard key={prod.id} id={prod.id} title={prod.title} image={prod.image} price={prod.price} oldPrice={prod.oldPrice} discountPct={prod.discountPct} onAdd={() => handleAddToCart()} />)}
+                  {relatedProducts.map(prod => <ProductCard key={prod.id} id={prod.id} title={prod.title} image={prod.image} price={prod.price} onAdd={() => handleAddToCart()} />)}
                 </div>
               </section>}
 

@@ -15,9 +15,7 @@ interface Product {
   id: string;
   title: string;
   image: string;
-  oldPrice?: number;
   price: number;
-  discountPct?: number;
   category: string;
 }
 interface TabbedProductGridProps {
@@ -108,7 +106,7 @@ export function TabbedProductGrid({
           }} transition={springTransition} className="overflow-hidden" ref={emblaRef}>
               <div className="flex gap-4 md:gap-5 py-[5px]">
                 {filteredProducts.map(product => <div key={product.id} className="flex-[0_0_75%] sm:flex-[0_0_45%] md:flex-[0_0_38%] lg:flex-[0_0_24%] min-w-0">
-                    <ProductCard id={product.id} title={product.title} image={product.image} oldPrice={product.oldPrice} price={product.price} discountPct={product.discountPct} onAdd={onAdd} />
+                    <ProductCard id={product.id} title={product.title} image={product.image} price={product.price} onAdd={onAdd} />
                   </div>)}
               </div>
             </motion.div>

@@ -14,9 +14,7 @@ interface Product {
   id: string;
   title: string;
   image: string;
-  oldPrice?: number;
   price: number;
-  discountPct?: number;
   badge?: string;
   slug?: string;
 }
@@ -88,7 +86,7 @@ export function BestSellers({
               ...springTransition,
               delay: index * 0.05
             }}>
-                  <ProductCard id={product.id} title={product.title} image={product.image} oldPrice={product.oldPrice} price={product.price} discountPct={product.discountPct} slug={product.slug} onAdd={onAdd} />
+                  <ProductCard id={product.id} title={product.title} image={product.image} price={product.price} slug={product.slug} onAdd={onAdd} />
                 </motion.div>)}
             </div>
           </div>

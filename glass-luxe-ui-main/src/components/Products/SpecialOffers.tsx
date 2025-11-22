@@ -12,9 +12,7 @@ interface Product {
   id: string;
   title: string;
   image: string;
-  oldPrice?: number;
   price: number;
-  discountPct?: number;
 }
 
 interface SpecialOffersProps {
@@ -59,9 +57,7 @@ export function SpecialOffers({ products, onAdd, onViewAll, className }: Special
                     id={product.id}
                     title={product.title}
                     image={product.image}
-                    oldPrice={product.oldPrice}
                     price={product.price}
-                    discountPct={product.discountPct}
                     onAdd={onAdd}
                   />
                 </div>

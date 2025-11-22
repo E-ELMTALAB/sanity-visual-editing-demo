@@ -6,9 +6,7 @@ interface ProductCardProps {
   id: string;
   title: string;
   image: string;
-  oldPrice?: number;
   price: number;
-  discountPct?: number;
   onAdd: (id: string) => void;
   className?: string;
   slug?: string;
@@ -18,9 +16,7 @@ export const ProductCard = React.memo(function ProductCard({
   id,
   title,
   image,
-  oldPrice,
   price,
-  discountPct,
   onAdd,
   className,
   slug,
@@ -54,14 +50,6 @@ export const ProductCard = React.memo(function ProductCard({
         
         {/* Fade gradient layer */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-b from-transparent to-black/18" />
-
-        {/* Discount badge */}
-        {discountPct && (
-          <div className="absolute ltr:left-3 rtl:right-3 top-3 px-2.5 py-1 rounded-full text-[12px] leading-5 flex items-center gap-1 backdrop-blur-[18px] bg-white/12 border border-white/35">
-            <span className="w-2.5 h-2.5 rounded-full bg-accent-red/90" />
-            <span className="text-white/95 font-medium">{discountPct}% تخفیف</span>
-          </div>
-        )}
       </div>
 
       {/* Info box (overlapping) */}
@@ -75,11 +63,6 @@ export const ProductCard = React.memo(function ProductCard({
             <span className="text-[17px] md:text-[18px] font-bold text-white/95">
               {price.toLocaleString('fa-IR')} تومان
             </span>
-            {oldPrice && (
-              <span className="text-[13px] text-white/50 line-through">
-                {oldPrice.toLocaleString('fa-IR')}
-              </span>
-            )}
           </div>
           <button
             onClick={handleCardClick}

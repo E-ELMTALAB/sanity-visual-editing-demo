@@ -214,8 +214,6 @@ export default function Collection() {
                     title={product.title}
                     image={product.image}
                     price={product.price}
-                    oldPrice={product.oldPrice}
-                    discountPct={product.discountPct}
                     slug={product.slug}
                     onAdd={handleAddToCart}
                   />
