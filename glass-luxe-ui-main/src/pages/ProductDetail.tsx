@@ -731,7 +731,7 @@ const ProductDetail = () => {
                   قیمت:
                 </span>
                 <div className="min-w-0">
-                  <Price current={getCurrentPrice()} old={getCurrentOldPrice()} className="text-base sm:text-lg" />
+                  <Price current={getCurrentPrice()} className="text-base sm:text-lg" />
                 </div>
               </div>
               <Button size="default" onClick={handleBuyNow} className="flex-1 min-w-0 h-11 text-sm sm:text-base">
