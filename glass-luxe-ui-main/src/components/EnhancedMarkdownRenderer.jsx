@@ -16,7 +16,7 @@ const EnhancedMarkdownRenderer = ({ content }) => {
   // Helper to parse inline markdown like **bold**, *italic*, `code`, [links], and images
   const renderInlineMarkdown = (text) => {
     if (!text || typeof text !== 'string') return '';
-
+    
     // Split text by markdown delimiters, keeping the delimiters
     const parts = text.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`|\[.*?\]\(.*?\)|!\[.*?\]\(.*?\))/g);
 

@@ -115,23 +115,17 @@ export default function Blog() {
     <>
       <Helmet>
         <title>مقالات و راهنماها | SharifGPT</title>
-        <meta 
-          name="description" 
-          content={isRTL 
-            ? "مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال - SharifGPT" 
-            : "Educational articles, guides, and digital world news - SharifGPT"
-          } 
+        <meta
+          name="description"
+          content="مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال - SharifGPT"
         />
         <link rel="canonical" href={canonicalUrl} />
         
         {/* Open Graph */}
         <meta property="og:title" content="مقالات و راهنماها | SharifGPT" />
-        <meta 
-          property="og:description" 
-          content={isRTL 
-            ? "مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال" 
-            : "Educational articles, guides, and digital world news"
-          } 
+        <meta
+          property="og:description"
+          content="مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال"
         />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:type" content="website" />
@@ -139,12 +133,9 @@ export default function Blog() {
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="مقالات و راهنماها | SharifGPT" />
-        <meta 
-          name="twitter:description" 
-          content={isRTL 
-            ? "مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال" 
-            : "Educational articles, guides, and digital world news"
-          } 
+        <meta
+          name="twitter:description"
+          content="مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال"
         />
 
         {/* JSON-LD Structured Data */}
@@ -160,40 +151,40 @@ export default function Blog() {
           megaItems={{
             cols: [
               {
-                title: "Credit Cards",
+                title: "کارت‌های اعتباری",
                 titleFa: "کارت‌های اعتباری",
                 links: [
-                  { label: "Virtual Cards", labelFa: "کارت‌های مجازی", href: "/products/virtual-cards" },
-                  { label: "Gift Cards", labelFa: "کارت‌های هدیه", href: "/products/gift-cards" },
-                  { label: "Prepaid Cards", labelFa: "کارت‌های پیش‌پرداخت", href: "/products/prepaid-cards" },
+                  { label: "کارت‌های مجازی", labelFa: "کارت‌های مجازی", href: "/products/virtual-cards" },
+                  { label: "کارت‌های هدیه", labelFa: "کارت‌های هدیه", href: "/products/gift-cards" },
+                  { label: "کارت‌های پیش‌پرداخت", labelFa: "کارت‌های پیش‌پرداخت", href: "/products/prepaid-cards" },
                 ]
               },
               {
-                title: "AI Tools & Learning",
+                title: "ابزارهای هوش مصنوعی",
                 titleFa: "ابزارهای هوش مصنوعی",
                 links: [
-                  { label: "ChatGPT Plus", labelFa: "چت‌جی‌پی‌تی پلاس", href: "/products/chatgpt" },
-                  { label: "Midjourney", labelFa: "میدجرنی", href: "/products/midjourney" },
-                  { label: "Claude Pro", labelFa: "کلاد پرو", href: "/products/claude" },
-                  { label: "Online Courses", labelFa: "دوره‌های آنلاین", href: "/courses" },
+                  { label: "چت‌جی‌پی‌تی پلاس", labelFa: "چت‌جی‌پی‌تی پلاس", href: "/products/chatgpt" },
+                  { label: "میدجرنی", labelFa: "میدجرنی", href: "/products/midjourney" },
+                  { label: "کلاد پرو", labelFa: "کلاد پرو", href: "/products/claude" },
+                  { label: "دوره‌های آنلاین", labelFa: "دوره‌های آنلاین", href: "/courses" },
                 ]
               },
               {
-                title: "Business & Professional",
+                title: "کسب‌وکار و حرفه‌ای",
                 titleFa: "کسب‌وکار و حرفه‌ای",
                 links: [
-                  { label: "Cloud Storage", labelFa: "فضای ابری", href: "/products/cloud-storage" },
-                  { label: "VPN Services", labelFa: "سرویس‌های VPN", href: "/products/vpn" },
-                  { label: "Domain & Hosting", labelFa: "دامنه و هاستینگ", href: "/products/hosting" },
+                  { label: "فضای ابری", labelFa: "فضای ابری", href: "/products/cloud-storage" },
+                  { label: "سرویس‌های VPN", labelFa: "سرویس‌های VPN", href: "/products/vpn" },
+                  { label: "دامنه و هاستینگ", labelFa: "دامنه و هاستینگ", href: "/products/hosting" },
                 ]
               }
             ],
             featured: {
               image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&h=400&fit=crop",
-              title: "Complete AI Mastery Course",
+              title: "دوره جامع تسلط بر هوش مصنوعی",
               titleFa: "دوره جامع تسلط بر هوش مصنوعی",
               href: "/courses/ai-mastery",
-              badge: "30% OFF",
+              badge: "۳۰٪ تخفیف",
               badgeFa: "۳۰٪ تخفیف"
             }
           }}
@@ -201,19 +192,16 @@ export default function Blog() {
 
         <main className="flex-1 pt-[84px]">
           <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8 space-y-6 py-6">
-            <Breadcrumb 
+            <Breadcrumb
               path={[
-                { label: isRTL ? "خانه" : "Home", href: "/" },
-                { label: isRTL ? "بلاگ" : "Blog" }
+                { label: "خانه", href: "/" },
+                { label: "بلاگ" }
               ]}
             />
             
             <PageIntro
-              title={isRTL ? "مقالات و راهنماها" : "Articles & Guides"}
-              subtitle={isRTL 
-                ? "مقالات آموزشی، راهنماها و آخرین اخبار دنیای دیجیتال را در اینجا بخوانید" 
-                : "Read educational articles, guides, and latest news from the digital world"
-              }
+              title="مقالات و راهنماها"
+              subtitle="مقالات آموزشی، راهنماها و آخرین اخبار دنیای دیجیتال را در اینجا بخوانید"
             />
 
             {fetchError && !isLoading && (

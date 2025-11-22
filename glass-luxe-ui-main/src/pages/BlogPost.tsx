@@ -38,11 +38,11 @@ interface ArticleDetail {
 // Helper function to extract headings from markdown content (same as ProductDetail)
 const extractHeadingsFromMarkdown = (content: string): Array<{ level: number; text: string; id: string }> => {
   if (!content) return [];
-  
+
   const lines = content.split('\n');
   const headings: Array<{ level: number; text: string; id: string }> = [];
   let headingCounter = 0;
-  
+
   lines.forEach(line => {
     const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
     if (headingMatch) {
@@ -52,7 +52,7 @@ const extractHeadingsFromMarkdown = (content: string): Array<{ level: number; te
       headings.push({ level, text, id });
     }
   });
-  
+
   return headings;
 };
 
@@ -185,33 +185,48 @@ export default function BlogPost() {
     };
   }, [slug]);
 
-  // Extract headings from markdown content (same as ProductDetail)
+  // Extract headings from content (enhanced version for both markdown and PortableText)
   useEffect(() => {
     if (article?.bodyMarkdown) {
+      // For markdown content: extract directly from markdown
       const headings = extractHeadingsFromMarkdown(article.bodyMarkdown);
       setTocHeadings(headings);
-      // Also update the old headings format for compatibility
       setHeadings(headings.map(h => ({ id: h.id, text: h.text, level: h.level })));
     } else if (article?.body) {
-      // Fallback: Extract from rendered DOM if using PortableText
+      // For PortableText content: wait for render then extract from DOM
       const updateHeadings = () => {
         if (!articleRef.current) return;
-        const headingElements = articleRef.current.querySelectorAll("h2, h3");
+
+        // Find all h1, h2, h3, h4, h5, h6 elements within the article
+        const headingElements = articleRef.current.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
         const extractedHeadings = Array.from(headingElements).map((heading, index) => {
-          const id = `heading-${index}`;
-          heading.id = id;
+          // Generate unique ID if not present
+          if (!heading.id) {
+            heading.id = `heading-${index}`;
+          }
           return {
-            id,
-            text: heading.textContent || "",
-            level: parseInt(heading.tagName[1])
+            id: heading.id,
+            text: heading.textContent?.trim() || "",
+            level: parseInt(heading.tagName[1]) // h1=1, h2=2, etc.
           };
-        });
+        }).filter(h => h.text); // Remove empty headings
+
         setHeadings(extractedHeadings);
-        setTocHeadings(extractedHeadings.map(h => ({ level: h.level, text: h.text, id: h.id })));
+        setTocHeadings(extractedHeadings.map(h => ({
+          level: h.level,
+          text: h.text,
+          id: h.id
+        })));
       };
 
-      const raf = requestAnimationFrame(updateHeadings);
-      return () => cancelAnimationFrame(raf);
+      // Use a small delay to ensure PortableText has rendered
+      const timeout = setTimeout(updateHeadings, 100);
+      return () => clearTimeout(timeout);
+    } else {
+      // No content available
+      setHeadings([]);
+      setTocHeadings([]);
     }
   }, [article]);
 
@@ -453,14 +468,14 @@ export default function BlogPost() {
 
                 {/* Article Body */}
                 <div ref={articleRef} className="prose prose-invert prose-lg max-w-none" dir="rtl">
-                  {article?.bodyMarkdown ? (
-                    // Use EnhancedMarkdownRenderer if markdown content exists
+                  {article?.bodyMarkdown && article.bodyMarkdown.trim() ? (
+                    // Use EnhancedMarkdownRenderer for markdown content
                     <EnhancedMarkdownRenderer content={article.bodyMarkdown} />
-                  ) : article?.body && article.body.length > 0 ? (
+                  ) : article?.body && Array.isArray(article.body) && article.body.length > 0 ? (
                     // Fallback to PortableText for Sanity rich text
                     <PortableText value={article.body} components={portableTextComponents} />
                   ) : (
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-muted-foreground text-center py-8">
                       محتوای این مقاله در دسترس نیست.
                     </p>
                   )}
@@ -513,26 +528,11 @@ export default function BlogPost() {
                             key={heading.id}
                             onClick={() => scrollToHeading(heading.id)}
                             className={cn(
-                              "block w-full text-right py-2 rounded-lg transition-colors text-sm",
+                              "block w-full text-right py-2 rounded-lg transition-colors",
                               heading.level === 1 ? "pr-3 font-bold text-base" :
                               heading.level === 2 ? "pr-3 font-semibold" :
                               heading.level === 3 ? "pr-6 text-xs" :
                               "pr-9 text-xs",
-                              activeHeading === heading.id ? "bg-surface-glass text-primary font-medium" : "text-muted-foreground hover:bg-surface-glass/50 hover:text-foreground"
-                            )}
-                          >
-                            {heading.text}
-                          </button>
-                        ))
-                      ) : headings.length > 0 ? (
-                        // Fallback to old headings format
-                        headings.map(heading => (
-                          <button
-                            key={heading.id}
-                            onClick={() => scrollToHeading(heading.id)}
-                            className={cn(
-                              "block w-full text-right py-2 rounded-lg transition-colors text-sm",
-                              heading.level === 3 && "pr-6",
                               activeHeading === heading.id ? "bg-surface-glass text-primary font-medium" : "text-muted-foreground hover:bg-surface-glass/50 hover:text-foreground"
                             )}
                           >
@@ -570,27 +570,10 @@ export default function BlogPost() {
                           }}
                           className={cn(
                             "block w-full text-right py-2 rounded-lg transition-colors text-sm",
-                            heading.level === 1 ? "font-bold" :
-                            heading.level === 2 ? "font-semibold" :
-                            heading.level === 3 ? "pr-4 text-xs" :
-                            "pr-6 text-xs",
-                            activeHeading === heading.id ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"
-                          )}
-                        >
-                          {heading.text}
-                        </button>
-                      ))
-                    ) : headings.length > 0 ? (
-                      headings.map(heading => (
-                        <button
-                          key={heading.id}
-                          onClick={() => {
-                            scrollToHeading(heading.id);
-                            setTocOpen(false);
-                          }}
-                          className={cn(
-                            "block w-full text-right py-2 rounded-lg transition-colors text-sm",
-                            heading.level === 3 && "pr-4 text-xs",
+                            heading.level === 1 ? "pr-3 font-bold text-base" :
+                            heading.level === 2 ? "pr-3 font-semibold" :
+                            heading.level === 3 ? "pr-6 text-xs" :
+                            "pr-9 text-xs",
                             activeHeading === heading.id ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"
                           )}
                         >
