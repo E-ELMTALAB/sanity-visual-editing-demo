@@ -176,13 +176,6 @@ export default function Collection() {
           </div>
         </section>
 
-        {faqItems.length > 0 && (
-          <section className="container mx-auto px-4 md:px-6 pb-16">
-            <h2 className="text-2xl font-bold mb-6 text-foreground text-center">سوالات مرتبط</h2>
-            <FaqAccordion items={faqItems} />
-          </section>
-        )}
-
         {/* Products Grid Section */}
         <section className="container mx-auto px-4 md:px-6 py-8 pb-20">
           <motion.div initial={{
@@ -248,6 +241,13 @@ export default function Collection() {
               </motion.div>}
           </motion.div>
         </section>
+
+        {faqItems.length > 0 && (
+          <section className="container mx-auto px-4 md:px-6 pb-16">
+            <h2 className="text-2xl font-bold mb-6 text-foreground text-center">سوالات مرتبط</h2>
+            <FaqAccordion items={faqItems} />
+          </section>
+        )}
 
         <Footer links={{
         products: "/products",

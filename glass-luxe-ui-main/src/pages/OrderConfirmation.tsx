@@ -46,7 +46,7 @@ export default function OrderConfirmation() {
           console.error('Error parsing order data:', e);
         }
       } else {
-        navigate("/");
+      navigate("/");
       }
     } else {
       // If orderId is provided, try to get data from localStorage
@@ -167,26 +167,26 @@ export default function OrderConfirmation() {
               <SurfaceGlass className="p-6">
                 <h2 className="text-2xl font-bold mb-6">محصولات خریداری شده</h2>
                 {orderItems.length > 0 ? (
-                  <div className="space-y-4">
+                <div className="space-y-4">
                     {orderItems.map((item, index) => (
-                      <div
+                    <div
                         key={item.id || index}
-                        className="glass border border-white/20 rounded-xl p-4"
-                      >
-                        <div className="flex gap-4">
-                          {/* Details */}
-                          <div className="flex-1">
-                            <h3 className="font-bold text-lg mb-2">
-                              {item.title}
-                            </h3>
+                      className="glass border border-white/20 rounded-xl p-4"
+                    >
+                      <div className="flex gap-4">
+                        {/* Details */}
+                        <div className="flex-1">
+                          <h3 className="font-bold text-lg mb-2">
+                            {item.title}
+                          </h3>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <span>تعداد: {item.quantity}</span>
-                            </div>
+                            <span>تعداد: {item.quantity}</span>
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
+                </div>
                 ) : (
                   <p className="text-muted-foreground">جزئیات محصولات در دسترس نیست</p>
                 )}

@@ -87,85 +87,6 @@ export default defineType({
       ],
     }),
 
-    // Content Fields Group
-    defineField({
-      name: 'title',
-      description: 'This field is the title of your personal website.',
-      title: 'Title',
-      type: 'string',
-      validation: (rule) => rule.required(),
-      group: 'content',
-    }),
-    defineField({
-      name: 'overview',
-      description:
-        'Used both for the <meta> description tag for SEO, and the personal website subheader.',
-      title: 'Description',
-      type: 'array',
-      of: [
-        // Paragraphs
-        defineArrayMember({
-          lists: [],
-          marks: {
-            annotations: [
-              {
-                name: 'link',
-                type: 'object',
-                title: 'Link',
-                fields: [
-                  {
-                    name: 'href',
-                    type: 'url',
-                    title: 'Url',
-                  },
-                ],
-              },
-            ],
-            decorators: [
-              {
-                title: 'Italic',
-                value: 'em',
-              },
-              {
-                title: 'Strong',
-                value: 'strong',
-              },
-            ],
-          },
-          styles: [],
-          type: 'block',
-        }),
-      ],
-      validation: (rule) => rule.max(155).required(),
-      group: 'content',
-    }),
-    defineField({
-      name: 'showcaseProjects',
-      title: 'Showcase projects',
-      description:
-        'These are the projects that will appear first on your landing page.',
-      type: 'array',
-      of: [
-        defineArrayMember({
-          type: 'reference',
-          to: [{ type: 'project' }],
-        }),
-      ],
-      group: 'content',
-    }),
-    defineField({
-      name: 'topBannerSlides',
-      title: 'Top Banner Slides',
-      description: 'Slides displayed in the top banner section (above main hero)',
-      type: 'array',
-      validation: (Rule) => Rule.max(5),
-      of: [
-        defineArrayMember({
-          type: 'topBannerSlide',
-        }),
-      ],
-      group: 'content',
-    }),
     defineField({
       name: 'heroSlides',
       title: 'Hero Slides (Main Slider)',
@@ -176,27 +97,6 @@ export default defineType({
           type: 'object',
           name: 'heroSlide',
           title: 'Slide',
-          fields: [
-            defineField({ name: 'title', type: 'string', title: 'Title' }),
-            defineField({ name: 'subtitle', type: 'string', title: 'Subtitle' }),
-            defineField({ name: 'buttonText', type: 'string', title: 'Button text' }),
-            defineField({ name: 'buttonHref', type: 'string', title: 'Button link (href)' }),
-            defineField({ name: 'image', type: 'image', title: 'Image', options: { hotspot: true } }),
-          ],
-        }),
-      ],
-      group: 'content',
-    }),
-    defineField({
-      name: 'promoCards',
-      title: 'Promo cards (side banners)',
-      type: 'array',
-      validation: (Rule) => Rule.max(2),
-      of: [
-        defineArrayMember({
-          type: 'object',
-          name: 'promoCard',
-          title: 'Card',
           fields: [
             defineField({ name: 'title', type: 'string', title: 'Title' }),
             defineField({ name: 'subtitle', type: 'string', title: 'Subtitle' }),
@@ -363,13 +263,10 @@ export default defineType({
     }),
   ],
   preview: {
-    select: {
-      title: 'title',
-    },
-    prepare({ title }) {
+    prepare() {
       return {
-        subtitle: 'Home',
-        title,
+        title: 'Homepage',
+        subtitle: 'Home Content',
       }
     },
   },

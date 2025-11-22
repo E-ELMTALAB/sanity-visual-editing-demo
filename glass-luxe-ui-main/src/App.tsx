@@ -44,7 +44,7 @@ const App = () => (
     <HelmetProvider>
       <DirectionProvider>
         <CartProvider>
-          <TooltipProvider>
+        <TooltipProvider>
           {/* Global Unified Background */}
           <div id="unified-bg" className="fixed inset-0 -z-50 pointer-events-none" />
           <style>{`

@@ -81,11 +81,11 @@ export async function POST(
     
     // Try to retrieve cart, but don't fail if it doesn't exist
     // Payment collection may still exist even if cart was deleted/expired
-    try {
-      cart = await cartModuleService.retrieveCart(cart_id);
-      console.log('[ZARINPAL-VERIFY] ✅ Cart found:', cart.id);
+      try {
+        cart = await cartModuleService.retrieveCart(cart_id);
+        console.log('[ZARINPAL-VERIFY] ✅ Cart found:', cart.id);
       resourceId = cart.id; // Use the actual cart ID if found
-    } catch (cartError: any) {
+      } catch (cartError: any) {
       console.warn('[ZARINPAL-VERIFY] ⚠️ Cart not found (may have been deleted/expired):', cartError.message);
       console.log('[ZARINPAL-VERIFY] Continuing with cart_id from request body to find payment collection...');
       // Don't throw - continue to find payment collection by cart_id in metadata
@@ -191,7 +191,7 @@ export async function POST(
                metaCartId.includes(searchCartId) ||
                searchCartId.includes(metaCartId);
       });
-      
+    
       if (foundPaymentCollection) {
         console.log('[ZARINPAL-VERIFY] ✅ Found payment collection with broader search:', foundPaymentCollection.id);
       }
@@ -232,19 +232,19 @@ export async function POST(
     let cartItems: any[] = [];
     
     if (cart) {
-      try {
-        const cartWithItems = await cartModuleService.retrieveCart(resourceId as string, {
-          relations: ["items"],
-        });
-        if (cartWithItems && (cartWithItems as any).items) {
-          cartItems = (cartWithItems as any).items.map((it: any) => ({
-            id: it.id,
-            title: it.title || it.product_title || 'Product',
-            quantity: it.quantity,
-          }));
-        }
-      } catch (itemsError) {
-        console.warn("[ZARINPAL-VERIFY] Could not fetch cart items:", itemsError);
+    try {
+      const cartWithItems = await cartModuleService.retrieveCart(resourceId as string, {
+        relations: ["items"],
+      });
+      if (cartWithItems && (cartWithItems as any).items) {
+        cartItems = (cartWithItems as any).items.map((it: any) => ({
+          id: it.id,
+          title: it.title || it.product_title || 'Product',
+          quantity: it.quantity,
+        }));
+      }
+    } catch (itemsError) {
+      console.warn("[ZARINPAL-VERIFY] Could not fetch cart items:", itemsError);
       }
     }
     
@@ -295,8 +295,8 @@ export async function POST(
     // Sanity check: ensure collection amount equals cart total when cart is available
     // Skip this check if cart was deleted/expired (payment collection amount is authoritative)
     if (cart) {
-      const cartTotal = (cart as any)?.total;
-      if (typeof cartTotal === "number" && cartTotal !== paymentCollection.amount) {
+    const cartTotal = (cart as any)?.total;
+    if (typeof cartTotal === "number" && cartTotal !== paymentCollection.amount) {
         console.warn('[ZARINPAL-VERIFY] Amount mismatch - cart total:', cartTotal, 'vs payment collection:', paymentCollection.amount);
         // Don't fail - payment collection amount is what was actually charged
       }

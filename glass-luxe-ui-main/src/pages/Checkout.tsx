@@ -27,7 +27,7 @@ export default function Checkout() {
   const [isLoading, setIsLoading] = useState(false);
   const [showItems, setShowItems] = useState(true);
   const [discountCode, setDiscountCode] = useState("");
-
+  
   const [contactData, setContactData] = useState({
     email: "",
     fullName: "",
@@ -69,7 +69,7 @@ export default function Checkout() {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
         return;
-      }
+    }
     }
 
     if (cartState.items.length === 0) {
@@ -220,9 +220,9 @@ export default function Checkout() {
                   </div>
 
                   {/* Payment Button */}
-                  <Button
+                    <Button
                     type="submit"
-                    className="w-full mt-6"
+                      className="w-full mt-6"
                     size="lg"
                     disabled={isLoading}
                   >
@@ -234,7 +234,7 @@ export default function Checkout() {
                     ) : (
                       "پرداخت"
                     )}
-                  </Button>
+                    </Button>
 
                   <p className="text-xs text-muted-foreground text-center mt-3">
                     پس از کلیک روی دکمه پرداخت، به درگاه امن زرین‌پال هدایت می‌شوید
@@ -262,29 +262,29 @@ export default function Checkout() {
                   </button>
                 </div>
 
-                {showItems && (
+                  {showItems && (
                   <div className="space-y-3 mb-6">
                     {cartState.items.map((item) => (
-                      <div
+                        <div
                         key={`${item.id}-${item.selectedOption || ''}`}
-                        className="flex items-start gap-3 p-3 glass rounded-lg border border-white/10"
-                      >
-                        <div className="flex-1">
-                          <p className="font-medium text-sm mb-1">{item.title}</p>
+                          className="flex items-start gap-3 p-3 glass rounded-lg border border-white/10"
+                        >
+                          <div className="flex-1">
+                            <p className="font-medium text-sm mb-1">{item.title}</p>
                           {item.selectedOption && (
                             <p className="text-xs text-muted-foreground mb-1">
                               {item.selectedOption}
                             </p>
                           )}
-                          <p className="text-xs text-muted-foreground">
-                            تعداد: {item.quantity}
-                          </p>
-                        </div>
+                            <p className="text-xs text-muted-foreground">
+                              تعداد: {item.quantity}
+                            </p>
+                          </div>
                         <Price current={item.price * item.quantity} className="text-xs" />
-                      </div>
-                    ))}
+                        </div>
+                      ))}
                   </div>
-                )}
+                  )}
 
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-sm">
