@@ -6,6 +6,7 @@ interface ProductCardProps {
   id: string;
   title: string;
   image: string;
+  imageSrcSet?: string;
   price: number;
   onAdd: (id: string) => void;
   className?: string;
@@ -16,6 +17,7 @@ export const ProductCard = React.memo(function ProductCard({
   id,
   title,
   image,
+  imageSrcSet,
   price,
   onAdd,
   className,
@@ -42,6 +44,8 @@ export const ProductCard = React.memo(function ProductCard({
       <div className="relative aspect-[3/4] rounded-2xl overflow-hidden">
         <img
           src={image}
+          srcSet={imageSrcSet || ''}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           alt={title}
           loading="lazy"
           decoding="async"

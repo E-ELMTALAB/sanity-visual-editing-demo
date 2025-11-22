@@ -136,7 +136,16 @@ export function Header({ onSearch, megaItems, active }: HeaderProps) {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <img src={sharifgptLogo} alt="SharifGPT" className="w-10 h-10 rounded-full" />
+                <img
+                  src={sharifgptLogo}
+                  alt="SharifGPT"
+                  className="w-10 h-10 rounded-full"
+                  width="40"
+                  height="40"
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
+                />
                 <span className="text-xl font-bold text-foreground">SharifGPT</span>
               </motion.a>
 

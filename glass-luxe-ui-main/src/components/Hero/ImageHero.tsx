@@ -32,6 +32,7 @@ export default function ImageHero({ slide }: ImageHeroProps) {
           rel="preload"
           as="image"
           href={backgroundImage}
+          fetchPriority="high"
           {...(backgroundSrcSet
             ? {
                 imageSrcSet: backgroundSrcSet,
@@ -39,27 +40,35 @@ export default function ImageHero({ slide }: ImageHeroProps) {
               }
             : {})}
         />
+        {/* Preconnect to Sanity CDN for faster image loading */}
+        <link rel="preconnect" href="https://cdn.sanity.io" crossorigin />
       </Helmet>
       <section dir="rtl"
       className="relative min-h-[92vh] w-full overflow-hidden bg-transparent
                  [mask-image:linear-gradient(to_bottom,black_82%,transparent_100%)]
                  [-webkit-mask-image:linear-gradient(to_bottom,black_82%,transparent_100%)]">
       
-      {/* Background image layer - left bias on mobile */}
-      <img
-        src={backgroundImage}
-        srcSet={backgroundSrcSet}
-        sizes={backgroundSrcSet ? heroSizes : undefined}
-        alt=""
-        loading="eager"
-        decoding="sync"
-        fetchPriority="high"
-        className="absolute inset-0 h-full w-full object-cover
-                   object-[20%_50%] md:object-[60%_50%]
-                   [filter:brightness(.85)]
-                   md:[filter:brightness(1.18)_saturate(1.08)_contrast(1.05)]
-                   -z-10"
-      />
+      {/* Background image layer - Use picture element for better format support */}
+      <picture className="absolute inset-0 h-full w-full -z-10">
+        <source
+          srcSet={backgroundSrcSet?.replace(/\.(png|jpg|jpeg)/gi, '.webp') || backgroundImage}
+          type="image/webp"
+          sizes={backgroundSrcSet ? heroSizes : undefined}
+        />
+        <img
+          src={backgroundImage}
+          srcSet={backgroundSrcSet}
+          sizes={backgroundSrcSet ? heroSizes : undefined}
+          alt=""
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
+          className="absolute inset-0 h-full w-full object-cover
+                     object-[20%_50%] md:object-[60%_50%]
+                     [filter:brightness(.85)]
+                     md:[filter:brightness(1.18)_saturate(1.08)_contrast(1.05)]"
+        />
+      </picture>
       
       {/* Brand tint overlay - matches site's blue-purple palette */}
       <div className="absolute inset-0 -z-10 mix-blend-soft-light

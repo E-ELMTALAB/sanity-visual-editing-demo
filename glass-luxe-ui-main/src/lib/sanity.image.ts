@@ -9,7 +9,11 @@ export function urlForImage(source: SanityImageSource) {
     console.warn('[SANITY-IMAGE] No image source provided')
     return builder.image({} as SanityImageSource)
   }
-  return builder.image(source).auto('format').fit('max')
+  return builder
+    .image(source)
+    .auto('format') // Auto format (WebP/AVIF when supported)
+    .fit('max')
+    .quality(80) // Add default quality
 }
 
 export function getImageUrl(
@@ -29,20 +33,25 @@ export function getImageUrl(
 export function buildResponsiveImageSet(
   source: SanityImageSource,
   widths: number[] = [480, 768, 1024, 1440, 1920],
-  options?: { quality?: number }
+  options?: { quality?: number; maxWidth?: number }
 ) {
   if (!source) {
     return { src: '', srcSet: '' }
   }
 
-  const sortedWidths = [...widths].sort((a, b) => a - b)
-  const quality = options?.quality ?? 70
+  // Limit max width for hero images and large displays
+  const maxWidth = options?.maxWidth || 1920
+  const filteredWidths = widths.filter(w => w <= maxWidth)
+
+  const sortedWidths = [...filteredWidths].sort((a, b) => a - b)
+  const quality = options?.quality ?? 75 // Increase default quality slightly
 
   const srcSet = sortedWidths
     .map((width) =>
       urlForImage(source)
         .width(width)
         .quality(quality)
+        .format('webp') // Force WebP format for better compression
         .url()
     )
     .filter(Boolean)
@@ -54,6 +63,7 @@ export function buildResponsiveImageSet(
     urlForImage(source)
       .width(largestWidth)
       .quality(quality)
+      .format('webp') // Force WebP format for better compression
       .url() || ''
 
   return { src, srcSet }

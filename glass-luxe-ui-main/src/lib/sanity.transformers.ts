@@ -37,7 +37,8 @@ export function transformProductListItem(product: any, index: number) {
     id: product?._id || `product-${index}`,
     slug: product?.slug || product?.slug?.current || '',
     title: product?.name || 'محصول',
-    image: product?.image ? getImageUrl(product.image, 800) : '',
+    image: product?.image ? getImageUrl(product.image, 600) : '', // Reduced from 800 to 600 for better performance
+    imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [400, 600, 800], { quality: 80 }).srcSet : '',
     price,
     oldPrice,
     discountPct: discountPctFromField ?? calculatedDiscount,
@@ -59,7 +60,7 @@ export function transformFaqItem(faq: any) {
 // Transform hero slide
 export function transformHeroSlide(slide: any) {
   const responsiveImage = slide?.image
-    ? buildResponsiveImageSet(slide.image, [640, 960, 1280, 1600, 1920], { quality: 70 })
+    ? buildResponsiveImageSet(slide.image, [640, 960, 1280, 1600], { quality: 75, maxWidth: 1600 }) // Limit to 1600px max for hero
     : null
 
   return {
@@ -78,6 +79,7 @@ export function transformBestSellerProduct(product: any, index: number) {
     id: product?._id || `best-${index}`,
     title: product?.name || 'محصول',
     image: product?.image ? getImageUrl(product.image, 400) : '',
+    imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [300, 400, 600], { quality: 80 }).srcSet : '',
     oldPrice: undefined, // Prices come from Medusa
     price: 0, // Prices come from Medusa
     badge: product?.badge || undefined,
@@ -129,7 +131,8 @@ export function transformSpecialOfferProduct(product: any, index: number) {
   return {
     id: product?._key || `offer-${index}`,
     title: product?.name || 'محصول',
-    image: product?.image ? getImageUrl(product.image, 600) : '',
+    image: product?.image ? getImageUrl(product.image, 500) : '',
+    imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [400, 500, 700], { quality: 80 }).srcSet : '',
     oldPrice: oldPrice > 0 ? oldPrice : undefined,
     price,
     discountPct: discountPct > 0 ? discountPct : undefined,
@@ -142,7 +145,8 @@ export function transformSocialMediaProduct(product: any, index: number) {
     id: product?._key || `social-${index}`,
     platform: 'Instagram' as const, // Default, can be enhanced later
     title: product?.name || 'محصول سوشیال مدیا',
-    image: product?.image ? getImageUrl(product.image, 400) : '',
+    image: product?.image ? getImageUrl(product.image, 350) : '',
+    imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [300, 350, 500], { quality: 80 }).srcSet : '',
     price: product?.price || 0,
     rating: 5, // Default rating
   }
@@ -154,7 +158,8 @@ export function transformEducationalProduct(product: any, index: number) {
     id: product?._key || `edu-${index}`,
     provider: 'Coursera' as const, // Default, can be enhanced later
     title: product?.name || 'محصول آموزشی',
-    image: product?.image ? getImageUrl(product.image, 400) : '',
+    image: product?.image ? getImageUrl(product.image, 350) : '',
+    imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [300, 350, 500], { quality: 80 }).srcSet : '',
     price: product?.price || 0,
     duration: product?.duration || '۶ ماه',
   }
@@ -186,7 +191,8 @@ export function transformCourse(course: any, index: number) {
     },
     rating: course?.rating || 4.5,
     hours,
-    image: course?.image || course?.featuredImage ? getImageUrl(course.image || course.featuredImage, 800) : '',
+    image: course?.image || course?.featuredImage ? getImageUrl(course.image || course.featuredImage, 600) : '',
+    imageSrcSet: course?.image || course?.featuredImage ? buildResponsiveImageSet(course.image || course.featuredImage, [400, 600, 800], { quality: 80 }).srcSet : '',
     price: course?.price || 0,
   }
 }
