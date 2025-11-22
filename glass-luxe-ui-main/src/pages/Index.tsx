@@ -55,6 +55,8 @@ import { useDirection } from "@/contexts/DirectionContext";
 import { useCart } from "@/contexts/cart-context";
 import { toast } from "@/hooks/use-toast";
 import EnhancedMarkdownRenderer from "@/components/EnhancedMarkdownRenderer";
+import { SurfaceGlass } from "@/components/ui/surface-glass";
+import { Users, Award, Shield, CheckCircle } from "lucide-react";
 import headphonesPortrait from "@/assets/headphones-portrait.jpg";
 import smartwatchPortrait from "@/assets/smartwatch-portrait.jpg";
 import sunglassesPortrait from "@/assets/sunglasses-portrait.jpg";
@@ -514,12 +516,73 @@ const Index = () => {
       />
       )}
 
+      {/* Trust Elements Section */}
+      <section className="container mx-auto px-4 md:px-6 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {/* Trust Element 1: Happy Customers */}
+          <SurfaceGlass variant="default" className="p-8 text-center group hover:scale-105 transition-transform duration-300">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 p-4 rounded-full">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-white">+۱۰,۰۰۰</h3>
+                <p className="text-gray-300 font-medium">کاربر راضی</p>
+                <p className="text-sm text-gray-400">از ابزارهای هوش مصنوعی ما استفاده می‌کنند</p>
+              </div>
+              <CheckCircle className="w-5 h-5 text-green-400" />
+            </div>
+          </SurfaceGlass>
+
+          {/* Trust Element 2: Years of Experience */}
+          <SurfaceGlass variant="default" className="p-8 text-center group hover:scale-105 transition-transform duration-300">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                <div className="relative bg-gradient-to-r from-purple-500 to-pink-600 p-4 rounded-full">
+                  <Award className="w-8 h-8 text-white" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-white">۳+</h3>
+                <p className="text-gray-300 font-medium">سال تجربه</p>
+                <p className="text-sm text-gray-400">در ارائه راهکارهای دیجیتال و هوش مصنوعی</p>
+              </div>
+              <CheckCircle className="w-5 h-5 text-green-400" />
+            </div>
+          </SurfaceGlass>
+
+          {/* Trust Element 3: Secure Transactions */}
+          <SurfaceGlass variant="default" className="p-8 text-center group hover:scale-105 transition-transform duration-300">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                <div className="relative bg-gradient-to-r from-green-500 to-blue-600 p-4 rounded-full">
+                  <Shield className="w-8 h-8 text-white" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-white">۱۰۰%</h3>
+                <p className="text-gray-300 font-medium">امنیت پرداخت</p>
+                <p className="text-sm text-gray-400">تراکنش‌های امن با پشتیبانی از همه کارت‌ها</p>
+              </div>
+              <CheckCircle className="w-5 h-5 text-green-400" />
+            </div>
+          </SurfaceGlass>
+        </div>
+      </section>
+
       {/* SEO Content Section - Only render when Sanity data exists and is loaded */}
       {seoContentLoaded && seoContent && (
         <section className="container mx-auto px-4 md:px-6 py-16">
-          <div className="max-w-4xl mx-auto">
-            <EnhancedMarkdownRenderer content={seoContent} />
-          </div>
+          <SurfaceGlass variant="subtle" className="p-8 md:p-12">
+            <div className="max-w-4xl mx-auto">
+              <EnhancedMarkdownRenderer content={seoContent} />
+            </div>
+          </SurfaceGlass>
         </section>
       )}
 
