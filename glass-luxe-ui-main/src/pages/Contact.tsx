@@ -1,16 +1,11 @@
-import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
-import { Mail, Copy, ExternalLink, Clock, ShieldCheck, Upload, X } from "lucide-react";
+import { Copy, ExternalLink, Clock, ShieldCheck } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer/Footer";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { toast } from "sonner";
-import { z } from "zod";
 
 // Telegram Icon
 const TelegramIcon = () => (
@@ -19,69 +14,8 @@ const TelegramIcon = () => (
   </svg>
 );
 
-const contactSchema = z.object({
-  name: z.string().trim().min(2, { message: "نام باید حداقل ۲ کاراکتر باشد" }),
-  email: z.string().trim().email({ message: "ایمیل معتبر وارد کنید" }),
-  subject: z.string().trim().min(5, { message: "موضوع باید حداقل ۵ کاراکتر باشد" }),
-  message: z.string().trim().min(20, { message: "پیام باید حداقل ۲۰ کاراکتر باشد" }),
-  consent: z.boolean().refine((val) => val === true, {
-    message: "لطفاً شرایط را بپذیرید",
-  }),
-});
 
 export default function Contact() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-    consent: false,
-  });
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error("حجم فایل نباید بیشتر از ۱۰ مگابایت باشد");
-        return;
-      }
-      setUploadedFile(file);
-      toast.success("فایل آپلود شد");
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      contactSchema.parse(formData);
-
-      setIsSubmitting(true);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      toast.success("پیام شما با موفقیت ارسال شد. به‌زودی پاسخ می‌دهیم!");
-
-      // Reset form
-      setFormData({
-        name: "",
-        email: "",
-        subject: "",
-        message: "",
-        consent: false,
-      });
-      setUploadedFile(null);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.errors[0].message);
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -92,7 +26,7 @@ export default function Contact() {
     "@context": "https://schema.org",
     "@type": "ContactPage",
     name: "تماس با ما - SharifGPT",
-    description: "سریع‌ترین راه‌های ارتباط با پشتیبانی شریف‌GPT",
+    description: "پشتیبانی مشتریان شریف‌GPT از طریق تلگرام",
     url: "https://sharifgpt.ai/contact",
   };
 
@@ -102,7 +36,7 @@ export default function Contact() {
         <title>تماس با ما | SharifGPT</title>
         <meta
           name="description"
-          content="با تیم پشتیبانی شریف‌GPT در ارتباط باشید - پشتیبانی ۲۴/۷، تعویض حساب تضمینی"
+          content="پشتیبانی مشتریان شریف‌GPT از طریق تلگرام - پاسخگویی ۲۴ ساعته"
         />
         <link rel="canonical" href="https://sharifgpt.ai/contact" />
         <script type="application/ld+json">
@@ -128,295 +62,95 @@ export default function Contact() {
                 تماس با ما
               </h1>
               <p className="text-lg md:text-xl text-white/80 max-w-[680px] mx-auto">
-                سریع‌ترین راه‌های ارتباط با پشتیبانی شریف‌GPT
+                پشتیبانی مشتریان شریف‌GPT از طریق تلگرام
               </p>
             </motion.section>
 
-            {/* Contact Methods */}
-            <section>
-              <div className="grid md:grid-cols-3 gap-4 md:gap-6">
-                {/* Telegram */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="glass rounded-2xl p-6 border border-white/30"
-                >
-                  <div className="flex items-center justify-center mb-4">
-                    <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center">
-                      <TelegramIcon />
+            {/* Customer Support */}
+            <section className="max-w-md mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="glass rounded-2xl p-8 border border-white/30 text-center"
+              >
+                <div className="flex items-center justify-center mb-6">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                    <TelegramIcon />
+                  </div>
+                </div>
+
+                <h3 className="text-xl font-bold mb-3">پشتیبانی مشتریان</h3>
+                <p className="text-white/80 mb-6 leading-relaxed">
+                  تنها راه ارتباط با تیم پشتیبانی شریف‌GPT از طریق تلگرام می‌باشد.
+                  سریع‌ترین پاسخ را دریافت خواهید کرد.
+                </p>
+
+                <div className="space-y-4">
+                  <div className="glass border border-white/20 rounded-lg p-4">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <span className="text-sm font-medium text-white/90">آیدی تلگرام:</span>
+                      <code className="text-blue-400 font-mono text-sm bg-blue-500/10 px-2 py-1 rounded">
+                        @sharifgptadmin
+                      </code>
                     </div>
                   </div>
-                  <h3 className="text-lg font-bold text-center mb-2">تلگرام</h3>
-                  <p className="text-sm text-white/70 text-center mb-4">
-                    پشتیبانی سریع در تلگرام
-                  </p>
-                  <div className="flex gap-2">
+
+                  <div className="flex gap-3">
                     <Button
                       variant="outline"
-                      size="sm"
                       className="flex-1"
-                      onClick={() => copyToClipboard("@SharifGPT", "آیدی تلگرام")}
+                      onClick={() => copyToClipboard("@sharifgptadmin", "آیدی تلگرام")}
                     >
-                      <Copy className="w-4 h-4" />
+                      <Copy className="w-4 h-4 ml-2" />
+                      کپی کردن
                     </Button>
                     <Button
                       asChild
-                      size="sm"
-                      className="flex-1"
+                      className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
                     >
                       <a
-                        href="https://t.me/SharifGPT"
+                        href="https://t.me/sharifgptadmin"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <ExternalLink className="w-4 h-4 ml-1" />
-                        باز کردن
+                        <ExternalLink className="w-4 h-4 ml-2" />
+                        باز کردن تلگرام
                       </a>
                     </Button>
                   </div>
-                </motion.div>
+                </div>
 
-                {/* Email */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="glass rounded-2xl p-6 border border-white/30"
-                >
-                  <div className="flex items-center justify-center mb-4">
-                    <div className="w-14 h-14 rounded-full bg-purple-500/20 flex items-center justify-center">
-                      <Mail className="w-7 h-7 text-purple-500" />
-                    </div>
-                  </div>
-                  <h3 className="text-lg font-bold text-center mb-2">ایمیل</h3>
-                  <p className="text-sm text-white/70 text-center mb-4">
-                    support@sharifgpt.com
+                <div className="mt-6 pt-4 border-t border-white/20">
+                  <p className="text-xs text-white/60 flex items-center justify-center gap-2">
+                    <Clock className="w-3 h-3" />
+                    پاسخگویی ۲۴ ساعته
                   </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() =>
-                        copyToClipboard("support@sharifgpt.com", "ایمیل")
-                      }
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      asChild
-                      size="sm"
-                      className="flex-1"
-                    >
-                      <a href="mailto:support@sharifgpt.com">
-                        <Mail className="w-4 h-4 ml-1" />
-                        ارسال ایمیل
-                      </a>
-                    </Button>
-                  </div>
-                </motion.div>
-
-                {/* Hours */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="glass rounded-2xl p-6 border border-white/30"
-                >
-                  <div className="flex items-center justify-center mb-4">
-                    <div className="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <Clock className="w-7 h-7 text-green-500" />
-                    </div>
-                  </div>
-                  <h3 className="text-lg font-bold text-center mb-2">ساعات کاری</h3>
-                  <p className="text-sm text-white/70 text-center mb-2">
-                    پاسخ‌گویی روزانه
-                  </p>
-                  <p className="text-xs text-white/60 text-center">
-                    میانگین زمان پاسخ چند دقیقه
-                  </p>
-                </motion.div>
-              </div>
+                </div>
+              </motion.div>
             </section>
 
-            {/* Contact Form */}
-            <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <SurfaceGlass className="p-6 md:p-8">
-                <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">
-                  ارسال پیام
-                </h2>
-
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="grid md:grid-cols-2 gap-5">
-                    {/* Name */}
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className="text-sm font-medium">
-                        نام و نام خانوادگی <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="name"
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
-                        className="glass border-white/20"
-                        dir="rtl"
-                        required
-                      />
-                    </div>
-
-                    {/* Email */}
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm font-medium">
-                        ایمیل <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) =>
-                          setFormData({ ...formData, email: e.target.value })
-                        }
-                        className="glass border-white/20"
-                        dir="ltr"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {/* Subject */}
-                  <div className="space-y-2">
-                    <Label htmlFor="subject" className="text-sm font-medium">
-                      موضوع <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="subject"
-                      type="text"
-                      value={formData.subject}
-                      onChange={(e) =>
-                        setFormData({ ...formData, subject: e.target.value })
-                      }
-                      className="glass border-white/20"
-                      dir="rtl"
-                      required
-                    />
-                  </div>
-
-                  {/* Message */}
-                  <div className="space-y-2">
-                    <Label htmlFor="message" className="text-sm font-medium">
-                      پیام <span className="text-red-500">*</span>
-                    </Label>
-                    <Textarea
-                      id="message"
-                      value={formData.message}
-                      onChange={(e) =>
-                        setFormData({ ...formData, message: e.target.value })
-                      }
-                      className="glass border-white/20 min-h-[160px] resize-none"
-                      dir="rtl"
-                      required
-                    />
-                  </div>
-
-                  {/* File Upload */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      پیوست فایل (اختیاری) - حداکثر ۱۰ مگابایت
-                    </Label>
-                    <div className="flex items-center gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => document.getElementById("file")?.click()}
-                        className="gap-2"
-                      >
-                        <Upload className="w-4 h-4" />
-                        انتخاب فایل
-                      </Button>
-                      {uploadedFile && (
-                        <div className="glass px-3 py-2 rounded-lg flex items-center gap-2 flex-1">
-                          <span className="text-sm text-white/80 truncate flex-1">
-                            {uploadedFile.name}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setUploadedFile(null)}
-                            className="text-white/60 hover:text-white"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    <input
-                      id="file"
-                      type="file"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      accept="image/*,.pdf,.doc,.docx,.txt"
-                    />
-                  </div>
-
-                  {/* Consent */}
-                  <div className="flex items-start gap-3 pt-2">
-                    <input
-                      id="consent"
-                      type="checkbox"
-                      checked={formData.consent}
-                      onChange={(e) =>
-                        setFormData({ ...formData, consent: e.target.checked })
-                      }
-                      className="mt-1 w-4 h-4 rounded border-white/30 bg-white/10"
-                      required
-                    />
-                    <Label
-                      htmlFor="consent"
-                      className="text-sm text-white/80 cursor-pointer"
-                    >
-                      با شرایط و حریم‌خصوصی موافقم <span className="text-red-500">*</span>
-                    </Label>
-                  </div>
-
-                  {/* Submit */}
-                  <Button
-                    type="submit"
-                    size="lg"
-                    disabled={isSubmitting}
-                    className="w-full"
-                  >
-                    {isSubmitting ? "در حال ارسال..." : "ارسال پیام"}
-                  </Button>
-                </form>
-              </SurfaceGlass>
-            </motion.section>
 
             {/* Info Section */}
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.2 }}
             >
               <SurfaceGlass className="p-6 md:p-8">
-                <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
-                  <div className="glass border border-white/20 rounded-full px-6 py-3 flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-primary" />
-                    <span className="font-semibold text-sm md:text-base">
-                      پاسخ‌گویی ۲۴/۷
-                    </span>
-                  </div>
-                  <div className="glass border border-white/20 rounded-full px-6 py-3 flex items-center gap-3">
-                    <ShieldCheck className="w-5 h-5 text-green-500" />
-                    <span className="font-semibold text-sm md:text-base">
-                      تعویض حساب تضمینی
-                    </span>
+                <div className="text-center">
+                  <h3 className="text-lg font-bold mb-4">چرا تلگرام؟</h3>
+                  <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                    <div className="glass border border-white/20 rounded-lg p-4">
+                      <Clock className="w-6 h-6 text-primary mx-auto mb-2" />
+                      <p className="font-semibold text-sm mb-1">پاسخگویی سریع</p>
+                      <p className="text-xs text-white/70">میانگین زمان پاسخ کمتر از ۱۰ دقیقه</p>
+                    </div>
+                    <div className="glass border border-white/20 rounded-lg p-4">
+                      <ShieldCheck className="w-6 h-6 text-green-500 mx-auto mb-2" />
+                      <p className="font-semibold text-sm mb-1">پشتیبانی اختصاصی</p>
+                      <p className="text-xs text-white/70">تیم متخصص برای حل مشکلات شما</p>
+                    </div>
                   </div>
                 </div>
               </SurfaceGlass>
