@@ -54,7 +54,7 @@ import { CollectionsBanner } from "@/components/Products/CollectionsBanner";
 import { useDirection } from "@/contexts/DirectionContext";
 import { useCart } from "@/contexts/cart-context";
 import { toast } from "@/hooks/use-toast";
-import { PortableText } from "@portabletext/react";
+import EnhancedMarkdownRenderer from "@/components/EnhancedMarkdownRenderer";
 import headphonesPortrait from "@/assets/headphones-portrait.jpg";
 import smartwatchPortrait from "@/assets/smartwatch-portrait.jpg";
 import sunglassesPortrait from "@/assets/sunglasses-portrait.jpg";
@@ -88,7 +88,7 @@ const Index = () => {
   const [magazinePosts, setMagazinePosts] = useState<any[]>([]);
   const [tabbedProducts, setTabbedProducts] = useState<any[]>([]);
   const [collectionsBanner, setCollectionsBanner] = useState<any>(null);
-  const [seoContent, setSeoContent] = useState<any[]>([]);
+  const [seoContent, setSeoContent] = useState<string>('');
 
   // Intersection Observer for Footer - delay rendering until near viewport
   useEffect(() => {
@@ -229,10 +229,10 @@ const Index = () => {
           setCollectionsBanner(null);
         }
 
-        if (homeData?.seoContent?.length) {
+        if (homeData?.seoContent) {
           setSeoContent(homeData.seoContent);
         } else {
-          setSeoContent([]);
+          setSeoContent('');
         }
       } catch (error) {
         console.error("[HOMEPAGE] ❌ Failed to fetch:", error);
@@ -509,12 +509,10 @@ const Index = () => {
       )}
 
       {/* SEO Content Section - Only render when Sanity data exists */}
-      {seoContent.length > 0 && (
+      {seoContent && (
         <section className="container mx-auto px-4 md:px-6 py-16">
           <div className="max-w-4xl mx-auto">
-            <div className="prose prose-lg prose-slate dark:prose-invert mx-auto">
-              <PortableText value={seoContent} />
-            </div>
+            <EnhancedMarkdownRenderer content={seoContent} />
           </div>
         </section>
       )}
