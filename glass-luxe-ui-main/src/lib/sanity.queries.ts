@@ -142,7 +142,10 @@ export const homePageQuery = `
       category,
       "slug": slug.current
       }
-    }
+    },
+
+    // SEO Content Section
+    seoContent
   }
 `
 

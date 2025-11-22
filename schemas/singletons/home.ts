@@ -261,6 +261,60 @@ export default defineType({
       ],
       group: 'content',
     }),
+
+    // SEO Content Section
+    defineField({
+      name: 'seoContent',
+      title: 'SEO Content Section',
+      description: 'Rich text content for SEO optimization (appears at bottom of homepage before footer)',
+      type: 'array',
+      of: [
+        defineArrayMember({
+          type: 'block',
+          marks: {
+            annotations: [
+              {
+                name: 'link',
+                type: 'object',
+                title: 'Link',
+                fields: [
+                  {
+                    name: 'href',
+                    type: 'url',
+                    title: 'URL',
+                  },
+                ],
+              },
+            ],
+            decorators: [
+              {
+                title: 'Strong',
+                value: 'strong',
+              },
+              {
+                title: 'Emphasis',
+                value: 'em',
+              },
+            ],
+          },
+          styles: [
+            { title: 'Normal', value: 'normal' },
+            { title: 'H1', value: 'h1' },
+            { title: 'H2', value: 'h2' },
+            { title: 'H3', value: 'h3' },
+            { title: 'H4', value: 'h4' },
+            { title: 'H5', value: 'h5' },
+            { title: 'H6', value: 'h6' },
+            { title: 'Quote', value: 'blockquote' },
+          ],
+          lists: [
+            { title: 'Bullet', value: 'bullet' },
+            { title: 'Number', value: 'number' },
+          ],
+        }),
+      ],
+      group: 'content',
+    }),
   ],
   preview: {
     prepare() {
