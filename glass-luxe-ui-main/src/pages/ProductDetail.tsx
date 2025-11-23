@@ -251,13 +251,20 @@ const ProductDetail = () => {
     // Priority: Medusa variants > Product variants > Product price
     if (medusaVariants.length > 0 && selectedVariant) {
       const variant = medusaVariants.find(v => v.variant_id === selectedVariant);
-      if (variant?.price) return variant.price;
+      if (variant?.price) {
+        console.log('[PRODUCT-DETAIL] getCurrentPrice - Using Medusa variant price:', variant.price, 'for variant:', variant.name);
+        return variant.price;
+      }
     }
     // Fallback to product price if Medusa prices not loaded
     if (product?.variants && selectedVariant) {
       const variant = product.variants.find(v => v.id === selectedVariant);
-      if (variant?.price) return variant.price;
+      if (variant?.price) {
+        console.log('[PRODUCT-DETAIL] getCurrentPrice - Using product variant price:', variant.price, 'for variant:', variant.name);
+        return variant.price;
+      }
     }
+    console.log('[PRODUCT-DETAIL] getCurrentPrice - Using default product price:', product?.price || 0);
     return product?.price || 0;
   };
 
@@ -268,22 +275,31 @@ const ProductDetail = () => {
     console.log('[PRODUCT-DETAIL] Selected variant:', selectedVariant);
     console.log('[PRODUCT-DETAIL] Quantity:', quantity);
     console.log('[PRODUCT-DETAIL] Medusa variants available:', medusaVariants.length);
-    
+    console.log('[PRODUCT-DETAIL] All Medusa variants:', medusaVariants.map(v => ({ id: v.variant_id, name: v.name, price: v.price })));
+    console.log('[PRODUCT-DETAIL] Current price from getCurrentPrice():', getCurrentPrice());
+
     if (!product) {
       console.error('[PRODUCT-DETAIL] ❌ No product data');
       return false;
     }
-    
+
     // Use Medusa variant if available
     const selectedVariantData = medusaVariants.find(v => v.variant_id === selectedVariant);
-    
+    console.log('[PRODUCT-DETAIL] Found selected variant data:', selectedVariantData);
+
     if (medusaVariants.length > 0) {
       console.log('[PRODUCT-DETAIL] Using Medusa variant data');
-      console.log('[PRODUCT-DETAIL] Selected variant data:', selectedVariantData);
-      
+      console.log('[PRODUCT-DETAIL] Selected variant data details:', {
+        variant_id: selectedVariantData?.variant_id,
+        name: selectedVariantData?.name,
+        price: selectedVariantData?.price,
+        currency: selectedVariantData?.currency
+      });
+
       // If we have Medusa variants, validate price
       if (!selectedVariantData || !selectedVariantData.price || selectedVariantData.price === 0) {
-        console.error('[PRODUCT-DETAIL] ❌ Invalid or missing price');
+        console.error('[PRODUCT-DETAIL] ❌ Invalid or missing price for variant:', selectedVariant);
+        console.error('[PRODUCT-DETAIL] Available variants:', medusaVariants.map(v => ({ id: v.variant_id, name: v.name, price: v.price })));
         toast({
           title: "خطا",
           description: 'قیمت این محصول در دسترس نیست. لطفاً با پشتیبانی تماس بگیرید.',
@@ -310,8 +326,14 @@ const ProductDetail = () => {
         variant_id: selectedVariantData.variant_id,
         option_name: selectedVariantData.name,
       };
-      
-      console.log('[PRODUCT-DETAIL] Cart item to set (replacing cart):', cartItem);
+
+      console.log('[PRODUCT-DETAIL] Cart item being created:', {
+        title: cartItem.title,
+        price: cartItem.price,
+        variant_id: cartItem.variant_id,
+        option_name: cartItem.option_name,
+        sanity_slug: cartItem.sanity_slug
+      });
       setSingleItem(cartItem);
       console.log('[PRODUCT-DETAIL] ✅ Cart replaced with single product');
       console.log('[PRODUCT-DETAIL] =========================================');
