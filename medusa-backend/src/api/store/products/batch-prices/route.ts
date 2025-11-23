@@ -69,19 +69,40 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     console.log(`[BATCH-PRICES] ========== FETCHING ${handles.length} PRODUCTS ==========`);
     console.log(`[BATCH-PRICES] Handles:`, handles);
 
-    // Single optimized query for all products
+    // Medusa v2 compliant approach: Get products first, then variants separately for better performance
     const products = await productModuleService.listProducts({
-      handle: handles, // This should work with array in Medusa
-      relations: include_variants ? ["variants", "variants.prices"] : []
+      handle: handles // Medusa v2 supports array filters
     });
 
     console.log(`[BATCH-PRICES] Found ${products.length} products in database`);
+
+    // If variants are needed, fetch them separately for each product
+    // This is more efficient than trying to join everything in one query
+    const productsWithVariants = include_variants ? await Promise.all(
+      products.map(async (product) => {
+        const variants = await productModuleService.listProductVariants({
+          product_id: product.id
+        });
+
+        // Get prices for each variant
+        const variantsWithPrices = await Promise.all(
+          variants.map(async (variant) => {
+            const prices = await productModuleService.listProductVariantPrices({
+              variant_id: variant.id
+            });
+            return { ...variant, prices };
+          })
+        );
+
+        return { ...product, variants: variantsWithPrices };
+      })
+    ) : products;
 
     const prices: Record<string, any> = {};
 
     // Process results and organize by handle
     for (const handle of handles) {
-      const product = products.find((p: any) => p.handle === handle);
+      const product = productsWithVariants.find((p: any) => p.handle === handle);
 
       if (!product) {
         console.warn(`[BATCH-PRICES] Product not found: ${handle}`);
