@@ -277,16 +277,16 @@ const ProductDetail = () => {
     console.log('[PRODUCT-DETAIL] Medusa variants available:', medusaVariants.length);
     console.log('[PRODUCT-DETAIL] All Medusa variants:', medusaVariants.map(v => ({ id: v.variant_id, name: v.name, price: v.price })));
     console.log('[PRODUCT-DETAIL] Current price from getCurrentPrice():', getCurrentPrice());
-
+    
     if (!product) {
       console.error('[PRODUCT-DETAIL] ❌ No product data');
       return false;
     }
-
+    
     // Use Medusa variant if available
     const selectedVariantData = medusaVariants.find(v => v.variant_id === selectedVariant);
     console.log('[PRODUCT-DETAIL] Found selected variant data:', selectedVariantData);
-
+    
     if (medusaVariants.length > 0) {
       console.log('[PRODUCT-DETAIL] Using Medusa variant data');
       console.log('[PRODUCT-DETAIL] Selected variant data details:', {
@@ -295,7 +295,7 @@ const ProductDetail = () => {
         price: selectedVariantData?.price,
         currency: selectedVariantData?.currency
       });
-
+      
       // If we have Medusa variants, validate price
       if (!selectedVariantData || !selectedVariantData.price || selectedVariantData.price === 0) {
         console.error('[PRODUCT-DETAIL] ❌ Invalid or missing price for variant:', selectedVariant);
@@ -326,7 +326,7 @@ const ProductDetail = () => {
         variant_id: selectedVariantData.variant_id,
         option_name: selectedVariantData.name,
       };
-
+      
       console.log('[PRODUCT-DETAIL] Cart item being created:', {
         title: cartItem.title,
         price: cartItem.price,

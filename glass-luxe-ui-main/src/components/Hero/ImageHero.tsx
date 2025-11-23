@@ -55,19 +55,19 @@ export default function ImageHero({ slide }: ImageHeroProps) {
           type="image/webp"
           sizes={backgroundSrcSet ? heroSizes : undefined}
         />
-        <img
-          src={backgroundImage}
-          srcSet={backgroundSrcSet}
-          sizes={backgroundSrcSet ? heroSizes : undefined}
-          alt=""
-          loading="eager"
+      <img
+        src={backgroundImage}
+        srcSet={backgroundSrcSet}
+        sizes={backgroundSrcSet ? heroSizes : undefined}
+        alt=""
+        loading="eager"
           decoding="async"
-          fetchPriority="high"
-          className="absolute inset-0 h-full w-full object-cover
-                     object-[20%_50%] md:object-[60%_50%]
-                     [filter:brightness(.85)]
+        fetchPriority="high"
+        className="absolute inset-0 h-full w-full object-cover
+                   object-[20%_50%] md:object-[60%_50%]
+                   [filter:brightness(.85)]
                      md:[filter:brightness(1.18)_saturate(1.08)_contrast(1.05)]"
-        />
+      />
       </picture>
       
       {/* Brand tint overlay - matches site's blue-purple palette */}
