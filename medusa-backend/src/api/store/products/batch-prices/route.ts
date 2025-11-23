@@ -1,6 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework";
 import { Modules } from "@medusajs/framework/utils";
-import { IProductModuleService } from "@medusajs/framework/types";
+import { IProductModuleService, IPricingModuleService } from "@medusajs/framework/types";
 import { applyCorsHeaders, handleCorsPreflight } from "../../../../middleware/global-cors";
 
 /**
@@ -65,6 +65,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     }
 
     const productModuleService: IProductModuleService = req.scope.resolve(Modules.PRODUCT);
+    const pricingModuleService: IPricingModuleService = req.scope.resolve(Modules.PRICING);
 
     console.log(`[BATCH-PRICES] ========== FETCHING ${handles.length} PRODUCTS ==========`);
     console.log(`[BATCH-PRICES] Handles:`, handles);
@@ -84,12 +85,24 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
           product_id: product.id
         });
 
-        // Get prices for each variant
+        // Get prices for each variant using pricing module
         const variantsWithPrices = await Promise.all(
           variants.map(async (variant) => {
-            const prices = await productModuleService.listProductVariantPrices({
+            // Get price sets for this variant
+            const priceSets = await pricingModuleService.listPriceSets({
               variant_id: variant.id
             });
+
+            // Get prices from the price sets
+            const prices = [];
+            for (const priceSet of priceSets) {
+              const priceListPrices = await pricingModuleService.listPrices({
+                price_set_id: priceSet.id,
+                currency_code: "irr" // Only get IRR prices
+              });
+              prices.push(...priceListPrices);
+            }
+
             return { ...variant, prices };
           })
         );
