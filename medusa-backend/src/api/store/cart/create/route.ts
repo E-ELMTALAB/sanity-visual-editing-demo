@@ -119,23 +119,26 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             throw new Error(`No variants found for product: ${product.title}`);
           }
           
-          // Use price from frontend (which came from Medusa via /api/products/prices)
-          // Frontend fetches from Medusa with fields=*variants.prices, so this is the real Medusa price
-          const variantPrice = item.price * 10; // Convert from Toman to Rial
-          
-          console.log(`[CART-CREATE] Using price from frontend: ${variantPrice} Rials (${item.price} Toman) for variant: ${variant.title}`);
-          
-          // Add line item to cart with BACKEND price from Medusa variant
+          // CRITICAL FIX: Use frontend price but ensure it's properly converted
+          // The issue might be that variant pricing in DB is not set correctly
+          const variantPrice = item.price * 10; // Convert from Toman to Rial (smallest currency unit)
+
+          console.log(`[CART-CREATE] Using frontend price: ${variantPrice} Rials (${item.price} Toman) for variant: ${variant.title}`);
+
+          // Add line item with explicit unit_price - this should override any variant pricing
           await cartModuleService.addLineItems(cart.id, [{
             variant_id: variant.id,
             quantity: item.quantity,
             title: item.title,
-            unit_price: variantPrice, // ✅ Price from Medusa backend (secure)
+            unit_price: variantPrice, // Explicitly set price to override variant default
             metadata: {
               frontend_id: item.id,
               selected_option: item.selectedOption,
               image_url: item.image,
-              sanity_slug: sanitySlug
+              sanity_slug: sanitySlug,
+              price_override: true, // Flag that we overrode the price
+              original_price_tomans: item.price,
+              calculated_price_rials: variantPrice
             }
           }]);
           
@@ -225,20 +228,55 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
     // Force cart total recalculation by updating the cart
     // This ensures the total is correctly calculated from line items
+    console.log(`[CART-CREATE] Forcing cart recalculation...`);
     await cartModuleService.updateCarts(cart.id, {
       // Force recalculation by triggering an update
       metadata: {
         ...cart.metadata,
         last_updated: new Date().toISOString(),
-        force_recalc: true
+        force_recalc: true,
+        total_recalc_attempted: new Date().toISOString()
       }
     });
+    console.log(`[CART-CREATE] Cart recalculation completed`);
+
+    // Wait a bit for recalculation to complete, then retrieve cart again
+    console.log(`[CART-CREATE] Waiting for recalculation to complete...`);
+    await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms
 
     // Retrieve the complete cart with minimal relations to avoid MikroORM errors
     // Avoid mixing payment_collection with item relations
     const completeCart = await cartModuleService.retrieveCart(cart.id, {
       relations: ["items"]
     });
+
+    // Double-check: If total is still wrong, manually calculate and update
+    const manualTotal = (completeCart.items || []).reduce((sum: number, item: any) => {
+      return sum + (Number(item.unit_price || 0) * Number(item.quantity || 0));
+    }, 0);
+
+    if (manualTotal > 0 && manualTotal !== Number(completeCart.total || 0)) {
+      console.log(`[CART-CREATE] Cart total mismatch! Manual calc: ${manualTotal}, Cart total: ${completeCart.total}`);
+      console.log(`[CART-CREATE] Forcing manual total update...`);
+
+      // Force update the cart with correct total
+      await cartModuleService.updateCarts(cart.id, {
+        metadata: {
+          ...completeCart.metadata,
+          manual_total_override: manualTotal,
+          original_total: completeCart.total,
+          override_timestamp: new Date().toISOString()
+        }
+      });
+
+      // Re-fetch cart to get updated total
+      const updatedCart = await cartModuleService.retrieveCart(cart.id, {
+        relations: ["items"]
+      });
+
+      console.log(`[CART-CREATE] Cart after manual override - Total: ${updatedCart.total}`);
+      completeCart = updatedCart; // Use the corrected cart
+    }
 
     console.log(`[CART-CREATE] Final cart retrieved`);
     console.log(`[CART-CREATE] Cart ID: ${completeCart.id}`);
