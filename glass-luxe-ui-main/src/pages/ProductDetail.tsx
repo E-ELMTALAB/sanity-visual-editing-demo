@@ -461,7 +461,7 @@ const ProductDetail = () => {
                 }} animate={{
                   opacity: 1
                 }} className="relative aspect-square rounded-2xl overflow-hidden glass w-full">
-                    <img src={currentImage} alt={isRTL ? product.titleFa : product.title} className="w-full h-full object-cover" />
+                    <img src={currentImage} alt={isRTL ? product.titleFa : product.title} className="w-full h-full object-cover object-top" />
                     {product.badge && <div className="absolute top-4 ltr:left-4 rtl:right-4">
                         <Badge variant={product.badge}>
                           {product.badge === "sale" && (isRTL ? "تخفیف" : "Sale")}
