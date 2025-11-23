@@ -3,6 +3,7 @@
  * This config is used to set up Sanity Studio that's mounted on the `/pages/studio/[[...index]].tsx` route
  */
 import { visionTool } from '@sanity/vision'
+import { assist } from '@sanity/assist'
 import { apiVersion, basePath, dataset, projectId } from 'lib/sanity.api'
 import { locate } from 'plugins/locate'
 import { pageStructure, singletonPlugin } from 'plugins/settings'
@@ -90,6 +91,15 @@ export default defineConfig({
     // Vision lets you query your content with GROQ in the studio
     // https://www.sanity.io/docs/the-vision-plugin
     visionTool({ defaultApiVersion: apiVersion }),
+    // AI Assist plugin for content generation
+    assist({
+      translations: [
+        {
+          // Configure any custom translations for the AI Assist UI
+          // This is optional and can be used to customize the UI text
+        },
+      ],
+    }),
     // See url preview secrets in the schema for debugging
     process.env.NODE_ENV === 'development' && debugSecrets(),
   ].filter(Boolean),
