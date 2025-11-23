@@ -1,6 +1,4 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework";
-import { Modules } from "@medusajs/framework/utils";
-import { IProductModuleService, IPricingModuleService } from "@medusajs/framework/types";
 import { applyCorsHeaders, handleCorsPreflight } from "../../../../middleware/global-cors";
 
 /**
@@ -64,8 +62,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       });
     }
 
-    const productModuleService: IProductModuleService = req.scope.resolve(Modules.PRODUCT);
-    const pricingModuleService: IPricingModuleService = req.scope.resolve(Modules.PRICING);
+    // Using direct API calls instead of service methods for reliability
 
     console.log(`[BATCH-PRICES] ========== FETCHING ${handles.length} PRODUCTS ==========`);
     console.log(`[BATCH-PRICES] Handles:`, handles);
@@ -76,14 +73,30 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
     const productPromises = handles.map(async (handle) => {
       try {
-        // Use the same API pattern as the working frontend code
-        const products = await productModuleService.listProducts({
-          handle: handle
-        }, {
-          relations: include_variants ? ["variants", "variants.prices"] : []
+        // Use the same approach as the working frontend fallback code
+        // Make direct API call to get products with variants and prices
+        const backend = process.env.MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com';
+        const publishableKey = process.env.MEDUSA_PUBLISHABLE_API_KEY || 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4';
+
+        const url = `${backend}/store/products?handle=${handle}&fields=id,variants.id,variants.title,variants.sku,variants.prices.amount,variants.prices.currency_code`;
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-publishable-api-key': publishableKey,
+          },
         });
 
-        return { handle, products: products || [] };
+        if (!response.ok) {
+          console.warn(`[BATCH-PRICES] API call failed for ${handle}: ${response.status}`);
+          return { handle, products: [] };
+        }
+
+        const data = await response.json();
+        const products = data.products || [];
+
+        return { handle, products };
       } catch (error) {
         console.warn(`[BATCH-PRICES] Failed to fetch product ${handle}:`, error);
         return { handle, products: [] };
