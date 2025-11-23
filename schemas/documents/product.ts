@@ -18,10 +18,7 @@ export default defineType({
       title: 'Name',
       type: 'string',
       validation: (Rule) => Rule.required(),
-      group: 'content',
-      __experimental_assist: {
-        description: 'Generate a compelling product name based on the product type and features'
-      }
+      group: 'content'
     }),
     defineField({ name: 'slug', title: 'Slug', type: 'slug', options: { source: 'name', maxLength: 96 }, validation: (Rule) => Rule.required(), group: 'content' }),
     defineField({
@@ -29,10 +26,7 @@ export default defineType({
       title: 'Description',
       type: 'text',
       rows: 8,
-      group: 'content',
-      __experimental_assist: {
-        description: 'Write a detailed, compelling product description highlighting key features and benefits'
-      }
+      group: 'content'
     }),
     
     defineField({ name: 'category', title: 'Category', type: 'string', group: 'content' }),
@@ -50,10 +44,7 @@ export default defineType({
       title: 'Features',
       type: 'array',
       of: [{ type: 'string' }],
-      group: 'content',
-      __experimental_assist: {
-        description: 'Generate a list of key product features and benefits'
-      }
+      group: 'content'
     }),
     defineField({ name: 'badges', title: 'Badges', type: 'array', of: [{ type: 'string' }], group: 'content' }),
     
@@ -124,10 +115,7 @@ export default defineType({
           type: 'string',
           title: 'Meta Title',
           description: 'SEO title (recommended: 50-60 characters)',
-          validation: (Rule) => Rule.max(60).warning('Should be under 60 characters for optimal display'),
-          __experimental_assist: {
-            description: 'Generate an SEO-optimized title for search engines'
-          }
+          validation: (Rule) => Rule.max(60).warning('Should be under 60 characters for optimal display')
         }),
         defineField({
           name: 'metaDescription',
@@ -135,10 +123,7 @@ export default defineType({
           title: 'Meta Description',
           rows: 3,
           description: 'SEO description (recommended: 150-160 characters)',
-          validation: (Rule) => Rule.max(160).warning('Should be under 160 characters for optimal display'),
-          __experimental_assist: {
-            description: 'Generate an SEO-optimized description for search engines'
-          }
+          validation: (Rule) => Rule.max(160).warning('Should be under 160 characters for optimal display')
         }),
         defineField({ 
           name: 'canonicalUrl', 

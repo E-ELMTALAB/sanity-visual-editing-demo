@@ -92,14 +92,7 @@ export default defineConfig({
     // https://www.sanity.io/docs/the-vision-plugin
     visionTool({ defaultApiVersion: apiVersion }),
     // AI Assist plugin for content generation
-    assist({
-      translations: [
-        {
-          // Configure any custom translations for the AI Assist UI
-          // This is optional and can be used to customize the UI text
-        },
-      ],
-    }),
+    assist(),
     // See url preview secrets in the schema for debugging
     process.env.NODE_ENV === 'development' && debugSecrets(),
   ].filter(Boolean),
