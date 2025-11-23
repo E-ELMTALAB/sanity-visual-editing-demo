@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { useDirection } from "@/contexts/DirectionContext";
 import { cn } from "@/lib/utils";
+import { ProductPrices } from "@/lib/medusa-prices";
 const springTransition = {
   type: "spring" as const,
   stiffness: 220,
@@ -21,11 +22,13 @@ interface Product {
 interface BestSellersProps {
   products: Product[];
   onAdd: (id: string) => void;
+  productPrices?: Record<string, ProductPrices>;
   className?: string;
 }
 export function BestSellers({
   products,
   onAdd,
+  productPrices,
   className
 }: BestSellersProps) {
   const {
@@ -86,7 +89,15 @@ export function BestSellers({
               ...springTransition,
               delay: index * 0.05
             }}>
-                  <ProductCard id={product.id} title={product.title} image={product.image} price={product.price} slug={product.slug} onAdd={onAdd} />
+                  <ProductCard
+                    id={product.id}
+                    title={product.title}
+                    image={product.image}
+                    price={product.price}
+                    medusaVariants={productPrices?.[product.slug]?.variants || []}
+                    slug={product.slug}
+                    onAdd={onAdd}
+                  />
                 </motion.div>)}
             </div>
           </div>

@@ -27,6 +27,7 @@ import { SupportPanel } from "@/components/FloatingDock/SupportPanel";
 import { fetchFromSanity } from "@/lib/sanity.client";
 import { validateSanityConfig } from "@/lib/sanity.config";
 import { homePageQuery, featuredProductsQuery, featuredCoursesQuery, featuredPostsQuery, productsByCategoryQuery } from "@/lib/sanity.queries";
+import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
 import {
   transformHeroSlide,
   transformBestSellerProduct,
@@ -88,6 +89,7 @@ const Index = () => {
   const [eduProducts, setEduProducts] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [magazinePosts, setMagazinePosts] = useState<any[]>([]);
+  const [productPrices, setProductPrices] = useState<Record<string, ProductPrices>>({});
   const [tabbedProducts, setTabbedProducts] = useState<any[]>([]);
   const [collectionsBanner, setCollectionsBanner] = useState<any>(null);
   const [seoContent, setSeoContent] = useState<string | null>(null);
@@ -271,6 +273,30 @@ const Index = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
+
+  // Fetch Medusa prices for homepage products
+  useEffect(() => {
+    const fetchHomepagePrices = async () => {
+      if (!bestSellerProducts || bestSellerProducts.length === 0) return;
+
+      const slugs = bestSellerProducts
+        .map((p: any) => p.slug || p.handle)
+        .filter(Boolean);
+
+      if (slugs.length === 0) return;
+
+      try {
+        console.log('[HOMEPAGE] Fetching Medusa prices for homepage products:', slugs.length);
+        const prices = await fetchProductPrices(slugs);
+        setProductPrices(prices);
+        console.log('[HOMEPAGE] ✅ Homepage prices fetched successfully');
+      } catch (error) {
+        console.error('[HOMEPAGE] ❌ Failed to fetch homepage prices:', error);
+      }
+    };
+
+    fetchHomepagePrices();
+  }, [bestSellerProducts]);
   const handleOpenCart = () => {
     toast({
       title: "سبد خرید",
@@ -425,7 +451,7 @@ const Index = () => {
 
       {/* Best Sellers Section - Only render when Sanity data exists */}
       {bestSellerProducts.length > 0 && (
-      <BestSellers products={bestSellerProducts} onAdd={handleAddToCart} />
+      <BestSellers products={bestSellerProducts} productPrices={productPrices} onAdd={handleAddToCart} />
       )}
 
       {/* Editorial Banners Section - Only render when Sanity data exists */}
