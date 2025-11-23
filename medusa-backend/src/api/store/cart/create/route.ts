@@ -222,22 +222,37 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     }
 
     console.log(`[CART-CREATE] ========== RETRIEVING FINAL CART ==========`);
-    
+
+    // Force cart total recalculation by updating the cart
+    // This ensures the total is correctly calculated from line items
+    await cartModuleService.updateCarts(cart.id, {
+      // Force recalculation by triggering an update
+      metadata: {
+        ...cart.metadata,
+        last_updated: new Date().toISOString(),
+        force_recalc: true
+      }
+    });
+
     // Retrieve the complete cart with minimal relations to avoid MikroORM errors
     // Avoid mixing payment_collection with item relations
     const completeCart = await cartModuleService.retrieveCart(cart.id, {
       relations: ["items"]
     });
-    
+
     console.log(`[CART-CREATE] Final cart retrieved`);
     console.log(`[CART-CREATE] Cart ID: ${completeCart.id}`);
     console.log(`[CART-CREATE] Items in cart: ${completeCart.items?.length || 0}`);
     console.log(`[CART-CREATE] Cart total: ${completeCart.total}`);
+    console.log(`[CART-CREATE] Cart subtotal: ${completeCart.subtotal}`);
+    console.log(`[CART-CREATE] Cart tax_total: ${completeCart.tax_total}`);
+    console.log(`[CART-CREATE] Cart shipping_total: ${completeCart.shipping_total}`);
     console.log(`[CART-CREATE] Cart items:`, completeCart.items?.map((i: any) => ({
       id: i.id,
       title: i.title,
       quantity: i.quantity,
       unit_price: i.unit_price,
+      total: i.total,
       variant_id: i.variant_id
     })));
     console.log(`[CART-CREATE] =========================================`);

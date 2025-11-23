@@ -76,10 +76,32 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       });
     }
 
-    // Ensure minimum amount for Zarinpal (10,000 Rials minimum)
-    const cartAmount = Number(cart.total || 0);
+    // Calculate total from line items to ensure accuracy
+    // Medusa sometimes doesn't update cart.total immediately after adding items
+    const calculatedTotal = (cart.items || []).reduce((sum: number, item: any) => {
+      return sum + (Number(item.unit_price || 0) * Number(item.quantity || 0));
+    }, 0);
+
+    // Use calculated total if cart.total is not set or seems incorrect
+    const cartAmount = calculatedTotal > 0 ? calculatedTotal : Number(cart.total || 0);
     const minimumAmount = 10000;
     const paymentAmount = Math.max(cartAmount, minimumAmount);
+
+    console.log(`[PAYMENT-INIT] ========== PAYMENT INITIATION ==========`);
+    console.log(`[PAYMENT-INIT] Cart ID: ${cart_id}`);
+    console.log(`[PAYMENT-INIT] Cart total from DB: ${cart.total}`);
+    console.log(`[PAYMENT-INIT] Cart subtotal: ${cart.subtotal}`);
+    console.log(`[PAYMENT-INIT] Cart items count: ${cart.items?.length}`);
+    console.log(`[PAYMENT-INIT] Cart items details:`, cart.items?.map((item: any) => ({
+      title: item.title,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+      total: item.total
+    })));
+    console.log(`[PAYMENT-INIT] Calculated cartAmount: ${cartAmount}`);
+    console.log(`[PAYMENT-INIT] Minimum amount: ${minimumAmount}`);
+    console.log(`[PAYMENT-INIT] Final paymentAmount: ${paymentAmount}`);
+    console.log(`[PAYMENT-INIT] =========================================`);
 
     // Prepare cart items for metadata (admin verification needs this)
     const cartItemsMetadata = (cart.items || []).map((item: any) => ({
