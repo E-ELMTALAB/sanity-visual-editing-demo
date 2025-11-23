@@ -4,6 +4,7 @@
 
 import { type DocumentDefinition } from 'sanity'
 import { type StructureResolver } from 'sanity/structure'
+import { contextDocumentTypeName } from '@sanity/assist'
 
 export const singletonPlugin = (types: string[]) => {
   return {
@@ -61,6 +62,11 @@ export const pageStructure = (
 
     return S.list()
       .title('Content')
-      .items([...singletonItems, S.divider(), ...defaultListItems])
+      .items([
+        ...singletonItems,
+        S.divider(),
+        S.documentTypeListItem(contextDocumentTypeName),
+        ...defaultListItems
+      ])
   }
 }
