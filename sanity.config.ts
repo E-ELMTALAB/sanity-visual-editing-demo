@@ -3,10 +3,10 @@
  * This config is used to set up Sanity Studio that's mounted on the `/pages/studio/[[...index]].tsx` route
  */
 import { visionTool } from '@sanity/vision'
-import { assist, contextDocumentTypeName } from '@sanity/assist'
+import { assist, contextDocumentType, contextDocumentTypeName } from '@sanity/assist'
 import { apiVersion, basePath, dataset, projectId } from 'lib/sanity.api'
 import { locate } from 'plugins/locate'
-import { pageStructure, singletonPlugin } from 'plugins/settings'
+import { singletonPlugin } from 'plugins/settings'
 import { defineConfig } from 'sanity'
 import { presentationTool } from 'sanity/presentation'
 import { structureTool } from 'sanity/structure'
@@ -70,6 +70,8 @@ export default defineConfig({
       topBannerSlide,
       syllabusModule,
       lesson,
+      // AI Assist context document
+      contextDocumentType,
     ],
   },
   plugins: [
@@ -83,18 +85,29 @@ export default defineConfig({
     }),
     structureTool({
       structure: (S) => {
-        const defaultStructure = pageStructure([home, settings])(S)
+        const singletonItems = [home, settings].map((typeDef) =>
+          S.listItem()
+            .title(typeDef.title)
+            .icon(typeDef.icon)
+            .child(
+              S.editor()
+                .id(typeDef.name)
+                .schemaType(typeDef.name)
+                .documentId(typeDef.name)
+                .views([S.view.form()]),
+            ),
+        )
 
-        // Add AI Context document type to the structure
+        const defaultListItems = S.documentTypeListItems().filter((listItem) => {
+          const id = listItem.getId()
+          return id && ![home.name, settings.name, contextDocumentTypeName].includes(id)
+        })
+
         const aiContextItem = S.documentTypeListItem(contextDocumentTypeName)
 
         return S.list()
           .title('Content')
-          .items([
-            ...defaultStructure.getItems(),
-            S.divider(),
-            aiContextItem
-          ])
+          .items([...singletonItems, S.divider(), aiContextItem, S.divider(), ...defaultListItems])
       },
     }),
     // Configures the global "new document" button, and document actions, to suit the Settings document singleton
