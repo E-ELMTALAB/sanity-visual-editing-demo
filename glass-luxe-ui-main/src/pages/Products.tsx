@@ -408,6 +408,7 @@ export default function Products() {
                           title={product.title}
                           image={product.image}
                           price={product.price}
+                          medusaVariants={productPrices[product.slug]?.variants || []}
                           onAdd={handleAddToCart}
                           className="[&>div:first-child]:aspect-[4/5] sm:[&>div:first-child]:aspect-[3/4]"
                         />

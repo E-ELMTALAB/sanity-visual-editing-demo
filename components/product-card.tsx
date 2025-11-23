@@ -5,6 +5,15 @@ import { Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
+interface MedusaVariant {
+  variant_id: string;
+  name: string;
+  price: number; // In Tomans
+  price_rials: number; // In Rials
+  sku?: string;
+  currency: string;
+}
+
 interface ProductCardProps {
   id: string | number
   title: string
@@ -19,6 +28,7 @@ interface ProductCardProps {
   features?: string[]
   badge?: string
   href?: string
+  medusaVariants?: MedusaVariant[]
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -35,6 +45,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   features,
   badge,
   href,
+  medusaVariants,
 }) => {
   const formatPrice = (price: number) => {
     return price.toLocaleString("fa-IR")
@@ -42,6 +53,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   // Use the provided href prop, or fallback to /products/{id} if not provided
   const productPageHref = href || `/products/${id}`
+
+  // Get the lowest price from Medusa variants, or fallback to the provided price
+  const lowestPrice = medusaVariants && medusaVariants.length > 0
+    ? Math.min(...medusaVariants.map(v => v.price))
+    : price
 
   return (
     <div className="relative group w-full bg-white rounded-2xl shadow-lg overflow-hidden transform-gpu transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1 cursor-pointer">
@@ -78,9 +94,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {/* Price section */}
         <div className="text-center mb-2 sm:mb-3">
           <div className="text-blue-600 text-base sm:text-xl font-bold">
-            {formatPrice(price)} <span className="text-xs sm:text-sm text-gray-500">تومان</span>
+            {medusaVariants && medusaVariants.length > 1 ? (
+              <>
+                <span className="text-xs sm:text-sm text-gray-600 mr-1">قیمت از</span>
+                {formatPrice(lowestPrice)}
+              </>
+            ) : (
+              formatPrice(lowestPrice)
+            )}
+            <span className="text-xs sm:text-sm text-gray-500 mr-1">تومان</span>
           </div>
-          {originalPrice && originalPrice > price && (
+          {originalPrice && originalPrice > lowestPrice && (
             <div className="text-xs text-gray-400 line-through">{formatPrice(originalPrice)} تومان</div>
           )}
         </div>
@@ -89,7 +113,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <Link href={productPageHref} className="w-full">
             <Button className="w-full font-semibold py-1.5 sm:py-2.5 px-2 sm:px-4 rounded-lg sm:rounded-xl transition-all duration-300 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
               <Eye size={14} className="sm:w-4 sm:h-4" />
-              مشاهده محصول
+              مشاهده
             </Button>
           </Link>
         </div>

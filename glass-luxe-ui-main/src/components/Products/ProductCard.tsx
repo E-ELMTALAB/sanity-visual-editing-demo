@@ -2,6 +2,15 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
+interface MedusaVariant {
+  variant_id: string;
+  name: string;
+  price: number; // In Tomans
+  price_rials: number; // In Rials
+  sku?: string;
+  currency: string;
+}
+
 interface ProductCardProps {
   id: string;
   title: string;
@@ -11,6 +20,7 @@ interface ProductCardProps {
   onAdd: (id: string) => void;
   className?: string;
   slug?: string;
+  medusaVariants?: MedusaVariant[];
 }
 
 export const ProductCard = React.memo(function ProductCard({
@@ -22,8 +32,14 @@ export const ProductCard = React.memo(function ProductCard({
   onAdd,
   className,
   slug,
+  medusaVariants,
 }: ProductCardProps) {
   const navigate = useNavigate();
+
+  // Get the lowest price from Medusa variants, or fallback to the provided price
+  const lowestPrice = medusaVariants && medusaVariants.length > 0
+    ? Math.min(...medusaVariants.map(v => v.price))
+    : price;
 
   const handleCardClick = () => {
     if (slug) {
@@ -65,14 +81,21 @@ export const ProductCard = React.memo(function ProductCard({
         <div className="mt-3 flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-2">
             <span className="text-[17px] md:text-[18px] font-bold text-white/95">
-              {price.toLocaleString('fa-IR')} تومان
+              {medusaVariants && medusaVariants.length > 1 ? (
+                <>
+                  <span className="text-xs md:text-sm text-white/80 mr-1">قیمت از</span>
+                  {lowestPrice.toLocaleString('fa-IR')}
+                </>
+              ) : (
+                lowestPrice.toLocaleString('fa-IR')
+              )} تومان
             </span>
           </div>
           <button
             onClick={handleCardClick}
             className="px-3.5 py-2 rounded-full text-[13px] font-medium bg-white/15 hover:bg-white/22 active:bg-white/28 border border-white/35 transition-colors duration-150 whitespace-nowrap"
           >
-            خرید سریع
+            مشاهده
           </button>
         </div>
       </div>
