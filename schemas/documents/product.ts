@@ -10,7 +10,6 @@ export default defineType({
     { name: 'seo', title: 'SEO' },
     { name: 'media', title: 'Media' },
     { name: 'relations', title: 'Relations' },
-    { name: 'sync', title: 'Medusa Sync' },
   ],
   fields: [
     // Content Fields
@@ -27,48 +26,10 @@ export default defineType({
       group: 'content'
     }),
     
-    // Pricing Fields - DEPRECATED: Managed in Medusa Backend
-    defineField({ 
-      name: 'price', 
-      title: 'Price (DEPRECATED - Manage in Medusa)', 
-      type: 'number', 
-      group: 'content',
-      description: '⚠️ DEPRECATED: Prices are now managed in Medusa backend. Use "Sync to Medusa" to push product data, then update prices in Medusa Admin Panel.',
-      validation: (Rule) => Rule.min(0).precision(2),
-      readOnly: true,
-    }),
-    defineField({ 
-      name: 'originalPrice', 
-      title: 'Original Price (DEPRECATED)', 
-      type: 'number', 
-      group: 'content',
-      description: '⚠️ DEPRECATED: Manage discounts via Medusa Admin Panel.',
-      validation: (Rule) => Rule.min(0).precision(2),
-      readOnly: true,
-    }),
-    defineField({ 
-      name: 'discountPercentage', 
-      title: 'Discount Percentage (DEPRECATED)', 
-      type: 'number', 
-      group: 'content',
-      description: '⚠️ DEPRECATED: Manage discounts via Medusa Admin Panel → Discounts.',
-      validation: (Rule) => Rule.min(0).max(100),
-      readOnly: true,
-    }),
     
     defineField({ name: 'features', title: 'Features', type: 'array', of: [{ type: 'string' }], group: 'content' }),
     defineField({ name: 'badges', title: 'Badges', type: 'array', of: [{ type: 'string' }], group: 'content' }),
     
-    // NOTE: Stock status is now managed in Medusa
-    defineField({ 
-      name: 'inStock', 
-      title: 'In Stock (Display Only)', 
-      type: 'boolean', 
-      initialValue: true, 
-      group: 'content',
-      description: '⚠️ This is for display only. Actual inventory is managed in Medusa backend.',
-      readOnly: true,
-    }),
     
     defineField({ name: 'rating', title: 'Rating (0-5)', type: 'number', group: 'content' }),
     defineField({ name: 'reviewCount', title: 'Review Count', type: 'number', group: 'content' }),
@@ -94,19 +55,6 @@ export default defineType({
         defineField({ name: 'alt', type: 'string', title: 'Alt Text', description: 'Important for SEO and accessibility' }),
         defineField({ name: 'caption', type: 'string', title: 'Caption' }),
       ],
-      group: 'media' 
-    }),
-    defineField({ 
-      name: 'gallery', 
-      title: 'Gallery', 
-      type: 'array', 
-      of: [{ 
-        type: 'image',
-        fields: [
-          defineField({ name: 'alt', type: 'string', title: 'Alt Text' }),
-          defineField({ name: 'caption', type: 'string', title: 'Caption' }),
-        ],
-      }],
       group: 'media' 
     }),
     
@@ -136,40 +84,6 @@ export default defineType({
       group: 'relations'
     }),
 
-    // Medusa Sync Fields
-    defineField({
-      name: 'medusaProductId',
-      title: 'Medusa Product ID',
-      type: 'string',
-      description: 'Auto-generated: Product ID in Medusa backend',
-      readOnly: true,
-      group: 'sync',
-    }),
-    defineField({
-      name: 'lastSyncedAt',
-      title: 'Last Synced',
-      type: 'datetime',
-      description: 'Last time this product was synced with Medusa',
-      readOnly: true,
-      group: 'sync',
-    }),
-    defineField({
-      name: 'syncStatus',
-      title: 'Sync Status',
-      type: 'string',
-      options: {
-        list: [
-          { title: 'Not Synced', value: 'not_synced' },
-          { title: 'Synced', value: 'synced' },
-          { title: 'Outdated', value: 'outdated' },
-          { title: 'Error', value: 'error' },
-        ],
-      },
-      description: 'Current sync status with Medusa',
-      readOnly: true,
-      group: 'sync',
-      initialValue: 'not_synced',
-    }),
 
     // SEO Fields
     defineField({
@@ -256,26 +170,15 @@ export default defineType({
     }),
   ],
   preview: {
-    select: { 
-      title: 'name', 
-      subtitle: 'category', 
+    select: {
+      title: 'name',
+      subtitle: 'category',
       media: 'image',
-      syncStatus: 'syncStatus',
-      medusaProductId: 'medusaProductId',
     },
-    prepare({ title, subtitle, media, syncStatus, medusaProductId }) {
-      const syncEmoji = {
-        synced: '✅',
-        not_synced: '⚠️',
-        outdated: '🔄',
-        error: '❌',
-      }[syncStatus || 'not_synced']
-
+    prepare({ title, subtitle, media }) {
       return {
-        title: `${syncEmoji} ${title}`,
-        subtitle: medusaProductId 
-          ? `${subtitle} • Synced to Medusa` 
-          : `${subtitle} • Not synced`,
+        title,
+        subtitle,
         media,
       }
     },
