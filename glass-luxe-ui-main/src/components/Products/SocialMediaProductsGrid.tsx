@@ -54,10 +54,10 @@ export function SocialMediaProductsGrid({
         y: 0
       }} transition={springTransition} className="mb-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
-            {isRTL ? "پرفروش‌ترین محصولات سوشیال مدیا" : "Best-Selling Social Media Products"}
+            پرفروش‌ترین محصولات سوشیال مدیا
           </h2>
           <p className="text-white/70 text-sm sm:text-base">
-            {isRTL ? "اکانت‌های اینستاگرام، تیک‌تاک، تلگرام و بیشتر" : "Instagram, TikTok, Telegram accounts and more"}
+            اکانت‌های اینستاگرام، تیک‌تاک، تلگرام و بیشتر
           </p>
         </motion.div>
 

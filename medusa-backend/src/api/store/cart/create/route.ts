@@ -119,26 +119,23 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             throw new Error(`No variants found for product: ${product.title}`);
           }
           
-          // CRITICAL FIX: Use custom pricing approach for Medusa v2
-          // Create line item without variant_id to avoid automatic variant pricing conflicts
+          // Use variant_id with unit_price override (Medusa v2 allows this)
           const variantPrice = item.price * 10; // Convert from Toman to Rial (smallest currency unit)
 
-          console.log(`[CART-CREATE] Using custom pricing: ${variantPrice} Rials (${item.price} Toman) for variant: ${variant.title}`);
+          console.log(`[CART-CREATE] Using variant pricing: ${variantPrice} Rials (${item.price} Toman) for variant: ${variant.title}`);
 
-          // Create custom line item without variant_id to avoid variant price conflicts
+          // Add line item with variant_id and unit_price override
           await cartModuleService.addLineItems(cart.id, [{
-            // Don't set variant_id to avoid automatic variant pricing
-            // variant_id: variant.id,
+            variant_id: variant.id,
             quantity: item.quantity,
             title: item.title,
-            unit_price: variantPrice,
+            unit_price: variantPrice, // This overrides any variant pricing
             metadata: {
               frontend_id: item.id,
               selected_option: item.selectedOption,
               image_url: item.image,
               sanity_slug: sanitySlug,
-              variant_id: variant.id, // Store variant ID in metadata for reference
-              custom_pricing: true,
+              price_override: true,
               original_price_tomans: item.price,
               calculated_price_rials: variantPrice
             }
