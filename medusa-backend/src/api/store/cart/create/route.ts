@@ -119,24 +119,26 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
             throw new Error(`No variants found for product: ${product.title}`);
           }
           
-          // CRITICAL FIX: Use frontend price but ensure it's properly converted
-          // The issue might be that variant pricing in DB is not set correctly
+          // CRITICAL FIX: Use custom pricing approach for Medusa v2
+          // Create line item without variant_id to avoid automatic variant pricing conflicts
           const variantPrice = item.price * 10; // Convert from Toman to Rial (smallest currency unit)
 
-          console.log(`[CART-CREATE] Using frontend price: ${variantPrice} Rials (${item.price} Toman) for variant: ${variant.title}`);
+          console.log(`[CART-CREATE] Using custom pricing: ${variantPrice} Rials (${item.price} Toman) for variant: ${variant.title}`);
 
-          // Add line item with explicit unit_price - this should override any variant pricing
+          // Create custom line item without variant_id to avoid variant price conflicts
           await cartModuleService.addLineItems(cart.id, [{
-            variant_id: variant.id,
+            // Don't set variant_id to avoid automatic variant pricing
+            // variant_id: variant.id,
             quantity: item.quantity,
             title: item.title,
-            unit_price: variantPrice, // Explicitly set price to override variant default
+            unit_price: variantPrice,
             metadata: {
               frontend_id: item.id,
               selected_option: item.selectedOption,
               image_url: item.image,
               sanity_slug: sanitySlug,
-              price_override: true, // Flag that we overrode the price
+              variant_id: variant.id, // Store variant ID in metadata for reference
+              custom_pricing: true,
               original_price_tomans: item.price,
               calculated_price_rials: variantPrice
             }
@@ -246,7 +248,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
     // Retrieve the complete cart with minimal relations to avoid MikroORM errors
     // Avoid mixing payment_collection with item relations
-    const completeCart = await cartModuleService.retrieveCart(cart.id, {
+    let completeCart = await cartModuleService.retrieveCart(cart.id, {
       relations: ["items"]
     });
 
