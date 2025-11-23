@@ -3,7 +3,7 @@
  * This config is used to set up Sanity Studio that's mounted on the `/pages/studio/[[...index]].tsx` route
  */
 import { visionTool } from '@sanity/vision'
-import { assist } from '@sanity/assist'
+import { assist, contextDocumentTypeName } from '@sanity/assist'
 import { apiVersion, basePath, dataset, projectId } from 'lib/sanity.api'
 import { locate } from 'plugins/locate'
 import { pageStructure, singletonPlugin } from 'plugins/settings'
@@ -82,7 +82,20 @@ export default defineConfig({
       },
     }),
     structureTool({
-      structure: pageStructure([home, settings]),
+      structure: (S) => {
+        const defaultStructure = pageStructure([home, settings])(S)
+
+        // Add AI Context document type to the structure
+        const aiContextItem = S.documentTypeListItem(contextDocumentTypeName)
+
+        return S.list()
+          .title('Content')
+          .items([
+            ...defaultStructure.getItems(),
+            S.divider(),
+            aiContextItem
+          ])
+      },
     }),
     // Configures the global "new document" button, and document actions, to suit the Settings document singleton
     singletonPlugin([home.name, settings.name]),
