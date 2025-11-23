@@ -70,59 +70,41 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     console.log(`[BATCH-PRICES] ========== FETCHING ${handles.length} PRODUCTS ==========`);
     console.log(`[BATCH-PRICES] Handles:`, handles);
 
-    // Medusa v2 compliant approach: Get products first, then variants separately for better performance
-    const products = await productModuleService.listProducts({
-      handle: handles // Medusa v2 supports array filters
-    });
+    // Simple approach: Use the same pattern as the working frontend code
+    // Make individual requests but in parallel for better performance
+    console.log(`[BATCH-PRICES] Making ${handles.length} parallel requests...`);
 
-    console.log(`[BATCH-PRICES] Found ${products.length} products in database`);
-
-    // If variants are needed, fetch them separately for each product
-    // This is more efficient than trying to join everything in one query
-    const productsWithVariants = include_variants ? await Promise.all(
-      products.map(async (product) => {
-        const variants = await productModuleService.listProductVariants({
-          product_id: product.id
+    const productPromises = handles.map(async (handle) => {
+      try {
+        // Use the same API pattern as the working frontend code
+        const products = await productModuleService.listProducts({
+          handle: handle
+        }, {
+          relations: include_variants ? ["variants", "variants.prices"] : []
         });
 
-        // Get prices for each variant using pricing module
-        const variantsWithPrices = await Promise.all(
-          variants.map(async (variant) => {
-            // Get price sets for this variant
-            const priceSets = await pricingModuleService.listPriceSets({
-              variant_id: variant.id
-            });
+        return { handle, products: products || [] };
+      } catch (error) {
+        console.warn(`[BATCH-PRICES] Failed to fetch product ${handle}:`, error);
+        return { handle, products: [] };
+      }
+    });
 
-            // Get prices from the price sets
-            const prices = [];
-            for (const priceSet of priceSets) {
-              const priceListPrices = await pricingModuleService.listPrices({
-                price_set_id: priceSet.id,
-                currency_code: "irr" // Only get IRR prices
-              });
-              prices.push(...priceListPrices);
-            }
-
-            return { ...variant, prices };
-          })
-        );
-
-        return { ...product, variants: variantsWithPrices };
-      })
-    ) : products;
+    const results = await Promise.all(productPromises);
 
     const prices: Record<string, any> = {};
 
     // Process results and organize by handle
-    for (const handle of handles) {
-      const product = productsWithVariants.find((p: any) => p.handle === handle);
+    for (const result of results) {
+      const { handle, products } = result;
 
-      if (!product) {
-        console.warn(`[BATCH-PRICES] Product not found: ${handle}`);
+      if (!products || products.length === 0) {
+        console.warn(`[BATCH-PRICES] No products found for handle: ${handle}`);
         prices[handle] = { product_id: '', variants: [] };
         continue;
       }
 
+      const product = products[0];
       const variants = product.variants || [];
 
       prices[handle] = {
