@@ -108,8 +108,8 @@ export const sharifHeroQuery = groq`
       image,
       "slug": slug.current
     },
-    socialMediaProducts[]{
-      _key,
+    "socialMediaProducts": socialMediaProducts[]->{
+      _id,
       _type,
       name,
       description,
@@ -118,6 +118,9 @@ export const sharifHeroQuery = groq`
       originalPrice,
       discountPercentage,
       image,
+      badges,
+      rating,
+      reviewCount,
       "slug": slug.current
     },
     educationalProducts[]{
@@ -132,21 +135,29 @@ export const sharifHeroQuery = groq`
       image,
       "slug": slug.current
     },
-    bestsellingCourses[]{
-      _key,
+    "bestsellingCourses": bestsellingCourses[]->{
+      _id,
       _type,
       title,
-      description,
+      shortDescription,
+      longDescription,
       price,
       originalPrice,
-      instructor,
+      discountPercentage,
       duration,
-      students,
+      totalSessions,
+      totalStudents,
       rating,
       reviewCount,
       category,
       level,
-      image,
+      featuredImage,
+      instructor->{
+        _id,
+        name,
+        title,
+        image
+      },
       "slug": slug.current
     },
     "magazinePosts": magazinePosts[]->{
@@ -290,8 +301,8 @@ export const productBySlugQuery = groq`
         image,
         "slug": slug.current
       } ??
-      socialMediaProducts[slug.current == $slug][0]{
-        _key,
+      socialMediaProducts[]->[slug.current == $slug][0]{
+        _id,
         _type,
         name,
         description,
@@ -300,6 +311,9 @@ export const productBySlugQuery = groq`
         originalPrice,
         discountPercentage,
         image,
+        badges,
+        rating,
+        reviewCount,
         "slug": slug.current
       } ??
       educationalProducts[slug.current == $slug][0]{

@@ -124,12 +124,16 @@ export default defineType({
     defineField({
       name: 'socialMediaProducts',
       title: 'Social Media Products',
-      description: 'Popular social media subscriptions displayed in the "پرفروش‌ترین محصولات سوشیال مدیا" section',
+      description: 'Select products to display in the "پرفروش‌ترین محصولات سوشیال مدیا" section',
       type: 'array',
       validation: (Rule) => Rule.max(10),
       of: [
         defineArrayMember({
-          type: 'socialMediaProduct',
+          type: 'reference',
+          to: [{ type: 'product' }],
+          options: {
+            disableNew: true, // Only allow selecting existing products
+          }
         }),
       ],
       group: 'content',
@@ -150,12 +154,16 @@ export default defineType({
     defineField({
       name: 'bestsellingCourses',
       title: 'Bestselling Courses',
-      description: 'Top courses displayed in the "پرفروش‌ترین دوره‌ها" section',
+      description: 'Select courses to display in the "پرفروش‌ترین دوره‌ها" section',
       type: 'array',
       validation: (Rule) => Rule.max(6),
       of: [
         defineArrayMember({
-          type: 'bestsellingCourse',
+          type: 'reference',
+          to: [{ type: 'course' }],
+          options: {
+            disableNew: true, // Only allow selecting existing courses
+          }
         }),
       ],
       group: 'content',

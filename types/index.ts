@@ -119,6 +119,7 @@ export interface DiscountedProduct {
 }
 
 export interface SocialMediaProduct {
+  _id?: string
   _key?: string
   _type?: string
   name?: string
@@ -128,6 +129,9 @@ export interface SocialMediaProduct {
   originalPrice?: number
   discountPercentage?: number
   image?: Image
+  badges?: string[]
+  rating?: number
+  reviewCount?: number
   slug?: string
 }
 
@@ -145,20 +149,32 @@ export interface EducationalProduct {
 }
 
 export interface BestsellingCourse {
+  _id?: string
   _key?: string
   _type?: string
   title?: string
+  shortDescription?: string
+  longDescription?: string
   description?: string
   price?: number
   originalPrice?: number
-  instructor?: string
+  discountPercentage?: number
   duration?: string
+  totalSessions?: number
+  totalStudents?: number
   students?: number
   rating?: number
   reviewCount?: number
   category?: string
   level?: string
+  featuredImage?: Image
   image?: Image
+  instructor?: {
+    _id?: string
+    name?: string
+    title?: string
+    image?: Image
+  }
   slug?: string
 }
 
