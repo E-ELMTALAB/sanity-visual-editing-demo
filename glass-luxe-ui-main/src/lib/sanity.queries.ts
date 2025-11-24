@@ -10,7 +10,10 @@ export const homePageQuery = `
       subtitle,
       buttonText,
       buttonHref,
-      image
+      image{
+        ...,
+        asset->
+      }
     },
     
     // Best Seller Products (references) - _key is on the array item, then dereference
@@ -73,7 +76,7 @@ export const homePageQuery = `
       _key,
       ...@->{
         _id,
-        name,
+      name,
         slug,
         image{
           ...,
@@ -81,12 +84,12 @@ export const homePageQuery = `
         },
         category,
         badges,
-        price,
-        originalPrice,
-        discountPercentage,
+      price,
+      originalPrice,
+      discountPercentage,
         rating,
         reviewCount,
-        "slug": slug.current
+      "slug": slug.current
       }
     },
     
@@ -109,19 +112,19 @@ export const homePageQuery = `
       _key,
       ...@->{
         _id,
-        title,
+      title,
         shortDescription,
         longDescription,
-        price,
-        originalPrice,
+      price,
+      originalPrice,
         discountPercentage,
-        duration,
+      duration,
         totalSessions,
         totalStudents,
-        rating,
-        reviewCount,
-        category,
-        level,
+      rating,
+      reviewCount,
+      category,
+      level,
         featuredImage{
           ...,
           asset->
@@ -132,7 +135,7 @@ export const homePageQuery = `
           title,
           image
         },
-        "slug": slug.current
+      "slug": slug.current
       }
     },
     

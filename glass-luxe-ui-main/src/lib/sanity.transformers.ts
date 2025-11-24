@@ -59,16 +59,31 @@ export function transformFaqItem(faq: any) {
 
 // Transform hero slide
 export function transformHeroSlide(slide: any) {
-  const responsiveImage = slide?.image
+  // Check if image exists and has valid asset data
+  const hasValidImage = slide?.image && (slide.image.asset?._ref || slide.image.asset?._id)
+  
+  const responsiveImage = hasValidImage
     ? buildResponsiveImageSet(slide.image, [640, 960, 1280, 1600], { quality: 75, maxWidth: 1600 }) // Limit to 1600px max for hero
     : null
+
+  // Debug logging in development
+  if (process.env.NODE_ENV === 'development' && slide?.image) {
+    console.log('[transformHeroSlide] Image data:', {
+      hasImage: !!slide.image,
+      hasAsset: !!slide.image.asset,
+      assetRef: slide.image.asset?._ref,
+      assetId: slide.image.asset?._id,
+      responsiveImage: !!responsiveImage,
+      finalImage: responsiveImage?.src || (slide.image ? getImageUrl(slide.image, 1600) : '')
+    })
+  }
 
   return {
     title: slide?.title || '',
     subtitle: slide?.subtitle || '',
     buttonText: slide?.buttonText || '',
     buttonHref: slide?.buttonHref || '#',
-    image: responsiveImage?.src || (slide?.image ? getImageUrl(slide.image, 1600) : ''),
+    image: responsiveImage?.src || (hasValidImage ? getImageUrl(slide.image, 1600) : ''),
     imageSrcSet: responsiveImage?.srcSet,
   }
 }
