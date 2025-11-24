@@ -81,10 +81,25 @@ export default async function RootPage() {
   const processImages = (items: any[], imageField: string) => {
     return (items || []).map((item: any) => {
       try {
-        const imageUrl = item[imageField] ? urlForImage(item[imageField])?.url() : null
+        const imageData = item[imageField]
+        if (!imageData) {
+          return { ...item, imageUrl: null }
+        }
+        
+        const imageBuilder = urlForImage(imageData)
+        if (!imageBuilder) {
+          console.warn(`Invalid image data for ${imageField}:`, {
+            hasAsset: !!imageData?.asset,
+            assetRef: imageData?.asset?._ref,
+            assetId: imageData?.asset?._id
+          })
+          return { ...item, imageUrl: null }
+        }
+        
+        const imageUrl = imageBuilder.url()
         return { ...item, imageUrl }
       } catch (error) {
-        console.warn(`Failed to process image for ${imageField}:`, error)
+        console.warn(`Failed to process image for ${imageField}:`, error, item)
         return { ...item, imageUrl: null }
       }
     })

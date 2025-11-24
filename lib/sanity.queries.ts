@@ -76,7 +76,10 @@ export const sharifHeroQuery = groq`
       subtitle,
       buttonText,
       buttonHref,
-      image
+      image{
+        ...,
+        asset->
+      }
     },
     heroSlides[]{
       _key,
@@ -85,7 +88,10 @@ export const sharifHeroQuery = groq`
       subtitle,
       buttonText,
       buttonHref,
-      image
+      image{
+        ...,
+        asset->
+      }
     },
     promoCards[]{
       _key,
@@ -94,7 +100,10 @@ export const sharifHeroQuery = groq`
       subtitle,
       buttonText,
       buttonHref,
-      image
+      image{
+        ...,
+        asset->
+      }
     },
     discountedProducts[]{
       _key,
