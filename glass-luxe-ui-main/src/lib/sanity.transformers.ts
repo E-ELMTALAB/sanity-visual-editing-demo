@@ -139,16 +139,30 @@ export function transformSpecialOfferProduct(product: any, index: number) {
   }
 }
 
-// Transform social media product
+// Transform social media product (now from product reference)
 export function transformSocialMediaProduct(product: any, index: number) {
+  const price = typeof product?.price === 'number' ? product.price : 0
+  const oldPrice = typeof product?.originalPrice === 'number' ? product.originalPrice : undefined
+  const discountPctFromField = typeof product?.discountPercentage === 'number' ? product.discountPercentage : undefined
+  const calculatedDiscount =
+    !discountPctFromField && oldPrice && price
+      ? Math.max(0, Math.round(((oldPrice - price) / oldPrice) * 100))
+      : undefined
+
   return {
-    id: product?._key || `social-${index}`,
+    id: product?._id || `social-${index}`,
+    slug: product?.slug || product?.slug?.current || '',
     platform: 'Instagram' as const, // Default, can be enhanced later
     title: product?.name || 'محصول سوشیال مدیا',
     image: product?.image ? getImageUrl(product.image, 350) : '',
     imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [300, 350, 500], { quality: 80 }).srcSet : '',
-    price: product?.price || 0,
-    rating: 5, // Default rating
+    price,
+    oldPrice,
+    discountPct: discountPctFromField ?? calculatedDiscount,
+    badges: Array.isArray(product?.badges) ? product.badges : [],
+    rating: typeof product?.rating === 'number' ? product.rating : 0,
+    reviewCount: typeof product?.reviewCount === 'number' ? product.reviewCount : 0,
+    category: product?.category || '',
   }
 }
 
@@ -165,11 +179,11 @@ export function transformEducationalProduct(product: any, index: number) {
   }
 }
 
-// Transform course
+// Transform course (now from course reference)
 export function transformCourse(course: any, index: number) {
-  // Extract hours from duration string (e.g., "48 ساعت" -> 48)
+  // Extract hours from duration string (e.g., "48 ساعت" -> 48) or use totalSessions
   const durationMatch = course?.duration?.match(/\d+/)
-  const hours = durationMatch ? parseInt(durationMatch[0]) : 0
+  const hours = durationMatch ? parseInt(durationMatch[0]) : (course?.totalSessions || 0)
 
   // Handle instructor (can be string or object)
   let instructorName = 'مدرس'
@@ -179,21 +193,37 @@ export function transformCourse(course: any, index: number) {
     instructorName = course.instructor
   } else if (course?.instructor?.name) {
     instructorName = course.instructor.name
-    instructorAvatar = course.instructor.avatar || instructorAvatar
+    instructorAvatar = course.instructor.image ? getImageUrl(course.instructor.image, 64) : instructorAvatar
   }
 
+  const price = typeof course?.price === 'number' ? course.price : 0
+  const oldPrice = typeof course?.originalPrice === 'number' ? course.originalPrice : undefined
+  const discountPctFromField = typeof course?.discountPercentage === 'number' ? course.discountPercentage : undefined
+  const calculatedDiscount =
+    !discountPctFromField && oldPrice && price
+      ? Math.max(0, Math.round(((oldPrice - price) / oldPrice) * 100))
+      : undefined
+
   return {
-    id: course?._key || course?._id || `course-${index}`,
+    id: course?._id || `course-${index}`,
+    slug: course?.slug || course?.slug?.current || '',
     title: course?.title || 'دوره آموزشی',
+    description: course?.shortDescription || course?.description || '',
     instructor: {
       name: instructorName,
       avatar: instructorAvatar,
     },
-    rating: course?.rating || 4.5,
+    rating: typeof course?.rating === 'number' ? course.rating : 0,
+    reviewCount: typeof course?.reviewCount === 'number' ? course.reviewCount : 0,
     hours,
-    image: course?.image || course?.featuredImage ? getImageUrl(course.image || course.featuredImage, 600) : '',
-    imageSrcSet: course?.image || course?.featuredImage ? buildResponsiveImageSet(course.image || course.featuredImage, [400, 600, 800], { quality: 80 }).srcSet : '',
-    price: course?.price || 0,
+    image: course?.featuredImage || course?.image ? getImageUrl(course.featuredImage || course.image, 600) : '',
+    imageSrcSet: course?.featuredImage || course?.image ? buildResponsiveImageSet(course.featuredImage || course.image, [400, 600, 800], { quality: 80 }).srcSet : '',
+    price,
+    oldPrice,
+    discountPct: discountPctFromField ?? calculatedDiscount,
+    category: course?.category || '',
+    level: course?.level || '',
+    totalStudents: typeof course?.totalStudents === 'number' ? course.totalStudents : 0,
   }
 }
 

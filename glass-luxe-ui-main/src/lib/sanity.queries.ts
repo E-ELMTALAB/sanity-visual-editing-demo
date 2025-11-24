@@ -68,16 +68,26 @@ export const homePageQuery = `
       "slug": slug.current
     },
     
-    // Social Media Products
-    socialMediaProducts[]{
+    // Social Media Products (references) - _key is on the array item, then dereference
+    "socialMediaProducts": socialMediaProducts[]{
       _key,
-      name,
-      description,
-      price,
-      originalPrice,
-      discountPercentage,
-      image,
-      "slug": slug.current
+      ...@->{
+        _id,
+        name,
+        slug,
+        image{
+          ...,
+          asset->
+        },
+        category,
+        badges,
+        price,
+        originalPrice,
+        discountPercentage,
+        rating,
+        reviewCount,
+        "slug": slug.current
+      }
     },
     
     // Educational Products
@@ -94,22 +104,36 @@ export const homePageQuery = `
       "slug": slug.current
     },
     
-    // Bestselling Courses
-    bestsellingCourses[]{
+    // Bestselling Courses (references) - _key is on the array item, then dereference
+    "bestsellingCourses": bestsellingCourses[]{
       _key,
-      title,
-      description,
-      price,
-      originalPrice,
-      instructor,
-      duration,
-      students,
-      rating,
-      reviewCount,
-      category,
-      level,
-      image,
-      "slug": slug.current
+      ...@->{
+        _id,
+        title,
+        shortDescription,
+        longDescription,
+        price,
+        originalPrice,
+        discountPercentage,
+        duration,
+        totalSessions,
+        totalStudents,
+        rating,
+        reviewCount,
+        category,
+        level,
+        featuredImage{
+          ...,
+          asset->
+        },
+        instructor->{
+          _id,
+          name,
+          title,
+          image
+        },
+        "slug": slug.current
+      }
     },
     
     // Magazine Posts (Blog Posts) - _key is on the array item, then dereference

@@ -96,7 +96,7 @@ export default async function RootPage() {
   const discountedProducts = processImages(data?.discountedProducts, 'image')
   const socialMediaProducts = processImages(data?.socialMediaProducts, 'image')
   const educationalProducts = processImages(data?.educationalProducts, 'image')
-  const bestsellingCourses = processImages(data?.bestsellingCourses, 'image')
+  const bestsellingCourses = processImages(data?.bestsellingCourses, 'featuredImage')
   const magazinePosts = processImages(data?.magazinePosts, 'coverImage')
   const featuredBlogs = processImages(data?.featuredBlogs, 'coverImage')
   
