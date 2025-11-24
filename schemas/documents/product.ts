@@ -28,6 +28,14 @@ export default defineType({
       rows: 8,
       group: 'content'
     }),
+    defineField({
+      name: 'shortDescription',
+      title: 'Short Description',
+      type: 'text',
+      rows: 3,
+      description: 'Concise Persian summary used for marketing copy or product listings.',
+      group: 'content',
+    }),
     
     defineField({ name: 'category', title: 'Category', type: 'string', group: 'content' }),
     defineField({ 
@@ -104,6 +112,23 @@ export default defineType({
 
 
     // SEO Fields
+    defineField({
+      name: 'seoTitle',
+      title: 'SEO Title',
+      type: 'string',
+      description: 'AI generated SEO title (recommended: 50-60 characters).',
+      validation: (Rule) => Rule.max(60).warning('Should be under 60 characters for optimal display'),
+      group: 'seo',
+    }),
+    defineField({
+      name: 'seoDescription',
+      title: 'SEO Description',
+      type: 'text',
+      rows: 3,
+      description: 'AI generated meta description (recommended: 130-150 characters).',
+      validation: (Rule) => Rule.max(160).warning('Should be under 160 characters for optimal display'),
+      group: 'seo',
+    }),
     defineField({
       name: 'seo',
       title: 'SEO Settings',
@@ -185,6 +210,14 @@ export default defineType({
       of: [{ type: 'string' }],
       description: 'Tags for better categorization and SEO',
       group: 'seo'
+    }),
+    defineField({
+      name: 'aiEnriched',
+      title: 'AI Enriched',
+      type: 'boolean',
+      description: 'Set by the AI enrichment pipeline to avoid duplicate processing.',
+      readOnly: true,
+      group: 'seo',
     }),
   ],
   preview: {
