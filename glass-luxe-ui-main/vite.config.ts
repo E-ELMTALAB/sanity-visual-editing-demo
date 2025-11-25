@@ -60,55 +60,8 @@ export default defineConfig(({ mode }) => ({
     // Target modern browsers for smaller bundles
     target: 'es2020',
     rollupOptions: {
-      // Don't externalize anything - bundle all dependencies
       output: {
-        // Aggressive chunking to reduce initial bundle size
-        manualChunks: (id) => {
-          // Sanity client (lightweight) - used by all pages - CHECK FIRST
-          if (id.includes('@sanity/client') || id.includes('@sanity/image-url')) {
-            return 'vendor-sanity-client';
-          }
-          // Sanity Studio/Preview (heavy) - separate from lightweight client
-          if (id.includes('/sanity/') || id.includes('@sanity/preview-kit') || 
-              id.includes('@sanity/ui') || id.includes('@sanity/vision') ||
-              id.includes('@sanity/visual-editing') || id.includes('sanity-plugin') ||
-              id.includes('@sanity/icons')) {
-            return 'vendor-sanity-heavy';
-          }
-          // Framer motion - separate chunk (used sparingly)
-          if (id.includes('framer-motion')) {
-            return 'vendor-motion';
-          }
-          // React core - minimal initial chunk
-          if (id.includes('react-dom') || id.includes('react/jsx-runtime') || id.includes('scheduler')) {
-            return 'vendor-react';
-          }
-          // Router
-          if (id.includes('react-router')) {
-            return 'vendor-router';
-          }
-          // Radix UI - separate chunk
-          if (id.includes('@radix-ui')) {
-            return 'vendor-radix';
-          }
-          // TanStack Query
-          if (id.includes('@tanstack')) {
-            return 'vendor-query';
-          }
-          // Lucide icons
-          if (id.includes('lucide-react')) {
-            return 'vendor-icons';
-          }
-          // Markdown/rehype/remark
-          if (id.includes('remark') || id.includes('rehype') || id.includes('mdast') || id.includes('unified') || id.includes('react-markdown')) {
-            return 'vendor-markdown';
-          }
-          // RxJS (used by Sanity heavy packages)
-          if (id.includes('rxjs')) {
-            return 'vendor-sanity-heavy';
-          }
-        },
-        // Ensure CSS is extracted properly
+        // Let Rollup decide chunk graph to avoid circular dependencies in vendor bundles
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith('.css')) {
             return 'assets/[name]-[hash][extname]';
@@ -130,14 +83,6 @@ export default defineConfig(({ mode }) => ({
       "@sanity/image-url",
       "get-youtube-id",
       "react-lite-youtube-embed",
-    ],
-    // Exclude heavy Sanity packages from optimization
-    exclude: [
-      "sanity",
-      "@sanity/preview-kit",
-      "@sanity/visual-editing",
-      "@sanity/ui",
-      "@sanity/vision",
     ],
   },
 }));
