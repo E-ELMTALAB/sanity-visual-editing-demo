@@ -7,7 +7,7 @@ import { Footer } from "@/components/Footer/Footer";
 import { ProductCard } from "@/components/Products/ProductCard";
 import { toast } from "sonner";
 import { FaqAccordion } from "@/components/Products/FaqAccordion";
-import { fetchFromSanity } from "@/lib/sanity.client";
+import { fetchFromSanity } from "@/lib/sanity.client.light";
 import { validateSanityConfig } from "@/lib/sanity.config";
 import { collectionBySlugQuery } from "@/lib/sanity.queries";
 import { transformCollectionDetail, transformFaqItem } from "@/lib/sanity.transformers";

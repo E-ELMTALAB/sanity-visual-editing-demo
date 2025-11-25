@@ -21,7 +21,7 @@ import { useDirection } from "@/contexts/DirectionContext";
 import { useCart } from "@/contexts/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import { fetchFromSanity } from "@/lib/sanity.client";
+import { fetchFromSanity } from "@/lib/sanity.client.light";
 import { validateSanityConfig } from "@/lib/sanity.config";
 import { productBySlugQuery, faqsByPageQuery } from "@/lib/sanity.queries";
 import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";

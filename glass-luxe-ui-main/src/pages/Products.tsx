@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { useDirection } from "@/contexts/DirectionContext";
 import { useCart } from "@/contexts/cart-context";
 import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
-import { fetchFromSanity } from "@/lib/sanity.client";
+import { fetchFromSanity } from "@/lib/sanity.client.light";
 import { validateSanityConfig } from "@/lib/sanity.config";
 import { allProductsQuery, faqsByPageQuery } from "@/lib/sanity.queries";
 import { transformFaqItem, transformProductListItem } from "@/lib/sanity.transformers";

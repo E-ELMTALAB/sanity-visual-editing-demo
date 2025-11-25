@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { cn } from "@/lib/utils";
-import { fetchFromSanity } from "@/lib/sanity.client";
+import { fetchFromSanity } from "@/lib/sanity.client.light";
 import { validateSanityConfig } from "@/lib/sanity.config";
 import { allFaqsQuery } from "@/lib/sanity.queries";
 

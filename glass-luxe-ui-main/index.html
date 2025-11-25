@@ -7,18 +7,6 @@
     <!-- Critical Preconnects - Must be early in head -->
     <link rel="preconnect" href="https://cdn.sanity.io" crossorigin />
     <link rel="dns-prefetch" href="https://cdn.sanity.io" />
-    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
-    <link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
-    
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LHYSKTSHFS"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-LHYSKTSHFS');
-    </script>
-    
     <!-- Preload critical font -->
     <link rel="preload" href="/font/Vazirmatn-VariableFont_wght.woff2" as="font" type="font/woff2" crossorigin />
     
@@ -56,25 +44,35 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Google Tag Manager - Load AFTER app is interactive -->
+    <!-- Analytics - Deferred loading after page is interactive -->
     <script>
-      // Defer GTM loading until after page is interactive
+      // Load analytics only after page is interactive
+      function loadAnalytics() {
+        // Google Analytics (gtag.js)
+        var ga = document.createElement('script');
+        ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-LHYSKTSHFS';
+        ga.async = true;
+        document.body.appendChild(ga);
+        
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', 'G-LHYSKTSHFS');
+        
+        // Google Tag Manager
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-PW97M4XV');
+      }
+      
+      // Defer until browser is idle (after initial render)
       if ('requestIdleCallback' in window) {
-        requestIdleCallback(function() {
-          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','GTM-PW97M4XV');
-        }, { timeout: 3000 });
+        requestIdleCallback(loadAnalytics, { timeout: 4000 });
       } else {
-        setTimeout(function() {
-          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','GTM-PW97M4XV');
-        }, 3000);
+        setTimeout(loadAnalytics, 3000);
       }
     </script>
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PW97M4XV"

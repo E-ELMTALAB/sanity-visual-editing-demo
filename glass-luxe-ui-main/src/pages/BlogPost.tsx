@@ -11,7 +11,7 @@ import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { PortableText } from "@portabletext/react";
-import { fetchFromSanity } from "@/lib/sanity.client";
+import { fetchFromSanity } from "@/lib/sanity.client.light";
 import { validateSanityConfig } from "@/lib/sanity.config";
 import { postBySlugQuery } from "@/lib/sanity.queries";
 import { transformBlogPost, transformBlogPostDetail } from "@/lib/sanity.transformers";

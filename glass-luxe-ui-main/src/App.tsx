@@ -9,8 +9,8 @@ import { DirectionProvider } from "@/contexts/DirectionContext";
 import { CartProvider } from "@/contexts/cart-context";
 import { ScrollToTop } from "./components/ScrollToTop";
 
-// Lazy load VisualEditing - only needed in Sanity Studio iframe
-const AppVisualEditing = lazy(() => import("./components/visual-editing/VisualEditing"));
+// Visual Editing disabled for performance - use separate Sanity Studio deployment
+// const AppVisualEditing = lazy(() => import("./components/visual-editing/VisualEditing"));
 
 const Index = lazy(() => import("./pages/Index"));
 const Products = lazy(() => import("./pages/Products"));
@@ -98,10 +98,7 @@ const App = () => (
               </Routes>
             </Suspense>
           </BrowserRouter>
-          {/* Visual Editing - lazy loaded, only for Sanity Studio */}
-          <Suspense fallback={null}>
-            <AppVisualEditing />
-          </Suspense>
+          {/* Visual Editing disabled for performance */}
         </TooltipProvider>
         </CartProvider>
       </DirectionProvider>

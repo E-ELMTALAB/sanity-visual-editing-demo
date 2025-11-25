@@ -8,7 +8,7 @@ import { BlogGrid } from "@/components/Blog/BlogGrid";
 import { BlogPost } from "@/components/Blog/BlogCard";
 import { useDirection } from "@/contexts/DirectionContext";
 import { toast } from "@/hooks/use-toast";
-import { fetchFromSanity } from "@/lib/sanity.client";
+import { fetchFromSanity } from "@/lib/sanity.client.light";
 import { validateSanityConfig } from "@/lib/sanity.config";
 import { allPostsQuery } from "@/lib/sanity.queries";
 import { transformBlogPost } from "@/lib/sanity.transformers";
