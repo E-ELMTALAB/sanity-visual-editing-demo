@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +8,9 @@ import { HelmetProvider } from "react-helmet-async";
 import { DirectionProvider } from "@/contexts/DirectionContext";
 import { CartProvider } from "@/contexts/cart-context";
 import { ScrollToTop } from "./components/ScrollToTop";
-import AppVisualEditing from "./components/visual-editing/VisualEditing";
+
+// Lazy load VisualEditing - only needed in Sanity Studio iframe
+const AppVisualEditing = lazy(() => import("./components/visual-editing/VisualEditing"));
 
 const Index = lazy(() => import("./pages/Index"));
 const Products = lazy(() => import("./pages/Products"));
@@ -27,7 +29,8 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Erfan = lazy(() => import("./pages/team/Erfan"));
 const Amir = lazy(() => import("./pages/team/Amir"));
 const Collection = lazy(() => import("./pages/Collection"));
-const Studio = lazy(() => import("./pages/Studio"));
+// Studio is excluded from main bundle - use separate Sanity Studio deployment
+// const Studio = lazy(() => import("./pages/Studio"));
 const PaymentCallback = lazy(() => import("./pages/PaymentCallback"));
 const AdminVerify = lazy(() => import("./pages/AdminVerify"));
 
@@ -88,15 +91,17 @@ const App = () => (
                 <Route path="/team/erfan" element={<Erfan />} />
                 <Route path="/team/amir" element={<Amir />} />
                 <Route path="/collections/:slug" element={<Collection />} />
-                <Route path="/studio/*" element={<Studio />} />
+                {/* Studio excluded - deploy separately via 'npx sanity deploy' */}
                 <Route path="/admin/verify" element={<AdminVerify />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </BrowserRouter>
-          {/* Visual Editing component for Sanity Studio Presentation tool */}
-          <AppVisualEditing />
+          {/* Visual Editing - lazy loaded, only for Sanity Studio */}
+          <Suspense fallback={null}>
+            <AppVisualEditing />
+          </Suspense>
         </TooltipProvider>
         </CartProvider>
       </DirectionProvider>

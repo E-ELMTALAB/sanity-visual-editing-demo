@@ -65,32 +65,44 @@ export default defineConfig(({ mode }) => ({
     target: 'es2020',
     rollupOptions: {
       // Don't externalize anything - bundle all dependencies
-      // Externalization causes runtime errors in the browser
       output: {
-        // Better chunking strategy for performance
+        // Aggressive chunking to reduce initial bundle size
         manualChunks: (id) => {
-          // Core React ecosystem - loads first
-          if (id.includes('react-dom') || id.includes('react/jsx-runtime')) {
-            return 'react-core';
-          }
-          if (id.includes('react-router')) {
-            return 'router';
-          }
-          // Radix UI components - lazy load
-          if (id.includes('@radix-ui')) {
-            return 'ui-radix';
-          }
-          // Sanity - only needed for CMS features
+          // Sanity - MUST be separate chunk (largest dependency)
           if (id.includes('@sanity') || id.includes('sanity')) {
-            return 'sanity';
+            return 'vendor-sanity';
           }
-          // Framer motion - animations
+          // Framer motion - separate chunk (used sparingly)
           if (id.includes('framer-motion')) {
-            return 'motion';
+            return 'vendor-motion';
           }
-          // Query client
+          // React core - minimal initial chunk
+          if (id.includes('react-dom') || id.includes('react/jsx-runtime') || id.includes('scheduler')) {
+            return 'vendor-react';
+          }
+          // Router
+          if (id.includes('react-router')) {
+            return 'vendor-router';
+          }
+          // Radix UI - separate chunk
+          if (id.includes('@radix-ui')) {
+            return 'vendor-radix';
+          }
+          // TanStack Query
           if (id.includes('@tanstack')) {
-            return 'query';
+            return 'vendor-query';
+          }
+          // Lucide icons
+          if (id.includes('lucide-react')) {
+            return 'vendor-icons';
+          }
+          // Markdown/rehype/remark
+          if (id.includes('remark') || id.includes('rehype') || id.includes('mdast') || id.includes('unified') || id.includes('react-markdown')) {
+            return 'vendor-markdown';
+          }
+          // RxJS (used by Sanity)
+          if (id.includes('rxjs')) {
+            return 'vendor-sanity';
           }
         },
         // Ensure CSS is extracted properly

@@ -8,6 +8,16 @@
     <link rel="preconnect" href="https://cdn.sanity.io" crossorigin />
     <link rel="dns-prefetch" href="https://cdn.sanity.io" />
     <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+    <link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LHYSKTSHFS"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-LHYSKTSHFS');
+    </script>
     
     <!-- Preload critical font -->
     <link rel="preload" href="/font/Vazirmatn-VariableFont_wght.woff2" as="font" type="font/woff2" crossorigin />
@@ -20,21 +30,13 @@
       /* Critical above-the-fold styles */
       *,*::before,*::after{box-sizing:border-box}
       html,body{margin:0;padding:0;height:100%}
-      body{font-family:"Vazirmatn",system-ui,-apple-system,sans-serif;background:#060914;color:rgba(255,255,255,.92);-webkit-font-smoothing:antialiased}
+      body{font-family:"Vazirmatn",Tahoma,system-ui,sans-serif;background:#060914;color:rgba(255,255,255,.92);-webkit-font-smoothing:antialiased}
       #root{min-height:100vh}
-      @font-face{font-family:"Vazirmatn";src:url("/font/Vazirmatn-VariableFont_wght.woff2") format("woff2");font-weight:100 900;font-display:swap}
-      /* Loading state */
-      .loading-skeleton{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
-      @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+      /* Use font-display:optional to prevent CLS */
+      @font-face{font-family:"Vazirmatn";src:url("/font/Vazirmatn-VariableFont_wght.woff2") format("woff2");font-weight:100 900;font-display:optional}
+      /* Hero placeholder for instant LCP */
+      .hero-placeholder{min-height:92vh;background:#060914}
     </style>
-    
-    <!-- Google Tag Manager - Defer loading -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-PW97M4XV');</script>
-    <!-- End Google Tag Manager -->
     
     <title>SharifGPT - محصولات و خدمات هوش مصنوعی</title>
     <meta name="description" content="SharifGPT - ارائه دهنده محصولات و خدمات هوش مصنوعی" />
@@ -51,11 +53,31 @@
   </head>
 
   <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PW97M4XV"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Google Tag Manager - Load AFTER app is interactive -->
+    <script>
+      // Defer GTM loading until after page is interactive
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(function() {
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-PW97M4XV');
+        }, { timeout: 3000 });
+      } else {
+        setTimeout(function() {
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-PW97M4XV');
+        }, 3000);
+      }
+    </script>
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PW97M4XV"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </body>
 </html>
