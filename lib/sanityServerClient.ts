@@ -15,3 +15,4 @@ export const sanityServerClient = createClient({
   token: SANITY_API_TOKEN,
 })
 
+

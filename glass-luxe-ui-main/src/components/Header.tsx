@@ -168,36 +168,36 @@ export function Header({ onSearch, megaItems, active }: HeaderProps) {
 
                 {/* Search */}
                 <div className="hidden sm:block">
-                  {isSearchExpanded ? (
+                    {isSearchExpanded ? (
                     <form
-                      onSubmit={handleSearchSubmit}
+                        onSubmit={handleSearchSubmit}
                       className="relative w-[280px] animate-fadeIn"
-                    >
-                      <input
-                        ref={searchInputRef}
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="جستجو…"
-                        className={cn(
-                          "w-full h-10 px-4 rounded-full glass text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary",
-                          isRTL && "text-right",
-                        )}
-                        onBlur={() => !searchQuery && setIsSearchExpanded(false)}
-                      />
-                      <Search className="absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground ltr:right-4 rtl:left-4" />
+                      >
+                        <input
+                          ref={searchInputRef}
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="جستجو…"
+                          className={cn(
+                            "w-full h-10 px-4 rounded-full glass text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary",
+                            isRTL && "text-right",
+                          )}
+                          onBlur={() => !searchQuery && setIsSearchExpanded(false)}
+                        />
+                        <Search className="absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground ltr:right-4 rtl:left-4" />
                     </form>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleSearchExpand}
-                      className="rounded-full glass"
-                      aria-label="Search"
-                    >
-                      <Search className="h-4 w-4" />
-                    </Button>
-                  )}
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleSearchExpand}
+                        className="rounded-full glass"
+                        aria-label="Search"
+                      >
+                        <Search className="h-4 w-4" />
+                      </Button>
+                    )}
                 </div>
 
                 {/* Mobile Menu Toggle */}
@@ -218,103 +218,103 @@ export function Header({ onSearch, megaItems, active }: HeaderProps) {
       </header>
 
       {/* Mobile Menu Slide-over - CSS animations instead of framer-motion */}
-      {isMobileMenuOpen && (
-        <>
-          {/* Backdrop */}
+        {isMobileMenuOpen && (
+          <>
+            {/* Backdrop */}
           <div
-            onClick={() => setIsMobileMenuOpen(false)}
+              onClick={() => setIsMobileMenuOpen(false)}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 lg:hidden animate-fadeIn"
-          />
+            />
 
-          {/* Slide-over Panel */}
+            {/* Slide-over Panel */}
           <div
-            className={cn(
-              "fixed top-0 bottom-0 w-[320px] sm:w-[360px] glass-strong z-50 lg:hidden overflow-y-auto",
+              className={cn(
+                "fixed top-0 bottom-0 w-[320px] sm:w-[360px] glass-strong z-50 lg:hidden overflow-y-auto",
               isRTL ? "left-0 animate-slideInLeft" : "right-0 animate-slideInRight",
-            )}
-            style={{
-              background: "hsl(var(--card))",
-              borderLeft: isRTL ? "none" : "1px solid hsl(var(--border-glass))",
-              borderRight: isRTL ? "1px solid hsl(var(--border-glass))" : "none",
-            }}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-border-glass">
-              <h2 className="text-lg font-bold text-foreground">منو</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="rounded-full"
-                aria-label="Close menu"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
+              )}
+              style={{
+                background: "hsl(var(--card))",
+                borderLeft: isRTL ? "none" : "1px solid hsl(var(--border-glass))",
+                borderRight: isRTL ? "1px solid hsl(var(--border-glass))" : "none",
+              }}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-border-glass">
+                <h2 className="text-lg font-bold text-foreground">منو</h2>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="rounded-full"
+                  aria-label="Close menu"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
 
-            {/* Search (Mobile) */}
-            <div className="p-6 border-b border-border-glass">
-              <form onSubmit={handleSearchSubmit}>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="جستجو…"
-                    className={cn(
-                      "w-full h-11 px-4 rounded-xl glass text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary",
-                      isRTL ? "text-right pr-11" : "pl-11",
-                    )}
-                  />
-                  <Search
-                    className={cn(
-                      "absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground",
-                      isRTL ? "right-4" : "left-4",
-                    )}
-                  />
-                </div>
-              </form>
-            </div>
-
-            {/* Navigation */}
-            <nav className="p-6 space-y-1" role="navigation">
-              {navItems.map((item, index) => {
-                const isActive = active?.toLowerCase() === item.label.toLowerCase();
-                return (
-                  <a
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "block px-4 py-3 text-base font-medium hover:bg-surface-glass rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
-                      isActive ? "text-foreground bg-surface-glass" : "text-muted-foreground",
-                    )}
-                    style={{ animationDelay: `${index * 50}ms` }}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    aria-current={isActive ? "page" : undefined}
-                  >
-                    {item.labelFa}
-                  </a>
-                );
-              })}
-              
-              {/* Customer Service Link (Mobile) */}
-              <a
-                href="/contact"
-                className="block px-4 py-3 text-base font-medium hover:bg-surface-glass rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none text-muted-foreground"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <div className="flex items-center gap-3">
+              {/* Search (Mobile) */}
+              <div className="p-6 border-b border-border-glass">
+                <form onSubmit={handleSearchSubmit}>
                   <div className="relative">
-                    <Headphones className="h-5 w-5" />
-                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="جستجو…"
+                      className={cn(
+                        "w-full h-11 px-4 rounded-xl glass text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary",
+                        isRTL ? "text-right pr-11" : "pl-11",
+                      )}
+                    />
+                    <Search
+                      className={cn(
+                        "absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground",
+                        isRTL ? "right-4" : "left-4",
+                      )}
+                    />
                   </div>
-                  <span>پشتیبانی</span>
-                </div>
+                </form>
+              </div>
+
+              {/* Navigation */}
+              <nav className="p-6 space-y-1" role="navigation">
+                {navItems.map((item, index) => {
+                  const isActive = active?.toLowerCase() === item.label.toLowerCase();
+                  return (
+                  <a
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "block px-4 py-3 text-base font-medium hover:bg-surface-glass rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                        isActive ? "text-foreground bg-surface-glass" : "text-muted-foreground",
+                      )}
+                    style={{ animationDelay: `${index * 50}ms` }}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      aria-current={isActive ? "page" : undefined}
+                    >
+                      {item.labelFa}
+                  </a>
+                  );
+                })}
+                
+                {/* Customer Service Link (Mobile) */}
+              <a
+                  href="/contact"
+                  className="block px-4 py-3 text-base font-medium hover:bg-surface-glass rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none text-muted-foreground"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Headphones className="h-5 w-5" />
+                      <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                    </div>
+                    <span>پشتیبانی</span>
+                  </div>
               </a>
-            </nav>
-          </div>
-        </>
-      )}
+              </nav>
+              </div>
+          </>
+        )}
     </>
   );
 }
