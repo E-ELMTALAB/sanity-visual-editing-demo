@@ -42,17 +42,13 @@ export default defineConfig(({ mode }) => ({
     // This helps when processing external schema files
     conditions: ['import', 'module', 'browser', 'default'],
     dedupe: [
-      "@sanity/icons",
-      "@sanity/ui",
-      "sanity",
-      "@sanity/preview-kit",
-      "@sanity/visual-editing",
-      "rxjs",
       "react",
       "react-dom",
       "react/jsx-runtime",
       "get-youtube-id",
       "react-lite-youtube-embed",
+      "@sanity/client",
+      "@sanity/image-url",
     ],
   },
   build: {
@@ -68,9 +64,16 @@ export default defineConfig(({ mode }) => ({
       output: {
         // Aggressive chunking to reduce initial bundle size
         manualChunks: (id) => {
-          // Sanity - MUST be separate chunk (largest dependency)
-          if (id.includes('@sanity') || id.includes('sanity')) {
-            return 'vendor-sanity';
+          // Sanity client (lightweight) - used by all pages - CHECK FIRST
+          if (id.includes('@sanity/client') || id.includes('@sanity/image-url')) {
+            return 'vendor-sanity-client';
+          }
+          // Sanity Studio/Preview (heavy) - separate from lightweight client
+          if (id.includes('/sanity/') || id.includes('@sanity/preview-kit') || 
+              id.includes('@sanity/ui') || id.includes('@sanity/vision') ||
+              id.includes('@sanity/visual-editing') || id.includes('sanity-plugin') ||
+              id.includes('@sanity/icons')) {
+            return 'vendor-sanity-heavy';
           }
           // Framer motion - separate chunk (used sparingly)
           if (id.includes('framer-motion')) {
@@ -100,9 +103,9 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('remark') || id.includes('rehype') || id.includes('mdast') || id.includes('unified') || id.includes('react-markdown')) {
             return 'vendor-markdown';
           }
-          // RxJS (used by Sanity)
+          // RxJS (used by Sanity heavy packages)
           if (id.includes('rxjs')) {
-            return 'vendor-sanity';
+            return 'vendor-sanity-heavy';
           }
         },
         // Ensure CSS is extracted properly
@@ -123,14 +126,18 @@ export default defineConfig(({ mode }) => ({
       "react",
       "react-dom",
       "react-router-dom",
-      "@sanity/icons",
-      "@sanity/ui",
+      "@sanity/client",
+      "@sanity/image-url",
+      "get-youtube-id",
+      "react-lite-youtube-embed",
+    ],
+    // Exclude heavy Sanity packages from optimization
+    exclude: [
       "sanity",
       "@sanity/preview-kit",
       "@sanity/visual-editing",
-      "rxjs",
-      "get-youtube-id",
-      "react-lite-youtube-embed",
+      "@sanity/ui",
+      "@sanity/vision",
     ],
   },
 }));
