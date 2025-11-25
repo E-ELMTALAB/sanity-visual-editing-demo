@@ -101,14 +101,14 @@ export function CartDrawer({
           <>
             <ScrollArea className="flex-1 px-6 py-4">
               <div className="space-y-4">
-                {items.map((item) => (
+                {items.map((item, index) => (
                   <motion.div
                     key={item.id}
-                    layout
                     initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: isRTL ? -20 : 20 }}
-                    className="glass rounded-lg p-4"
+                    transition={{ delay: index * 0.05, duration: 0.2 }}
+                    className="glass rounded-lg p-4 will-change-transform"
+                    style={{ contain: 'layout' }}
                   >
                     <div className="flex gap-4">
                       <img

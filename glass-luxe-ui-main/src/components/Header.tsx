@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useDirection } from "@/contexts/DirectionContext";
 import { cn } from "@/lib/utils";
-import sharifgptLogo from "@/assets/sharifgpt-logo.png";
+// Import optimized logo with vite-imagetools - resize to 80x80 (2x for retina) and convert to WebP
+import sharifgptLogo from "@/assets/sharifgpt-logo.png?w=80&h=80&format=webp&quality=85";
 
 interface MegaLink {
   label: string;

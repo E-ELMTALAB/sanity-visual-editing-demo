@@ -2,5 +2,8 @@
   "dependencies": {
     "@sanity/preview-kit": "^6.1.3",
     "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "vite-imagetools": "^9.0.2"
   }
 }

@@ -11,9 +11,9 @@ export function urlForImage(source: SanityImageSource) {
   }
   return builder
     .image(source)
-    .auto('format') // Auto format (WebP/AVIF when supported)
+    .format('webp') // Force WebP format for better compression
     .fit('max')
-    .quality(80) // Add default quality
+    .quality(75) // Reduced quality for better performance (75 is visually equivalent to 80 for WebP)
 }
 
 export function getImageUrl(

@@ -73,26 +73,13 @@ export function FloatingDock({
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={onOpenChat}
-        className="glass hover:glass-strong group relative flex items-center justify-center w-16 h-16 rounded-full shadow-xl hover:shadow-2xl transition-all"
+        className="glass hover:glass-strong group relative flex items-center justify-center w-16 h-16 rounded-full shadow-xl hover:shadow-2xl transition-all will-change-transform"
+        style={{ contain: 'layout' }}
       >
         <MessageSquare className="w-6 h-6 text-primary" />
         
-        {/* Animated Spark/Eye Effect */}
-        <motion.div
-          className="absolute inset-0 rounded-full"
-          animate={{
-            boxShadow: [
-              "0 0 0 0 hsl(var(--primary) / 0.4)",
-              "0 0 0 8px hsl(var(--primary) / 0)",
-              "0 0 0 0 hsl(var(--primary) / 0)",
-            ],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
+        {/* Animated Spark/Eye Effect - CSS only for better performance */}
+        <span className="absolute inset-0 rounded-full animate-pulse-ring" />
       </motion.button>
     </div>
   );

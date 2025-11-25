@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import heroBg from "@/assets/hero-ai-cubes.png";
 
@@ -25,36 +25,62 @@ export default function ImageHero({ slide }: ImageHeroProps) {
   const backgroundSrcSet = slide?.imageSrcSet;
   const heroSizes = "(max-width: 1024px) 100vw, 1200px";
 
-  // Extract the largest image from srcSet for preload, or use the main image
-  // When using srcSet, preload the largest image (last in the list)
-  const preloadImage = backgroundSrcSet
-    ? backgroundSrcSet.split(', ').pop()?.split(' ')[0] || backgroundImage
-    : backgroundImage
+  // Extract the best image for preload based on viewport
+  // Use 1200w version for desktop, 768w for mobile
+  const getPreloadImage = () => {
+    if (!backgroundSrcSet) return backgroundImage;
+    
+    const srcSetParts = backgroundSrcSet.split(', ');
+    // Find 1200w or closest for desktop preload
+    const targetWidth = typeof window !== 'undefined' && window.innerWidth <= 768 ? 768 : 1200;
+    
+    for (const part of srcSetParts) {
+      const [url, widthStr] = part.split(' ');
+      const width = parseInt(widthStr);
+      if (width >= targetWidth) {
+        return url;
+      }
+    }
+    // Fallback to last (largest) image
+    return srcSetParts[srcSetParts.length - 1]?.split(' ')[0] || backgroundImage;
+  };
 
-  // Debug: Log image info in development
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[ImageHero] Image data:', {
-      hasImage: !!slide?.image,
-      imageUrl: backgroundImage,
-      hasSrcSet: !!backgroundSrcSet,
-      preloadImage
-    })
-  }
+  const preloadImage = getPreloadImage();
+
+  // Inject preload link immediately on mount for LCP optimization
+  useEffect(() => {
+    if (preloadImage && typeof document !== 'undefined') {
+      // Check if preload already exists
+      const existingPreload = document.querySelector(`link[rel="preload"][href="${preloadImage}"]`);
+      if (!existingPreload) {
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = preloadImage;
+        link.setAttribute('fetchpriority', 'high');
+        if (backgroundSrcSet) {
+          link.setAttribute('imagesrcset', backgroundSrcSet);
+          link.setAttribute('imagesizes', heroSizes);
+        }
+        document.head.insertBefore(link, document.head.firstChild);
+      }
+    }
+  }, [preloadImage, backgroundSrcSet]);
 
   return (
     <>
       <Helmet>
-        {/* Only preload if we have a valid image URL */}
+        {/* Preload LCP image with srcset support */}
         {preloadImage && (
           <link
             rel="preload"
             as="image"
             href={preloadImage}
+            imageSrcSet={backgroundSrcSet}
+            imageSizes={backgroundSrcSet ? heroSizes : undefined}
             fetchPriority="high"
           />
         )}
-        {/* Preconnect to Sanity CDN for faster image loading */}
-        <link rel="preconnect" href="https://cdn.sanity.io" crossOrigin="anonymous" />
       </Helmet>
       <section dir="rtl"
       className="relative min-h-[92vh] w-full overflow-hidden bg-transparent
