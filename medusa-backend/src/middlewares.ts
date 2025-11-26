@@ -181,5 +181,39 @@ export default defineMiddlewares({
         },
       ],
     },
+    // CORS middleware for custom API routes (like /api/sanity-proxy)
+    {
+      matcher: "/api/*",
+      middlewares: [
+        (req, res, next) => {
+          console.log('[MIDDLEWARE] /api/* middleware triggered for:', req.url);
+          
+          const corsConfig = process.env.SANITY_PROXY_ALLOWED_ORIGINS || process.env.STORE_CORS || '*';
+          const requestOrigin = req.headers.origin;
+          const allowedOrigin = getAllowedOrigin(requestOrigin, corsConfig);
+          
+          console.log('[MIDDLEWARE] API route CORS - Origin:', requestOrigin, '| Allowed:', allowedOrigin);
+          
+          if (allowedOrigin) {
+            res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+          }
+          
+          res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD');
+          res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma');
+          res.setHeader('Access-Control-Allow-Credentials', 'true');
+          res.setHeader('Access-Control-Max-Age', '86400');
+          res.setHeader('Access-Control-Expose-Headers', 'Content-Length, X-JSON');
+          res.setHeader('Vary', 'Origin');
+          
+          if (req.method === 'OPTIONS') {
+            console.log('[MIDDLEWARE] OPTIONS request for /api/*, returning 200');
+            res.status(200).end();
+            return;
+          }
+          
+          next();
+        },
+      ],
+    },
   ],
 });
