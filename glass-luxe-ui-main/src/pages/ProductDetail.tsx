@@ -163,7 +163,7 @@ const ProductDetail = () => {
 
         const transformed = transformProductDetail(result);
         setProduct(transformed);
-        setSelectedVariant(transformed.variants[0]?.id ?? null);
+        setSelectedVariant(null);
         setSelectedImage(0);
         setError(null);
       } catch (err) {
@@ -224,10 +224,6 @@ const ProductDetail = () => {
         if (productPrices?.variants?.length > 0) {
           setMedusaVariants(productPrices.variants);
           setPricesError(null);
-          // Update selected variant to first Medusa variant if available
-          if (!selectedVariant && productPrices.variants[0]?.variant_id) {
-            setSelectedVariant(productPrices.variants[0].variant_id);
-          }
         } else {
           setPricesError('قیمت‌ها در دسترس نیستند');
           setMedusaVariants([]);
@@ -245,6 +241,33 @@ const ProductDetail = () => {
       fetchPrices();
     }
   }, [product?.handle, slug, product]);
+
+  const getLowestPricedMedusaVariantId = () => {
+    if (!medusaVariants.length) return null;
+    const sorted = [...medusaVariants].filter(v => typeof v.price === "number" && v.price > 0)
+      .sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+    return sorted[0]?.variant_id ?? null;
+  };
+
+  const getLowestPricedSanityVariantId = () => {
+    if (!product?.variants?.length) return null;
+    const sorted = [...product.variants].filter(v => typeof v.price === "number" && v.price > 0)
+      .sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+    return sorted[0]?.id ?? null;
+  };
+
+  useEffect(() => {
+    if (selectedVariant) return;
+    const medusaDefault = getLowestPricedMedusaVariantId();
+    if (medusaDefault) {
+      setSelectedVariant(medusaDefault);
+      return;
+    }
+    const sanityDefault = getLowestPricedSanityVariantId();
+    if (sanityDefault) {
+      setSelectedVariant(sanityDefault);
+    }
+  }, [medusaVariants, product?.variants, selectedVariant]);
 
   // Get current price based on selected variant
   const getCurrentPrice = () => {
@@ -286,6 +309,15 @@ const ProductDetail = () => {
     // Use Medusa variant if available
     const selectedVariantData = medusaVariants.find(v => v.variant_id === selectedVariant);
     console.log('[PRODUCT-DETAIL] Found selected variant data:', selectedVariantData);
+    
+    if ((medusaVariants.length > 0 || (product?.variants?.length ?? 0) > 0) && !selectedVariant) {
+      toast({
+        title: "انتخاب گزینه",
+        description: "لطفاً ابتدا یکی از گزینه‌های محصول را انتخاب کنید.",
+        variant: "destructive",
+      });
+      return false;
+    }
     
     if (medusaVariants.length > 0) {
       console.log('[PRODUCT-DETAIL] Using Medusa variant data');
