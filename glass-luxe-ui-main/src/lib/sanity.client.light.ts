@@ -3,7 +3,7 @@
 import { createClient } from '@sanity/client'
 import { projectId, dataset, apiVersion } from './sanity.config'
 
-const PROXY_ENDPOINT = import.meta.env.VITE_SANITY_PROXY_ENDPOINT || '/api/sanity-proxy'
+const PROXY_ENDPOINT = import.meta.env.VITE_SANITY_PROXY_ENDPOINT || 'https://backend.sharifgpt.com/sanity-proxy'
 
 const directClient = createClient({
   projectId,
