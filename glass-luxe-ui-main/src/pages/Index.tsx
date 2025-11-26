@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense, useEffect, useRef, useCallback } from "react";
+import { useState, lazy, Suspense, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, Award, Shield, CheckCircle } from "lucide-react";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { useDirection } from "@/contexts/DirectionContext";
 import { useCart } from "@/contexts/cart-context";
 import { toast } from "@/hooks/use-toast";
+import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
 
 // Static hero image for immediate LCP
 import heroBg from "@/assets/hero-ai-cubes.png";
@@ -292,6 +293,7 @@ const Index = () => {
   
   // Sanity data state - starts empty, loads after paint
   const [sanityData, setSanityData] = useState<SanityData | null>(null);
+  const [medusaPrices, setMedusaPrices] = useState<Record<string, ProductPrices>>({});
   const [dataLoaded, setDataLoaded] = useState(false);
 
   // Load Sanity data AFTER first paint using requestIdleCallback
@@ -464,6 +466,57 @@ const Index = () => {
     }
   }, [navigate, sanityData]);
 
+  const bestSellerSlugs = useMemo(() => {
+    if (!sanityData?.bestSellerProducts?.length) {
+      return [];
+    }
+    return sanityData.bestSellerProducts.reduce<string[]>((acc, item) => {
+      const slug = item.slug || item.handle;
+      if (slug) {
+        acc.push(slug);
+      }
+      return acc;
+    }, []);
+  }, [sanityData?.bestSellerProducts]);
+
+  useEffect(() => {
+    if (!bestSellerSlugs.length) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadPrices = async () => {
+      try {
+        const prices = await fetchProductPrices(bestSellerSlugs);
+        if (!cancelled) {
+          setMedusaPrices(prices);
+        }
+      } catch (error) {
+        console.error("[HOMEPAGE] Failed to fetch Medusa prices:", error);
+        if (!cancelled) {
+          setMedusaPrices({});
+        }
+      }
+    };
+
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const idleId = (window as any).requestIdleCallback(loadPrices, { timeout: 1500 });
+      return () => {
+        cancelled = true;
+        if (typeof (window as any).cancelIdleCallback === "function") {
+          (window as any).cancelIdleCallback(idleId);
+        }
+      };
+    }
+
+    const timeoutId = window.setTimeout(loadPrices, 0);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [bestSellerSlugs.join("|")]);
+
   return (
     <div className="min-h-screen relative">
       {/* Header - lightweight, loads immediately */}
@@ -481,7 +534,7 @@ const Index = () => {
         <Suspense fallback={<SectionPlaceholder />}>
           {/* Best Sellers */}
           {sanityData.bestSellerProducts.length > 0 && (
-            <BestSellers products={sanityData.bestSellerProducts} productPrices={{}} onAdd={handleAddToCart} />
+            <BestSellers products={sanityData.bestSellerProducts} productPrices={medusaPrices} onAdd={handleAddToCart} />
           )}
 
           {/* Editorial Banners */}
