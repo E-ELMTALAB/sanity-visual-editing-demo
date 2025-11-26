@@ -17,6 +17,7 @@ const allowedOrigins = (process.env.SANITY_PROXY_ALLOWED_ORIGINS
 
 const applyCors = (req: MedusaRequest, res: MedusaResponse) => {
   const requestOrigin = req.headers.origin ?? ""
+  console.log("[sanity-proxy] CORS preflight from", requestOrigin ?? "unknown")
   const matchingOrigin = allowedOrigins.includes("*")
     ? "*"
     : allowedOrigins.find((origin) => origin === requestOrigin)
@@ -48,6 +49,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
     return res.status(200).json({
       success: true,
+      release: `sanity-proxy-${new Date().toISOString()}`,
       data,
     })
   } catch (error: any) {
