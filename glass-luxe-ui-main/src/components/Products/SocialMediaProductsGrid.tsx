@@ -6,17 +6,20 @@ import { Button } from "@/components/ui/button";
 import { useDirection } from "@/contexts/DirectionContext";
 import { cn } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
+import { ProductPrices } from "@/lib/medusa-prices";
 interface Product {
   id: string;
   title: string;
   image: string;
   price: number;
+  slug?: string;
 }
 interface SocialMediaProductsGridProps {
   products: Product[];
   onAdd: (id: string) => void;
   onViewAll: () => void;
   className?: string;
+  productPrices?: Record<string, ProductPrices>;
 }
 const springTransition = {
   type: "spring" as const,
@@ -27,7 +30,8 @@ export function SocialMediaProductsGrid({
   products,
   onAdd,
   onViewAll,
-  className
+  className,
+  productPrices,
 }: SocialMediaProductsGridProps) {
   const {
     isRTL
@@ -70,7 +74,15 @@ export function SocialMediaProductsGrid({
         }} transition={springTransition} className="overflow-hidden" ref={emblaRef}>
             <div className="flex gap-4 md:gap-5 py-[5px]">
               {products.slice(0, 8).map(product => <div key={product.id} className="flex-[0_0_75%] sm:flex-[0_0_45%] md:flex-[0_0_38%] lg:flex-[0_0_24%] min-w-0">
-                  <ProductCard id={product.id} title={product.title} image={product.image} price={product.price} onAdd={onAdd} />
+                  <ProductCard
+                    id={product.id}
+                    title={product.title}
+                    image={product.image}
+                    price={product.price}
+                    slug={product.slug}
+                    medusaVariants={product.slug ? productPrices?.[product.slug]?.variants || [] : []}
+                    onAdd={onAdd}
+                  />
                 </div>)}
             </div>
           </motion.div>

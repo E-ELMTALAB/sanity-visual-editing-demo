@@ -479,8 +479,26 @@ const Index = () => {
     }, []);
   }, [sanityData?.bestSellerProducts]);
 
+  const socialProductSlugs = useMemo(() => {
+    if (!sanityData?.socialMediaProducts?.length) {
+      return [];
+    }
+    return sanityData.socialMediaProducts.reduce<string[]>((acc, item) => {
+      const slug = item.slug || item.handle;
+      if (slug) {
+        acc.push(slug);
+      }
+      return acc;
+    }, []);
+  }, [sanityData?.socialMediaProducts]);
+
+  const medusaSlugs = useMemo(() => {
+    const combined = [...bestSellerSlugs, ...socialProductSlugs];
+    return Array.from(new Set(combined));
+  }, [bestSellerSlugs, socialProductSlugs]);
+
   useEffect(() => {
-    if (!bestSellerSlugs.length) {
+    if (!medusaSlugs.length) {
       return;
     }
 
@@ -488,7 +506,7 @@ const Index = () => {
 
     const loadPrices = async () => {
       try {
-        const prices = await fetchProductPrices(bestSellerSlugs);
+        const prices = await fetchProductPrices(medusaSlugs);
         if (!cancelled) {
           setMedusaPrices(prices);
         }
@@ -515,7 +533,7 @@ const Index = () => {
       cancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [bestSellerSlugs.join("|")]);
+  }, [medusaSlugs.join("|")]);
 
   return (
     <div className="min-h-screen relative">
@@ -569,7 +587,9 @@ const Index = () => {
                 title: item.title,
                 image: item.image,
                 price: item.price,
+                slug: item.slug || item.handle,
               }))}
+              productPrices={medusaPrices}
               onAdd={handleAddToCart}
               onViewAll={() => {}}
               className="mx-[10px]"
