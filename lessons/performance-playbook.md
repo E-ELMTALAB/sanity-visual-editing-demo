@@ -58,4 +58,4 @@ This document summarizes the exact steps we used to move SharifGPT from a **Ligh
 - [ ] Avoid manual chunk overrides unless you 100% understand dependency cycles.
 - [ ] After every major change, re-run Lighthouse and archive screenshots/metrics.
 
-Following these steps took the site from a **score of 4** (FCP 12s, LCP 16s, CLS 0.51) to **84+** with FCP/LCP under 2 seconds. Use this playbook as your starting point for any future performance fire drills.
+Following these steps took the site from a **score of 4** (FCP 12s, LCP 16s, CLS 0.51) to **84+** with FCP/LCP under 2 seconds. Use this playbook as your starting point for any future performance fire drills
