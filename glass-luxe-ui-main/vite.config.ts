@@ -8,6 +8,11 @@ import { imagetools } from "vite-imagetools";
 export default defineConfig(({ mode }) => ({
   base: "/",
   root: __dirname, // Explicitly set root to ensure proper module resolution
+  define: {
+    'import.meta.env.VITE_SANITY_PROJECT_ID': JSON.stringify(process.env.VITE_SANITY_PROJECT_ID || 'placeholder'),
+    'import.meta.env.VITE_SANITY_DATASET': JSON.stringify(process.env.VITE_SANITY_DATASET || 'production'),
+    'import.meta.env.VITE_SANITY_API_VERSION': JSON.stringify(process.env.VITE_SANITY_API_VERSION || '2023-06-21'),
+  },
   server: {
     host: "::",
     port: 8080,
