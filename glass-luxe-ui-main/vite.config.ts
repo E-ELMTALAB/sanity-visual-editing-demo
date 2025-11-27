@@ -1,17 +1,32 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { imagetools } from "vite-imagetools";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+
+  const sanityEnv = {
+    projectId: env.VITE_SANITY_PROJECT_ID || process.env.VITE_SANITY_PROJECT_ID || "placeholder",
+    dataset: env.VITE_SANITY_DATASET || process.env.VITE_SANITY_DATASET || "production",
+    apiVersion: env.VITE_SANITY_API_VERSION || process.env.VITE_SANITY_API_VERSION || "2023-06-21",
+  };
+
+  console.log("[vite] Sanity env resolved", {
+    projectId: sanityEnv.projectId,
+    dataset: sanityEnv.dataset,
+    apiVersion: sanityEnv.apiVersion,
+  });
+
+  return {
   base: "/",
   root: __dirname, // Explicitly set root to ensure proper module resolution
   define: {
-    'import.meta.env.VITE_SANITY_PROJECT_ID': JSON.stringify(process.env.VITE_SANITY_PROJECT_ID || 'placeholder'),
-    'import.meta.env.VITE_SANITY_DATASET': JSON.stringify(process.env.VITE_SANITY_DATASET || 'production'),
-    'import.meta.env.VITE_SANITY_API_VERSION': JSON.stringify(process.env.VITE_SANITY_API_VERSION || '2023-06-21'),
+    "import.meta.env.VITE_SANITY_PROJECT_ID": JSON.stringify(sanityEnv.projectId),
+    "import.meta.env.VITE_SANITY_DATASET": JSON.stringify(sanityEnv.dataset),
+    "import.meta.env.VITE_SANITY_API_VERSION": JSON.stringify(sanityEnv.apiVersion),
   },
   server: {
     host: "::",
@@ -90,4 +105,5 @@ export default defineConfig(({ mode }) => ({
       "react-lite-youtube-embed",
     ],
   },
-}));
+  };
+});
