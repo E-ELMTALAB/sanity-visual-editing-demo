@@ -1,0 +1,72 @@
+[1mdiff --git a/glass-luxe-ui-main/src/lib/sanity.client.light.ts b/glass-luxe-ui-main/src/lib/sanity.client.light.ts[m
+[1mindex 942ab3e..a0430d3 100644[m
+[1m--- a/glass-luxe-ui-main/src/lib/sanity.client.light.ts[m
+[1m+++ b/glass-luxe-ui-main/src/lib/sanity.client.light.ts[m
+[36m@@ -3,9 +3,7 @@[m
+ import { createClient } from '@sanity/client'[m
+ import { projectId, dataset, apiVersion } from './sanity.config'[m
+ [m
+[31m-const PROXY_ENDPOINT = import.meta.env.VITE_SANITY_PROXY_ENDPOINT || 'https://backend.sharifgpt.com/sanity-proxy'[m
+[31m-[m
+[31m-const directClient = createClient({[m
+[32m+[m[32mconst client = createClient({[m
+   projectId,[m
+   dataset,[m
+   apiVersion,[m
+[36m@@ -13,29 +11,6 @@[m [mconst directClient = createClient({[m
+   perspective: 'published',[m
+ })[m
+ [m
+[31m-async function fetchViaProxy<T>(query: string, params?: Record<string, any>): Promise<T> {[m
+[31m-  const response = await fetch(PROXY_ENDPOINT, {[m
+[31m-    method: 'POST',[m
+[31m-    headers: {[m
+[31m-      'Content-Type': 'application/json',[m
+[31m-    },[m
+[31m-    body: JSON.stringify({ query, params }),[m
+[31m-  })[m
+[31m-[m
+[31m-  if (!response.ok) {[m
+[31m-    const message = await response.text()[m
+[31m-    throw new Error(message || `Proxy request failed with status ${response.status}`)[m
+[31m-  }[m
+[31m-[m
+[31m-  const payload = await response.json()[m
+[31m-[m
+[31m-  if (!payload?.success) {[m
+[31m-    throw new Error(payload?.error || 'Proxy response missing data')[m
+[31m-  }[m
+[31m-[m
+[31m-  return payload.data as T[m
+[31m-}[m
+[31m-[m
+ export async function fetchFromSanity<T>(query: string, params?: Record<string, any>): Promise<T | null> {[m
+   if (!projectId || projectId === 'placeholder') {[m
+     console.warn('[SANITY] Not configured')[m
+[36m@@ -43,22 +18,12 @@[m [mexport async function fetchFromSanity<T>(query: string, params?: Record<string,[m
+   }[m
+ [m
+   try {[m
+[31m-    return await fetchViaProxy<T>(query, params)[m
+[31m-  } catch (proxyError) {[m
+[31m-    console.error('[SANITY] Proxy fetch failed:', proxyError)[m
+[31m-[m
+[31m-    if (import.meta.env.DEV) {[m
+[31m-      try {[m
+[31m-        return await directClient.fetch<T>(query, params)[m
+[31m-      } catch (directError) {[m
+[31m-        console.error('[SANITY] Direct fetch fallback failed:', directError)[m
+[31m-        return null[m
+[31m-      }[m
+[31m-    }[m
+[31m-[m
+[32m+[m[32m    return await client.fetch<T>(query, params)[m
+[32m+[m[32m  } catch (error) {[m
+[32m+[m[32m    console.error('[SANITY] Client fetch failed:', error)[m
+     return null[m
+   }[m
+ }[m
+ [m
+[31m-export { directClient as client }[m
+[32m+[m[32mexport { client }[m
+ [m

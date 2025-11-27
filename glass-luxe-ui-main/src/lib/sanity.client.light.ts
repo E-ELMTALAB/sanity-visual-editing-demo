@@ -3,9 +3,12 @@
 import { createClient } from '@sanity/client'
 import { projectId, dataset, apiVersion } from './sanity.config'
 
-const PROXY_ENDPOINT = import.meta.env.VITE_SANITY_PROXY_ENDPOINT || 'https://backend.sharifgpt.com/sanity-proxy'
-
-const directClient = createClient({
+/**
+ * Lightweight browser-only Sanity client.
+ * This file is the single place where we talk to Sanity, so keeping the logic
+ * here guarantees the app never falls back to our Medusa backend.
+ */
+const client = createClient({
   projectId,
   dataset,
   apiVersion,
@@ -13,27 +16,19 @@ const directClient = createClient({
   perspective: 'published',
 })
 
-async function fetchViaProxy<T>(query: string, params?: Record<string, any>): Promise<T> {
-  const response = await fetch(PROXY_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ query, params }),
-  })
+let hasLoggedClientOrigin = false
 
-  if (!response.ok) {
-    const message = await response.text()
-    throw new Error(message || `Proxy request failed with status ${response.status}`)
+function logDirectClientOrigin() {
+  if (hasLoggedClientOrigin) {
+    return
   }
 
-  const payload = await response.json()
+  const config = client.config()
+  const hostSuffix = config.useCdn ? 'apicdn' : 'api'
+  const host = config.projectId ? `${config.projectId}.${hostSuffix}.sanity.io` : 'api.sanity.io'
 
-  if (!payload?.success) {
-    throw new Error(payload?.error || 'Proxy response missing data')
-  }
-
-  return payload.data as T
+  console.info('[SANITY] Using direct browser client →', `https://${host}`, `(dataset: ${config.dataset})`)
+  hasLoggedClientOrigin = true
 }
 
 export async function fetchFromSanity<T>(query: string, params?: Record<string, any>): Promise<T | null> {
@@ -42,23 +37,15 @@ export async function fetchFromSanity<T>(query: string, params?: Record<string, 
     return null
   }
 
+  logDirectClientOrigin()
+
   try {
-    return await fetchViaProxy<T>(query, params)
-  } catch (proxyError) {
-    console.error('[SANITY] Proxy fetch failed:', proxyError)
-
-    if (import.meta.env.DEV) {
-      try {
-        return await directClient.fetch<T>(query, params)
-      } catch (directError) {
-        console.error('[SANITY] Direct fetch fallback failed:', directError)
-        return null
-      }
-    }
-
+    return await client.fetch<T>(query, params)
+  } catch (error) {
+    console.error('[SANITY] Client fetch failed:', error)
     return null
   }
 }
 
-export { directClient as client }
+export { client }
 
