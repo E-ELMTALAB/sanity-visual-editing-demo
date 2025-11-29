@@ -534,11 +534,11 @@ const ProductDetail = () => {
           <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8 space-y-6 py-6 min-w-0 my-[25px]">
             {/* Product Main Section */}
             <SurfaceGlass className="rounded-2xl p-4 sm:p-6 md:p-8 min-w-0 overflow-hidden">
-              <div className="flex flex-col gap-6 md:gap-8 min-w-0 md:items-start md:flex-row-reverse">
+              <div className="flex flex-col gap-6 md:gap-8 min-w-0 md:items-stretch md:flex-row-reverse">
                 {/* Product Info - Sticky on Desktop */}
                 <div
                   ref={stickyRef}
-                  className="md:flex-1 md:sticky md:top-24 md:self-start min-w-0 order-last md:order-none"
+                  className="md:flex-1 md:sticky md:top-24 min-w-0 order-last md:order-none h-fit"
                   dir="rtl"
                   style={{
                     direction: "rtl",
@@ -546,6 +546,7 @@ const ProductDetail = () => {
                     unicodeBidi: "plaintext",
                     marginRight: 0,
                     paddingRight: 0,
+                    alignSelf: "flex-start",
                   }}
                 >
                   {/* Breadcrumb */}
