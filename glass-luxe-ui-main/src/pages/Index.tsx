@@ -26,7 +26,6 @@ const TabbedProductGrid = lazy(() => import("@/components/Products/TabbedProduct
 const SocialMediaProductsGrid = lazy(() => import("@/components/Products/SocialMediaProductsGrid").then((m) => ({ default: m.SocialMediaProductsGrid })));
 const CollectionsBanner = lazy(() => import("@/components/Products/CollectionsBanner").then((m) => ({ default: m.CollectionsBanner })));
 const EduProductsSlider = lazy(() => import("@/components/Products/EduProductsSlider").then((m) => ({ default: m.EduProductsSlider })));
-const CoursesCarousel = lazy(() => import("@/components/Courses/CoursesCarousel").then((m) => ({ default: m.CoursesCarousel })));
 const BlogsCarousel = lazy(() => import("@/components/Blog/BlogsCarousel").then((m) => ({ default: m.BlogsCarousel })));
 const EnhancedMarkdownRenderer = lazy(() => import("@/components/EnhancedMarkdownRenderer"));
 
@@ -160,7 +159,7 @@ function StaticHero() {
             style={{ minHeight: '300px' }} // Fixed height to prevent CLS
           >
             <span className="inline-block rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs md:text-sm w-fit border border-white/20">
-              برند شریف‌GPT
+            بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
             </span>
             <h1 className="mt-4 text-5xl sm:text-5xl md:text-6xl font-black leading-tight">
               خرید اکانت ChatGPT
@@ -229,7 +228,7 @@ function DynamicHero({ slide }: { slide: any }) {
             style={{ minHeight: '300px' }}
           >
             <span className="inline-block rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs md:text-sm w-fit border border-white/20">
-              برند شریف‌GPT
+              بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
             </span>
             <h1 className="mt-4 text-5xl sm:text-5xl md:text-6xl font-black leading-tight">
               {slide.title || "اکانت‌ها و اشتراک‌های مطمئن — سریع و تمیز"}
@@ -568,10 +567,23 @@ const Index = () => {
     }, []);
   }, [sanityData?.socialMediaProducts]);
 
+  const tabbedProductSlugs = useMemo(() => {
+    if (!sanityData?.tabbedProducts?.length) {
+      return [];
+    }
+    return sanityData.tabbedProducts.reduce<string[]>((acc, item) => {
+      const slug = item.slug || item.handle;
+      if (slug) {
+        acc.push(slug);
+      }
+      return acc;
+    }, []);
+  }, [sanityData?.tabbedProducts]);
+
   const medusaSlugs = useMemo(() => {
-    const combined = [...bestSellerSlugs, ...socialProductSlugs];
+    const combined = [...bestSellerSlugs, ...socialProductSlugs, ...tabbedProductSlugs];
     return Array.from(new Set(combined));
-  }, [bestSellerSlugs, socialProductSlugs]);
+  }, [bestSellerSlugs, socialProductSlugs, tabbedProductSlugs]);
 
   useEffect(() => {
     if (!medusaSlugs.length) {
@@ -594,17 +606,17 @@ const Index = () => {
       }
     };
 
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      const idleId = (window as any).requestIdleCallback(loadPrices, { timeout: 1500 });
+    if (typeof globalThis.requestIdleCallback === "function") {
+      const idleId = globalThis.requestIdleCallback(loadPrices, { timeout: 1500 });
       return () => {
         cancelled = true;
-        if (typeof (window as any).cancelIdleCallback === "function") {
-          (window as any).cancelIdleCallback(idleId);
+        if (typeof globalThis.cancelIdleCallback === "function") {
+          globalThis.cancelIdleCallback(idleId);
         }
       };
     }
 
-    const timeoutId = window.setTimeout(loadPrices, 0);
+    const timeoutId = setTimeout(loadPrices, 0);
     return () => {
       cancelled = true;
       clearTimeout(timeoutId);
@@ -650,6 +662,7 @@ const Index = () => {
           {sanityData.tabbedProducts.length > 0 && (
             <TabbedProductGrid
               products={sanityData.tabbedProducts}
+              productPrices={medusaPrices}
               onAdd={handleAddToCart}
               onViewAll={() => {}}
             />
@@ -692,17 +705,6 @@ const Index = () => {
               onAdd={handleAddToCart}
               onViewAll={() => {}}
               rtl={isRTL}
-            />
-          )}
-
-          {/* Courses */}
-          {sanityData.courses.length > 0 && (
-            <CoursesCarousel
-              courses={sanityData.courses}
-              onAdd={handleAddToCart}
-              onView={() => {}}
-              onViewAll={() => {}}
-              className="mx-[10px]"
             />
           )}
 

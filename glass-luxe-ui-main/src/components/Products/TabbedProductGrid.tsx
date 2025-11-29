@@ -6,6 +6,8 @@ import { useDirection } from "@/contexts/DirectionContext";
 import { ProductCard } from "./ProductCard";
 import { Button } from "@/components/ui/button";
 import useEmblaCarousel from "embla-carousel-react";
+import type { ProductPrices } from "@/lib/medusa-prices";
+
 const springTransition = {
   type: "spring" as const,
   stiffness: 220,
@@ -17,9 +19,11 @@ interface Product {
   image: string;
   price: number;
   category: string;
+  slug?: string;
 }
 interface TabbedProductGridProps {
   products: Product[];
+  productPrices?: Record<string, ProductPrices>;
   onAdd: (id: string) => void;
   onViewAll: (category: string) => void;
   className?: string;
@@ -47,6 +51,7 @@ const categories = [{
 }];
 export function TabbedProductGrid({
   products,
+  productPrices,
   onAdd,
   onViewAll,
   className
@@ -105,9 +110,19 @@ export function TabbedProductGrid({
             opacity: 0
           }} transition={springTransition} className="overflow-hidden" ref={emblaRef}>
               <div className="flex gap-4 md:gap-5 py-[5px]">
-                {filteredProducts.map(product => <div key={product.id} className="flex-[0_0_75%] sm:flex-[0_0_45%] md:flex-[0_0_38%] lg:flex-[0_0_24%] min-w-0">
-                    <ProductCard id={product.id} title={product.title} image={product.image} price={product.price} onAdd={onAdd} />
-                  </div>)}
+                {filteredProducts.map(product => (
+                  <div key={product.id} className="flex-[0_0_75%] sm:flex-[0_0_45%] md:flex-[0_0_38%] lg:flex-[0_0_24%] min-w-0">
+                    <ProductCard 
+                      id={product.id} 
+                      title={product.title} 
+                      image={product.image} 
+                      price={product.price}
+                      slug={product.slug}
+                      medusaVariants={product.slug && productPrices ? productPrices[product.slug]?.variants : undefined}
+                      onAdd={onAdd} 
+                    />
+                  </div>
+                ))}
               </div>
             </motion.div>
           </AnimatePresence>

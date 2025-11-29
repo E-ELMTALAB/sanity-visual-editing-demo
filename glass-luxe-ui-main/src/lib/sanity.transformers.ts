@@ -386,6 +386,10 @@ export function transformProductDetail(product: any) {
 
 // Transform tabbed product (from Product document)
 export function transformTabbedProduct(product: any, category: string, index: number) {
+  const slug = typeof product?.slug === 'string' 
+    ? product.slug 
+    : product?.slug?.current || product?.handle || '';
+  
   return {
     id: product?._id || `tab-${category}-${index}`,
     title: product?.name || 'محصول',
@@ -394,6 +398,7 @@ export function transformTabbedProduct(product: any, category: string, index: nu
     price: 0, // Prices come from Medusa
     discountPct: undefined,
     category,
+    slug,
   }
 }
 
