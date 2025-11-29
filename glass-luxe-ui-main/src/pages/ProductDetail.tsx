@@ -533,12 +533,12 @@ const ProductDetail = () => {
         <main className="pt-[72px] pb-24 md:pb-10" dir={enforceRTL ? "rtl" : "ltr"}>
           <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8 space-y-6 py-6 min-w-0 my-[25px]">
             {/* Product Main Section */}
-            <SurfaceGlass className="rounded-2xl p-4 sm:p-6 md:p-8 min-w-0 overflow-hidden">
-              <div className="flex flex-col gap-6 md:gap-8 min-w-0 md:items-stretch md:flex-row-reverse">
+            <SurfaceGlass className="rounded-2xl p-4 sm:p-6 md:p-8 min-w-0">
+              <div className="flex flex-col md:flex-row-reverse gap-6 md:gap-8 min-w-0 md:items-start">
                 {/* Product Info - Sticky on Desktop */}
                 <div
                   ref={stickyRef}
-                  className="md:flex-1 md:sticky md:top-24 min-w-0 order-last md:order-none h-fit"
+                  className="w-full md:w-1/2 lg:w-[45%] md:sticky md:top-[100px] min-w-0 order-last md:order-none"
                   dir="rtl"
                   style={{
                     direction: "rtl",
@@ -546,7 +546,6 @@ const ProductDetail = () => {
                     unicodeBidi: "plaintext",
                     marginRight: 0,
                     paddingRight: 0,
-                    alignSelf: "flex-start",
                   }}
                 >
                   {/* Breadcrumb */}
@@ -655,7 +654,7 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Images */}
-                <div className="space-y-4 min-w-0 md:flex-1 order-first md:order-none">
+                <div className="w-full md:w-1/2 lg:w-[55%] space-y-4 min-w-0 order-first md:order-none">
                   <motion.div key={selectedImage} initial={{
                   opacity: 0
                 }} animate={{
