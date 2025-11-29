@@ -102,6 +102,10 @@ const extractHeadingsFromMarkdown = (content: string): Array<{ level: number; te
   return headings;
 };
 
+const resolveBadgeVariant = (badge?: ProductBadge) => {
+  return badge === "sale" || badge === "new" || badge === "hot" ? badge : "default";
+};
+
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -448,7 +452,8 @@ const ProductDetail = () => {
   }
   const forceRTL = isRTL;
   const enforceRTL = isRTL || forceRTL;
-  const infoTextStyle: CSSProperties | undefined = enforceRTL ? { direction: "rtl", textAlign: "right" } : undefined;
+  const heroInfoRTL = true;
+  const infoTextStyle: CSSProperties = { direction: "rtl", textAlign: "right" };
   const galleryImages = product.images.length > 0 ? product.images : (product.image ? [product.image] : []);
   const currentImage = galleryImages[selectedImage] || galleryImages[0] || "";
   const productJsonLd = {
@@ -509,38 +514,99 @@ const ProductDetail = () => {
           <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8 space-y-6 py-6 min-w-0 my-[25px]">
             {/* Product Main Section */}
             <SurfaceGlass className="rounded-2xl p-4 sm:p-6 md:p-8 min-w-0 overflow-hidden">
-              <div className="flex flex-col gap-6 md:gap-8 min-w-0 md:items-start md:flex-row">
+              <div className="flex flex-col gap-6 md:gap-8 min-w-0 md:items-start md:flex-row-reverse">
+                {/* Images */}
+                <div className="space-y-4 min-w-0 md:flex-1">
+                  <motion.div key={selectedImage} initial={{
+                  opacity: 0
+                }} animate={{
+                  opacity: 1
+                }} className="relative aspect-square rounded-2xl overflow-hidden glass w-full">
+                    <img src={currentImage} alt={isRTL ? product.titleFa : product.title} className="w-full h-full object-cover object-top" />
+                    {product.badge && <div className="absolute top-4 ltr:left-4 rtl:right-4">
+                        <Badge variant={resolveBadgeVariant(product.badge)}>
+                          {product.badge === "sale" && (isRTL ? "تخفیف" : "Sale")}
+                          {product.badge === "new" && (isRTL ? "جدید" : "New")}
+                          {product.badge === "hot" && (isRTL ? "داغ" : "Hot")}
+                        </Badge>
+                      </div>}
+                  </motion.div>
+
+                  {/* Variants Selection */}
+                  {((medusaVariants.length > 0 ? medusaVariants : product.variants) && (medusaVariants.length > 0 ? medusaVariants : product.variants).length > 0) && <div className="space-y-3 mt-4">
+                      <label className="text-sm font-medium text-foreground">
+                        {isRTL ? "انتخاب مدت زمان:" : "Select Duration:"}
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
+                        {(medusaVariants.length > 0 ? medusaVariants : product.variants).map((variant, idx) => {
+                          const variantId = medusaVariants.length > 0 ? variant.variant_id : variant.id;
+                          const variantName = medusaVariants.length > 0 ? variant.name : (isRTL ? variant.nameFa : variant.name);
+                          const variantPrice = medusaVariants.length > 0 ? variant.price : variant.price || 0;
+                          const variantInStock = medusaVariants.length > 0 ? true : variant.inStock !== false;
+
+                          return (
+                            <button
+                              key={variantId || idx}
+                              onClick={() => setSelectedVariant(variantId)}
+                              disabled={!variantInStock}
+                              className={cn("relative p-4 rounded-xl border-2 transition-all duration-200 min-w-0 overflow-hidden", "hover:scale-[1.02] active:scale-[0.98]", selectedVariant === variantId ? "border-primary bg-primary/10 shadow-lg shadow-primary/20" : "border-border/50 bg-surface-glass/30 hover:border-border", !variantInStock && "opacity-50 cursor-not-allowed hover:scale-100")}
+                            >
+                            <div className="flex flex-col items-start gap-2 min-w-0">
+                              <span className="font-semibold text-foreground text-sm line-clamp-2">
+                                  {variantName}
+                              </span>
+                              <div className="flex items-baseline gap-2 flex-wrap min-w-0">
+                                <span className="text-base sm:text-lg font-bold text-primary">
+                                    {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(variantPrice)} تومان
+                                </span>
+                              </div>
+                            </div>
+                              {selectedVariant === variantId && <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                                <Check className="w-4 h-4 text-primary-foreground" />
+                              </div>}
+                              {!variantInStock && <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-xl">
+                                <span className="text-sm font-medium text-muted-foreground">
+                                    {isRTL ? "ناموجود" : "Out of Stock"}
+                                </span>
+                              </div>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>}
+                </div>
+
                 {/* Product Info - Sticky on Desktop */}
                 <div
                   ref={stickyRef}
                   className={cn(
-                    "md:flex-1 md:sticky md:top-24 md:self-start space-y-4 md:space-y-6 min-w-0 order-last md:order-none",
-                    enforceRTL && "text-right"
+                    "md:flex-1 md:sticky md:top-24 md:self-start space-y-4 md:space-y-6 min-w-0",
+                    heroInfoRTL && "text-right"
                   )}
-                  dir={enforceRTL ? "rtl" : "ltr"}
+                  dir="rtl"
                   style={infoTextStyle}
                 >
                   {/* Breadcrumb */}
                   <nav
                     className={cn(
                       "mb-3 text-xs sm:text-sm text-muted-foreground flex items-center gap-2 flex-wrap min-w-0",
-                      (isRTL || forceRTL) && "justify-end"
+                      heroInfoRTL && "justify-end"
                     )}
                   >
                     <Link to="/" className="hover:text-foreground transition-colors whitespace-nowrap">
                       خانه
                     </Link>
-                    <ChevronRight className={cn("w-3 h-3 sm:w-4 sm:h-4 shrink-0", (isRTL || forceRTL) && "rotate-180")} />
+                    <ChevronRight className={cn("w-3 h-3 sm:w-4 sm:h-4 shrink-0", heroInfoRTL && "rotate-180")} />
                     <Link to="/products" className="hover:text-foreground transition-colors whitespace-nowrap">
                       محصولات
                     </Link>
-                    <ChevronRight className={cn("w-3 h-3 sm:w-4 sm:h-4 shrink-0", (isRTL || forceRTL) && "rotate-180")} />
-                    <span className="text-foreground line-clamp-1 min-w-0">{(isRTL || forceRTL) ? product.titleFa : product.title}</span>
+                    <ChevronRight className={cn("w-3 h-3 sm:w-4 sm:h-4 shrink-0", heroInfoRTL && "rotate-180")} />
+                    <span className="text-foreground line-clamp-1 min-w-0">{heroInfoRTL ? product.titleFa : product.title}</span>
                   </nav>
 
                   <div className="min-w-0">
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 break-words">
-                      {(isRTL || forceRTL) ? product.titleFa : product.title}
+                      {heroInfoRTL ? product.titleFa : product.title}
                     </h1>
                     
                     {/* Rating Summary */}
@@ -557,15 +623,15 @@ const ProductDetail = () => {
                     
                   </div>
 
-                  <div className={cn("space-y-2 min-w-0", (isRTL || forceRTL) && "text-right")}>
+                  <div className={cn("space-y-2 min-w-0", heroInfoRTL && "text-right")}>
                     <div className="overflow-x-auto">
                       <Price current={getCurrentPrice()} className="text-xl sm:text-2xl whitespace-nowrap" />
                     </div>
                   </div>
 
                   {/* Features */}
-                  <div className={cn("space-y-2", (isRTL || forceRTL) && "text-right")}>
-                    {((isRTL || forceRTL) ? product.featuresFa : product.features).map((feature, idx) => <div key={idx} className={cn("flex items-start gap-2 text-sm", (isRTL || forceRTL) && "flex-row-reverse text-right")}>
+                  <div className={cn("space-y-2", heroInfoRTL && "text-right")}>
+                    {(heroInfoRTL ? product.featuresFa : product.features).map((feature, idx) => <div key={idx} className={cn("flex items-start gap-2 text-sm", heroInfoRTL && "flex-row-reverse text-right")}>
                         <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
                         <span className="text-foreground/80">{feature}</span>
                       </div>)}
@@ -630,7 +696,7 @@ const ProductDetail = () => {
                 }} className="relative aspect-square rounded-2xl overflow-hidden glass w-full">
                     <img src={currentImage} alt={isRTL ? product.titleFa : product.title} className="w-full h-full object-cover object-top" />
                     {product.badge && <div className="absolute top-4 ltr:left-4 rtl:right-4">
-                        <Badge variant={product.badge}>
+                        <Badge variant={resolveBadgeVariant(product.badge)}>
                           {product.badge === "sale" && (isRTL ? "تخفیف" : "Sale")}
                           {product.badge === "new" && (isRTL ? "جدید" : "New")}
                           {product.badge === "hot" && (isRTL ? "داغ" : "Hot")}
