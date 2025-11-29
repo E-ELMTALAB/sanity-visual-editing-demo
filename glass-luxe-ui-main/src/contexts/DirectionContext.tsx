@@ -11,7 +11,7 @@ interface DirectionContextType {
 const DirectionContext = createContext<DirectionContextType | undefined>(undefined);
 
 export function DirectionProvider({ children }: { children: ReactNode }) {
-  const [direction, setDirection] = useState<Direction>("rtl");
+  const [direction, setDirection] = useState<Direction>("ltr");
 
   useEffect(() => {
     document.documentElement.setAttribute("dir", direction);
