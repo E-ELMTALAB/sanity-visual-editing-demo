@@ -65,7 +65,26 @@ export function TabbedProductGrid({
     direction: isRTL ? "rtl" : "ltr",
     slidesToScroll: 1
   });
+
+  // Debug logging
+  console.log('[TabbedProductGrid] 🎯 Render with:', {
+    totalProducts: products?.length || 0,
+    activeCategory,
+    hasPrices: !!productPrices && Object.keys(productPrices).length > 0,
+    priceKeys: productPrices ? Object.keys(productPrices) : []
+  });
+  
+  if (products?.length > 0) {
+    console.log('[TabbedProductGrid] 📦 All product categories:', [...new Set(products.map(p => p.category))]);
+    console.log('[TabbedProductGrid] 📦 Sample product:', products[0]);
+  }
+
   const filteredProducts = products.filter(p => p.category === activeCategory).slice(0, 8);
+  
+  console.log(`[TabbedProductGrid] 🔍 Filtered for "${activeCategory}":`, filteredProducts.length, 'products');
+  if (filteredProducts.length === 0 && products?.length > 0) {
+    console.log(`[TabbedProductGrid] ⚠️ No products match category "${activeCategory}". Available categories:`, [...new Set(products.map(p => p.category))]);
+  }
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
   }, [emblaApi]);

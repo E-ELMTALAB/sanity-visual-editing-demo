@@ -404,6 +404,9 @@ const Index = () => {
           sim: "sim-card",
         };
 
+        console.log('[HOMEPAGE] 🔄 Starting data fetch...');
+        console.log('[HOMEPAGE] Category map:', categoryMap);
+
         const [homeData, featuredProductsData, featuredCoursesData, featuredPostsData, tabbedProductGroups] = 
           await Promise.all([
             fetchFromSanity<any>(homePageQuery),
@@ -413,15 +416,28 @@ const Index = () => {
             Promise.all(
               Object.entries(categoryMap).map(async ([key, category]) => {
                 try {
+                  console.log(`[HOMEPAGE] 📦 Fetching products for tab "${key}" (Sanity category: "${category}")`);
                   const categoryProducts = await fetchFromSanity<any[]>(productsByCategoryQuery, { category });
-                  if (!categoryProducts?.length) return [];
-                  return categoryProducts.map((p: any, i: number) => transformers.transformTabbedProduct(p, key, i));
-                } catch {
+                  console.log(`[HOMEPAGE] 📦 Category "${key}" returned:`, categoryProducts?.length || 0, 'products');
+                  if (categoryProducts?.length) {
+                    console.log(`[HOMEPAGE] 📦 First product in "${key}":`, categoryProducts[0]);
+                  }
+                  if (!categoryProducts?.length) {
+                    console.log(`[HOMEPAGE] ⚠️ No products found for category "${key}" (Sanity: "${category}")`);
+                    return [];
+                  }
+                  const transformed = categoryProducts.map((p: any, i: number) => transformers.transformTabbedProduct(p, key, i));
+                  console.log(`[HOMEPAGE] ✅ Transformed ${transformed.length} products for "${key}":`, transformed);
+                  return transformed;
+                } catch (err) {
+                  console.error(`[HOMEPAGE] ❌ Error fetching category "${key}":`, err);
                   return [];
                 }
               }),
             ),
           ]);
+        
+        console.log('[HOMEPAGE] 📊 Raw tabbedProductGroups:', tabbedProductGroups);
 
         // Transform data
         const heroSlide = homeData?.heroSlides?.length 
@@ -466,7 +482,26 @@ const Index = () => {
           ? blogPostsSource.map((p: any, i: number) => transformers.transformBlogPost(p, i))
           : [];
 
-        const tabbedProducts = tabbedProductGroups?.flat() ?? [];
+        let tabbedProducts = tabbedProductGroups?.flat() ?? [];
+        console.log('[HOMEPAGE] 📊 Final flattened tabbedProducts:', tabbedProducts);
+        console.log('[HOMEPAGE] 📊 tabbedProducts count:', tabbedProducts.length);
+        
+        // Fallback: If no products found by category, use featured products and distribute across categories
+        if (tabbedProducts.length === 0 && featuredProductsData?.length > 0) {
+          console.log('[HOMEPAGE] ⚠️ No category products found, using fallback with featured products');
+          const categoryKeys = Object.keys(categoryMap);
+          tabbedProducts = featuredProductsData.map((p: any, i: number) => {
+            // Assign products to categories in round-robin fashion
+            const categoryKey = categoryKeys[i % categoryKeys.length];
+            return transformers.transformTabbedProduct(p, categoryKey, i);
+          });
+          console.log('[HOMEPAGE] 📊 Fallback tabbedProducts:', tabbedProducts);
+        }
+        
+        if (tabbedProducts.length > 0) {
+          console.log('[HOMEPAGE] 📊 Sample tabbed product:', tabbedProducts[0]);
+          console.log('[HOMEPAGE] 📊 Categories in tabbedProducts:', [...new Set(tabbedProducts.map((p: any) => p.category))]);
+        }
         
         const collectionsBanner = homeData?.collectionsBanner
           ? transformers.transformCollectionsBanner(homeData.collectionsBanner)
@@ -569,15 +604,18 @@ const Index = () => {
 
   const tabbedProductSlugs = useMemo(() => {
     if (!sanityData?.tabbedProducts?.length) {
+      console.log('[HOMEPAGE] 📊 No tabbed products for slug extraction');
       return [];
     }
-    return sanityData.tabbedProducts.reduce<string[]>((acc, item) => {
+    const slugs = sanityData.tabbedProducts.reduce<string[]>((acc, item) => {
       const slug = item.slug || item.handle;
       if (slug) {
         acc.push(slug);
       }
       return acc;
     }, []);
+    console.log('[HOMEPAGE] 📊 Extracted tabbedProductSlugs:', slugs);
+    return slugs;
   }, [sanityData?.tabbedProducts]);
 
   const medusaSlugs = useMemo(() => {
@@ -659,6 +697,19 @@ const Index = () => {
           )}
 
           {/* Tabbed Product Grid */}
+          {(() => {
+            console.log('[HOMEPAGE RENDER] 🎨 Checking tabbedProducts for render:', {
+              count: sanityData.tabbedProducts?.length || 0,
+              hasMedusaPrices: Object.keys(medusaPrices).length > 0,
+              medusaPriceCount: Object.keys(medusaPrices).length
+            });
+            if (sanityData.tabbedProducts?.length > 0) {
+              console.log('[HOMEPAGE RENDER] 🎨 Will render TabbedProductGrid with:', sanityData.tabbedProducts);
+            } else {
+              console.log('[HOMEPAGE RENDER] ⚠️ No tabbedProducts to render!');
+            }
+            return null;
+          })()}
           {sanityData.tabbedProducts.length > 0 && (
             <TabbedProductGrid
               products={sanityData.tabbedProducts}

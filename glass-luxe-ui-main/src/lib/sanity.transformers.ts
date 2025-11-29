@@ -390,10 +390,16 @@ export function transformTabbedProduct(product: any, category: string, index: nu
     ? product.slug 
     : product?.slug?.current || product?.handle || '';
   
+  // Try multiple image field names
+  const imageSource = product?.featuredImage || product?.image;
+  const imageUrl = imageSource ? getImageUrl(imageSource, 600) : '';
+  
+  console.log(`[transformTabbedProduct] Product "${product?.name}" - slug: "${slug}", image: "${imageUrl}", category: "${category}"`);
+  
   return {
     id: product?._id || `tab-${category}-${index}`,
     title: product?.name || 'محصول',
-    image: product?.featuredImage ? getImageUrl(product.featuredImage, 600) : '',
+    image: imageUrl,
     oldPrice: undefined, // Prices come from Medusa
     price: 0, // Prices come from Medusa
     discountPct: undefined,
