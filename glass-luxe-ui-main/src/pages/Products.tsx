@@ -68,7 +68,7 @@ export default function Products() {
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [productPrices, setProductPrices] = useState<Record<string, ProductPrices>>({});
-  const { addItem, setSingleItem, state: cartState } = useCart();
+  const { addItem, state: cartState } = useCart();
 
   useEffect(() => {
     const isConfigValid = validateSanityConfig();

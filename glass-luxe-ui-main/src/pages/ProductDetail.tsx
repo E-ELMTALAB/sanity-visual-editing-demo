@@ -121,6 +121,7 @@ const ProductDetail = () => {
   const [medusaVariants, setMedusaVariants] = useState<MedusaVariant[]>([]);
   const [pricesLoading, setPricesLoading] = useState(false);
   const [pricesError, setPricesError] = useState<string | null>(null);
+  const [relatedProductPrices, setRelatedProductPrices] = useState<Record<string, { variants: MedusaVariant[] }>>({});
   const { addItem, setSingleItem, state: cartState } = useCart();
   const stickyRef = useRef<HTMLDivElement>(null);
   const [tocHeadings, setTocHeadings] = useState<Array<{ level: number; text: string; id: string }>>([]);
@@ -241,6 +242,30 @@ const ProductDetail = () => {
       fetchPrices();
     }
   }, [product?.handle, slug, product]);
+
+  // Fetch prices for related products from Medusa
+  useEffect(() => {
+    const fetchRelatedPrices = async () => {
+      if (!product?.relatedProducts?.length) return;
+      
+      const slugs = product.relatedProducts
+        .map(p => p.slug)
+        .filter(Boolean) as string[];
+      
+      if (slugs.length === 0) return;
+      
+      try {
+        const prices = await fetchProductPrices(slugs);
+        setRelatedProductPrices(prices);
+      } catch (error) {
+        console.error('[PRODUCT-DETAIL] Related products price fetch error:', error);
+      }
+    };
+    
+    if (product?.relatedProducts?.length) {
+      fetchRelatedPrices();
+    }
+  }, [product?.relatedProducts]);
 
   const getLowestPricedMedusaVariantId = () => {
     if (!medusaVariants.length) return null;
@@ -786,7 +811,18 @@ const ProductDetail = () => {
             {relatedProducts.length > 0 && <section className="space-y-6">
                 <SectionHeader title="محصولات مرتبط" eyebrow="ممکن است دوست داشته باشید" />
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
-                  {relatedProducts.map(prod => <ProductCard key={prod.id} id={prod.id} title={prod.title} image={prod.image} price={prod.price} onAdd={() => handleAddToCart()} />)}
+                  {relatedProducts.map(prod => (
+                    <ProductCard 
+                      key={prod.id} 
+                      id={prod.id} 
+                      title={prod.title} 
+                      image={prod.image} 
+                      price={prod.price}
+                      slug={prod.slug}
+                      medusaVariants={prod.slug ? relatedProductPrices[prod.slug]?.variants : undefined}
+                      onAdd={() => handleAddToCart()} 
+                    />
+                  ))}
                 </div>
               </section>}
 

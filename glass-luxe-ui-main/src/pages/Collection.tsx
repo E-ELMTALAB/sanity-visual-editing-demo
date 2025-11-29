@@ -77,7 +77,7 @@ export default function Collection() {
     };
   }, [slug]);
 
-  // Fetch prices from Medusa for all products in the collection
+  // Fetch prices from Medusa for collection products
   useEffect(() => {
     const fetchAllPrices = async () => {
       if (!products || products.length === 0) return;
@@ -223,26 +223,25 @@ export default function Collection() {
             {/* Products Grid - matching homepage style */}
             <div className="max-w-sm sm:max-w-none mx-auto">
               <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5 lg:gap-6">
-                {products.map((product, index) => <motion.div key={product.id} initial={{
-                opacity: 0,
-                y: 20
-              }} animate={{
-                opacity: 1,
-                y: 0
-              }} transition={{
-                duration: 0.4,
-                delay: 0.1 * index
-              }} className="w-full max-w-[280px] mx-auto sm:max-w-none">
-                  <ProductCard
-                    id={product.id}
-                    title={product.title}
-                    image={product.image}
-                    price={product.price}
-                    slug={product.slug}
-                    medusaVariants={productPrices[product.slug]?.variants || []}
-                    onAdd={handleAddToCart}
-                  />
-                </motion.div>)}
+                {products.map((product, index) => (
+                  <motion.div 
+                    key={product.id} 
+                    initial={{ opacity: 0, y: 20 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    transition={{ duration: 0.4, delay: 0.1 * index }} 
+                    className="w-full max-w-[280px] mx-auto sm:max-w-none"
+                  >
+                    <ProductCard
+                      id={product.id}
+                      title={product.title}
+                      image={product.image}
+                      price={product.price}
+                      slug={product.slug}
+                      medusaVariants={product.slug ? productPrices[product.slug]?.variants : undefined}
+                      onAdd={handleAddToCart}
+                    />
+                  </motion.div>
+                ))}
               </div>
             </div>
 
