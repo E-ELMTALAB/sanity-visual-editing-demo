@@ -307,6 +307,24 @@ export function transformCollectionDetail(collection: any) {
 }
 
 export function transformProductDetail(product: any) {
+  // Debug logging
+  console.log('[transformProductDetail] Input product:', {
+    _id: product?._id,
+    name: product?.name,
+    slug: product?.slug,
+    hasImage: !!product?.image,
+    hasFeaturedImage: !!product?.featuredImage,
+    hasGallery: Array.isArray(product?.gallery) && product.gallery.length > 0,
+    galleryLength: product?.gallery?.length || 0,
+    price: product?.price,
+  });
+
+  // Priority: featuredImage > image > gallery first item
+  const primaryImageSource = product?.featuredImage || product?.image;
+  const primaryImageUrl = primaryImageSource ? getImageUrl(primaryImageSource, 1600) : '';
+  
+  console.log('[transformProductDetail] Primary image URL:', primaryImageUrl);
+
   const gallery =
     Array.isArray(product?.gallery) && product.gallery.length > 0
       ? product.gallery
@@ -316,20 +334,29 @@ export function transformProductDetail(product: any) {
             url: getImageUrl(image, 1600),
             alt: image?.alt || product?.name || 'Product image',
           }))
-      : product?.image
+      : primaryImageUrl
         ? [
             {
               _key: 'primary',
-              url: getImageUrl(product.image, 1600),
+              url: primaryImageUrl,
               alt: product?.name || 'Product image',
             },
           ]
         : []
 
-  const images = gallery.map((image: any) => image.url).filter(Boolean)
-  if (images.length === 0 && product?.image) {
-    images.push(getImageUrl(product.image, 1600))
+  // Build images array - prioritize primary image
+  const images: string[] = [];
+  if (primaryImageUrl) {
+    images.push(primaryImageUrl);
   }
+  // Add gallery images (avoiding duplicates)
+  gallery.forEach((img: any) => {
+    if (img.url && !images.includes(img.url)) {
+      images.push(img.url);
+    }
+  });
+  
+  console.log('[transformProductDetail] Final images array:', images);
 
   const variants = Array.isArray(product?.options)
     ? product.options.map((option: any, index: number) => ({

@@ -340,6 +340,10 @@ export const productBySlugQuery = `
     discountPercentage,
     inStock,
     image,
+    featuredImage{
+      ...,
+      asset->
+    },
     gallery[]{
       _key,
       asset->,
@@ -363,6 +367,10 @@ export const productBySlugQuery = `
       rating,
       reviewCount,
       image,
+      featuredImage{
+        ...,
+        asset->
+      },
       "slug": slug.current
     },
     relatedBlogs[]->{

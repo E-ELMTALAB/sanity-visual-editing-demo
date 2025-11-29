@@ -154,6 +154,18 @@ const ProductDetail = () => {
       try {
         setIsLoading(true);
         const result = await fetchFromSanity(productBySlugQuery, { slug });
+        
+        // Debug logging for chatgpt-plus
+        if (slug === 'chatgpt-plus') {
+          const rawResult = result as any;
+          console.log('[PRODUCT-DETAIL DEBUG] Raw Sanity result for chatgpt-plus:', rawResult);
+          console.log('[PRODUCT-DETAIL DEBUG] Image field:', rawResult?.image);
+          console.log('[PRODUCT-DETAIL DEBUG] FeaturedImage field:', rawResult?.featuredImage);
+          console.log('[PRODUCT-DETAIL DEBUG] Gallery field:', rawResult?.gallery);
+          console.log('[PRODUCT-DETAIL DEBUG] Price field:', rawResult?.price);
+          console.log('[PRODUCT-DETAIL DEBUG] Options field:', rawResult?.options);
+        }
+        
         if (!isMounted) return;
 
         if (!result) {
@@ -163,6 +175,16 @@ const ProductDetail = () => {
         }
 
         const transformed = transformProductDetail(result);
+        
+        // Debug logging for chatgpt-plus
+        if (slug === 'chatgpt-plus') {
+          console.log('[PRODUCT-DETAIL DEBUG] Transformed product:', transformed);
+          console.log('[PRODUCT-DETAIL DEBUG] Transformed image:', transformed.image);
+          console.log('[PRODUCT-DETAIL DEBUG] Transformed images array:', transformed.images);
+          console.log('[PRODUCT-DETAIL DEBUG] Transformed price:', transformed.price);
+          console.log('[PRODUCT-DETAIL DEBUG] Transformed variants:', transformed.variants);
+        }
+        
         setProduct(transformed);
         setSelectedVariant(null);
         setSelectedImage(0);
@@ -296,23 +318,49 @@ const ProductDetail = () => {
 
   // Get current price based on selected variant
   const getCurrentPrice = () => {
-    // Priority: Medusa variants > Product variants > Product price
+    console.log('[PRODUCT-DETAIL] getCurrentPrice called:', {
+      slug,
+      medusaVariantsCount: medusaVariants.length,
+      selectedVariant,
+      pricesLoading,
+      productPrice: product?.price,
+    });
+    
+    // Priority 1: Medusa variant price (if variant selected)
     if (medusaVariants.length > 0 && selectedVariant) {
       const variant = medusaVariants.find(v => v.variant_id === selectedVariant);
       if (variant?.price) {
-        console.log('[PRODUCT-DETAIL] getCurrentPrice - Using Medusa variant price:', variant.price, 'for variant:', variant.name);
+        console.log('[PRODUCT-DETAIL] ✅ getCurrentPrice - Using Medusa variant price:', variant.price, 'for variant:', variant.name);
         return variant.price;
       }
     }
-    // Fallback to product price if Medusa prices not loaded
+    
+    // Priority 2: Lowest Medusa variant price (if no variant selected but Medusa has data)
+    if (medusaVariants.length > 0) {
+      const lowestPrice = Math.min(...medusaVariants.filter(v => v.price > 0).map(v => v.price));
+      if (lowestPrice && lowestPrice !== Infinity) {
+        console.log('[PRODUCT-DETAIL] ✅ getCurrentPrice - Using lowest Medusa price:', lowestPrice);
+        return lowestPrice;
+      }
+    }
+    
+    // Priority 3: Sanity variant price (fallback)
     if (product?.variants && selectedVariant) {
       const variant = product.variants.find(v => v.id === selectedVariant);
       if (variant?.price) {
-        console.log('[PRODUCT-DETAIL] getCurrentPrice - Using product variant price:', variant.price, 'for variant:', variant.name);
+        console.log('[PRODUCT-DETAIL] ⚠️ getCurrentPrice - Using Sanity variant price:', variant.price, 'for variant:', variant.name);
         return variant.price;
       }
     }
-    console.log('[PRODUCT-DETAIL] getCurrentPrice - Using default product price:', product?.price || 0);
+    
+    // Priority 4: If prices are still loading, show 0 (will update when loaded)
+    if (pricesLoading) {
+      console.log('[PRODUCT-DETAIL] ⏳ getCurrentPrice - Prices loading, showing 0');
+      return 0;
+    }
+    
+    // Priority 5: Sanity product price (last resort fallback)
+    console.log('[PRODUCT-DETAIL] ⚠️ getCurrentPrice - Using Sanity product price fallback:', product?.price || 0);
     return product?.price || 0;
   };
 
