@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type CSSProperties } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
@@ -447,6 +447,8 @@ const ProductDetail = () => {
     );
   }
   const forceRTL = isRTL;
+  const enforceRTL = isRTL || forceRTL;
+  const infoTextStyle: CSSProperties | undefined = enforceRTL ? { direction: "rtl", textAlign: "right" } : undefined;
   const galleryImages = product.images.length > 0 ? product.images : (product.image ? [product.image] : []);
   const currentImage = galleryImages[selectedImage] || galleryImages[0] || "";
   const productJsonLd = {
@@ -503,24 +505,20 @@ const ProductDetail = () => {
       <div className="min-h-screen">
         <Header onSearch={query => console.log("Search:", query)} active="Products" />
 
-        <main className="pt-[72px] pb-24 md:pb-10" dir={(isRTL || forceRTL) ? "rtl" : "ltr"}>
+        <main className="pt-[72px] pb-24 md:pb-10" dir={enforceRTL ? "rtl" : "ltr"}>
           <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8 space-y-6 py-6 min-w-0 my-[25px]">
             {/* Product Main Section */}
             <SurfaceGlass className="rounded-2xl p-4 sm:p-6 md:p-8 min-w-0 overflow-hidden">
-              <div
-                className={cn(
-                  "flex flex-col gap-6 md:gap-8 min-w-0 md:items-start",
-                  (isRTL || forceRTL) ? "md:flex-row-reverse" : "md:flex-row"
-                )}
-              >
+              <div className="flex flex-col gap-6 md:gap-8 min-w-0 md:items-start md:flex-row">
                 {/* Product Info - Sticky on Desktop */}
                 <div
                   ref={stickyRef}
                   className={cn(
-                    "md:flex-1 md:sticky md:top-24 md:self-start space-y-4 md:space-y-6 min-w-0",
-                    (isRTL || forceRTL) && "text-right"
+                    "md:flex-1 md:sticky md:top-24 md:self-start space-y-4 md:space-y-6 min-w-0 order-last md:order-none",
+                    enforceRTL && "text-right"
                   )}
-                  dir={(isRTL || forceRTL) ? "rtl" : "ltr"}
+                  dir={enforceRTL ? "rtl" : "ltr"}
+                  style={infoTextStyle}
                 >
                   {/* Breadcrumb */}
                   <nav
@@ -624,7 +622,7 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Images */}
-                <div className="space-y-4 min-w-0 md:flex-1">
+                <div className="space-y-4 min-w-0 md:flex-1 order-first md:order-none">
                   <motion.div key={selectedImage} initial={{
                   opacity: 0
                 }} animate={{

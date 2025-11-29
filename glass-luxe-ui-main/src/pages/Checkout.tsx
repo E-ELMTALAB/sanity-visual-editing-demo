@@ -322,17 +322,6 @@ export default function Checkout() {
                     <Price current={total} />
                   </div>
                 </div>
-
-                {/* Guarantee Badge */}
-                <div className="glass border border-white/20 rounded-lg p-4 flex items-center gap-3">
-                  <ShieldCheck className="w-6 h-6 text-primary shrink-0" />
-                  <div>
-                    <p className="font-semibold text-sm">تضمین تعویض حساب</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      ۷ روز ضمانت بازگشت وجه
-                    </p>
-                  </div>
-                </div>
               </SurfaceGlass>
             </div>
           </div>
