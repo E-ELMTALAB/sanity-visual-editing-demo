@@ -509,22 +509,24 @@ const ProductDetail = () => {
           <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8 space-y-6 py-6 min-w-0 my-[25px]">
             {/* Product Main Section */}
             <SurfaceGlass className="rounded-2xl p-4 sm:p-6 md:p-8 min-w-0 overflow-hidden">
-              <div className="flex flex-col gap-6 md:gap-8 min-w-0 md:items-start md:flex-row">
+              <div className="flex flex-col gap-6 md:gap-8 min-w-0 md:items-start md:flex-row-reverse">
                 {/* Product Info - Sticky on Desktop */}
                 <div
                   ref={stickyRef}
-                  className="md:flex-1 md:sticky md:top-24 md:self-start space-y-4 md:space-y-6 min-w-0 order-last md:order-none"
+                  className="md:flex-1 md:sticky md:top-24 md:self-start min-w-0 order-last md:order-none"
                   dir="rtl"
                   style={{
                     direction: "rtl",
                     textAlign: "right",
                     unicodeBidi: "plaintext",
+                    marginRight: 0,
+                    paddingRight: 0,
                   }}
                 >
                   {/* Breadcrumb */}
                   <nav
                     className="mb-3 text-xs sm:text-sm text-muted-foreground flex items-center gap-2 flex-wrap min-w-0 flex-row-reverse justify-start"
-                    style={{ direction: "rtl" }}
+                    style={{ direction: "rtl", marginRight: 0, paddingRight: 0 }}
                   >
                     <Link to="/" className="hover:text-foreground transition-colors whitespace-nowrap">
                       خانه
@@ -537,8 +539,8 @@ const ProductDetail = () => {
                     <span className="text-foreground line-clamp-1 min-w-0">{product.titleFa || product.title}</span>
                   </nav>
 
-                  <div className="min-w-0" style={{ textAlign: "right" }}>
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 break-words" style={{ textAlign: "right" }}>
+                  <div className="min-w-0" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 break-words" style={{ textAlign: "right", marginRight: 0 }}>
                       {product.titleFa || product.title}
                     </h1>
                     
@@ -556,29 +558,29 @@ const ProductDetail = () => {
                     
                   </div>
 
-                  <div className="space-y-2 min-w-0" style={{ textAlign: "right" }}>
-                    <div className="overflow-x-auto" style={{ textAlign: "right" }}>
+                  <div className="min-w-0" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
+                    <div className="overflow-x-auto" style={{ textAlign: "right", marginRight: 0 }}>
                       <Price current={getCurrentPrice()} className="text-xl sm:text-2xl whitespace-nowrap" />
                     </div>
                   </div>
 
                   {/* Features */}
-                  <div className="space-y-2" style={{ textAlign: "right" }}>
+                  <div style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
                     {(product.featuresFa || product.features).map((feature, idx) => (
                       <div 
                         key={idx} 
-                        className="flex items-start gap-2 text-sm flex-row-reverse"
-                        style={{ direction: "rtl", textAlign: "right" }}
+                        className="flex items-start gap-2 text-sm flex-row-reverse mb-2"
+                        style={{ direction: "rtl", textAlign: "right", marginRight: 0, paddingRight: 0 }}
                       >
                         <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
-                        <span className="text-foreground/80">{feature}</span>
+                        <span className="text-foreground/80" style={{ marginRight: 0 }}>{feature}</span>
                       </div>
                     ))}
                   </div>
 
                   {/* Quantity & Actions */}
-                  <div className="space-y-4 min-w-0" style={{ textAlign: "right" }}>
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 md:mt-[100px] flex-row-reverse justify-start">
+                  <div className="min-w-0" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 md:mt-[100px] flex-row-reverse justify-start" style={{ marginRight: 0 }}>
                       <div className="flex items-center glass rounded-lg shrink-0">
                         <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 sm:px-4 py-2 hover:bg-surface-glass transition-colors">
                           -
