@@ -696,20 +696,7 @@ const Index = () => {
             />
           )}
 
-          {/* Tabbed Product Grid */}
-          {(() => {
-            console.log('[HOMEPAGE RENDER] 🎨 Checking tabbedProducts for render:', {
-              count: sanityData.tabbedProducts?.length || 0,
-              hasMedusaPrices: Object.keys(medusaPrices).length > 0,
-              medusaPriceCount: Object.keys(medusaPrices).length
-            });
-            if (sanityData.tabbedProducts?.length > 0) {
-              console.log('[HOMEPAGE RENDER] 🎨 Will render TabbedProductGrid with:', sanityData.tabbedProducts);
-            } else {
-              console.log('[HOMEPAGE RENDER] ⚠️ No tabbedProducts to render!');
-            }
-            return null;
-          })()}
+          {/* Tabbed Product Grid - Commented out for now
           {sanityData.tabbedProducts.length > 0 && (
             <TabbedProductGrid
               products={sanityData.tabbedProducts}
@@ -718,6 +705,7 @@ const Index = () => {
               onViewAll={() => {}}
             />
           )}
+          */}
 
           {/* Social Media Products */}
           {sanityData.socialMediaProducts.length > 0 && (
