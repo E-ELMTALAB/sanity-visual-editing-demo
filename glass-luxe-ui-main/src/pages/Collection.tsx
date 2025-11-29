@@ -11,6 +11,7 @@ import { fetchFromSanity } from "@/lib/sanity.client.light";
 import { validateSanityConfig } from "@/lib/sanity.config";
 import { collectionBySlugQuery } from "@/lib/sanity.queries";
 import { transformCollectionDetail, transformFaqItem } from "@/lib/sanity.transformers";
+import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
 
 export default function Collection() {
   const {
@@ -24,6 +25,7 @@ export default function Collection() {
   const [faqItems, setFaqItems] = useState<{ q: string; a: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [productPrices, setProductPrices] = useState<Record<string, ProductPrices>>({});
 
   useEffect(() => {
     const isConfigValid = validateSanityConfig();
@@ -74,6 +76,28 @@ export default function Collection() {
       isMounted = false;
     };
   }, [slug]);
+
+  // Fetch prices from Medusa for all products in the collection
+  useEffect(() => {
+    const fetchAllPrices = async () => {
+      if (!products || products.length === 0) return;
+      
+      const slugs = products
+        .map((p: any) => p.slug || p.handle)
+        .filter(Boolean);
+      
+      if (slugs.length === 0) return;
+      
+      try {
+        const prices = await fetchProductPrices(slugs);
+        setProductPrices(prices);
+      } catch (error) {
+        console.error('[COLLECTION] Failed to fetch prices from Medusa:', error);
+      }
+    };
+    
+    fetchAllPrices();
+  }, [products]);
 
   const collection = collectionData;
   const handleAddToCart = (id: string) => {
@@ -215,6 +239,7 @@ export default function Collection() {
                     image={product.image}
                     price={product.price}
                     slug={product.slug}
+                    medusaVariants={productPrices[product.slug]?.variants || []}
                     onAdd={handleAddToCart}
                   />
                 </motion.div>)}
