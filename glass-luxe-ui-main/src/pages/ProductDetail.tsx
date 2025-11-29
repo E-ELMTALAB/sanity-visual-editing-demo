@@ -509,7 +509,7 @@ const ProductDetail = () => {
             <SurfaceGlass className="rounded-2xl p-4 sm:p-6 md:p-8 min-w-0 overflow-hidden">
               <div className="grid md:grid-cols-2 gap-6 md:gap-8 min-w-0">
                 {/* Images */}
-                <div className="space-y-4 min-w-0">
+                <div className={cn("space-y-4 min-w-0", (isRTL || forceRTL) && "md:order-2")}>
                   <motion.div key={selectedImage} initial={{
                   opacity: 0
                 }} animate={{
@@ -524,7 +524,7 @@ const ProductDetail = () => {
                         </Badge>
                       </div>}
                   </motion.div>
-                  
+
                   {/* Variants Selection */}
                   {((medusaVariants.length > 0 ? medusaVariants : product.variants) && (medusaVariants.length > 0 ? medusaVariants : product.variants).length > 0) && <div className="space-y-3 mt-4">
                       <label className="text-sm font-medium text-foreground">
@@ -536,12 +536,12 @@ const ProductDetail = () => {
                           const variantName = medusaVariants.length > 0 ? variant.name : (isRTL ? variant.nameFa : variant.name);
                           const variantPrice = medusaVariants.length > 0 ? variant.price : variant.price || 0;
                           const variantInStock = medusaVariants.length > 0 ? true : variant.inStock !== false;
-                          
+
                           return (
-                            <button 
-                              key={variantId || idx} 
-                              onClick={() => setSelectedVariant(variantId)} 
-                              disabled={!variantInStock} 
+                            <button
+                              key={variantId || idx}
+                              onClick={() => setSelectedVariant(variantId)}
+                              disabled={!variantInStock}
                               className={cn("relative p-4 rounded-xl border-2 transition-all duration-200 min-w-0 overflow-hidden", "hover:scale-[1.02] active:scale-[0.98]", selectedVariant === variantId ? "border-primary bg-primary/10 shadow-lg shadow-primary/20" : "border-border/50 bg-surface-glass/30 hover:border-border", !variantInStock && "opacity-50 cursor-not-allowed hover:scale-100")}
                             >
                             <div className="flex flex-col items-start gap-2 min-w-0">
@@ -570,7 +570,7 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Product Info - Sticky on Desktop */}
-                <div ref={stickyRef} className="md:sticky md:top-24 md:self-start space-y-4 md:space-y-6 min-w-0">
+                <div ref={stickyRef} className={cn("md:sticky md:top-24 md:self-start space-y-4 md:space-y-6 min-w-0", (isRTL || forceRTL) && "md:order-1")}>
                   {/* Breadcrumb */}
                   <nav className="mb-3 text-xs sm:text-sm text-muted-foreground flex items-center gap-2 flex-wrap min-w-0">
                     <Link to="/" className="hover:text-foreground transition-colors whitespace-nowrap">
@@ -676,7 +676,7 @@ const ProductDetail = () => {
             <SurfaceGlass className="rounded-2xl p-6 md:p-8">
               <div className="grid md:grid-cols-[280px_1fr] gap-8">
                 {/* TOC - Sticky on Desktop */}
-                <div className="md:sticky md:top-24 md:self-start">
+                <div className={cn("md:sticky md:top-24 md:self-start", (isRTL || forceRTL) && "md:order-2")}>
                   {/* Mobile Collapsible TOC */}
                   <div className="md:hidden">
                     <button onClick={() => setTocOpen(!tocOpen)} className="w-full flex items-center justify-between p-4 glass rounded-lg hover:bg-surface-glass/50 transition-colors">
@@ -743,7 +743,7 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Description Content */}
-                <div className={cn("max-w-none", (isRTL || forceRTL) && "text-right")} dir={(isRTL || forceRTL) ? "rtl" : "ltr"}>
+                <div className={cn("max-w-none", (isRTL || forceRTL) && "md:order-1 text-right")} dir={(isRTL || forceRTL) ? "rtl" : "ltr"}>
                   {/* Render Markdown Content */}
                   <EnhancedMarkdownRenderer content={(isRTL || forceRTL) ? product.descriptionFa : product.description} />
 
