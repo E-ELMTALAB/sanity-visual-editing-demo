@@ -565,15 +565,15 @@ const ProductDetail = () => {
                   </div>
 
                   {/* Features */}
-                  <div style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
+                  <div style={{ textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}>
                     {(product.featuresFa || product.features).map((feature, idx) => (
                       <div 
                         key={idx} 
-                        className="flex items-start gap-2 text-sm flex-row-reverse mb-2"
-                        style={{ direction: "rtl", textAlign: "right", marginRight: 0, paddingRight: 0 }}
+                        className="flex items-start gap-2 text-sm mb-2 justify-end"
+                        style={{ direction: "rtl", textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}
                       >
-                        <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
                         <span className="text-foreground/80" style={{ marginRight: 0 }}>{feature}</span>
+                        <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
                       </div>
                     ))}
                   </div>
