@@ -160,9 +160,9 @@ export default function Checkout() {
 
       <main className="flex-1 pt-32 pb-10">
         <div className="max-w-[1100px] mx-auto px-4 md:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-[1fr_360px] gap-6">
-            {/* Left Column - Contact & Payment Form */}
-            <div className="space-y-6">
+          <div className="flex flex-col gap-6 lg:flex-row-reverse lg:gap-8 lg:items-start">
+            {/* Contact & Payment Form */}
+            <div className="flex-1 space-y-6">
               {/* Contact Information */}
               <SurfaceGlass className="p-6 md:p-8">
                 <div className="flex items-center gap-3 mb-6">
@@ -243,8 +243,8 @@ export default function Checkout() {
               </SurfaceGlass>
             </div>
 
-            {/* Right Column - Order Summary */}
-            <div className="lg:sticky lg:top-6 h-fit space-y-4">
+            {/* Order Summary */}
+            <div className="lg:w-[360px] lg:shrink-0 lg:sticky lg:top-6 h-fit space-y-4">
               <SurfaceGlass className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold">خلاصه سفارش</h3>

@@ -507,11 +507,28 @@ const ProductDetail = () => {
           <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8 space-y-6 py-6 min-w-0 my-[25px]">
             {/* Product Main Section */}
             <SurfaceGlass className="rounded-2xl p-4 sm:p-6 md:p-8 min-w-0 overflow-hidden">
-              <div className={cn("grid md:grid-cols-2 gap-6 md:gap-8 min-w-0", (isRTL || forceRTL) && "md:grid-flow-col-dense")}>
+              <div
+                className={cn(
+                  "flex flex-col gap-6 md:gap-8 min-w-0 md:items-start",
+                  (isRTL || forceRTL) ? "md:flex-row-reverse" : "md:flex-row"
+                )}
+              >
                 {/* Product Info - Sticky on Desktop */}
-                <div ref={stickyRef} className="md:sticky md:top-24 md:self-start space-y-4 md:space-y-6 min-w-0 order-2 md:order-1" dir={(isRTL || forceRTL) ? "rtl" : "ltr"}>
+                <div
+                  ref={stickyRef}
+                  className={cn(
+                    "md:flex-1 md:sticky md:top-24 md:self-start space-y-4 md:space-y-6 min-w-0",
+                    (isRTL || forceRTL) && "text-right"
+                  )}
+                  dir={(isRTL || forceRTL) ? "rtl" : "ltr"}
+                >
                   {/* Breadcrumb */}
-                  <nav className="mb-3 text-xs sm:text-sm text-muted-foreground flex items-center gap-2 flex-wrap min-w-0">
+                  <nav
+                    className={cn(
+                      "mb-3 text-xs sm:text-sm text-muted-foreground flex items-center gap-2 flex-wrap min-w-0",
+                      (isRTL || forceRTL) && "justify-end"
+                    )}
+                  >
                     <Link to="/" className="hover:text-foreground transition-colors whitespace-nowrap">
                       خانه
                     </Link>
@@ -542,15 +559,15 @@ const ProductDetail = () => {
                     
                   </div>
 
-                  <div className="space-y-2 min-w-0">
+                  <div className={cn("space-y-2 min-w-0", (isRTL || forceRTL) && "text-right")}>
                     <div className="overflow-x-auto">
                       <Price current={getCurrentPrice()} className="text-xl sm:text-2xl whitespace-nowrap" />
                     </div>
                   </div>
 
                   {/* Features */}
-                  <div className="space-y-2">
-                    {((isRTL || forceRTL) ? product.featuresFa : product.features).map((feature, idx) => <div key={idx} className="flex items-start gap-2 text-sm">
+                  <div className={cn("space-y-2", (isRTL || forceRTL) && "text-right")}>
+                    {((isRTL || forceRTL) ? product.featuresFa : product.features).map((feature, idx) => <div key={idx} className={cn("flex items-start gap-2 text-sm", (isRTL || forceRTL) && "flex-row-reverse text-right")}>
                         <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
                         <span className="text-foreground/80">{feature}</span>
                       </div>)}
@@ -607,7 +624,7 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Images */}
-                <div className="space-y-4 min-w-0 order-1 md:order-2">
+                <div className="space-y-4 min-w-0 md:flex-1">
                   <motion.div key={selectedImage} initial={{
                   opacity: 0
                 }} animate={{
