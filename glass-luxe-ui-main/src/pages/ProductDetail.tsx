@@ -569,7 +569,7 @@ const ProductDetail = () => {
                     {(product.featuresFa || product.features).map((feature, idx) => (
                       <div 
                         key={idx} 
-                        className="flex items-start gap-2 text-sm mb-2 justify-end"
+                        className="flex items-start gap-2 text-sm mb-2 justify-end flex-row-reverse"
                         style={{ direction: "rtl", textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}
                       >
                         <span className="text-foreground/80" style={{ marginRight: 0 }}>{feature}</span>
