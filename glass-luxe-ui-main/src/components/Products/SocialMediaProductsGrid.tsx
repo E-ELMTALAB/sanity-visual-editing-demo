@@ -47,8 +47,8 @@ export function SocialMediaProductsGrid({
   const scrollNext = useCallback(() => {
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
-  return <section className={cn("py-8 sm:py-10 lg:py-12 px-4 md:px-6 lg:px-8 bg-transparent", className)}>
-      <div className="max-w-[1100px] mx-auto">
+  return <section className={cn("py-8 sm:py-10 lg:py-12 px-6 lg:px-[100px] bg-transparent", className)}>
+      <div className="max-w-[1400px] mx-auto">
         {/* Section Title */}
         <motion.div initial={{
         opacity: 0,

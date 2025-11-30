@@ -221,15 +221,15 @@ export default function Collection() {
             </div>
 
             {/* Products Grid - matching homepage style */}
-            <div className="max-w-sm sm:max-w-none mx-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5 lg:gap-6">
+            <div className="max-w-[1400px] w-full mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
                 {products.map((product, index) => (
                   <motion.div 
                     key={product.id} 
                     initial={{ opacity: 0, y: 20 }} 
                     animate={{ opacity: 1, y: 0 }} 
                     transition={{ duration: 0.4, delay: 0.1 * index }} 
-                    className="w-full max-w-[280px] mx-auto sm:max-w-none"
+                    className="w-full"
                   >
                     <ProductCard
                       id={product.id}

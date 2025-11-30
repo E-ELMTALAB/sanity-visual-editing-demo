@@ -57,8 +57,8 @@ export function BestSellers({
   const scrollNext = useCallback(() => {
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
-  return <section className={cn("relative py-8 sm:py-10 lg:py-12 px-2 md:px-3 lg:px-4 bg-transparent", className)}>
-      <div className="max-w-[1100px] mx-auto">
+  return <section className={cn("relative py-8 sm:py-10 lg:py-12 px-6 lg:px-[100px] bg-transparent", className)}>
+      <div className="max-w-[1400px] mx-auto">
         {/* Section Header */}
         <motion.div initial={{
         opacity: 0,

@@ -50,7 +50,7 @@ export function SpecialOffers({ products, onAdd, onViewAll, className }: Special
               {products.slice(0, 3).map((product, index) => (
                 <div
                   key={product.id}
-                  className="flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] lg:flex-[0_0_calc(33.333%-21.33px)] min-w-0 animate-fade-in"
+                  className="flex-[0_0_75%] sm:flex-[0_0_45%] md:flex-[0_0_38%] lg:flex-[0_0_24%] min-w-0 animate-fade-in"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <ProductCard

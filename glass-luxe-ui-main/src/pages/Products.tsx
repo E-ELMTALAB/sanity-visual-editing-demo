@@ -375,7 +375,7 @@ export default function Products() {
                     className="mb-8"
                   />
 
-                  <div className="max-w-sm sm:max-w-none mx-auto">
+                  <div className="max-w-[1400px] w-full mx-auto">
                     {fetchError && !isLoading && (
                       <p className="text-center text-sm text-destructive mb-6">
                         {fetchError}
@@ -400,7 +400,7 @@ export default function Products() {
                           ...springTransition,
                           delay: 0.3 + index * 0.05,
                         }}
-                        className="w-full max-w-[280px] mx-auto sm:max-w-none"
+                        className="w-full"
                       >
                         <ProductCard
                           id={product.id}
@@ -410,7 +410,6 @@ export default function Products() {
                           price={product.price}
                           medusaVariants={productPrices[product.slug]?.variants || []}
                           onAdd={handleAddToCart}
-                          className="[&>div:first-child]:aspect-[4/5] sm:[&>div:first-child]:aspect-[3/4]"
                         />
                       </motion.div>
                     ))}
