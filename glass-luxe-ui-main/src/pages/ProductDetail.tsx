@@ -364,6 +364,27 @@ const ProductDetail = () => {
     return product?.price || 0;
   };
 
+  const hasMedusaPricing = medusaVariants.some(
+    (variant) => typeof variant.price === "number" && variant.price > 0
+  );
+
+  const getOriginalPrice = () => {
+    if (!product) return 0;
+
+    if (product.variants && selectedVariant) {
+      const sanityVariant = product.variants.find((variant) => variant.id === selectedVariant);
+      if (typeof sanityVariant?.price === "number" && sanityVariant.price > 0) {
+        return sanityVariant.price;
+      }
+    }
+
+    if (typeof product.originalPrice === "number" && product.originalPrice > 0) {
+      return product.originalPrice;
+    }
+
+    return typeof product.price === "number" ? product.price : 0;
+  };
+
   const addProductToCart = () => {
     console.log('[PRODUCT-DETAIL] ========== ADD TO CART STARTED ==========');
     console.log('[PRODUCT-DETAIL] Product ID:', product?.id);
@@ -519,6 +540,14 @@ const ProductDetail = () => {
       </div>
     );
   }
+
+  const currentPrice = getCurrentPrice();
+  const originalPrice = getOriginalPrice();
+  const shouldShowOriginalPrice =
+    hasMedusaPricing &&
+    originalPrice > 0 &&
+    originalPrice !== currentPrice;
+  const structuredDataPrice = currentPrice > 0 ? currentPrice : (product.price || 0);
   // Always force RTL for this Persian product page
   const forceRTL = true;
   const enforceRTL = true;
@@ -538,7 +567,7 @@ const ProductDetail = () => {
       "@type": "Offer",
       url: window.location.href,
       priceCurrency: "IRR",
-      price: product.price,
+      price: structuredDataPrice,
       availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
     }
   };
@@ -633,7 +662,11 @@ const ProductDetail = () => {
 
                   <div className="min-w-0" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
                     <div className="overflow-x-auto" style={{ textAlign: "right", marginRight: 0 }}>
-                      <Price current={getCurrentPrice()} className="text-xl sm:text-2xl whitespace-nowrap" />
+                      <Price
+                        current={currentPrice}
+                        old={shouldShowOriginalPrice ? originalPrice : undefined}
+                        className="text-xl sm:text-2xl whitespace-nowrap"
+                      />
                     </div>
                   </div>
 
@@ -891,7 +924,11 @@ const ProductDetail = () => {
                   قیمت:
                 </span>
                 <div className="min-w-0">
-                  <Price current={getCurrentPrice()} className="text-base sm:text-lg" />
+                  <Price
+                    current={currentPrice}
+                    old={shouldShowOriginalPrice ? originalPrice : undefined}
+                    className="text-base sm:text-lg"
+                  />
                 </div>
               </div>
               <Button size="default" onClick={handleBuyNow} className="flex-1 min-w-0 h-11 text-sm sm:text-base">

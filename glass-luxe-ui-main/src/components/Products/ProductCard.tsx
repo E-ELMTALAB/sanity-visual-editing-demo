@@ -36,10 +36,23 @@ export const ProductCard = React.memo(function ProductCard({
 }: ProductCardProps) {
   const navigate = useNavigate();
 
-  // Get the lowest price from Medusa variants, or fallback to the provided price
-  const lowestPrice = medusaVariants && medusaVariants.length > 0
-    ? Math.min(...medusaVariants.map(v => v.price))
-    : price;
+  // Extract valid Medusa prices and determine the lowest one for display
+  const medusaPrices = (medusaVariants ?? [])
+    .map((variant) => variant.price)
+    .filter((value): value is number => typeof value === "number" && value > 0);
+
+  const medusaLowestPrice = medusaPrices.length > 0
+    ? Math.min(...medusaPrices)
+    : undefined;
+
+  const displayPrice = typeof medusaLowestPrice === "number" ? medusaLowestPrice : price;
+  const shouldShowOriginalPrice =
+    typeof medusaLowestPrice === "number" &&
+    price > 0 &&
+    price !== medusaLowestPrice;
+  const showRangeLabel = medusaPrices.length > 1;
+
+  const formatPrice = (value: number) => value.toLocaleString("fa-IR");
 
   const handleCardClick = () => {
     if (slug) {
@@ -79,17 +92,25 @@ export const ProductCard = React.memo(function ProductCard({
         </h3>
 
         <div className="mt-3 flex items-center justify-between gap-3">
-          <div className="flex items-baseline gap-2">
-            <span className="text-[17px] md:text-[18px] font-bold text-white/95">
-              {medusaVariants && medusaVariants.length > 1 ? (
-                <>
-                  <span className="text-xs md:text-sm text-white/80 mr-1">قیمت از</span>
-                  {lowestPrice.toLocaleString('fa-IR')}
-                </>
-              ) : (
-                lowestPrice.toLocaleString('fa-IR')
-              )} تومان
-            </span>
+          <div className="flex flex-col gap-0.5">
+            {shouldShowOriginalPrice && (
+              <span className="text-[12px] text-white/70 line-through">
+                {formatPrice(price)} تومان
+              </span>
+            )}
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              {showRangeLabel && (
+                <span className="text-xs md:text-sm text-white/80">
+                  قیمت از
+                </span>
+              )}
+              <span className="text-[17px] md:text-[18px] font-bold text-white/95">
+                {formatPrice(displayPrice)}
+              </span>
+              <span className="text-[11px] md:text-xs text-white/70">
+                تومان
+              </span>
+            </div>
           </div>
           <button
             onClick={handleCardClick}
