@@ -72,7 +72,7 @@ const SOCIAL_STYLE: Record<
 
 export default function TestimonialsRow() {
   return (
-    <section dir="rtl" className="w-full max-w-6xl mx-auto mt-8 mb-16 sm:mb-20">
+    <section dir="rtl" className="w-full max-w-6xl mx-auto mt-8 mb-16 px-5 sm:mb-20 sm:px-0">
       <div className="flex flex-wrap justify-center gap-5">
         {TESTIMONIALS.map((testimonial) => (
           <article

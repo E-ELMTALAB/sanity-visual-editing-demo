@@ -40,13 +40,13 @@ const ICONS: Record<TrustBadge["icon"], (props: SVGProps<SVGSVGElement>) => JSX.
 
 export default function TrustBadges() {
   return (
-    <section dir="rtl" className="mt-8 w-full">
-      <div className="flex flex-row-reverse flex-wrap items-center justify-end gap-3 sm:gap-4">
+    <section dir="rtl" className="mt-8 w-full px-0">
+      <div className="mx-auto flex w-full max-w-sm flex-row-reverse flex-wrap items-center justify-center gap-3 sm:max-w-none sm:justify-end sm:gap-4">
         {BADGES.map((badge) => {
           const Icon = ICONS[badge.icon];
 
           return (
-            <article key={badge.label} className="w-full sm:w-auto">
+            <article key={badge.label} className="mx-auto w-full max-w-xs sm:mx-0 sm:w-auto sm:max-w-none">
               <div className="group relative flex w-full flex-row-reverse items-center justify-between gap-4 rounded-full border border-[rgba(148,163,184,0.5)] bg-[linear-gradient(135deg,rgba(15,23,42,0.92),rgba(15,23,42,0.7))] px-4 py-2 shadow-[0_16px_32px_rgba(15,23,42,0.85)] backdrop-blur-[18px] saturate-150 before:absolute before:-right-2 before:top-0 before:h-12 before:w-12 before:rounded-full before:bg-[radial-gradient(circle,rgba(56,189,248,0.65),rgba(56,189,248,0))] before:opacity-80 before:blur-md before:content-['']">
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[conic-gradient(at_top_left,#6366f1,#22d3ee)] text-white shadow-[0_10px_20px_rgba(99,102,241,0.4)]">
                   <Icon className="h-5 w-5" />
