@@ -158,7 +158,7 @@ function StaticHero() {
       />
 
       {/* Content - Fixed dimensions to prevent CLS */}
-      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-28 pb-16 lg:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-8 min-h-[70vh]">
           <div 
             className="text-white text-center lg:text-right flex flex-col justify-center items-center lg:items-start"
@@ -218,7 +218,7 @@ function DynamicHero({ slide }: { slide: any }) {
         style={{ background: "radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%)" }} 
       />
 
-      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-28 pb-16 lg:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-8 min-h-[70vh]">
           <div 
             className="text-white text-center lg:text-right flex flex-col justify-center items-center lg:items-start"
