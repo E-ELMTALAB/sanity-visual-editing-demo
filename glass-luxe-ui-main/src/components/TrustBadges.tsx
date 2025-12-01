@@ -41,7 +41,7 @@ const ICONS: Record<TrustBadge["icon"], (props: SVGProps<SVGSVGElement>) => JSX.
 export default function TrustBadges() {
   return (
     <section dir="rtl" className="mt-8 w-full">
-      <div className="flex flex-wrap items-center justify-end gap-3 sm:gap-4">
+      <div className="flex flex-row-reverse flex-wrap items-center justify-end gap-3 sm:gap-4">
         {BADGES.map((badge) => {
           const Icon = ICONS[badge.icon];
 
