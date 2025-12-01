@@ -1,6 +1,7 @@
 import { useState, lazy, Suspense, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, Award, Shield, CheckCircle, RefreshCw, Wifi, Headset } from "lucide-react";
+import { Users, Award, Shield, CheckCircle } from "lucide-react";
+import TrustBadges from "@/components/TrustBadges";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { Header } from "@/components/Header";
 import { useDirection } from "@/contexts/DirectionContext";
@@ -109,24 +110,6 @@ const HERO_TITLE = "خرید اکانت ChatGPT";
 const HERO_SUBTITLE =
   "اکانت‌های قانونی ChatGPT با تحویل آنی، اتصال پایدار و پشتیبانی واقعی برای تجربه‌ای بدون دغدغه.";
 
-const HERO_TRUST_SIGNALS = [
-  {
-    title: "ضمانت تعویض فوری",
-    description: "اکانت جدید در چند دقیقه تحویل داده می‌شود، بدون هیچ هزینه اضافه.",
-    icon: RefreshCw,
-  },
-  {
-    title: "اتصال پایدار بدون VPN",
-    description: "اتصال مستقیم با زیرساخت اختصاصی برای دسترسی بدون قطعی.",
-    icon: Wifi,
-  },
-  {
-    title: "پشتیبانی واقعی ۲۴/۷",
-    description: "تیم تخصصی همیشه در کنار شماست تا سریع مشکل را حل کند.",
-    icon: Headset,
-  },
-] as const;
-
 // Type for Sanity data
 interface SanityData {
   heroSlide: any;
@@ -189,7 +172,7 @@ function StaticHero() {
             <p className="mt-4 max-w-xl text-white/90 text-base md:text-lg leading-relaxed whitespace-pre-line">
               {HERO_SUBTITLE}
             </p>
-            <HeroTrustBadges />
+            <TrustBadges />
           </div>
           <div className="hidden lg:block" />
         </div>
@@ -249,38 +232,12 @@ function DynamicHero({ slide }: { slide: any }) {
             <p className="mt-4 max-w-xl text-white/90 text-base md:text-lg leading-relaxed whitespace-pre-line">
               {HERO_SUBTITLE}
             </p>
-            <HeroTrustBadges />
+            <TrustBadges />
           </div>
           <div className="hidden lg:block" />
         </div>
       </div>
     </section>
-  );
-}
-
-function HeroTrustBadges() {
-  return (
-    <div className="mt-10 w-full">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {HERO_TRUST_SIGNALS.map(({ title, description, icon: Icon }) => (
-          <div
-            key={title}
-            className="group relative overflow-hidden rounded-3xl border border-white/15 bg-white/10 p-5 text-right shadow-lg backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:bg-white/15"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 opacity-0 transition-opacity duration-300 pointer-events-none group-hover:opacity-100" />
-            <div className="flex items-center gap-4 text-white/90">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1E67C6] to-[#8B5CF6] shadow-lg shadow-[#1E67C6]/30">
-                <Icon className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="font-semibold text-white">{title}</p>
-                <p className="text-sm text-white/70 leading-relaxed">{description}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }
 
