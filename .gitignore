@@ -2,7 +2,7 @@
 
 # dependencies
 /node_modules
-/studio/node_modules
+/apps/*/node_modules
 /.pnp
 .pnp.js
 
@@ -11,11 +11,13 @@
 
 # next.js
 /.next/
+/apps/studio/.next/
 /out/
+/apps/studio/out/
 
 # production
 /build
-/studio/dist
+/apps/web/dist
 
 # misc
 .DS_Store
@@ -43,4 +45,4 @@ yarn-error.log*
 
 # Env files created by scripts for working locally
 .env
-studio/.env.development
+apps/studio/.env.development

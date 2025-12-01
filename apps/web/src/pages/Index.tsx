@@ -105,6 +105,12 @@ const fallbackSeoContent = `
 و تمام — در کمتر از ۱ دقیقه وارد دنیای ChatGPT Pro می‌شوید.
 `;
 
+const HERO_HEADLINE = "خرید اکانت ChatGPT";
+const HERO_SUBTITLE = `اکانت‌های قانونی ChatGPT با
+✅ تعویض رایگان در صورت مسدود شدن
+✅ اتصال پایدار بدون VPN
+✅ پشتیبانی واقعی ۲۴ ساعته در تلگرام`;
+
 // Type for Sanity data
 interface SanityData {
   heroSlide: any;
@@ -162,10 +168,10 @@ function StaticHero() {
             بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
             </span>
             <h1 className="mt-4 text-5xl sm:text-5xl md:text-6xl font-black leading-tight">
-              خرید اکانت ChatGPT
+              {HERO_HEADLINE}
             </h1>
-            <p className="mt-4 max-w-xl text-white/85 text-sm md:text-base lg:text-lg leading-relaxed">
-              سریع‌ترین روش برای خرید اشتراک ChatGPT در ایران. اکانت خود را از شریف جی‌پی‌تی فوراً و اورجینال بگیرید
+            <p className="mt-4 max-w-xl text-white/85 text-sm md:text-base lg:text-lg leading-relaxed whitespace-pre-line">
+              {HERO_SUBTITLE}
             </p>
             <div className="mt-8">
               <a 
@@ -188,6 +194,8 @@ function StaticHero() {
 // Dynamic hero that updates when Sanity data loads
 function DynamicHero({ slide }: { slide: any }) {
   if (!slide?.image) return null;
+  const heroTitle = slide?.title?.trim() ? slide.title : HERO_HEADLINE;
+  const heroSubtitle = slide?.subtitle?.trim() ? slide.subtitle : HERO_SUBTITLE;
   
   return (
     <section 
@@ -231,10 +239,10 @@ function DynamicHero({ slide }: { slide: any }) {
               بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
             </span>
             <h1 className="mt-4 text-5xl sm:text-5xl md:text-6xl font-black leading-tight">
-              {slide.title || "اکانت‌ها و اشتراک‌های مطمئن — سریع و تمیز"}
+              {heroTitle}
             </h1>
-            <p className="mt-4 max-w-xl text-white/85 text-sm md:text-base lg:text-lg leading-relaxed">
-              {slide.subtitle || "خرید امن با پشتیبانی ۲۴/۷ و تعویض حساب تضمینی برای سرویس‌های هوش مصنوعی، سوشیال مدیا و آموزشی."}
+            <p className="mt-4 max-w-xl text-white/85 text-sm md:text-base lg:text-lg leading-relaxed whitespace-pre-line">
+              {heroSubtitle}
             </p>
             <div className="mt-8">
               <a 
