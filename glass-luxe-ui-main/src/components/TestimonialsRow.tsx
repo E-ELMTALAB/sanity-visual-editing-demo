@@ -2,7 +2,7 @@ type SocialPlatform = "telegram" | "instagram" | "x";
 
 type Testimonial = {
   name: string;
-  handle: string;
+  subtitle: string;
   quote: string;
   socials: SocialPlatform[];
 };
@@ -10,52 +10,61 @@ type Testimonial = {
 const TESTIMONIALS: Testimonial[] = [
   {
     name: "@mahdi_ai",
-    handle: "کاربر قدیمی از ۱۴۰۱",
-    quote: "«سریع‌ترین تحویل اکانتی که تا حالا تجربه کردم؛ کمتر از دو دقیقه.»",
+    subtitle: "کاربر قدیمی از ۱۴۰۱",
+    quote: "از وقتی اکانت‌هام رو از شریف‌جی‌پی‌تی می‌گیرم، حتی یک لحظه قطعی نداشتم.",
     socials: ["telegram", "instagram"],
   },
   {
     name: "@sahar.codes",
-    handle: "برنامه‌نویس فرانت‌اند",
-    quote: "«پشتیبانی‌شون واقعاً ۲۴ ساعته‌ست؛ نصف شب اکانتم مشکل داشت، همون موقع عوضش کردن.»",
-    socials: ["telegram", "x"],
+    subtitle: "برنامه‌نویس فرانت‌اند",
+    quote: "پشتیبانی ۲۴/۷شون واقعاً حرفه‌ایه؛ هر سوالی داشتم توی چند دقیقه جواب دادن.",
+    socials: ["instagram", "x"],
   },
   {
     name: "@startup_team",
-    handle: "تیم استارتاپی ۸ نفره",
-    quote: "«برای تیم‌مون چندین اکانت گرفتیم؛ بدون VPN و بدون دردسر وصل می‌شن.»",
-    socials: ["telegram"],
+    subtitle: "تیم استارتاپی ۸ نفره",
+    quote: "برای کل تیم پلن گرفتیم؛ هزینه‌ها مدیریت شد و دسترسی پایدار موند.",
+    socials: ["telegram", "x"],
   },
-] as const;
+];
 
-const SOCIAL_ICON: Record<
+const SOCIAL_STYLE: Record<
   SocialPlatform,
-  {
-    className: string;
-    icon: JSX.Element;
-  }
+  { gradient: string; icon: JSX.Element; label: string }
 > = {
   telegram: {
-    className: "bg-gradient-to-br from-sky-400 to-sky-600",
+    gradient: "bg-gradient-to-br from-sky-400 to-sky-500 text-white",
+    label: "تلگرام",
     icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5" fill="currentColor">
-        <path d="M9.78 13.83 9.6 17.2a.8.8 0 0 0 1.3.62l1.74-1.44 3.6 2.64c.74.54 1.8.14 2.02-.77l2.74-11.04c.24-.97-.72-1.78-1.62-1.38L3.5 9.89a.84.84 0 0 0 .03 1.55l4.06 1.48 9.4-5.67-7.2 6.58a.8.8 0 0 0-.01 1.2Z" />
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5">
+        <path
+          fill="currentColor"
+          d="M20.43 3.55 2.69 10.43c-1.19.48-1.18 2.14.02 2.6l4.6 1.79 1.8 6.02a1.32 1.32 0 0 0 2.07.7l2.68-2.06 4.6 3.36c.98.72 2.37.18 2.63-1l3.07-14.1c.28-1.28-.96-2.35-2.33-1.98Z"
+        />
       </svg>
     ),
   },
   instagram: {
-    className: "bg-gradient-to-br from-orange-400 via-pink-500 to-fuchsia-500",
+    gradient: "bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600 text-white",
+    label: "اینستاگرام",
     icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5" fill="currentColor">
-        <path d="M7 3C4.24 3 2 5.24 2 8v8c0 2.76 2.24 5 5 5h10c2.76 0 5-2.24 5-5V8c0-2.76-2.24-5-5-5H7Zm0 2h10c1.66 0 3 1.34 3 3v8c0 1.66-1.34 3-3 3H7c-1.66 0-3-1.34-3-3V8c0-1.66 1.34-3 3-3Zm9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm-5 1.5A4.5 4.5 0 1 0 15.5 14 4.5 4.5 0 0 0 11 7.5Zm0 2A2.5 2.5 0 1 1 8.5 12 2.5 2.5 0 0 1 11 9.5Z" />
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5">
+        <path
+          fill="currentColor"
+          d="M12 7.3A4.7 4.7 0 1 0 16.7 12 4.7 4.7 0 0 0 12 7.3Zm0 7.7A3 3 0 1 1 15 12a3 3 0 0 1-3 3Zm5-7.9a1.1 1.1 0 1 0-1.1-1.1 1.1 1.1 0 0 0 1.1 1.1ZM12 3.4c-2.5 0-2.8 0-3.8.05a6.6 6.6 0 0 0-2.2.42 4.7 4.7 0 0 0-2.7 2.7 6.6 6.6 0 0 0-.42 2.2C2.8 9.7 2.8 10 2.8 12s0 2.3.06 3.2a6.6 6.6 0 0 0 .42 2.2 4.7 4.7 0 0 0 2.7 2.7 6.6 6.6 0 0 0 2.2.42c.9.05 1.3.05 3.8.05s2.9 0 3.8-.05a6.6 6.6 0 0 0 2.2-.42 4.7 4.7 0 0 0 2.7-2.7 6.6 6.6 0 0 0 .42-2.2c.05-.9.05-1.3.05-3.8s0-2.9-.05-3.8a6.6 6.6 0 0 0-.42-2.2 4.7 4.7 0 0 0-2.7-2.7 6.6 6.6 0 0 0-2.2-.42C14.9 3.4 14.5 3.4 12 3.4Z"
+        />
       </svg>
     ),
   },
   x: {
-    className: "bg-gradient-to-br from-slate-900 to-black",
+    gradient: "bg-gradient-to-br from-slate-900 to-black text-white",
+    label: "ایکس",
     icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5" fill="currentColor">
-        <path d="M4.5 3h4.2l3.18 4.38L15.9 3h3.6l-5.52 6.24L20.25 21H16.1l-3.54-5.58L8.4 21H4.8l6.06-6.86L4.5 3Zm2.4 1.8 9.18 13.38h1.32L8.28 4.8H6.9Z" />
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5">
+        <path
+          fill="currentColor"
+          d="M20.3 3h-3.2l-4 4.7L11 5H3l6.8 9.1L3.5 21h3.2l4.4-4.9 2.4 3.2H21l-7-9.3L20.3 3Zm-11 2.2 9.4 12.6H15L5.5 5.2h3.8Z"
+        />
       </svg>
     ),
   },
@@ -63,34 +72,43 @@ const SOCIAL_ICON: Record<
 
 export default function TestimonialsRow() {
   return (
-    <section dir="rtl" className="mt-6 mb-6 w-full px-4 sm:px-0">
-      <div className="mx-auto flex max-w-[980px] justify-end">
-        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <section dir="rtl" className="relative -mt-10 z-20 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-screen-xl mx-auto">
+        <div className="-mx-3 flex snap-x snap-mandatory flex-row-reverse gap-4 overflow-x-auto px-3 pb-4">
           {TESTIMONIALS.map((testimonial) => (
             <article
               key={testimonial.name}
-              className="relative flex min-w-[260px] max-w-[320px] snap-start flex-col gap-2.5 rounded-3xl border border-slate-500/70 bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-950/95 px-4 py-3 text-right text-white shadow-[0_22px_48px_rgba(15,23,42,0.95)] backdrop-blur-xl backdrop-saturate-150 before:absolute before:inset-0 before:-z-10 before:rounded-3xl before:bg-gradient-to-br before:from-sky-500/25 before:to-transparent"
+              className="min-w-[260px] max-w-[320px] shrink-0 rounded-3xl border border-slate-500/60 bg-slate-900/80 px-4 py-3 shadow-2xl backdrop-blur-xl transition-all duration-300 snap-start"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 85% 10%, rgba(14,165,233,0.35), transparent 60%)",
+              }}
             >
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 shadow-[0_14px_32px_rgba(15,23,42,0.95)]" />
-                <div className="flex flex-col gap-0.5 text-xs">
-                  <span className="font-medium text-slate-50">{testimonial.name}</span>
-                  <span className="text-[11px] text-slate-400">{testimonial.handle}</span>
+                <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 shadow-lg shadow-indigo-500/40" />
+                <div className="flex flex-col text-xs leading-tight">
+                  <span className="font-bold text-slate-50">{testimonial.name}</span>
+                  <span className="text-[11px] text-slate-400">{testimonial.subtitle}</span>
                 </div>
               </div>
-              <p className="text-[12px] leading-relaxed text-slate-200">{testimonial.quote}</p>
-              <div className="mt-1 flex items-center gap-2">
-                {testimonial.socials.map((platform) => {
-                  const { className, icon } = SOCIAL_ICON[platform];
-                  return (
-                    <span
-                      key={`${testimonial.name}-${platform}`}
-                      className={`flex h-7 w-7 items-center justify-center rounded-full border border-slate-400/70 text-slate-50 shadow-[0_8px_18px_rgba(15,23,42,0.9)] ${className}`}
-                    >
-                      {icon}
-                    </span>
-                  );
-                })}
+              <p className="text-[12px] leading-relaxed text-slate-200">
+                {testimonial.quote}
+              </p>
+              <div className="mt-1 flex items-center justify-start gap-2">
+                <div className="inline-flex items-center gap-1.5">
+                  {testimonial.socials.map((platform) => {
+                    const social = SOCIAL_STYLE[platform];
+                    return (
+                      <span
+                        key={`${testimonial.name}-${platform}`}
+                        aria-label={social.label}
+                        className={`flex h-7 w-7 items-center justify-center rounded-full border border-slate-400/70 shadow-lg shadow-slate-950/60 ${social.gradient}`}
+                      >
+                        {social.icon}
+                      </span>
+                    );
+                  })}
+                </div>
               </div>
             </article>
           ))}
