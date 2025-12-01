@@ -1,6 +1,7 @@
 import { useState, lazy, Suspense, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, Award, Shield, CheckCircle } from "lucide-react";
+import TestimonialsRow from "@/components/TestimonialsRow";
 import TrustBadges from "@/components/TrustBadges";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { Header } from "@/components/Header";
@@ -172,6 +173,7 @@ function StaticHero() {
             <p className="mt-4 max-w-xl text-white/90 text-base md:text-lg leading-relaxed whitespace-pre-line">
               {HERO_SUBTITLE}
             </p>
+            <TestimonialsRow />
             <TrustBadges />
           </div>
           <div className="hidden lg:block" />
@@ -232,6 +234,7 @@ function DynamicHero({ slide }: { slide: any }) {
             <p className="mt-4 max-w-xl text-white/90 text-base md:text-lg leading-relaxed whitespace-pre-line">
               {HERO_SUBTITLE}
             </p>
+            <TestimonialsRow />
             <TrustBadges />
           </div>
           <div className="hidden lg:block" />
