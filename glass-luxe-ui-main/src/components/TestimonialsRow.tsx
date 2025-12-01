@@ -72,47 +72,45 @@ const SOCIAL_STYLE: Record<
 
 export default function TestimonialsRow() {
   return (
-    <section dir="rtl" className="relative -mt-10 z-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-screen-xl mx-auto">
-        <div className="-mx-3 flex snap-x snap-mandatory flex-row-reverse gap-4 overflow-x-auto px-3 pb-4">
-          {TESTIMONIALS.map((testimonial) => (
-            <article
-              key={testimonial.name}
-              className="min-w-[260px] max-w-[320px] shrink-0 rounded-3xl border border-slate-500/60 bg-slate-900/80 px-4 py-3 shadow-2xl backdrop-blur-xl transition-all duration-300 snap-start"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle at 85% 10%, rgba(14,165,233,0.35), transparent 60%)",
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 shadow-lg shadow-indigo-500/40" />
-                <div className="flex flex-col text-xs leading-tight">
-                  <span className="font-bold text-slate-50">{testimonial.name}</span>
-                  <span className="text-[11px] text-slate-400">{testimonial.subtitle}</span>
-                </div>
+    <section dir="rtl" className="w-full max-w-6xl mx-auto mt-8">
+      <div className="flex flex-wrap justify-center gap-4">
+        {TESTIMONIALS.map((testimonial) => (
+          <article
+            key={testimonial.name}
+            className="flex-1 min-w-[260px] max-w-sm rounded-3xl border border-slate-500/60 bg-slate-900/80 px-4 py-3 shadow-2xl backdrop-blur-xl transition-all duration-300"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 85% 10%, rgba(14,165,233,0.35), transparent 60%)",
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 shadow-lg shadow-indigo-500/40" />
+              <div className="flex flex-col text-xs leading-tight">
+                <span className="font-bold text-slate-50">{testimonial.name}</span>
+                <span className="text-[11px] text-slate-400">{testimonial.subtitle}</span>
               </div>
-              <p className="text-[12px] leading-relaxed text-slate-200">
-                {testimonial.quote}
-              </p>
-              <div className="mt-1 flex items-center justify-start gap-2">
-                <div className="inline-flex items-center gap-1.5">
-                  {testimonial.socials.map((platform) => {
-                    const social = SOCIAL_STYLE[platform];
-                    return (
-                      <span
-                        key={`${testimonial.name}-${platform}`}
-                        aria-label={social.label}
-                        className={`flex h-7 w-7 items-center justify-center rounded-full border border-slate-400/70 shadow-lg shadow-slate-950/60 ${social.gradient}`}
-                      >
-                        {social.icon}
-                      </span>
-                    );
-                  })}
-                </div>
+            </div>
+            <p className="text-[12px] leading-relaxed text-slate-200">
+              {testimonial.quote}
+            </p>
+            <div className="mt-1 flex items-center justify-start gap-2">
+              <div className="inline-flex items-center gap-1.5">
+                {testimonial.socials.map((platform) => {
+                  const social = SOCIAL_STYLE[platform];
+                  return (
+                    <span
+                      key={`${testimonial.name}-${platform}`}
+                      aria-label={social.label}
+                      className={`flex h-7 w-7 items-center justify-center rounded-full border border-slate-400/70 shadow-lg shadow-slate-950/60 ${social.gradient}`}
+                    >
+                      {social.icon}
+                    </span>
+                  );
+                })}
               </div>
-            </article>
-          ))}
-        </div>
+            </div>
+          </article>
+        ))}
       </div>
     </section>
   );
