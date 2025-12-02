@@ -165,8 +165,8 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
     console.log(`[STORE/PROMOTIONS] ✅ Active promotions: ${activePromotions.length}`);
 
-    // Helper function to find products matching promotion rules
-    const findProductsForPromotion = async (promo: any): Promise<{ product_ids: string[], product_handles: string[] }> => {
+     // Helper function to find products matching promotion rules
+     const findProductsForPromotion = async (promo: any): Promise<{ product_ids: string[], product_handles: string[], is_site_wide: boolean }> => {
       const productIds: string[] = [];
       const productHandles: string[] = [];
 
