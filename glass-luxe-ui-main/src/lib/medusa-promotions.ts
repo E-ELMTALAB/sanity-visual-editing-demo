@@ -378,21 +378,34 @@ export function getBestPromotionForProduct(
   
   const applicablePromotions = getPromotionsForProduct(productSlug, productId, promotions);
   
-  if (applicablePromotions.length === 0) return null;
+  if (applicablePromotions.length === 0) {
+    console.log(`[PROMOTIONS] No applicable promotions for product ${productSlug} (ID: ${productId})`);
+    return null;
+  }
+
+  console.log(`[PROMOTIONS] Found ${applicablePromotions.length} applicable promotion(s) for product ${productSlug}`);
 
   // Calculate discount for each promotion and find the best one
   let bestPromo: ProductPromotionInfo | null = null;
 
   for (const promo of applicablePromotions) {
-    if (!promo.application_method) continue;
+    if (!promo.application_method) {
+      console.log(`[PROMOTIONS] Promotion ${promo.id} has no application_method, skipping`);
+      continue;
+    }
     
     const discountedPrice = calculateDiscountedPrice(originalPrice, promo);
     const discountAmount = originalPrice - discountedPrice;
     
     // Skip if no actual discount
-    if (discountAmount <= 0) continue;
+    if (discountAmount <= 0) {
+      console.log(`[PROMOTIONS] Promotion ${promo.id} results in no discount, skipping`);
+      continue;
+    }
     
     const discountPercentage = Math.round((discountAmount / originalPrice) * 100);
+
+    console.log(`[PROMOTIONS] Promotion ${promo.id}: ${discountPercentage}% discount (${originalPrice} -> ${discountedPrice})`);
 
     if (!bestPromo || discountAmount > bestPromo.discountAmount) {
       bestPromo = {
@@ -404,6 +417,10 @@ export function getBestPromotionForProduct(
         endsAt: promo.campaign?.ends_at,
       };
     }
+  }
+
+  if (bestPromo) {
+    console.log(`[PROMOTIONS] ✅ Best promotion for ${productSlug}: ${bestPromo.discountPercentage}% discount, ends at ${bestPromo.endsAt}`);
   }
 
   return bestPromo;

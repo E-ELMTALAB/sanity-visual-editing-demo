@@ -67,30 +67,37 @@ export const ProductCard = React.memo(function ProductCard({
       ? Math.min(...medusaPrices)
       : undefined;
 
-    // Determine display price
-    const displayPrice = typeof medusaLowestPrice === "number" ? medusaLowestPrice : price;
-    
     // Determine original price (for strikethrough)
     let originalPrice: number | undefined;
     let discountPercentage: number | undefined;
     let promotionEndsAt: string | undefined;
+    let displayPrice: number;
 
-    // Priority 1: Direct promotion prop
+    // Priority 1: Direct promotion prop (from promotion context)
     if (promotion) {
       originalPrice = promotion.originalPrice;
       discountPercentage = promotion.discountPercentage;
       promotionEndsAt = promotion.endsAt;
+      // Use the discounted price from promotion
+      displayPrice = promotion.discountedPrice;
     }
     // Priority 2: Variant-level promotion from Medusa
     else if (variantWithPromo) {
       originalPrice = variantWithPromo.original_price;
       discountPercentage = variantWithPromo.discount_percentage;
       promotionEndsAt = variantWithPromo.promotion_ends_at;
+      // Use the discounted price from variant
+      displayPrice = variantWithPromo.price;
     }
     // Priority 3: Compare Sanity price with Medusa price
     else if (typeof medusaLowestPrice === "number" && price > 0 && price !== medusaLowestPrice && price > medusaLowestPrice) {
       originalPrice = price;
       discountPercentage = Math.round(((price - medusaLowestPrice) / price) * 100);
+      displayPrice = medusaLowestPrice;
+    }
+    // No promotion - use lowest available price
+    else {
+      displayPrice = typeof medusaLowestPrice === "number" ? medusaLowestPrice : price;
     }
 
     const hasPromotion = !!originalPrice && originalPrice > displayPrice;
@@ -155,7 +162,7 @@ export const ProductCard = React.memo(function ProductCard({
         </h3>
 
         {/* Countdown Timer for time-limited promotions */}
-        {pricingInfo.promotionEndsAt && (
+        {pricingInfo.hasPromotion && pricingInfo.promotionEndsAt && (
           <div className="mt-2">
             <CompactCountdownTimer endsAt={pricingInfo.promotionEndsAt} />
           </div>
@@ -163,9 +170,9 @@ export const ProductCard = React.memo(function ProductCard({
 
         <div className="mt-3 flex items-center justify-between gap-3">
           <div className="flex flex-col gap-0.5">
-            {/* Original price with strikethrough */}
+            {/* Original price with red strikethrough */}
             {pricingInfo.hasPromotion && pricingInfo.originalPrice && (
-              <span className="text-[12px] text-white/60 line-through">
+              <span className="text-[12px] text-red-400/80 line-through">
                 {formatPrice(pricingInfo.originalPrice)} تومان
               </span>
             )}
