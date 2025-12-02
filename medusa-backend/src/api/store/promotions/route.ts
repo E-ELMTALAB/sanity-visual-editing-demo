@@ -102,20 +102,43 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
          promotions = await Promise.all(
            promoList.map(async (promo: any) => {
              try {
-               // Load the correct relations including target_rules and buy_rules where product conditions are stored
+               // Load the correct relations - try different syntaxes for nested relations
                // In Medusa v2, "conditions" from Admin UI are stored in application_method.target_rules
-               const fullPromo = await promotionModuleService.retrievePromotion(promo.id, {
-                 relations: [
-                   'campaign',
-                   'application_method',
-                   'application_method.target_rules',
-                   'application_method.target_rules.values',
-                   'application_method.buy_rules',
-                   'application_method.buy_rules.values',
-                   'rules',
-                   'rules.values',
-                 ],
-               });
+               let fullPromo: any;
+               
+               try {
+                 // Try with nested relation syntax first
+                 fullPromo = await promotionModuleService.retrievePromotion(promo.id, {
+                   relations: [
+                     'campaign',
+                     'application_method',
+                     'application_method.target_rules',
+                     'application_method.target_rules.values',
+                     'application_method.buy_rules',
+                     'application_method.buy_rules.values',
+                     'rules',
+                     'rules.values',
+                   ],
+                 });
+                 console.log(`[STORE/PROMOTIONS] ✅ Loaded ${promo.id} with nested relations`);
+               } catch (e1: any) {
+                 console.log(`[STORE/PROMOTIONS] Nested relations failed for ${promo.id}, trying flat relations:`, e1.message);
+                 // Fallback: try loading application_method separately
+                 try {
+                   fullPromo = await promotionModuleService.retrievePromotion(promo.id, {
+                     relations: [
+                       'campaign',
+                       'application_method',
+                       'rules',
+                     ],
+                   });
+                   console.log(`[STORE/PROMOTIONS] ✅ Loaded ${promo.id} with flat relations`);
+                 } catch (e2: any) {
+                   console.log(`[STORE/PROMOTIONS] Failed to load ${promo.id}:`, e2.message);
+                   throw e2;
+                 }
+               }
+               
                return fullPromo;
              } catch (err: any) {
                console.log(`[STORE/PROMOTIONS] Could not retrieve full details for ${promo.id}:`, err.message);
@@ -148,20 +171,20 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
        console.log("  - Rules count:", samplePromo.rules?.length || 0);
        console.log("  - All promotion keys:", Object.keys(samplePromo));
        
-       // Check for conditions in various possible field names
-       const conditionFields = ['conditions', 'condition', 'promotion_conditions', 'promotionConditions', 
-                                'target_conditions', 'buy_conditions', 'rule_conditions'];
-       conditionFields.forEach(field => {
-         if (samplePromo[field] !== undefined) {
-           console.log(`  - Found field "${field}":`, 
-             Array.isArray(samplePromo[field]) ? `Array(${samplePromo[field].length})` : 
-             typeof samplePromo[field] === 'object' ? `Object(${Object.keys(samplePromo[field] || {}).length} keys)` :
-             typeof samplePromo[field]);
-           if (Array.isArray(samplePromo[field]) && samplePromo[field].length > 0) {
-             console.log(`  - ${field} content:`, JSON.stringify(samplePromo[field].slice(0, 3), null, 2));
-           }
+       // Check application_method structure - this is where target_rules should be
+       if (samplePromo.application_method) {
+         console.log("  - Application method keys:", Object.keys(samplePromo.application_method));
+         console.log("  - Application method has target_rules:", !!samplePromo.application_method.target_rules);
+         console.log("  - Application method has buy_rules:", !!samplePromo.application_method.buy_rules);
+         if (samplePromo.application_method.target_rules) {
+           console.log("  - Target rules:", JSON.stringify(samplePromo.application_method.target_rules, null, 2));
          }
-       });
+         if (samplePromo.application_method.buy_rules) {
+           console.log("  - Buy rules:", JSON.stringify(samplePromo.application_method.buy_rules, null, 2));
+         }
+         // Log full application_method structure
+         console.log("  - Full application_method:", JSON.stringify(samplePromo.application_method, null, 2));
+       }
        
        if (samplePromo.rules && samplePromo.rules.length > 0) {
          console.log("  - Rules:", JSON.stringify(samplePromo.rules.map((r: any) => ({
@@ -171,21 +194,6 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
          })), null, 2));
        }
        console.log("  - Campaign keys:", samplePromo.campaign ? Object.keys(samplePromo.campaign) : 'no campaign');
-       
-       // Log full promotion structure (limited depth to avoid huge logs)
-       console.log("  - Full promotion (first level):", JSON.stringify(
-         Object.keys(samplePromo).reduce((acc: any, key: string) => {
-           const val = samplePromo[key];
-           if (Array.isArray(val)) {
-             acc[key] = `[Array(${val.length})]`;
-           } else if (typeof val === 'object' && val !== null) {
-             acc[key] = `{Object with keys: ${Object.keys(val).join(', ')}` + (Object.keys(val).length > 10 ? '...' : '') + '}';
-           } else {
-             acc[key] = val;
-           }
-           return acc;
-         }, {}), null, 2
-       ));
      }
 
     // Filter for active promotions
@@ -223,6 +231,16 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
        // Get target_rules from application_method (this is where product conditions are stored)
        const applicationMethod = promo.application_method;
+       
+       // Debug: Log the full application_method structure to see what's actually there
+       console.log(`[STORE/PROMOTIONS] Promotion ${promo.id} - Application Method Debug:`);
+       console.log(`  - Has application_method: ${!!applicationMethod}`);
+       if (applicationMethod) {
+         console.log(`  - Application method keys:`, Object.keys(applicationMethod));
+         // Log the full application_method to see its structure
+         console.log(`  - Full application_method JSON:`, JSON.stringify(applicationMethod, null, 2));
+       }
+       
        const targetRules = applicationMethod?.target_rules || [];
        const buyRules = applicationMethod?.buy_rules || [];
        
@@ -274,13 +292,16 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
           const attr = rule.attribute?.toLowerCase() || '';
           const operator = rule.operator?.toLowerCase() || '';
           
-          // Extract values - they might be in rule.values array or rule.values.value
+          // Extract values - rule.values is an array of objects with 'value' property
+          // Example: [{ id: "...", value: "prod_123", ... }, { id: "...", value: "prod_456", ... }]
           let values: string[] = [];
           if (rule.values && Array.isArray(rule.values)) {
             values = rule.values.map((v: any) => {
-              // Values might be objects with a 'value' property or just strings
+              // Values are objects with a 'value' property containing the actual product ID
+              // Example: { id: "...", value: "prod_123", ... }
               return typeof v === 'string' ? v : (v.value || v.id || String(v));
-            });
+            }).filter(Boolean); // Remove any undefined/null values
+            console.log(`[STORE/PROMOTIONS] Extracted ${values.length} values from rule "${attr}":`, values.slice(0, 3));
           }
 
           // Skip if operator is 'ne' or 'nin' (not applicable for product matching)
@@ -288,9 +309,10 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
             continue;
           }
 
-          // Match product IDs
+          // Match product IDs - handle both "product.id" and "items.product.id"
           if (attr.includes('product.id') || attr === 'id' || attr.includes('product_id')) {
             if (operator === 'eq' || operator === 'in') {
+              console.log(`[STORE/PROMOTIONS] Adding ${values.length} product IDs from rule:`, values.slice(0, 3));
               productIdValues.push(...values);
             }
           }
@@ -334,24 +356,49 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
         // Query products by IDs
         if (productIdValues.length > 0) {
           try {
-            const [products] = await productModuleService.listProducts({
-              id: productIdValues,
-            });
-            productIds.push(...(products || []).map((p: any) => p.id));
-            productHandles.push(...(products || []).map((p: any) => p.handle).filter(Boolean));
+            console.log(`[STORE/PROMOTIONS] Querying ${productIdValues.length} products by ID:`, productIdValues.slice(0, 3));
+            
+            // Query products - try different approaches
+            let products: any[] = [];
+            
+            // Method 1: Query each product individually (most reliable)
+            for (const productId of productIdValues) {
+              try {
+                const product = await productModuleService.retrieveProduct(productId);
+                if (product) {
+                  products.push(product);
+                }
+              } catch (err: any) {
+                console.log(`[STORE/PROMOTIONS] Could not retrieve product ${productId}:`, err.message);
+              }
+            }
+            
+            if (products.length > 0) {
+              productIds.push(...products.map((p: any) => p.id));
+              productHandles.push(...products.map((p: any) => p.handle).filter(Boolean));
+              console.log(`[STORE/PROMOTIONS] ✅ Found ${products.length} products by ID`);
+            } else {
+              console.log(`[STORE/PROMOTIONS] ⚠️ No products found for any of the ${productIdValues.length} IDs`);
+            }
           } catch (e: any) {
-            console.log(`[STORE/PROMOTIONS] Error querying products by ID:`, e.message);
+            console.log(`[STORE/PROMOTIONS] ❌ Error querying products by ID:`, e.message);
+            console.log(`[STORE/PROMOTIONS] Error stack:`, e.stack?.split('\n').slice(0, 3).join('\n'));
           }
         }
 
         // Query products by handles
         if (productHandleValues.length > 0) {
           try {
-            const [products] = await productModuleService.listProducts({
+            const result = await productModuleService.listProducts({
               handle: productHandleValues,
             });
-            productIds.push(...(products || []).map((p: any) => p.id));
-            productHandles.push(...(products || []).map((p: any) => p.handle).filter(Boolean));
+            // listProducts returns [products, count] tuple
+            const products = Array.isArray(result) ? (Array.isArray(result[0]) ? result[0] : result) : [];
+            if (Array.isArray(products)) {
+              productIds.push(...products.map((p: any) => p.id));
+              productHandles.push(...products.map((p: any) => p.handle).filter(Boolean));
+              console.log(`[STORE/PROMOTIONS] Found ${products.length} products by handle`);
+            }
           } catch (e: any) {
             console.log(`[STORE/PROMOTIONS] Error querying products by handle:`, e.message);
           }
@@ -360,11 +407,16 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
         // Query products by collections
         if (collectionIds.length > 0) {
           try {
-            const [products] = await productModuleService.listProducts({
+            const result = await productModuleService.listProducts({
               collection_id: collectionIds,
             });
-            productIds.push(...(products || []).map((p: any) => p.id));
-            productHandles.push(...(products || []).map((p: any) => p.handle).filter(Boolean));
+            // listProducts returns [products, count] tuple
+            const products = Array.isArray(result) ? (Array.isArray(result[0]) ? result[0] : result) : [];
+            if (Array.isArray(products)) {
+              productIds.push(...products.map((p: any) => p.id));
+              productHandles.push(...products.map((p: any) => p.handle).filter(Boolean));
+              console.log(`[STORE/PROMOTIONS] Found ${products.length} products by collection`);
+            }
           } catch (e: any) {
             console.log(`[STORE/PROMOTIONS] Error querying products by collection:`, e.message);
           }
@@ -373,11 +425,16 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
         // Query products by categories
         if (categoryIds.length > 0) {
           try {
-            const [products] = await productModuleService.listProducts({
+            const result = await productModuleService.listProducts({
               category_id: categoryIds,
             });
-            productIds.push(...(products || []).map((p: any) => p.id));
-            productHandles.push(...(products || []).map((p: any) => p.handle).filter(Boolean));
+            // listProducts returns [products, count] tuple
+            const products = Array.isArray(result) ? (Array.isArray(result[0]) ? result[0] : result) : [];
+            if (Array.isArray(products)) {
+              productIds.push(...products.map((p: any) => p.id));
+              productHandles.push(...products.map((p: any) => p.handle).filter(Boolean));
+              console.log(`[STORE/PROMOTIONS] Found ${products.length} products by category`);
+            }
           } catch (e: any) {
             console.log(`[STORE/PROMOTIONS] Error querying products by category:`, e.message);
           }
@@ -386,11 +443,16 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
         // Query products by types
         if (typeIds.length > 0) {
           try {
-            const [products] = await productModuleService.listProducts({
+            const result = await productModuleService.listProducts({
               type_id: typeIds,
             });
-            productIds.push(...(products || []).map((p: any) => p.id));
-            productHandles.push(...(products || []).map((p: any) => p.handle).filter(Boolean));
+            // listProducts returns [products, count] tuple
+            const products = Array.isArray(result) ? (Array.isArray(result[0]) ? result[0] : result) : [];
+            if (Array.isArray(products)) {
+              productIds.push(...products.map((p: any) => p.id));
+              productHandles.push(...products.map((p: any) => p.handle).filter(Boolean));
+              console.log(`[STORE/PROMOTIONS] Found ${products.length} products by type`);
+            }
           } catch (e: any) {
             console.log(`[STORE/PROMOTIONS] Error querying products by type:`, e.message);
           }
