@@ -67,11 +67,46 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     // List all promotions with relations
     let promotions: any[] = [];
     try {
+      // Try different query formats for relations
+      let queryOptions: any = {};
+      
+      // Try with relations array
       if (typeof promotionModuleService.listPromotions === 'function') {
-        const result = await promotionModuleService.listPromotions({
-          relations: ['campaign', 'application_method', 'rules'],
-        });
-        promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
+        try {
+          const result = await promotionModuleService.listPromotions({
+            relations: ['campaign', 'application_method', 'rules'],
+          });
+          promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
+        } catch (e1: any) {
+          // Try with select and relations
+          try {
+            const result = await promotionModuleService.listPromotions({
+              select: ['*', 'campaign.*', 'application_method.*', 'rules.*'],
+            });
+            promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
+          } catch (e2: any) {
+            // Fallback: list without relations, then retrieve each individually
+            const result = await promotionModuleService.listPromotions({});
+            const promoList = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
+            
+            // Retrieve each promotion with relations
+            promotions = await Promise.all(
+              promoList.map(async (promo: any) => {
+                try {
+                  if (typeof promotionModuleService.retrievePromotion === 'function') {
+                    return await promotionModuleService.retrievePromotion(promo.id, {
+                      relations: ['campaign', 'application_method', 'rules'],
+                    });
+                  }
+                  return promo;
+                } catch (err: any) {
+                  console.log(`[STORE/PROMOTIONS] Could not retrieve full details for ${promo.id}:`, err.message);
+                  return promo;
+                }
+              })
+            );
+          }
+        }
       } else if (typeof promotionModuleService.list === 'function') {
         const result = await promotionModuleService.list({
           relations: ['campaign', 'application_method', 'rules'],
@@ -88,24 +123,12 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
       }
     } catch (listError: any) {
       console.error("[STORE/PROMOTIONS] Error listing promotions:", listError.message);
-      // Try without relations if relations fail
-      try {
-        if (typeof promotionModuleService.listPromotions === 'function') {
-          const result = await promotionModuleService.listPromotions({});
-          promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
-        } else if (typeof promotionModuleService.list === 'function') {
-          const result = await promotionModuleService.list({});
-          promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
-        }
-      } catch (fallbackError: any) {
-        console.error("[STORE/PROMOTIONS] Fallback query also failed:", fallbackError.message);
-        return res.status(200).json({
-          promotions: [],
-          campaigns: [],
-          count: 0,
-          error: process.env.NODE_ENV === "development" ? fallbackError.message : undefined,
-        });
-      }
+      return res.status(200).json({
+        promotions: [],
+        campaigns: [],
+        count: 0,
+        error: process.env.NODE_ENV === "development" ? listError.message : undefined,
+      });
     }
 
     console.log(`[STORE/PROMOTIONS] Found ${promotions.length} total promotions`);
