@@ -183,22 +183,18 @@ export function CompactCountdownTimer({
 
   const isUrgent = timeLeft.total < 60 * 60 * 1000; // Less than 1 hour
 
-  // Format time string
-  let timeString = '';
-  if (timeLeft.days > 0) {
-    timeString = `${toPersianNumber(timeLeft.days)} روز`;
-  } else if (timeLeft.hours > 0) {
-    timeString = `${toPersianNumber(timeLeft.hours)}:${toPersianNumber(timeLeft.minutes).padStart(2, '۰')}:${toPersianNumber(timeLeft.seconds).padStart(2, '۰')}`;
-  } else {
-    timeString = `${toPersianNumber(timeLeft.minutes)}:${toPersianNumber(timeLeft.seconds).padStart(2, '۰')}`;
-  }
+  // Format full countdown: days (if > 0), hours, minutes, seconds
+  // Always show hours:minutes:seconds, and days if > 0
+  const timeString = timeLeft.days > 0
+    ? `${toPersianNumber(timeLeft.days)} روز ${toPersianNumber(timeLeft.hours).padStart(2, '۰')}:${toPersianNumber(timeLeft.minutes).padStart(2, '۰')}:${toPersianNumber(timeLeft.seconds).padStart(2, '۰')}`
+    : `${toPersianNumber(timeLeft.hours).padStart(2, '۰')}:${toPersianNumber(timeLeft.minutes).padStart(2, '۰')}:${toPersianNumber(timeLeft.seconds).padStart(2, '۰')}`;
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className={cn(
-        "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
+        "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap",
         isUrgent 
           ? "bg-red-500/30 text-red-300 animate-pulse" 
           : "bg-red-500/20 text-red-400",
@@ -206,7 +202,7 @@ export function CompactCountdownTimer({
       )}
       dir="ltr"
     >
-      <Clock className="w-3 h-3" />
+      <Clock className="w-3 h-3 flex-shrink-0" />
       <span className="tabular-nums">{timeString}</span>
     </motion.div>
   );

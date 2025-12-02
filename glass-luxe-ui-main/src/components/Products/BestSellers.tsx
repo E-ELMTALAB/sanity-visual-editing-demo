@@ -55,9 +55,9 @@ export function BestSellers({
           </p>
         </motion.div>
 
-        {/* Grid Container - 2 rows x 4 columns */}
+        {/* Grid Container - 1 column on mobile, 2 on sm, 4 on md+ */}
         <div className="flex justify-center">
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 w-full max-w-[1200px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 w-full max-w-[1200px]">
             {displayProducts.map((product, index) => {
               // Get promotion info for this product
               const productPriceData = product.slug ? productPrices?.[product.slug] : undefined;
