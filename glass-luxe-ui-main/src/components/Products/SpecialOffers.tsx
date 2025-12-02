@@ -54,14 +54,18 @@ export function SpecialOffers({ products, onAdd, onViewAll, className, productPr
             <div className="flex gap-4 sm:gap-6 lg:gap-8 touch-pan-y">
               {products.slice(0, 6).map((product, index) => {
                 // Get promotion info for this product
-                const medusaVariants = productPrices?.[product.slug || '']?.variants || [];
+                const productPriceData = product.slug ? productPrices?.[product.slug] : undefined;
+                const medusaVariants = productPriceData?.variants || [];
+                const medusaProductId = productPriceData?.product_id; // Medusa product ID
                 const validPrices = medusaVariants.filter(v => v.price > 0).map(v => v.price);
                 const lowestPrice = validPrices.length > 0 
                   ? Math.min(...validPrices)
                   : product.price;
                 
+                // Use Medusa product ID if available, otherwise fall back to Sanity ID
+                const productIdForMatching = medusaProductId || product.id;
                 const promotionInfo = product.slug && lowestPrice > 0
-                  ? getPromotionForProduct(product.slug, product.id, lowestPrice)
+                  ? getPromotionForProduct(product.slug, productIdForMatching, lowestPrice)
                   : null;
 
                 return (

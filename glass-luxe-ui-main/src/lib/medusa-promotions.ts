@@ -69,6 +69,16 @@ export interface PromotionRule {
 }
 
 /**
+ * Matched products structure from backend
+ * This tells us which products are associated with a promotion
+ */
+export interface MatchedProducts {
+  product_ids: string[];
+  product_handles: string[];
+  is_site_wide: boolean;
+}
+
+/**
  * Main promotion structure aligned with Medusa v2's PromotionDTO
  */
 export interface MedusaPromotion {
@@ -81,6 +91,8 @@ export interface MedusaPromotion {
   campaign?: PromotionCampaign;
   application_method?: PromotionApplicationMethod;
   rules?: PromotionRule[];
+  // Backend-provided matched products (from /store/promotions endpoint)
+  matched_products?: MatchedProducts;
   // Display fields (may be custom)
   title?: string;
   description?: string;
@@ -274,7 +286,10 @@ export async function fetchActivePromotions(): Promise<MedusaPromotion[]> {
 
 /**
  * Get promotions that apply to a specific product
- * Uses Medusa v2 rule attribute format (e.g., 'items.product.id')
+ * 
+ * Priority order:
+ * 1. Use matched_products from backend (most reliable)
+ * 2. Fall back to parsing rules if matched_products not available
  */
 export function getPromotionsForProduct(
   productSlug: string,
@@ -284,6 +299,25 @@ export function getPromotionsForProduct(
   if (!promotions.length) return [];
 
   return promotions.filter(promo => {
+    // Priority 1: Use matched_products from backend (most reliable)
+    if (promo.matched_products) {
+      const { product_ids, product_handles, is_site_wide } = promo.matched_products;
+      
+      // Site-wide promotions apply to all products
+      if (is_site_wide) {
+        // Check if it targets items (not shipping/order level)
+        const targetType = promo.application_method?.target_type;
+        return targetType === 'items' || targetType === 'order' || !targetType;
+      }
+      
+      // Check if this product matches by ID or handle
+      const matchesById = product_ids.length > 0 && product_ids.includes(productId);
+      const matchesByHandle = product_handles.length > 0 && productSlug && product_handles.includes(productSlug);
+      
+      return matchesById || matchesByHandle;
+    }
+    
+    // Priority 2: Fall back to parsing rules (legacy support)
     // If no rules, it's a site-wide promotion (applies to all products)
     if (!promo.rules || promo.rules.length === 0) {
       // But check if it targets items (not shipping/order level)
@@ -380,6 +414,12 @@ export function getBestPromotionForProduct(
  */
 export function getSiteWidePromotions(promotions: MedusaPromotion[]): MedusaPromotion[] {
   return promotions.filter(promo => {
+    // Priority 1: Use matched_products from backend
+    if (promo.matched_products) {
+      return promo.matched_products.is_site_wide;
+    }
+    
+    // Priority 2: Fall back to checking rules
     // Site-wide if no rules
     if (!promo.rules || promo.rules.length === 0) {
       return true;

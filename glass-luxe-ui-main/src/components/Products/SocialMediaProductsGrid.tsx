@@ -85,14 +85,18 @@ export function SocialMediaProductsGrid({
             <div className="flex gap-4 md:gap-5 py-[5px]">
               {products.slice(0, 8).map(product => {
                 // Get promotion info for this product
-                const medusaVariants = product.slug ? productPrices?.[product.slug]?.variants || [] : [];
+                const productPriceData = product.slug ? productPrices?.[product.slug] : undefined;
+                const medusaVariants = productPriceData?.variants || [];
+                const medusaProductId = productPriceData?.product_id; // Medusa product ID
                 const validPrices = medusaVariants.filter(v => v.price > 0).map(v => v.price);
                 const lowestPrice = validPrices.length > 0 
                   ? Math.min(...validPrices)
                   : product.price;
                 
+                // Use Medusa product ID if available, otherwise fall back to Sanity ID
+                const productIdForMatching = medusaProductId || product.id;
                 const promotionInfo = product.slug && lowestPrice > 0
-                  ? getPromotionForProduct(product.slug, product.id, lowestPrice)
+                  ? getPromotionForProduct(product.slug, productIdForMatching, lowestPrice)
                   : null;
 
                 return (

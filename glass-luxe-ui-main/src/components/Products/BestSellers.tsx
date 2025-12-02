@@ -60,14 +60,18 @@ export function BestSellers({
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 w-full max-w-[1200px]">
             {displayProducts.map((product, index) => {
               // Get promotion info for this product
-              const medusaVariants = productPrices?.[product.slug || '']?.variants || [];
+              const productPriceData = product.slug ? productPrices?.[product.slug] : undefined;
+              const medusaVariants = productPriceData?.variants || [];
+              const medusaProductId = productPriceData?.product_id; // Medusa product ID
               const validPrices = medusaVariants.filter(v => v.price > 0).map(v => v.price);
               const lowestPrice = validPrices.length > 0 
                 ? Math.min(...validPrices)
                 : product.price;
               
+              // Use Medusa product ID if available, otherwise fall back to Sanity ID
+              const productIdForMatching = medusaProductId || product.id;
               const promotionInfo = product.slug && lowestPrice > 0
-                ? getPromotionForProduct(product.slug, product.id, lowestPrice)
+                ? getPromotionForProduct(product.slug, productIdForMatching, lowestPrice)
                 : null;
 
               return (

@@ -122,6 +122,7 @@ const ProductDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [medusaVariants, setMedusaVariants] = useState<MedusaVariant[]>([]);
+  const [medusaProductId, setMedusaProductId] = useState<string | undefined>(undefined);
   const [pricesLoading, setPricesLoading] = useState(false);
   const [pricesError, setPricesError] = useState<string | null>(null);
   const [relatedProductPrices, setRelatedProductPrices] = useState<Record<string, { variants: MedusaVariant[] }>>({});
@@ -129,12 +130,13 @@ const ProductDetail = () => {
   const stickyRef = useRef<HTMLDivElement>(null);
   const [tocHeadings, setTocHeadings] = useState<Array<{ level: number; text: string; id: string }>>([]);
   
-  // Get promotion info from context
+  // Get promotion info from context - use Medusa product ID if available
   const validMedusaPrices = medusaVariants.filter(v => v.price > 0).map(v => v.price);
   const lowestMedusaPrice = validMedusaPrices.length > 0 
     ? Math.min(...validMedusaPrices)
     : product?.price || 0;
-  const productPromotion = useProductPromotion(slug, product?.id, lowestMedusaPrice);
+  const productIdForPromotion = medusaProductId || product?.id; // Prefer Medusa product ID
+  const productPromotion = useProductPromotion(slug, productIdForPromotion, lowestMedusaPrice);
 
   // Extract headings from description when product loads
   useEffect(() => {
@@ -256,6 +258,10 @@ const ProductDetail = () => {
         
         if (productPrices?.variants?.length > 0) {
           setMedusaVariants(productPrices.variants);
+          // Store Medusa product ID for promotion matching
+          if (productPrices.product_id) {
+            setMedusaProductId(productPrices.product_id);
+          }
           setPricesError(null);
         } else {
           setPricesError('قیمت‌ها در دسترس نیستند');
