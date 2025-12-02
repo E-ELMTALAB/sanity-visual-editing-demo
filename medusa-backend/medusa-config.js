@@ -176,7 +176,11 @@ const medusaConfig = {
       }
       console.log('[MEDUSA-CONFIG] Payment module configured with', paymentModule.options.providers.length, 'provider(s)')
       return [paymentModule]
-    })() : [])
+    })() : []),
+    {
+      key: Modules.PROMOTION,
+      resolve: '@medusajs/promotion',
+    }
   ],
   plugins: [
   ...(MEILISEARCH_HOST && MEILISEARCH_ADMIN_KEY ? [{
