@@ -12,10 +12,7 @@ import { Price } from "@/components/ui/price";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FaqAccordion } from "@/components/Products/FaqAccordion";
-import { FloatingDock } from "@/components/FloatingDock/FloatingDock";
 import { CartDrawer } from "@/components/FloatingDock/CartDrawer";
-import { ChatbotPanel } from "@/components/FloatingDock/ChatbotPanel";
-import { SupportPanel } from "@/components/FloatingDock/SupportPanel";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { useDirection } from "@/contexts/DirectionContext";
@@ -114,8 +111,6 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [supportOpen, setSupportOpen] = useState(false);
   const [tocOpen, setTocOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
   const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
@@ -690,15 +685,26 @@ const ProductDetail = () => {
                       </motion.div>
                     )}
                     
-                    <div className="overflow-x-auto" style={{ textAlign: "right", marginRight: 0 }}>
-                      <Price
-                        current={productPromotion ? productPromotion.discountedPrice : currentPrice}
-                        old={productPromotion ? productPromotion.originalPrice : (shouldShowOriginalPrice ? originalPrice : undefined)}
-                        discountPercentage={productPromotion?.discountPercentage}
-                        className="text-xl sm:text-2xl whitespace-nowrap"
-                        variant={productPromotion ? "promotional" : "default"}
-                      />
-                    </div>
+                    {/* On mobile, only show price when variant is selected (if variants exist) */}
+                    {(() => {
+                      const hasVariants = (medusaVariants.length > 0 || (product?.variants?.length || 0) > 0);
+                      const shouldShowOnMobile = !hasVariants || selectedVariant;
+                      
+                      return (
+                        <div className={cn(
+                          "overflow-x-auto",
+                          !shouldShowOnMobile && "hidden md:block" // Hide on mobile if variants exist but none selected
+                        )} style={{ textAlign: "right", marginRight: 0 }}>
+                          <Price
+                            current={productPromotion ? productPromotion.discountedPrice : currentPrice}
+                            old={productPromotion ? productPromotion.originalPrice : (shouldShowOriginalPrice ? originalPrice : undefined)}
+                            discountPercentage={productPromotion?.discountPercentage}
+                            className="text-xl sm:text-2xl whitespace-nowrap"
+                            variant={productPromotion ? "promotional" : "default"}
+                          />
+                        </div>
+                      );
+                    })()}
                     
                     {/* Countdown Timer for time-limited promotions */}
                     {productPromotion?.endsAt && (
@@ -733,7 +739,7 @@ const ProductDetail = () => {
 
                   {/* Quantity & Actions */}
                   <div className="min-w-0" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 md:mt-[100px] flex-row-reverse justify-start" style={{ marginRight: 0 }}>
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 md:mt-[100px] flex-row-reverse justify-start mt-6" style={{ marginRight: 0 }}>
                       <div className="flex items-center glass rounded-lg shrink-0">
                         <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 sm:px-4 py-2 hover:bg-surface-glass transition-colors">
                           -
@@ -745,17 +751,28 @@ const ProductDetail = () => {
                       </div>
                     </div>
 
-                    <div className="flex gap-2 sm:gap-3 min-w-0">
-                      <Button size="lg" onClick={handleBuyNow} className="flex-1 min-w-0 text-sm sm:text-base">
-                        <ShoppingCart className="ml-1 h-4 w-4 shrink-0" />
-                        <span className="truncate">خرید</span>
-                      </Button>
-                    </div>
+                    {/* On mobile, only show buy button when variant is selected (if variants exist) */}
+                    {(() => {
+                      const hasVariants = (medusaVariants.length > 0 || (product?.variants?.length || 0) > 0);
+                      const shouldShowOnMobile = !hasVariants || selectedVariant;
+                      
+                      return (
+                        <div className={cn(
+                          "flex gap-2 sm:gap-3 min-w-0 mt-6",
+                          !shouldShowOnMobile && "hidden md:flex" // Hide on mobile if variants exist but none selected
+                        )}>
+                          <Button size="lg" onClick={handleBuyNow} className="flex-1 min-w-0 text-sm sm:text-base">
+                            <ShoppingCart className="ml-1 h-4 w-4 shrink-0" />
+                            <span className="truncate">خرید</span>
+                          </Button>
+                        </div>
+                      );
+                    })()}
 
-                  {/* Policy Microcopy */}
-                  <p className="text-xs text-muted-foreground text-center break-words" style={{ textAlign: "right" }}>
-                    تحویل فوری دیجیتال • پشتیبانی ۲۴ ساعته • ضمانت بازگشت وجه • دسترسی دائمی
-                  </p>
+                    {/* Policy Microcopy */}
+                    <p className="text-xs text-muted-foreground text-center break-words mt-6" style={{ textAlign: "right" }}>
+                      تحویل فوری دیجیتال • پشتیبانی ۲۴ ساعته • ضمانت بازگشت وجه • دسترسی دائمی
+                    </p>
                   </div>
 
                   {/* Trust Badges */}
@@ -1000,10 +1017,6 @@ const ProductDetail = () => {
         href: "https://t.me"
       }]} />
 
-        <FloatingDock onOpenChat={() => setChatOpen(true)} onOpenSupport={() => setSupportOpen(true)} onOpenCart={() => setCartOpen(true)} cartItemCount={cartState.itemCount} />
-
-        <ChatbotPanel open={chatOpen} onClose={() => setChatOpen(false)} />
-        <SupportPanel open={supportOpen} onClose={() => setSupportOpen(false)} />
         <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
       </div>
     </>;
