@@ -103,7 +103,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
            promoList.map(async (promo: any) => {
              try {
                const fullPromo = await promotionModuleService.retrievePromotion(promo.id, {
-                 relations: ['campaign', 'application_method', 'rules'],
+                 relations: ['campaign', 'application_method', 'rules', 'conditions'],
                });
                return fullPromo;
              } catch (err: any) {
@@ -178,11 +178,12 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
        const productIds: string[] = [];
        const productHandles: string[] = [];
 
-       // Use rules array (buy_rules and target_rules don't exist as separate relations in Medusa v2)
+       // Use rules and conditions arrays (conditions may contain product information)
        const allRules = promo.rules || [];
+       const conditions = promo.conditions || [];
 
-       // Debug: Log all rules
-       console.log(`[STORE/PROMOTIONS] Promotion ${promo.id} has ${allRules.length} rules`);
+       // Debug: Log all rules and conditions
+       console.log(`[STORE/PROMOTIONS] Promotion ${promo.id} has ${allRules.length} rules and ${conditions.length} conditions`);
        if (allRules.length > 0) {
          console.log(`[STORE/PROMOTIONS] Rules for ${promo.id}:`, JSON.stringify(allRules.map((r: any) => ({
            attribute: r.attribute,
@@ -190,9 +191,15 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
            values: r.values,
          })), null, 2));
        }
+       if (conditions.length > 0) {
+         console.log(`[STORE/PROMOTIONS] Conditions for ${promo.id}:`, JSON.stringify(conditions, null, 2));
+       }
 
-       // If no rules at all, it's site-wide (applies to all products)
-       if (allRules.length === 0) {
+       // Combine rules and conditions for product matching
+       const allConditions = [...allRules, ...conditions];
+
+       // If no rules or conditions at all, it's site-wide (applies to all products)
+       if (allConditions.length === 0) {
          // Check if it targets items (not shipping/order level)
          const targetType = promo.application_method?.target_type;
          if (targetType === 'items' || targetType === 'order' || !targetType) {
@@ -213,7 +220,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
          const typeIds: string[] = [];
          const tagValues: string[] = [];
 
-         for (const rule of allRules) {
+         for (const rule of allConditions) {
           const attr = rule.attribute?.toLowerCase() || '';
           const operator = rule.operator?.toLowerCase() || '';
           const values = rule.values || [];
@@ -390,6 +397,13 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
           operator: rule.operator,
           values: rule.values || [],
           description: rule.description,
+        })) : undefined,
+        conditions: promo.conditions ? promo.conditions.map((condition: any) => ({
+          id: condition.id,
+          attribute: condition.attribute,
+          operator: condition.operator,
+          values: condition.values || [],
+          description: condition.description,
         })) : undefined,
         title: promo.title || promo.campaign?.name || undefined,
         description: promo.description || promo.campaign?.description || undefined,
