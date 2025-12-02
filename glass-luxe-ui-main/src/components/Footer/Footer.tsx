@@ -72,11 +72,20 @@ export function Footer({ links, socials }: FooterProps) {
               <h4 className="text-sm font-semibold mb-3 text-foreground">
                 نشان اعتماد الکترونیکی
               </h4>
-              <div className="w-32 h-32 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center bg-muted/20">
-                <span className="text-xs text-muted-foreground text-center px-2">
-                  نشان اعتماد
-                </span>
-              </div>
+              <a
+                referrerPolicy="origin"
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://trustseal.enamad.ir/?id=448519&Code=uURt26vL9uLWH6uXkjKEHWCmPpawIR7P"
+              >
+                <img
+                  referrerPolicy="origin"
+                  alt="enamad trust seal"
+                  code="uURt26vL9uLWH6uXkjKEHWCmPpawIR7P"
+                  src="https://trustseal.enamad.ir/logo.aspx?id=448519&Code=uURt26vL9uLWH6uXkjKEHWCmPpawIR7P"
+                  style={{ cursor: "pointer" }}
+                />
+              </a>
             </div>
           </div>
 

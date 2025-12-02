@@ -29,6 +29,7 @@ const SocialMediaProductsGrid = lazy(() => import("@/components/Products/SocialM
 const CollectionsBanner = lazy(() => import("@/components/Products/CollectionsBanner").then((m) => ({ default: m.CollectionsBanner })));
 const EduProductsSlider = lazy(() => import("@/components/Products/EduProductsSlider").then((m) => ({ default: m.EduProductsSlider })));
 const BlogsCarousel = lazy(() => import("@/components/Blog/BlogsCarousel").then((m) => ({ default: m.BlogsCarousel })));
+const FaqAccordion = lazy(() => import("@/components/Products/FaqAccordion").then((m) => ({ default: m.FaqAccordion })));
 const EnhancedMarkdownRenderer = lazy(() => import("@/components/EnhancedMarkdownRenderer"));
 
 const fallbackSeoContent = `
@@ -124,6 +125,7 @@ interface SanityData {
   tabbedProducts: any[];
   collectionsBanner: any;
   seoContent: string | null;
+  faqs: Array<{ q: string; a: string }>;
 }
 
 // Static hero component for immediate FCP/LCP - NO external dependencies
@@ -368,7 +370,7 @@ const Index = () => {
         const [
           { fetchFromSanity },
           { validateSanityConfig },
-          { homePageQuery, featuredProductsQuery, featuredCoursesQuery, featuredPostsQuery, productsByCategoryQuery },
+          { homePageQuery, featuredProductsQuery, featuredCoursesQuery, featuredPostsQuery, productsByCategoryQuery, faqsByPageQuery },
           transformers,
         ] = await Promise.all([
           import("@/lib/sanity.client.light"),
@@ -395,7 +397,7 @@ const Index = () => {
         console.log('[HOMEPAGE] 🔄 Starting data fetch...');
         console.log('[HOMEPAGE] Category map:', categoryMap);
 
-        const [homeData, featuredProductsData, featuredCoursesData, featuredPostsData, tabbedProductGroups] = 
+        const [homeData, featuredProductsData, featuredCoursesData, featuredPostsData, tabbedProductGroups, faqsData] = 
           await Promise.all([
             fetchFromSanity<any>(homePageQuery),
             fetchFromSanity<any[]>(featuredProductsQuery),
@@ -423,6 +425,10 @@ const Index = () => {
                 }
               }),
             ),
+            fetchFromSanity<any[]>(faqsByPageQuery, { page: 'home' }).catch((err) => {
+              console.warn('[HOMEPAGE] Failed to fetch FAQs:', err);
+              return [];
+            }),
           ]);
         
         console.log('[HOMEPAGE] 📊 Raw tabbedProductGroups:', tabbedProductGroups);
@@ -499,6 +505,10 @@ const Index = () => {
           ? homeData.seoContent.trim()
           : null;
 
+        const faqs = faqsData?.length
+          ? faqsData.map((faq: any) => transformers.transformFaqItem(faq))
+          : [];
+
         setSanityData({
           heroSlide,
           bestSellerProducts,
@@ -511,6 +521,7 @@ const Index = () => {
           tabbedProducts,
           collectionsBanner,
           seoContent,
+          faqs,
         });
         setDataLoaded(true);
         setShowDynamicContent(true);
@@ -745,6 +756,13 @@ const Index = () => {
               onViewAll={() => {}}
               className="mx-[10px]"
             />
+          )}
+
+          {/* FAQ Section */}
+          {sanityData.faqs.length > 0 && (
+            <div className="mx-[10px] py-8 sm:py-10 lg:py-12">
+              <FaqAccordion items={sanityData.faqs} />
+            </div>
           )}
         </Suspense>
       )}
