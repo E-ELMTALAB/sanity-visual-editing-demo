@@ -64,72 +64,68 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
       });
     }
 
-    // List all promotions with relations
-    let promotions: any[] = [];
-    try {
-      // Try different query formats for relations
-      let queryOptions: any = {};
-      
-      // Try with relations array
-      if (typeof promotionModuleService.listPromotions === 'function') {
+     // List all promotions with relations
+     let promotions: any[] = [];
+     try {
+       // Strategy: Always use retrievePromotion for each promotion to ensure relations load
+       let promoList: any[] = [];
+       
+       if (typeof promotionModuleService.listPromotions === 'function') {
          try {
-           const result = await promotionModuleService.listPromotions({
-             relations: ['campaign', 'application_method', 'rules', 'buy_rules', 'target_rules'],
+           const result = await promotionModuleService.listPromotions({});
+           promoList = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
+           console.log(`[STORE/PROMOTIONS] Listed ${promoList.length} promotions, now retrieving with relations...`);
+         } catch (e: any) {
+           console.error("[STORE/PROMOTIONS] Error listing promotions:", e.message);
+           return res.status(200).json({
+             promotions: [],
+             campaigns: [],
+             count: 0,
+             error: process.env.NODE_ENV === "development" ? e.message : undefined,
            });
-           promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
-        } catch (e1: any) {
-          // Try with select and relations
-          try {
-            const result = await promotionModuleService.listPromotions({
-              select: ['*', 'campaign.*', 'application_method.*', 'rules.*'],
-            });
-            promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
-          } catch (e2: any) {
-            // Fallback: list without relations, then retrieve each individually
-            const result = await promotionModuleService.listPromotions({});
-            const promoList = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
-            
-            // Retrieve each promotion with relations
-            promotions = await Promise.all(
-              promoList.map(async (promo: any) => {
-                 try {
-                   if (typeof promotionModuleService.retrievePromotion === 'function') {
-                     return await promotionModuleService.retrievePromotion(promo.id, {
-                       relations: ['campaign', 'application_method', 'rules', 'buy_rules', 'target_rules'],
-                     });
-                   }
-                   return promo;
-                 } catch (err: any) {
-                   console.log(`[STORE/PROMOTIONS] Could not retrieve full details for ${promo.id}:`, err.message);
-                   return promo;
-                 }
-              })
-            );
-          }
-        }
+         }
        } else if (typeof promotionModuleService.list === 'function') {
-         const result = await promotionModuleService.list({
-           relations: ['campaign', 'application_method', 'rules', 'buy_rules', 'target_rules'],
+         const result = await promotionModuleService.list({});
+         promoList = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
+       } else {
+         console.log("[STORE/PROMOTIONS] ⚠️ Promotion service found but no list method available");
+         return res.status(200).json({
+           promotions: [],
+           campaigns: [],
+           count: 0,
+           message: "Promotion service found but list method not available"
          });
-         promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
-      } else {
-        console.log("[STORE/PROMOTIONS] ⚠️ Promotion service found but no list method available");
-        return res.status(200).json({
-          promotions: [],
-          campaigns: [],
-          count: 0,
-          message: "Promotion service found but list method not available"
-        });
-      }
-    } catch (listError: any) {
-      console.error("[STORE/PROMOTIONS] Error listing promotions:", listError.message);
-      return res.status(200).json({
-        promotions: [],
-        campaigns: [],
-        count: 0,
-        error: process.env.NODE_ENV === "development" ? listError.message : undefined,
-      });
-    }
+       }
+
+       // Retrieve each promotion individually with all relations
+       if (typeof promotionModuleService.retrievePromotion === 'function') {
+         promotions = await Promise.all(
+           promoList.map(async (promo: any) => {
+             try {
+               const fullPromo = await promotionModuleService.retrievePromotion(promo.id, {
+                 relations: ['campaign', 'application_method', 'rules'],
+               });
+               return fullPromo;
+             } catch (err: any) {
+               console.log(`[STORE/PROMOTIONS] Could not retrieve full details for ${promo.id}:`, err.message);
+               // Return the basic promo if retrieval fails
+               return promo;
+             }
+           })
+         );
+       } else {
+         // Fallback: use the list as-is
+         promotions = promoList;
+       }
+     } catch (listError: any) {
+       console.error("[STORE/PROMOTIONS] Error listing promotions:", listError.message);
+       return res.status(200).json({
+         promotions: [],
+         campaigns: [],
+         count: 0,
+         error: process.env.NODE_ENV === "development" ? listError.message : undefined,
+       });
+     }
 
      console.log(`[STORE/PROMOTIONS] Found ${promotions.length} total promotions`);
      
@@ -179,15 +175,18 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
        const productIds: string[] = [];
        const productHandles: string[] = [];
 
-       // Combine all rules: rules, buy_rules, and target_rules
-       const allRules = [
-         ...(promo.rules || []),
-         ...(promo.buy_rules || []),
-         ...(promo.target_rules || []),
-       ];
+       // Use rules array (buy_rules and target_rules don't exist as separate relations in Medusa v2)
+       const allRules = promo.rules || [];
 
        // Debug: Log all rules
-       console.log(`[STORE/PROMOTIONS] Promotion ${promo.id} has ${allRules.length} total rules (rules: ${promo.rules?.length || 0}, buy_rules: ${promo.buy_rules?.length || 0}, target_rules: ${promo.target_rules?.length || 0})`);
+       console.log(`[STORE/PROMOTIONS] Promotion ${promo.id} has ${allRules.length} rules`);
+       if (allRules.length > 0) {
+         console.log(`[STORE/PROMOTIONS] Rules for ${promo.id}:`, JSON.stringify(allRules.map((r: any) => ({
+           attribute: r.attribute,
+           operator: r.operator,
+           values: r.values,
+         })), null, 2));
+       }
 
        // If no rules at all, it's site-wide (applies to all products)
        if (allRules.length === 0) {
