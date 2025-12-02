@@ -165,8 +165,173 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
     console.log(`[STORE/PROMOTIONS] ✅ Active promotions: ${activePromotions.length}`);
 
+    // Helper function to find products matching promotion rules
+    const findProductsForPromotion = async (promo: any): Promise<{ product_ids: string[], product_handles: string[] }> => {
+      const productIds: string[] = [];
+      const productHandles: string[] = [];
+
+      // If no rules, it's site-wide (applies to all products)
+      if (!promo.rules || promo.rules.length === 0) {
+        // Check if it targets items (not shipping/order level)
+        const targetType = promo.application_method?.target_type;
+        if (targetType === 'items' || targetType === 'order' || !targetType) {
+          return { product_ids: [], product_handles: [], is_site_wide: true }; // Empty arrays + flag means "all products"
+        }
+        return { product_ids: [], product_handles: [], is_site_wide: false };
+      }
+
+      try {
+        const productModuleService: any = req.scope.resolve(Modules.PRODUCT);
+        
+        // Collect all product-related rule values
+        const productIdValues: string[] = [];
+        const productHandleValues: string[] = [];
+        const collectionIds: string[] = [];
+        const categoryIds: string[] = [];
+        const typeIds: string[] = [];
+        const tagValues: string[] = [];
+
+        for (const rule of promo.rules) {
+          const attr = rule.attribute?.toLowerCase() || '';
+          const operator = rule.operator?.toLowerCase() || '';
+          const values = rule.values || [];
+
+          // Skip if operator is 'ne' or 'nin' (not applicable for product matching)
+          if (operator === 'ne' || operator === 'nin') {
+            continue;
+          }
+
+          // Match product IDs
+          if (attr.includes('product.id') || attr === 'id' || attr.includes('product_id')) {
+            if (operator === 'eq' || operator === 'in') {
+              productIdValues.push(...values);
+            }
+          }
+          
+          // Match product handles
+          if (attr.includes('product.handle') || attr === 'handle' || attr.includes('product_handle')) {
+            if (operator === 'eq' || operator === 'in') {
+              productHandleValues.push(...values);
+            }
+          }
+          
+          // Match collections
+          if (attr.includes('collection') || attr.includes('collection_id')) {
+            if (operator === 'eq' || operator === 'in') {
+              collectionIds.push(...values);
+            }
+          }
+          
+          // Match categories
+          if (attr.includes('category') || attr.includes('category_id')) {
+            if (operator === 'eq' || operator === 'in') {
+              categoryIds.push(...values);
+            }
+          }
+          
+          // Match types
+          if (attr.includes('type') && !attr.includes('target_type')) {
+            if (operator === 'eq' || operator === 'in') {
+              typeIds.push(...values);
+            }
+          }
+          
+          // Match tags
+          if (attr.includes('tag')) {
+            if (operator === 'eq' || operator === 'in') {
+              tagValues.push(...values);
+            }
+          }
+        }
+
+        // Query products by IDs
+        if (productIdValues.length > 0) {
+          try {
+            const [products] = await productModuleService.listProducts({
+              id: productIdValues,
+            });
+            productIds.push(...(products || []).map((p: any) => p.id));
+            productHandles.push(...(products || []).map((p: any) => p.handle).filter(Boolean));
+          } catch (e: any) {
+            console.log(`[STORE/PROMOTIONS] Error querying products by ID:`, e.message);
+          }
+        }
+
+        // Query products by handles
+        if (productHandleValues.length > 0) {
+          try {
+            const [products] = await productModuleService.listProducts({
+              handle: productHandleValues,
+            });
+            productIds.push(...(products || []).map((p: any) => p.id));
+            productHandles.push(...(products || []).map((p: any) => p.handle).filter(Boolean));
+          } catch (e: any) {
+            console.log(`[STORE/PROMOTIONS] Error querying products by handle:`, e.message);
+          }
+        }
+
+        // Query products by collections
+        if (collectionIds.length > 0) {
+          try {
+            const [products] = await productModuleService.listProducts({
+              collection_id: collectionIds,
+            });
+            productIds.push(...(products || []).map((p: any) => p.id));
+            productHandles.push(...(products || []).map((p: any) => p.handle).filter(Boolean));
+          } catch (e: any) {
+            console.log(`[STORE/PROMOTIONS] Error querying products by collection:`, e.message);
+          }
+        }
+
+        // Query products by categories
+        if (categoryIds.length > 0) {
+          try {
+            const [products] = await productModuleService.listProducts({
+              category_id: categoryIds,
+            });
+            productIds.push(...(products || []).map((p: any) => p.id));
+            productHandles.push(...(products || []).map((p: any) => p.handle).filter(Boolean));
+          } catch (e: any) {
+            console.log(`[STORE/PROMOTIONS] Error querying products by category:`, e.message);
+          }
+        }
+
+        // Query products by types
+        if (typeIds.length > 0) {
+          try {
+            const [products] = await productModuleService.listProducts({
+              type_id: typeIds,
+            });
+            productIds.push(...(products || []).map((p: any) => p.id));
+            productHandles.push(...(products || []).map((p: any) => p.handle).filter(Boolean));
+          } catch (e: any) {
+            console.log(`[STORE/PROMOTIONS] Error querying products by type:`, e.message);
+          }
+        }
+
+        // Remove duplicates
+        return {
+          product_ids: [...new Set(productIds)],
+          product_handles: [...new Set(productHandles)],
+          is_site_wide: false,
+        };
+      } catch (error: any) {
+        console.log(`[STORE/PROMOTIONS] Error finding products for promotion ${promo.id}:`, error.message);
+        return { product_ids: [], product_handles: [], is_site_wide: false };
+      }
+    };
+
+    // Find products for each promotion
+    console.log("[STORE/PROMOTIONS] Finding products for each promotion...");
+    const promotionsWithProducts = await Promise.all(
+      activePromotions.map(async (promo: any) => {
+        const products = await findProductsForPromotion(promo);
+        return { ...promo, matched_products: products };
+      })
+    );
+
     // Transform promotions to match frontend expectations
-    const transformedPromotions = activePromotions.map((promo: any) => {
+    const transformedPromotions = promotionsWithProducts.map((promo: any) => {
       return {
         id: promo.id,
         code: promo.code || undefined,
@@ -209,11 +374,13 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
         created_at: promo.created_at,
         updated_at: promo.updated_at,
         deleted_at: promo.deleted_at || null,
+        // Include matched products
+        matched_products: promo.matched_products || { product_ids: [], product_handles: [], is_site_wide: false },
       };
     });
 
     // Group by campaigns for alternative response format
-    const campaigns = activePromotions
+    const campaigns = promotionsWithProducts
       .filter((p: any) => p.campaign)
       .reduce((acc: any, promo: any) => {
         const campaignId = promo.campaign.id;
