@@ -72,11 +72,11 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
       
       // Try with relations array
       if (typeof promotionModuleService.listPromotions === 'function') {
-        try {
-          const result = await promotionModuleService.listPromotions({
-            relations: ['campaign', 'application_method', 'rules'],
-          });
-          promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
+         try {
+           const result = await promotionModuleService.listPromotions({
+             relations: ['campaign', 'application_method', 'rules', 'buy_rules', 'target_rules'],
+           });
+           promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
         } catch (e1: any) {
           // Try with select and relations
           try {
@@ -92,26 +92,26 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
             // Retrieve each promotion with relations
             promotions = await Promise.all(
               promoList.map(async (promo: any) => {
-                try {
-                  if (typeof promotionModuleService.retrievePromotion === 'function') {
-                    return await promotionModuleService.retrievePromotion(promo.id, {
-                      relations: ['campaign', 'application_method', 'rules'],
-                    });
-                  }
-                  return promo;
-                } catch (err: any) {
-                  console.log(`[STORE/PROMOTIONS] Could not retrieve full details for ${promo.id}:`, err.message);
-                  return promo;
-                }
+                 try {
+                   if (typeof promotionModuleService.retrievePromotion === 'function') {
+                     return await promotionModuleService.retrievePromotion(promo.id, {
+                       relations: ['campaign', 'application_method', 'rules', 'buy_rules', 'target_rules'],
+                     });
+                   }
+                   return promo;
+                 } catch (err: any) {
+                   console.log(`[STORE/PROMOTIONS] Could not retrieve full details for ${promo.id}:`, err.message);
+                   return promo;
+                 }
               })
             );
           }
         }
-      } else if (typeof promotionModuleService.list === 'function') {
-        const result = await promotionModuleService.list({
-          relations: ['campaign', 'application_method', 'rules'],
-        });
-        promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
+       } else if (typeof promotionModuleService.list === 'function') {
+         const result = await promotionModuleService.list({
+           relations: ['campaign', 'application_method', 'rules', 'buy_rules', 'target_rules'],
+         });
+         promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
       } else {
         console.log("[STORE/PROMOTIONS] ⚠️ Promotion service found but no list method available");
         return res.status(200).json({
@@ -131,12 +131,21 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
       });
     }
 
-    console.log(`[STORE/PROMOTIONS] Found ${promotions.length} total promotions`);
-    
-    // Debug: Log first promotion structure
-    if (promotions.length > 0) {
-      console.log("[STORE/PROMOTIONS] Sample promotion structure:", JSON.stringify(promotions[0], null, 2));
-    }
+     console.log(`[STORE/PROMOTIONS] Found ${promotions.length} total promotions`);
+     
+     // Debug: Log first promotion structure with all fields
+     if (promotions.length > 0) {
+       const samplePromo = promotions[0];
+       console.log("[STORE/PROMOTIONS] Sample promotion structure:");
+       console.log("  - ID:", samplePromo.id);
+       console.log("  - Rules count:", samplePromo.rules?.length || 0);
+       console.log("  - Buy rules count:", samplePromo.buy_rules?.length || 0);
+       console.log("  - Target rules count:", samplePromo.target_rules?.length || 0);
+       console.log("  - Rules:", JSON.stringify(samplePromo.rules || [], null, 2));
+       console.log("  - Buy rules:", JSON.stringify(samplePromo.buy_rules || [], null, 2));
+       console.log("  - Target rules:", JSON.stringify(samplePromo.target_rules || [], null, 2));
+       console.log("  - All promotion keys:", Object.keys(samplePromo));
+     }
 
     // Filter for active promotions
     const now = new Date();
@@ -167,31 +176,42 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
      // Helper function to find products matching promotion rules
      const findProductsForPromotion = async (promo: any): Promise<{ product_ids: string[], product_handles: string[], is_site_wide: boolean }> => {
-      const productIds: string[] = [];
-      const productHandles: string[] = [];
+       const productIds: string[] = [];
+       const productHandles: string[] = [];
 
-      // If no rules, it's site-wide (applies to all products)
-      if (!promo.rules || promo.rules.length === 0) {
-        // Check if it targets items (not shipping/order level)
-        const targetType = promo.application_method?.target_type;
-        if (targetType === 'items' || targetType === 'order' || !targetType) {
-          return { product_ids: [], product_handles: [], is_site_wide: true }; // Empty arrays + flag means "all products"
-        }
-        return { product_ids: [], product_handles: [], is_site_wide: false };
-      }
+       // Combine all rules: rules, buy_rules, and target_rules
+       const allRules = [
+         ...(promo.rules || []),
+         ...(promo.buy_rules || []),
+         ...(promo.target_rules || []),
+       ];
 
-      try {
-        const productModuleService: any = req.scope.resolve(Modules.PRODUCT);
-        
-        // Collect all product-related rule values
-        const productIdValues: string[] = [];
-        const productHandleValues: string[] = [];
-        const collectionIds: string[] = [];
-        const categoryIds: string[] = [];
-        const typeIds: string[] = [];
-        const tagValues: string[] = [];
+       // Debug: Log all rules
+       console.log(`[STORE/PROMOTIONS] Promotion ${promo.id} has ${allRules.length} total rules (rules: ${promo.rules?.length || 0}, buy_rules: ${promo.buy_rules?.length || 0}, target_rules: ${promo.target_rules?.length || 0})`);
 
-        for (const rule of promo.rules) {
+       // If no rules at all, it's site-wide (applies to all products)
+       if (allRules.length === 0) {
+         // Check if it targets items (not shipping/order level)
+         const targetType = promo.application_method?.target_type;
+         if (targetType === 'items' || targetType === 'order' || !targetType) {
+           console.log(`[STORE/PROMOTIONS] Promotion ${promo.id} is site-wide (no rules)`);
+           return { product_ids: [], product_handles: [], is_site_wide: true }; // Empty arrays + flag means "all products"
+         }
+         return { product_ids: [], product_handles: [], is_site_wide: false };
+       }
+
+       try {
+         const productModuleService: any = req.scope.resolve(Modules.PRODUCT);
+         
+         // Collect all product-related rule values
+         const productIdValues: string[] = [];
+         const productHandleValues: string[] = [];
+         const collectionIds: string[] = [];
+         const categoryIds: string[] = [];
+         const typeIds: string[] = [];
+         const tagValues: string[] = [];
+
+         for (const rule of allRules) {
           const attr = rule.attribute?.toLowerCase() || '';
           const operator = rule.operator?.toLowerCase() || '';
           const values = rule.values || [];
