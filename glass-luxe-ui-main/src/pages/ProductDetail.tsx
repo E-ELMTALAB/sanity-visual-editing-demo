@@ -980,27 +980,40 @@ const ProductDetail = () => {
               </section>}
           </div>
 
-          {/* Mobile Sticky Bottom Bar */}
-          <div className="md:hidden fixed bottom-0 inset-x-0 z-50 glass border-t border-border-glass backdrop-blur-lg pb-safe">
-            <div className="flex items-center gap-3 p-3 sm:p-4 min-w-0 max-w-full">
-              <div className="flex flex-col shrink-0 min-w-0">
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  قیمت:
-                </span>
-                <div className="min-w-0">
-                  <Price
-                    current={currentPrice}
-                    old={shouldShowOriginalPrice ? originalPrice : undefined}
-                    className="text-base sm:text-lg"
-                  />
+          {/* Mobile Sticky Bottom Bar - Only Final Price & Buy Button */}
+          {(() => {
+            const hasVariants = (medusaVariants.length > 0 || (product?.variants?.length || 0) > 0);
+            const shouldShowOnMobile = !hasVariants || selectedVariant;
+            
+            if (!shouldShowOnMobile) return null;
+            
+            // Calculate final price (with discount if applicable, otherwise regular price)
+            const finalPrice = productPromotion 
+              ? productPromotion.discountedPrice 
+              : currentPrice;
+            
+            return (
+              <div className="md:hidden fixed bottom-0 inset-x-0 z-50 glass border-t border-border-glass backdrop-blur-lg pb-safe">
+                <div className="flex items-center gap-3 p-3 sm:p-4 min-w-0 max-w-full">
+                  <div className="flex flex-col shrink-0 min-w-0">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      قیمت:
+                    </span>
+                    <div className="min-w-0 flex items-baseline gap-1">
+                      <span className="text-base sm:text-lg font-bold text-primary">
+                        {new Intl.NumberFormat("fa-IR").format(finalPrice)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">تومان</span>
+                    </div>
+                  </div>
+                  <Button size="default" onClick={handleBuyNow} className="flex-1 min-w-0 h-11 text-sm sm:text-base">
+                    <ShoppingCart className="ltr:mr-1 rtl:ml-1 h-4 w-4 shrink-0" />
+                    <span className="truncate">خرید</span>
+                  </Button>
                 </div>
               </div>
-              <Button size="default" onClick={handleBuyNow} className="flex-1 min-w-0 h-11 text-sm sm:text-base">
-                <ShoppingCart className="ltr:mr-1 rtl:ml-1 h-4 w-4 shrink-0" />
-                <span className="truncate">خرید</span>
-              </Button>
-            </div>
-          </div>
+            );
+          })()}
         </main>
 
         <Footer links={{
