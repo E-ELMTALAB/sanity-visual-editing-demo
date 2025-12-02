@@ -64,14 +64,18 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
       });
     }
 
-    // List all promotions
+    // List all promotions with relations
     let promotions: any[] = [];
     try {
       if (typeof promotionModuleService.listPromotions === 'function') {
-        const result = await promotionModuleService.listPromotions({});
+        const result = await promotionModuleService.listPromotions({
+          relations: ['campaign', 'application_method', 'rules'],
+        });
         promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
       } else if (typeof promotionModuleService.list === 'function') {
-        const result = await promotionModuleService.list({});
+        const result = await promotionModuleService.list({
+          relations: ['campaign', 'application_method', 'rules'],
+        });
         promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
       } else {
         console.log("[STORE/PROMOTIONS] ⚠️ Promotion service found but no list method available");
@@ -84,15 +88,32 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
       }
     } catch (listError: any) {
       console.error("[STORE/PROMOTIONS] Error listing promotions:", listError.message);
-      return res.status(200).json({
-        promotions: [],
-        campaigns: [],
-        count: 0,
-        error: process.env.NODE_ENV === "development" ? listError.message : undefined,
-      });
+      // Try without relations if relations fail
+      try {
+        if (typeof promotionModuleService.listPromotions === 'function') {
+          const result = await promotionModuleService.listPromotions({});
+          promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
+        } else if (typeof promotionModuleService.list === 'function') {
+          const result = await promotionModuleService.list({});
+          promotions = Array.isArray(result) ? result : (Array.isArray(result[0]) ? result[0] : []);
+        }
+      } catch (fallbackError: any) {
+        console.error("[STORE/PROMOTIONS] Fallback query also failed:", fallbackError.message);
+        return res.status(200).json({
+          promotions: [],
+          campaigns: [],
+          count: 0,
+          error: process.env.NODE_ENV === "development" ? fallbackError.message : undefined,
+        });
+      }
     }
 
     console.log(`[STORE/PROMOTIONS] Found ${promotions.length} total promotions`);
+    
+    // Debug: Log first promotion structure
+    if (promotions.length > 0) {
+      console.log("[STORE/PROMOTIONS] Sample promotion structure:", JSON.stringify(promotions[0], null, 2));
+    }
 
     // Filter for active promotions
     const now = new Date();
