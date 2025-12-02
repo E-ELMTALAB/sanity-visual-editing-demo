@@ -135,12 +135,15 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
        console.log("[STORE/PROMOTIONS] Sample promotion structure:");
        console.log("  - ID:", samplePromo.id);
        console.log("  - Rules count:", samplePromo.rules?.length || 0);
-       console.log("  - Buy rules count:", samplePromo.buy_rules?.length || 0);
-       console.log("  - Target rules count:", samplePromo.target_rules?.length || 0);
-       console.log("  - Rules:", JSON.stringify(samplePromo.rules || [], null, 2));
-       console.log("  - Buy rules:", JSON.stringify(samplePromo.buy_rules || [], null, 2));
-       console.log("  - Target rules:", JSON.stringify(samplePromo.target_rules || [], null, 2));
+       if (samplePromo.rules && samplePromo.rules.length > 0) {
+         console.log("  - Rules:", JSON.stringify(samplePromo.rules.map((r: any) => ({
+           attribute: r.attribute,
+           operator: r.operator,
+           values: r.values,
+         })), null, 2));
+       }
        console.log("  - All promotion keys:", Object.keys(samplePromo));
+       console.log("  - Campaign keys:", samplePromo.campaign ? Object.keys(samplePromo.campaign) : 'no campaign');
      }
 
     // Filter for active promotions
@@ -398,7 +401,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
       };
     });
 
-    // Group by campaigns for alternative response format
+    // Group by campaigns and aggregate products from all promotions in each campaign
     const campaigns = promotionsWithProducts
       .filter((p: any) => p.campaign)
       .reduce((acc: any, promo: any) => {
@@ -407,11 +410,44 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
           acc[campaignId] = {
             ...promo.campaign,
             promotions: [],
+            matched_products: {
+              product_ids: [],
+              product_handles: [],
+              is_site_wide: false,
+            },
           };
         }
-        acc[campaignId].promotions.push(transformedPromotions.find((tp: any) => tp.id === promo.id));
+        
+        // Add promotion to campaign
+        const transformedPromo = transformedPromotions.find((tp: any) => tp.id === promo.id);
+        acc[campaignId].promotions.push(transformedPromo);
+        
+        // Aggregate products from this promotion into the campaign
+        if (promo.matched_products) {
+          // If any promotion in the campaign is site-wide, the campaign is site-wide
+          if (promo.matched_products.is_site_wide) {
+            acc[campaignId].matched_products.is_site_wide = true;
+          }
+          
+          // Aggregate product IDs and handles (avoid duplicates)
+          if (promo.matched_products.product_ids && promo.matched_products.product_ids.length > 0) {
+            acc[campaignId].matched_products.product_ids.push(...promo.matched_products.product_ids);
+          }
+          if (promo.matched_products.product_handles && promo.matched_products.product_handles.length > 0) {
+            acc[campaignId].matched_products.product_handles.push(...promo.matched_products.product_handles);
+          }
+        }
+        
         return acc;
       }, {});
+
+    // Remove duplicates from campaign product lists
+    Object.values(campaigns).forEach((campaign: any) => {
+      if (campaign.matched_products) {
+        campaign.matched_products.product_ids = [...new Set(campaign.matched_products.product_ids)];
+        campaign.matched_products.product_handles = [...new Set(campaign.matched_products.product_handles)];
+      }
+    });
 
     console.log(`[STORE/PROMOTIONS] Returning ${transformedPromotions.length} active promotions`);
     console.log(`[STORE/PROMOTIONS] =========================================`);
