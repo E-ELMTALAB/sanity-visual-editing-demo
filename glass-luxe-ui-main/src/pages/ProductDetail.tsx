@@ -452,10 +452,16 @@ const ProductDetail = () => {
       
       console.log('[PRODUCT-DETAIL] Sanity slug:', sanitySlug);
       
+      // Calculate final price with discount applied if promotion exists
+      let finalPrice = selectedVariantData.price;
+      if (productPromotion && productPromotion.promotion && selectedVariantData.price > 0) {
+        finalPrice = calculateDiscountedPrice(selectedVariantData.price, productPromotion.promotion);
+      }
+      
       const cartItem = {
         id: parseInt(product.id) || Date.now(),
         title: product.title,
-        price: selectedVariantData.price,
+        price: finalPrice, // Use discounted price for cart/checkout
         image: product.image || '/placeholder.svg',
         quantity: quantity,
         selectedOption: selectedVariantData.name,
@@ -483,12 +489,12 @@ const ProductDetail = () => {
         : slug || '';
       
       const selectedProductVariant = product.variants.find(v => v.id === selectedVariant);
-      const price = selectedProductVariant?.price || product.price || 0;
+      const originalPrice = selectedProductVariant?.price || product.price || 0;
       
-      console.log('[PRODUCT-DETAIL] Fallback price:', price);
+      console.log('[PRODUCT-DETAIL] Fallback price:', originalPrice);
       console.log('[PRODUCT-DETAIL] Sanity slug:', sanitySlug);
       
-      if (price === 0) {
+      if (originalPrice === 0) {
         console.error('[PRODUCT-DETAIL] ❌ Price is zero');
         toast({
           title: "خطا",
@@ -498,10 +504,16 @@ const ProductDetail = () => {
         return false;
       }
       
+      // Calculate final price with discount applied if promotion exists
+      let finalPrice = originalPrice;
+      if (productPromotion && productPromotion.promotion && originalPrice > 0) {
+        finalPrice = calculateDiscountedPrice(originalPrice, productPromotion.promotion);
+      }
+      
       const cartItem = {
         id: parseInt(product.id) || Date.now(),
         title: product.title,
-        price: price,
+        price: finalPrice, // Use discounted price for cart/checkout
         image: product.image || '/placeholder.svg',
         quantity: quantity,
         selectedOption: selectedProductVariant?.name,
@@ -827,6 +839,14 @@ const ProductDetail = () => {
                           const variantPrice = medusaVariants.length > 0 ? variant.price : variant.price || 0;
                           const variantInStock = medusaVariants.length > 0 ? true : variant.inStock !== false;
 
+                          // Calculate discounted price if promotion exists
+                          let originalPrice = variantPrice;
+                          let discountedPrice = variantPrice;
+                          if (productPromotion && productPromotion.promotion && variantPrice > 0) {
+                            discountedPrice = calculateDiscountedPrice(variantPrice, productPromotion.promotion);
+                          }
+                          const hasDiscount = discountedPrice < originalPrice;
+
                           return (
                             <button
                               key={variantId || idx}
@@ -838,9 +858,19 @@ const ProductDetail = () => {
                               <span className="font-semibold text-foreground text-sm line-clamp-2">
                                   {variantName}
                               </span>
-                              <div className="flex items-baseline gap-2 flex-wrap min-w-0">
-                                <span className="text-base sm:text-lg font-bold text-primary">
-                                    {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(variantPrice)} تومان
+                              <div className="flex flex-col items-start gap-0.5 min-w-0">
+                                {/* Original price with strikethrough if discount exists */}
+                                {hasDiscount && (
+                                  <span className="text-xs text-muted-foreground line-through">
+                                    {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(originalPrice)} تومان
+                                  </span>
+                                )}
+                                {/* Final price */}
+                                <span className={cn(
+                                  "text-base sm:text-lg font-bold",
+                                  hasDiscount ? "text-green-400" : "text-primary"
+                                )}>
+                                  {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(discountedPrice)} تومان
                                 </span>
                               </div>
                             </div>
