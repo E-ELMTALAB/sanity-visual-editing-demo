@@ -1,15 +1,24 @@
 export interface MedusaVariant {
   variant_id: string;
   name: string;
-  price: number; // In Tomans
+  price: number; // In Tomans (current/discounted price)
   price_rials: number; // In Rials
+  original_price?: number; // Original price in Tomans (before discount)
+  original_price_rials?: number; // Original price in Rials
   sku?: string;
   currency: string;
+  // Promotion info if applicable
+  has_promotion?: boolean;
+  discount_percentage?: number;
+  promotion_ends_at?: string; // ISO date string
 }
 
 export interface ProductPrices {
   product_id: string;
   variants: MedusaVariant[];
+  // Product-level promotion info
+  has_active_promotion?: boolean;
+  promotion_ends_at?: string; // ISO date string for the earliest ending promotion
 }
 
 // Simple localStorage cache for price data
@@ -158,6 +167,15 @@ export async function fetchProductPrices(slugs: string[]): Promise<Record<string
             const irrPrice = variant.prices?.find((p: any) => p.currency_code === 'irr' || p.currency_code === 'IRR');
             const priceInRials = irrPrice?.amount || 0;
             const priceInToman = Math.round(priceInRials / 10);
+            
+            // Check for calculated_price (when promotions are applied by Medusa)
+            const calculatedPrice = variant.calculated_price;
+            const originalPriceRials = calculatedPrice?.original_amount || priceInRials;
+            const originalPriceToman = Math.round(originalPriceRials / 10);
+            const hasPromotion = calculatedPrice && calculatedPrice.calculated_amount !== calculatedPrice.original_amount;
+            const discountPercentage = hasPromotion && originalPriceToman > 0
+              ? Math.round(((originalPriceToman - priceInToman) / originalPriceToman) * 100)
+              : undefined;
 
             return {
               variant_id: variant.id,
@@ -165,7 +183,11 @@ export async function fetchProductPrices(slugs: string[]): Promise<Record<string
               sku: variant.sku,
               price: priceInToman,
               price_rials: priceInRials,
+              original_price: hasPromotion ? originalPriceToman : undefined,
+              original_price_rials: hasPromotion ? originalPriceRials : undefined,
               currency: 'IRT',
+              has_promotion: hasPromotion,
+              discount_percentage: discountPercentage,
             };
           }).filter(v => v.price > 0),
         };

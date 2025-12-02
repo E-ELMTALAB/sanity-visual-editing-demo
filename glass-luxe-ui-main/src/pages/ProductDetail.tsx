@@ -17,8 +17,10 @@ import { CartDrawer } from "@/components/FloatingDock/CartDrawer";
 import { ChatbotPanel } from "@/components/FloatingDock/ChatbotPanel";
 import { SupportPanel } from "@/components/FloatingDock/SupportPanel";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
+import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { useDirection } from "@/contexts/DirectionContext";
 import { useCart } from "@/contexts/cart-context";
+import { useProductPromotion } from "@/contexts/promotion-context";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { fetchFromSanity } from "@/lib/sanity.client.light";
@@ -26,6 +28,7 @@ import { validateSanityConfig } from "@/lib/sanity.config";
 import { productBySlugQuery, faqsByPageQuery } from "@/lib/sanity.queries";
 import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";
 import { fetchProductPrices, type MedusaVariant } from "@/lib/medusa-prices";
+import { toPersianNumber } from "@/lib/medusa-promotions";
 import EnhancedMarkdownRenderer from "@/components/EnhancedMarkdownRenderer";
 const springTransition = {
   type: "spring" as const,
@@ -125,6 +128,13 @@ const ProductDetail = () => {
   const { addItem, setSingleItem, state: cartState } = useCart();
   const stickyRef = useRef<HTMLDivElement>(null);
   const [tocHeadings, setTocHeadings] = useState<Array<{ level: number; text: string; id: string }>>([]);
+  
+  // Get promotion info from context
+  const validMedusaPrices = medusaVariants.filter(v => v.price > 0).map(v => v.price);
+  const lowestMedusaPrice = validMedusaPrices.length > 0 
+    ? Math.min(...validMedusaPrices)
+    : product?.price || 0;
+  const productPromotion = useProductPromotion(slug, product?.id, lowestMedusaPrice);
 
   // Extract headings from description when product loads
   useEffect(() => {
@@ -661,13 +671,44 @@ const ProductDetail = () => {
                   </div>
 
                   <div className="min-w-0" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
+                    {/* Promotion Badge */}
+                    {productPromotion && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="mb-3"
+                      >
+                        <Badge className="bg-red-500 text-white px-3 py-1 text-sm font-bold">
+                          {toPersianNumber(productPromotion.discountPercentage)}٪ تخفیف ویژه
+                        </Badge>
+                      </motion.div>
+                    )}
+                    
                     <div className="overflow-x-auto" style={{ textAlign: "right", marginRight: 0 }}>
                       <Price
-                        current={currentPrice}
-                        old={shouldShowOriginalPrice ? originalPrice : undefined}
+                        current={productPromotion ? productPromotion.discountedPrice : currentPrice}
+                        old={productPromotion ? productPromotion.originalPrice : (shouldShowOriginalPrice ? originalPrice : undefined)}
+                        discountPercentage={productPromotion?.discountPercentage}
                         className="text-xl sm:text-2xl whitespace-nowrap"
+                        variant={productPromotion ? "promotional" : "default"}
                       />
                     </div>
+                    
+                    {/* Countdown Timer for time-limited promotions */}
+                    {productPromotion?.endsAt && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-3"
+                      >
+                        <div className="text-sm text-muted-foreground mb-2">پایان تخفیف:</div>
+                        <CountdownTimer 
+                          endsAt={productPromotion.endsAt} 
+                          size="md" 
+                          variant="default"
+                        />
+                      </motion.div>
+                    )}
                   </div>
 
                   {/* Features */}

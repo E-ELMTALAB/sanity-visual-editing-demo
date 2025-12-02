@@ -1,0 +1,551 @@
+/**
+ * Medusa v2 Promotions API Layer
+ * 
+ * IMPORTANT: Medusa v2 handles promotions differently than v1:
+ * - Promotions are NOT exposed via a standard Store API endpoint
+ * - Promotions are applied at the cart level when items are added
+ * - Product pricing may include calculated_price fields when promotions apply
+ * 
+ * This module provides:
+ * 1. Support for custom /store/promotions endpoint (if implemented on your backend)
+ * 2. Utility functions for promotion display and calculations
+ * 3. Integration with Medusa's calculated pricing system
+ * 
+ * To use promotions with Medusa v2, you need to:
+ * 1. Create promotions in Medusa Admin with campaigns (start/end dates)
+ * 2. Optionally expose a custom /store/promotions endpoint on your backend
+ * 3. Or rely on calculated_price in product variants for automatic discounts
+ */
+
+const getBackendUrl = () => import.meta.env.VITE_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com';
+const getPublishableKey = () => import.meta.env.VITE_MEDUSA_PUBLISHABLE_KEY || 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4';
+
+// ============ TYPES (Aligned with Medusa v2 Promotion Module) ============
+
+/**
+ * Campaign structure in Medusa v2
+ * Campaigns group promotions and define their active period
+ */
+export interface PromotionCampaign {
+  id: string;
+  name?: string;
+  description?: string;
+  campaign_identifier?: string;
+  starts_at: string;  // ISO date string
+  ends_at: string;    // ISO date string
+  budget?: {
+    type?: 'spend' | 'usage';
+    limit?: number;
+    used?: number;
+  };
+}
+
+/**
+ * Application method defines how the promotion discount is applied
+ * Aligned with Medusa v2's ApplicationMethodDTO
+ */
+export interface PromotionApplicationMethod {
+  type: 'percentage' | 'fixed';
+  value: number;  // For percentage: 10 = 10%, For fixed: amount in smallest currency unit
+  target_type: 'items' | 'shipping' | 'order';
+  allocation?: 'each' | 'across';
+  max_quantity?: number;
+  currency_code?: string;
+  // Medusa v2 specific fields
+  buy_rules_min_quantity?: number;
+  apply_to_quantity?: number;
+}
+
+/**
+ * Promotion rules define conditions for when a promotion applies
+ * Aligned with Medusa v2's PromotionRuleDTO
+ */
+export interface PromotionRule {
+  id?: string;
+  attribute: string;  // e.g., 'items.product.id', 'items.product.handle', 'customer.groups.id'
+  operator: 'eq' | 'ne' | 'in' | 'nin' | 'gt' | 'gte' | 'lt' | 'lte';
+  values: string[];
+  description?: string;
+}
+
+/**
+ * Main promotion structure aligned with Medusa v2's PromotionDTO
+ */
+export interface MedusaPromotion {
+  id: string;
+  code?: string;
+  is_automatic: boolean;
+  type: 'standard' | 'buyget';
+  status?: 'active' | 'inactive' | 'expired' | 'draft';
+  campaign_id?: string;
+  campaign?: PromotionCampaign;
+  application_method?: PromotionApplicationMethod;
+  rules?: PromotionRule[];
+  // Display fields (may be custom)
+  title?: string;
+  description?: string;
+  // Medusa v2 timestamps
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+}
+
+/**
+ * Computed promotion info for a specific product
+ */
+export interface ProductPromotionInfo {
+  promotion: MedusaPromotion;
+  originalPrice: number;
+  discountedPrice: number;
+  discountAmount: number;
+  discountPercentage: number;
+  endsAt?: string;  // ISO date string
+}
+
+// ============ CACHE ============
+
+const PROMOTIONS_CACHE_KEY = 'medusa-promotions-cache-v2';
+const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
+
+interface PromotionsCacheEntry {
+  data: MedusaPromotion[];
+  timestamp: number;
+}
+
+function getCachedPromotions(): MedusaPromotion[] | null {
+  try {
+    const cached = localStorage.getItem(PROMOTIONS_CACHE_KEY);
+    if (!cached) return null;
+
+    const cache: PromotionsCacheEntry = JSON.parse(cached);
+
+    // Check if cache is expired
+    if (Date.now() - cache.timestamp > CACHE_DURATION) {
+      localStorage.removeItem(PROMOTIONS_CACHE_KEY);
+      return null;
+    }
+
+    console.log('[MEDUSA-PROMOTIONS] ✅ Using cached promotions:', cache.data.length, 'promotions');
+    return cache.data;
+  } catch (error) {
+    console.warn('[MEDUSA-PROMOTIONS] Cache read error:', error);
+    return null;
+  }
+}
+
+function setCachedPromotions(data: MedusaPromotion[]): void {
+  try {
+    const cache: PromotionsCacheEntry = {
+      data,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(PROMOTIONS_CACHE_KEY, JSON.stringify(cache));
+    console.log('[MEDUSA-PROMOTIONS] 💾 Cached', data.length, 'promotions');
+  } catch (error) {
+    console.warn('[MEDUSA-PROMOTIONS] Cache write error:', error);
+  }
+}
+
+export function clearPromotionsCache(): void {
+  localStorage.removeItem(PROMOTIONS_CACHE_KEY);
+  console.log('[MEDUSA-PROMOTIONS] 🗑️ Cache cleared');
+}
+
+// ============ API FUNCTIONS ============
+
+/**
+ * Fetch all active promotions from Medusa backend
+ * 
+ * NOTE: Medusa v2 does NOT have a standard /store/promotions endpoint.
+ * This function expects a CUSTOM endpoint to be implemented on your backend.
+ * 
+ * If you haven't implemented a custom endpoint, this will gracefully return
+ * an empty array and your promotions will be handled via:
+ * 1. Cart-level promotion codes
+ * 2. Automatic promotions applied to calculated_price in variants
+ * 
+ * To implement a custom endpoint on your Medusa backend, create:
+ * src/api/store/promotions/route.ts
+ */
+export async function fetchActivePromotions(): Promise<MedusaPromotion[]> {
+  console.log('[MEDUSA-PROMOTIONS] ========== FETCHING ACTIVE PROMOTIONS ==========');
+  console.log('[MEDUSA-PROMOTIONS] Backend URL:', getBackendUrl());
+
+  // Check cache first
+  const cachedPromotions = getCachedPromotions();
+  if (cachedPromotions) {
+    return cachedPromotions;
+  }
+
+  // Try custom store endpoint (must be implemented on your Medusa backend)
+  // This is NOT a standard Medusa v2 endpoint
+  const endpoints = [
+    '/store/promotions',           // Custom endpoint (recommended)
+    '/store/campaigns',            // Alternative: fetch campaigns with promotions
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      console.log('[MEDUSA-PROMOTIONS] Trying endpoint:', endpoint);
+      
+      const response = await fetch(`${getBackendUrl()}${endpoint}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-publishable-api-key': getPublishableKey(),
+        },
+      });
+
+      console.log('[MEDUSA-PROMOTIONS] Response status:', response.status);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log('[MEDUSA-PROMOTIONS] ℹ️ Endpoint not implemented:', endpoint);
+        } else {
+          console.warn('[MEDUSA-PROMOTIONS] ⚠️ Endpoint error:', endpoint, response.status);
+        }
+        continue; // Try next endpoint
+      }
+
+      const result = await response.json();
+      console.log('[MEDUSA-PROMOTIONS] Raw response from', endpoint);
+
+      // Handle different response formats
+      let promotions: MedusaPromotion[] = [];
+      
+      if (Array.isArray(result)) {
+        promotions = result;
+      } else if (result.promotions && Array.isArray(result.promotions)) {
+        promotions = result.promotions;
+      } else if (result.campaigns && Array.isArray(result.campaigns)) {
+        // Extract promotions from campaigns
+        promotions = result.campaigns.flatMap((c: any) => c.promotions || []);
+      } else if (result.data && Array.isArray(result.data)) {
+        promotions = result.data;
+      }
+
+      if (promotions.length === 0) {
+        console.log('[MEDUSA-PROMOTIONS] No promotions found at', endpoint);
+        continue; // Try next endpoint
+      }
+
+      // Filter to only active promotions with valid campaigns
+      const now = new Date();
+      const activePromotions = promotions.filter(promo => {
+        // Skip if explicitly inactive or deleted
+        if (promo.status === 'inactive' || promo.status === 'expired' || promo.deleted_at) {
+          return false;
+        }
+        
+        // Check campaign dates if available
+        if (promo.campaign) {
+          const startsAt = new Date(promo.campaign.starts_at);
+          const endsAt = new Date(promo.campaign.ends_at);
+          return now >= startsAt && now <= endsAt;
+        }
+        
+        // If no campaign, check status or automatic flag
+        return promo.status === 'active' || promo.is_automatic;
+      });
+
+      console.log('[MEDUSA-PROMOTIONS] ✅ Active promotions:', activePromotions.length);
+      
+      // Cache the results
+      setCachedPromotions(activePromotions);
+
+      console.log('[MEDUSA-PROMOTIONS] =========================================');
+      return activePromotions;
+
+    } catch (error: any) {
+      console.warn('[MEDUSA-PROMOTIONS] Error with endpoint', endpoint, ':', error.message);
+      continue; // Try next endpoint
+    }
+  }
+
+  // No promotions found from any endpoint
+  console.log('[MEDUSA-PROMOTIONS] ℹ️ No custom promotions endpoint available');
+  console.log('[MEDUSA-PROMOTIONS] 💡 Tip: Promotions will be applied via cart or calculated_price');
+  console.log('[MEDUSA-PROMOTIONS] =========================================');
+  
+  // Cache empty result to avoid repeated failed requests
+  setCachedPromotions([]);
+  return [];
+}
+
+/**
+ * Get promotions that apply to a specific product
+ * Uses Medusa v2 rule attribute format (e.g., 'items.product.id')
+ */
+export function getPromotionsForProduct(
+  productSlug: string,
+  productId: string,
+  promotions: MedusaPromotion[]
+): MedusaPromotion[] {
+  if (!promotions.length) return [];
+
+  return promotions.filter(promo => {
+    // If no rules, it's a site-wide promotion (applies to all products)
+    if (!promo.rules || promo.rules.length === 0) {
+      // But check if it targets items (not shipping/order level)
+      const targetType = promo.application_method?.target_type;
+      return targetType === 'items' || targetType === 'order' || !targetType;
+    }
+
+    // Check if product matches any rule
+    // Medusa v2 uses dot notation for nested attributes
+    return promo.rules.some(rule => {
+      const attr = rule.attribute.toLowerCase();
+      
+      // Handle various attribute formats
+      if (attr.includes('product.handle') || attr.includes('product_handle') || attr === 'handle') {
+        return matchesRule(productSlug, rule);
+      }
+      
+      if (attr.includes('product.id') || attr.includes('product_id') || attr === 'id') {
+        return matchesRule(productId, rule);
+      }
+      
+      return false;
+    });
+  });
+}
+
+/**
+ * Helper function to check if a value matches a rule
+ */
+function matchesRule(value: string, rule: PromotionRule): boolean {
+  const values = rule.values.map(v => v.toLowerCase());
+  const normalizedValue = value.toLowerCase();
+  
+  switch (rule.operator) {
+    case 'eq':
+      return values.length === 1 && values[0] === normalizedValue;
+    case 'ne':
+      return values.length === 1 && values[0] !== normalizedValue;
+    case 'in':
+      return values.includes(normalizedValue);
+    case 'nin':
+      return !values.includes(normalizedValue);
+    default:
+      return false;
+  }
+}
+
+/**
+ * Get the best (highest discount) promotion for a product
+ */
+export function getBestPromotionForProduct(
+  productSlug: string,
+  productId: string,
+  originalPrice: number,
+  promotions: MedusaPromotion[]
+): ProductPromotionInfo | null {
+  if (originalPrice <= 0) return null;
+  
+  const applicablePromotions = getPromotionsForProduct(productSlug, productId, promotions);
+  
+  if (applicablePromotions.length === 0) return null;
+
+  // Calculate discount for each promotion and find the best one
+  let bestPromo: ProductPromotionInfo | null = null;
+
+  for (const promo of applicablePromotions) {
+    if (!promo.application_method) continue;
+    
+    const discountedPrice = calculateDiscountedPrice(originalPrice, promo);
+    const discountAmount = originalPrice - discountedPrice;
+    
+    // Skip if no actual discount
+    if (discountAmount <= 0) continue;
+    
+    const discountPercentage = Math.round((discountAmount / originalPrice) * 100);
+
+    if (!bestPromo || discountAmount > bestPromo.discountAmount) {
+      bestPromo = {
+        promotion: promo,
+        originalPrice,
+        discountedPrice,
+        discountAmount,
+        discountPercentage,
+        endsAt: promo.campaign?.ends_at,
+      };
+    }
+  }
+
+  return bestPromo;
+}
+
+/**
+ * Get site-wide promotions (no product-specific rules)
+ */
+export function getSiteWidePromotions(promotions: MedusaPromotion[]): MedusaPromotion[] {
+  return promotions.filter(promo => {
+    // Site-wide if no rules
+    if (!promo.rules || promo.rules.length === 0) {
+      return true;
+    }
+    
+    // Or if it targets order level
+    if (promo.application_method?.target_type === 'order') {
+      return true;
+    }
+    
+    // Check if rules are customer-based (not product-based)
+    const hasOnlyCustomerRules = promo.rules.every(rule => {
+      const attr = rule.attribute.toLowerCase();
+      return attr.includes('customer') || attr.includes('group');
+    });
+    
+    return hasOnlyCustomerRules;
+  });
+}
+
+/**
+ * Get the most prominent site-wide promotion (for hero banner)
+ */
+export function getPrimarySiteWidePromotion(promotions: MedusaPromotion[]): MedusaPromotion | null {
+  const siteWide = getSiteWidePromotions(promotions);
+  if (siteWide.length === 0) return null;
+
+  // Sort by discount value (highest first), then by end date (soonest first)
+  return siteWide.sort((a, b) => {
+    const valueA = a.application_method?.value || 0;
+    const valueB = b.application_method?.value || 0;
+    
+    if (valueB !== valueA) {
+      return valueB - valueA;
+    }
+    
+    // If same value, prefer the one ending sooner (more urgent)
+    const endA = a.campaign?.ends_at ? new Date(a.campaign.ends_at).getTime() : Infinity;
+    const endB = b.campaign?.ends_at ? new Date(b.campaign.ends_at).getTime() : Infinity;
+    return endA - endB;
+  })[0];
+}
+
+/**
+ * Calculate discounted price based on promotion
+ * Handles both percentage and fixed amount discounts
+ */
+export function calculateDiscountedPrice(
+  originalPrice: number,
+  promotion: MedusaPromotion
+): number {
+  if (!promotion.application_method) return originalPrice;
+  
+  const { type, value } = promotion.application_method;
+
+  if (type === 'percentage') {
+    // value is percentage (e.g., 10 = 10%)
+    const discount = originalPrice * (value / 100);
+    return Math.round(originalPrice - discount);
+  }
+
+  if (type === 'fixed') {
+    // In Medusa v2, fixed amounts are in the smallest currency unit
+    // For IRR (Rials), we need to convert to Tomans
+    // If value > 100000, assume it's in Rials and convert
+    const discountAmount = value > 100000 ? Math.round(value / 10) : value;
+    return Math.max(0, originalPrice - discountAmount);
+  }
+
+  return originalPrice;
+}
+
+/**
+ * Calculate time remaining until promotion ends
+ */
+export function getTimeRemaining(endsAt: string): {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  total: number;
+  expired: boolean;
+} {
+  const now = new Date().getTime();
+  const end = new Date(endsAt).getTime();
+  const total = end - now;
+
+  if (total <= 0) {
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, total: 0, expired: true };
+  }
+
+  return {
+    days: Math.floor(total / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((total % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+    minutes: Math.floor((total % (1000 * 60 * 60)) / (1000 * 60)),
+    seconds: Math.floor((total % (1000 * 60)) / 1000),
+    total,
+    expired: false,
+  };
+}
+
+/**
+ * Format number to Persian digits
+ */
+export function toPersianNumber(num: number): string {
+  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+  return num.toString().replace(/\d/g, (d) => persianDigits[parseInt(d)]);
+}
+
+/**
+ * Format number with thousands separator in Persian locale
+ */
+export function formatPersianPrice(num: number): string {
+  return num.toLocaleString('fa-IR');
+}
+
+/**
+ * Check if a promotion is currently active
+ */
+export function isPromotionActive(promotion: MedusaPromotion): boolean {
+  // Check status
+  if (promotion.status === 'inactive' || promotion.status === 'expired' || promotion.deleted_at) {
+    return false;
+  }
+  
+  // Check campaign dates
+  if (promotion.campaign) {
+    const now = new Date();
+    const startsAt = new Date(promotion.campaign.starts_at);
+    const endsAt = new Date(promotion.campaign.ends_at);
+    return now >= startsAt && now <= endsAt;
+  }
+  
+  // If no campaign, rely on status or automatic flag
+  return promotion.status === 'active' || promotion.is_automatic;
+}
+
+/**
+ * Get formatted discount label for display
+ */
+export function getDiscountLabel(promotion: MedusaPromotion): string {
+  if (!promotion.application_method) {
+    return 'تخفیف ویژه';
+  }
+  
+  const { type, value } = promotion.application_method;
+
+  if (type === 'percentage') {
+    return `${toPersianNumber(value)}٪ تخفیف`;
+  }
+
+  if (type === 'fixed') {
+    // Convert from smallest unit if needed
+    const displayValue = value > 100000 ? Math.round(value / 10) : value;
+    return `${formatPersianPrice(displayValue)} تومان تخفیف`;
+  }
+
+  return 'تخفیف ویژه';
+}
+
+/**
+ * Get promotion code if available (for display/copy)
+ */
+export function getPromotionCode(promotion: MedusaPromotion): string | null {
+  if (promotion.is_automatic) {
+    return null; // Automatic promotions don't have codes
+  }
+  return promotion.code || null;
+}

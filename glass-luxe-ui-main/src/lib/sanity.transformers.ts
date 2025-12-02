@@ -144,13 +144,14 @@ export function transformSpecialOfferProduct(product: any, index: number) {
   const discountPct = product?.discountPercentage || (oldPrice > 0 ? Math.round(((oldPrice - price) / oldPrice) * 100) : 0)
 
   return {
-    id: product?._key || `offer-${index}`,
+    id: product?._key || product?._id || `offer-${index}`,
     title: product?.name || 'محصول',
     image: product?.image ? getImageUrl(product.image, 500) : '',
     imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [400, 500, 700], { quality: 80 }).srcSet : '',
     oldPrice: oldPrice > 0 ? oldPrice : undefined,
     price,
     discountPct: discountPct > 0 ? discountPct : undefined,
+    slug: product?.slug?.current || product?.handle || product?.slug || undefined,
   }
 }
 

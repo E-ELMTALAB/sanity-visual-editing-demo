@@ -7,8 +7,10 @@ import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { Header } from "@/components/Header";
 import { useDirection } from "@/contexts/DirectionContext";
 import { useCart } from "@/contexts/cart-context";
+import { useSiteWidePromotion } from "@/contexts/promotion-context";
 import { toast } from "@/hooks/use-toast";
 import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
+import { PromotionBanner } from "@/components/Hero/PromotionBanner";
 
 // Static hero image for immediate LCP
 import heroBg from "@/assets/hero-ai-cubes.png";
@@ -349,6 +351,9 @@ const Index = () => {
   const { state: cartState } = useCart();
   const footerTriggerRef = useRef<HTMLDivElement>(null);
   
+  // Promotions from Medusa
+  const siteWidePromotion = useSiteWidePromotion();
+  
   // UI state
   const [chatOpen, setChatOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
@@ -672,6 +677,13 @@ const Index = () => {
         <StaticHero />
       )}
 
+      {/* Site-wide Promotion Banner - from Medusa */}
+      {siteWidePromotion && (
+        <div className="container mx-auto px-4 md:px-6 -mt-8 mb-8 relative z-20">
+          <PromotionBanner promotion={siteWidePromotion} variant="hero" />
+        </div>
+      )}
+
       <TestimonialsRow />
 
       {/* Dynamic content sections - only render when data is loaded */}
@@ -691,6 +703,7 @@ const Index = () => {
           {sanityData.specialOfferProducts.length > 0 && (
             <SpecialOffers 
               products={sanityData.specialOfferProducts} 
+              productPrices={medusaPrices}
               onAdd={handleAddToCart}
               onViewAll={() => {}}
               className="mx-[10px]"

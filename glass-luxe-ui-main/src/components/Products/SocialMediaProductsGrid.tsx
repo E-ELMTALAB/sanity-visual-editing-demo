@@ -4,9 +4,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { Button } from "@/components/ui/button";
 import { useDirection } from "@/contexts/DirectionContext";
+import { usePromotions } from "@/contexts/promotion-context";
 import { cn } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
 import { ProductPrices } from "@/lib/medusa-prices";
+
 interface Product {
   id: string;
   title: string;
@@ -14,6 +16,7 @@ interface Product {
   price: number;
   slug?: string;
 }
+
 interface SocialMediaProductsGridProps {
   products: Product[];
   onAdd: (id: string) => void;
@@ -21,11 +24,13 @@ interface SocialMediaProductsGridProps {
   className?: string;
   productPrices?: Record<string, ProductPrices>;
 }
+
 const springTransition = {
   type: "spring" as const,
   stiffness: 220,
   damping: 28
 };
+
 export function SocialMediaProductsGrid({
   products,
   onAdd,
@@ -33,30 +38,33 @@ export function SocialMediaProductsGrid({
   className,
   productPrices,
 }: SocialMediaProductsGridProps) {
-  const {
-    isRTL
-  } = useDirection();
+  const { isRTL } = useDirection();
+  const { getPromotionForProduct } = usePromotions();
+  
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     direction: isRTL ? "rtl" : "ltr",
     slidesToScroll: 1
   });
+
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
   }, [emblaApi]);
+
   const scrollNext = useCallback(() => {
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
-  return <section className={cn("py-8 sm:py-10 lg:py-12 px-6 lg:px-[100px] bg-transparent", className)}>
+
+  return (
+    <section className={cn("py-8 sm:py-10 lg:py-12 px-6 lg:px-[100px] bg-transparent", className)}>
       <div className="max-w-[1400px] mx-auto">
         {/* Section Title */}
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={springTransition} className="mb-8 text-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={springTransition} 
+          className="mb-8 text-center"
+        >
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
             پرفروش‌ترین محصولات سوشیال مدیا
           </h2>
@@ -67,48 +75,93 @@ export function SocialMediaProductsGrid({
 
         {/* Product Carousel */}
         <div className="relative">
-          <motion.div initial={{
-          opacity: 0
-        }} animate={{
-          opacity: 1
-        }} transition={springTransition} className="overflow-hidden" ref={emblaRef}>
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            transition={springTransition} 
+            className="overflow-hidden" 
+            ref={emblaRef}
+          >
             <div className="flex gap-4 md:gap-5 py-[5px]">
-              {products.slice(0, 8).map(product => <div key={product.id} className="flex-[0_0_75%] sm:flex-[0_0_45%] md:flex-[0_0_38%] lg:flex-[0_0_24%] min-w-0">
-                  <ProductCard
-                    id={product.id}
-                    title={product.title}
-                    image={product.image}
-                    price={product.price}
-                    slug={product.slug}
-                    medusaVariants={product.slug ? productPrices?.[product.slug]?.variants || [] : []}
-                    onAdd={onAdd}
-                  />
-                </div>)}
+              {products.slice(0, 8).map(product => {
+                // Get promotion info for this product
+                const medusaVariants = product.slug ? productPrices?.[product.slug]?.variants || [] : [];
+                const validPrices = medusaVariants.filter(v => v.price > 0).map(v => v.price);
+                const lowestPrice = validPrices.length > 0 
+                  ? Math.min(...validPrices)
+                  : product.price;
+                
+                const promotionInfo = product.slug && lowestPrice > 0
+                  ? getPromotionForProduct(product.slug, product.id, lowestPrice)
+                  : null;
+
+                return (
+                  <div 
+                    key={product.id} 
+                    className="flex-[0_0_75%] sm:flex-[0_0_45%] md:flex-[0_0_38%] lg:flex-[0_0_24%] min-w-0"
+                  >
+                    <ProductCard
+                      id={product.id}
+                      title={product.title}
+                      image={product.image}
+                      price={product.price}
+                      slug={product.slug}
+                      medusaVariants={medusaVariants}
+                      onAdd={onAdd}
+                      promotion={promotionInfo ? {
+                        discountPercentage: promotionInfo.discountPercentage,
+                        originalPrice: promotionInfo.originalPrice,
+                        discountedPrice: promotionInfo.discountedPrice,
+                        endsAt: promotionInfo.endsAt,
+                      } : undefined}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </motion.div>
 
           {/* Navigation Arrows */}
-          <button onClick={scrollPrev} className={cn("absolute top-1/2 -translate-y-1/2 z-10", "glass w-10 h-10 rounded-full border border-white/35", "flex items-center justify-center", "hover:bg-white/10 transition-all duration-200", isRTL ? "right-2" : "left-2")}>
+          <button 
+            onClick={scrollPrev} 
+            className={cn(
+              "absolute top-1/2 -translate-y-1/2 z-10",
+              "glass w-10 h-10 rounded-full border border-white/35",
+              "flex items-center justify-center",
+              "hover:bg-white/10 transition-all duration-200",
+              isRTL ? "right-2" : "left-2"
+            )}
+          >
             <ChevronLeft className={cn("h-5 w-5 text-white", isRTL && "rotate-180")} />
           </button>
-          <button onClick={scrollNext} className={cn("absolute top-1/2 -translate-y-1/2 z-10", "glass w-10 h-10 rounded-full border border-white/35", "flex items-center justify-center", "hover:bg-white/10 transition-all duration-200", isRTL ? "left-2" : "right-2")}>
+          <button 
+            onClick={scrollNext} 
+            className={cn(
+              "absolute top-1/2 -translate-y-1/2 z-10",
+              "glass w-10 h-10 rounded-full border border-white/35",
+              "flex items-center justify-center",
+              "hover:bg-white/10 transition-all duration-200",
+              isRTL ? "left-2" : "right-2"
+            )}
+          >
             <ChevronRight className={cn("h-5 w-5 text-white", isRTL && "rotate-180")} />
           </button>
         </div>
 
         {/* View All Link */}
-        {products.length > 8 && <motion.div initial={{
-        opacity: 0
-      }} animate={{
-        opacity: 1
-      }} transition={{
-        ...springTransition,
-        delay: 0.2
-      }} className="mt-6 text-center">
+        {products.length > 8 && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            transition={{ ...springTransition, delay: 0.2 }} 
+            className="mt-6 text-center"
+          >
             <Button onClick={onViewAll} variant="viewAll" size="lg" className="rounded-2xl">
               {isRTL ? "مشاهده همه" : "View All"}
             </Button>
-          </motion.div>}
+          </motion.div>
+        )}
       </div>
-    </section>;
+    </section>
+  );
 }

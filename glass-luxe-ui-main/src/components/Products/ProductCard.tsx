@@ -1,14 +1,28 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { CompactCountdownTimer } from "@/components/ui/countdown-timer";
+import { toPersianNumber } from "@/lib/medusa-promotions";
 
 interface MedusaVariant {
   variant_id: string;
   name: string;
-  price: number; // In Tomans
+  price: number; // In Tomans (current/discounted price)
   price_rials: number; // In Rials
+  original_price?: number; // Original price in Tomans (before discount)
+  original_price_rials?: number;
   sku?: string;
   currency: string;
+  has_promotion?: boolean;
+  discount_percentage?: number;
+  promotion_ends_at?: string;
+}
+
+interface PromotionInfo {
+  discountPercentage: number;
+  originalPrice: number;
+  discountedPrice: number;
+  endsAt?: string;
 }
 
 interface ProductCardProps {
@@ -21,6 +35,8 @@ interface ProductCardProps {
   className?: string;
   slug?: string;
   medusaVariants?: MedusaVariant[];
+  // Direct promotion info (from promotion context)
+  promotion?: PromotionInfo;
 }
 
 export const ProductCard = React.memo(function ProductCard({
@@ -33,24 +49,62 @@ export const ProductCard = React.memo(function ProductCard({
   className,
   slug,
   medusaVariants,
+  promotion,
 }: ProductCardProps) {
   const navigate = useNavigate();
 
-  // Extract valid Medusa prices and determine the lowest one for display
-  const medusaPrices = (medusaVariants ?? [])
-    .map((variant) => variant.price)
-    .filter((value): value is number => typeof value === "number" && value > 0);
+  // Calculate pricing and promotion info
+  const pricingInfo = useMemo(() => {
+    // Check if any variant has a promotion from Medusa prices
+    const variantWithPromo = (medusaVariants ?? []).find(v => v.has_promotion && v.original_price);
+    
+    // Extract valid Medusa prices
+    const medusaPrices = (medusaVariants ?? [])
+      .map((variant) => variant.price)
+      .filter((value): value is number => typeof value === "number" && value > 0);
 
-  const medusaLowestPrice = medusaPrices.length > 0
-    ? Math.min(...medusaPrices)
-    : undefined;
+    const medusaLowestPrice = medusaPrices.length > 0
+      ? Math.min(...medusaPrices)
+      : undefined;
 
-  const displayPrice = typeof medusaLowestPrice === "number" ? medusaLowestPrice : price;
-  const shouldShowOriginalPrice =
-    typeof medusaLowestPrice === "number" &&
-    price > 0 &&
-    price !== medusaLowestPrice;
-  const showRangeLabel = medusaPrices.length > 1;
+    // Determine display price
+    const displayPrice = typeof medusaLowestPrice === "number" ? medusaLowestPrice : price;
+    
+    // Determine original price (for strikethrough)
+    let originalPrice: number | undefined;
+    let discountPercentage: number | undefined;
+    let promotionEndsAt: string | undefined;
+
+    // Priority 1: Direct promotion prop
+    if (promotion) {
+      originalPrice = promotion.originalPrice;
+      discountPercentage = promotion.discountPercentage;
+      promotionEndsAt = promotion.endsAt;
+    }
+    // Priority 2: Variant-level promotion from Medusa
+    else if (variantWithPromo) {
+      originalPrice = variantWithPromo.original_price;
+      discountPercentage = variantWithPromo.discount_percentage;
+      promotionEndsAt = variantWithPromo.promotion_ends_at;
+    }
+    // Priority 3: Compare Sanity price with Medusa price
+    else if (typeof medusaLowestPrice === "number" && price > 0 && price !== medusaLowestPrice && price > medusaLowestPrice) {
+      originalPrice = price;
+      discountPercentage = Math.round(((price - medusaLowestPrice) / price) * 100);
+    }
+
+    const hasPromotion = !!originalPrice && originalPrice > displayPrice;
+    const showRangeLabel = medusaPrices.length > 1;
+
+    return {
+      displayPrice,
+      originalPrice,
+      hasPromotion,
+      discountPercentage,
+      promotionEndsAt,
+      showRangeLabel,
+    };
+  }, [medusaVariants, price, promotion]);
 
   const formatPrice = (value: number) => value.toLocaleString("fa-IR");
 
@@ -69,6 +123,15 @@ export const ProductCard = React.memo(function ProductCard({
         className
       )}
     >
+      {/* Discount Badge */}
+      {pricingInfo.hasPromotion && pricingInfo.discountPercentage && (
+        <div className="absolute top-3 right-3 z-20">
+          <div className="bg-red-500 text-white px-2.5 py-1 rounded-full text-xs font-bold shadow-lg">
+            {toPersianNumber(pricingInfo.discountPercentage)}٪ تخفیف
+          </div>
+        </div>
+      )}
+
       {/* Image wrapper */}
       <div className="relative aspect-[3/4] rounded-2xl overflow-hidden">
         <img
@@ -91,21 +154,32 @@ export const ProductCard = React.memo(function ProductCard({
           {title}
         </h3>
 
+        {/* Countdown Timer for time-limited promotions */}
+        {pricingInfo.promotionEndsAt && (
+          <div className="mt-2">
+            <CompactCountdownTimer endsAt={pricingInfo.promotionEndsAt} />
+          </div>
+        )}
+
         <div className="mt-3 flex items-center justify-between gap-3">
           <div className="flex flex-col gap-0.5">
-            {shouldShowOriginalPrice && (
-              <span className="text-[12px] text-white/70 line-through">
-                {formatPrice(price)} تومان
+            {/* Original price with strikethrough */}
+            {pricingInfo.hasPromotion && pricingInfo.originalPrice && (
+              <span className="text-[12px] text-white/60 line-through">
+                {formatPrice(pricingInfo.originalPrice)} تومان
               </span>
             )}
             <div className="flex items-baseline gap-1.5 flex-wrap">
-              {showRangeLabel && (
+              {pricingInfo.showRangeLabel && (
                 <span className="text-xs md:text-sm text-white/80">
                   قیمت از
                 </span>
               )}
-              <span className="text-[17px] md:text-[18px] font-bold text-white/95">
-                {formatPrice(displayPrice)}
+              <span className={cn(
+                "text-[17px] md:text-[18px] font-bold",
+                pricingInfo.hasPromotion ? "text-green-400" : "text-white/95"
+              )}>
+                {formatPrice(pricingInfo.displayPrice)}
               </span>
               <span className="text-[11px] md:text-xs text-white/70">
                 تومان

@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { DirectionProvider } from "@/contexts/DirectionContext";
 import { CartProvider } from "@/contexts/cart-context";
+import { PromotionProvider } from "@/contexts/promotion-context";
 import { ScrollToTop } from "./components/ScrollToTop";
 
 // Visual Editing disabled for performance - use separate Sanity Studio deployment
@@ -47,6 +48,7 @@ const App = () => (
     <HelmetProvider>
       <DirectionProvider>
         <CartProvider>
+        <PromotionProvider>
         <TooltipProvider>
           {/* Global Unified Background */}
           <div id="unified-bg" className="fixed inset-0 -z-50 pointer-events-none" />
@@ -100,6 +102,7 @@ const App = () => (
           </BrowserRouter>
           {/* Visual Editing disabled for performance */}
         </TooltipProvider>
+        </PromotionProvider>
         </CartProvider>
       </DirectionProvider>
     </HelmetProvider>

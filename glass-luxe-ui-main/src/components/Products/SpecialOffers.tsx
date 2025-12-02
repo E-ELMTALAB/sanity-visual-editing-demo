@@ -4,15 +4,17 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { ProductCard } from "./ProductCard";
 import { Button } from "@/components/ui/button";
 import { useDirection } from "@/contexts/DirectionContext";
+import { usePromotions } from "@/contexts/promotion-context";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-
+import { ProductPrices } from "@/lib/medusa-prices";
 
 interface Product {
   id: string;
   title: string;
   image: string;
   price: number;
+  slug?: string;
 }
 
 interface SpecialOffersProps {
@@ -20,10 +22,13 @@ interface SpecialOffersProps {
   onAdd: (id: string) => void;
   onViewAll?: () => void;
   className?: string;
+  productPrices?: Record<string, ProductPrices>;
 }
 
-export function SpecialOffers({ products, onAdd, onViewAll, className }: SpecialOffersProps) {
+export function SpecialOffers({ products, onAdd, onViewAll, className, productPrices }: SpecialOffersProps) {
   const { isRTL } = useDirection();
+  const { getPromotionForProduct } = usePromotions();
+  
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     direction: isRTL ? "rtl" : "ltr",
@@ -47,21 +52,42 @@ export function SpecialOffers({ products, onAdd, onViewAll, className }: Special
           {/* Carousel */}
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex gap-4 sm:gap-6 lg:gap-8 touch-pan-y">
-              {products.slice(0, 3).map((product, index) => (
-                <div
-                  key={product.id}
-                  className="flex-[0_0_75%] sm:flex-[0_0_45%] md:flex-[0_0_38%] lg:flex-[0_0_24%] min-w-0 animate-fade-in"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <ProductCard
-                    id={product.id}
-                    title={product.title}
-                    image={product.image}
-                    price={product.price}
-                    onAdd={onAdd}
-                  />
-                </div>
-              ))}
+              {products.slice(0, 6).map((product, index) => {
+                // Get promotion info for this product
+                const medusaVariants = productPrices?.[product.slug || '']?.variants || [];
+                const validPrices = medusaVariants.filter(v => v.price > 0).map(v => v.price);
+                const lowestPrice = validPrices.length > 0 
+                  ? Math.min(...validPrices)
+                  : product.price;
+                
+                const promotionInfo = product.slug && lowestPrice > 0
+                  ? getPromotionForProduct(product.slug, product.id, lowestPrice)
+                  : null;
+
+                return (
+                  <div
+                    key={product.id}
+                    className="flex-[0_0_75%] sm:flex-[0_0_45%] md:flex-[0_0_38%] lg:flex-[0_0_24%] min-w-0 animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <ProductCard
+                      id={product.id}
+                      title={product.title}
+                      image={product.image}
+                      price={product.price}
+                      slug={product.slug}
+                      medusaVariants={medusaVariants}
+                      onAdd={onAdd}
+                      promotion={promotionInfo ? {
+                        discountPercentage: promotionInfo.discountPercentage,
+                        originalPrice: promotionInfo.originalPrice,
+                        discountedPrice: promotionInfo.discountedPrice,
+                        endsAt: promotionInfo.endsAt,
+                      } : undefined}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
 
