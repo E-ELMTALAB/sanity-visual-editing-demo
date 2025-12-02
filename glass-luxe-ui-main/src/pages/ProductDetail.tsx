@@ -25,7 +25,7 @@ import { validateSanityConfig } from "@/lib/sanity.config";
 import { productBySlugQuery, faqsByPageQuery } from "@/lib/sanity.queries";
 import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";
 import { fetchProductPrices, type MedusaVariant } from "@/lib/medusa-prices";
-import { toPersianNumber } from "@/lib/medusa-promotions";
+import { toPersianNumber, calculateDiscountedPrice } from "@/lib/medusa-promotions";
 import EnhancedMarkdownRenderer from "@/components/EnhancedMarkdownRenderer";
 const springTransition = {
   type: "spring" as const,
@@ -987,10 +987,16 @@ const ProductDetail = () => {
             
             if (!shouldShowOnMobile) return null;
             
-            // Calculate final price (with discount if applicable, otherwise regular price)
-            const finalPrice = productPromotion 
-              ? productPromotion.discountedPrice 
-              : currentPrice;
+            // Calculate final price based on selected variant with discount applied
+            // Get the selected variant's price (already computed in currentPrice)
+            let variantPrice = currentPrice;
+            
+            // If there's a promotion, apply discount to the selected variant's price
+            let finalPrice = variantPrice;
+            if (productPromotion && productPromotion.promotion && variantPrice > 0) {
+              // Recalculate discount for the selected variant's specific price
+              finalPrice = calculateDiscountedPrice(variantPrice, productPromotion.promotion);
+            }
             
             return (
               <div className="md:hidden fixed bottom-0 inset-x-0 z-50 glass border-t border-border-glass backdrop-blur-lg pb-safe">
@@ -1006,8 +1012,8 @@ const ProductDetail = () => {
                       <span className="text-xs text-muted-foreground">تومان</span>
                     </div>
                   </div>
-                  <Button size="default" onClick={handleBuyNow} className="flex-1 min-w-0 h-11 text-sm sm:text-base">
-                    <ShoppingCart className="ltr:mr-1 rtl:ml-1 h-4 w-4 shrink-0" />
+                  <Button size="sm" onClick={handleBuyNow} className="flex-1 min-w-0 h-10 text-sm">
+                    <ShoppingCart className="ltr:mr-1 rtl:ml-1 h-3.5 w-3.5 shrink-0" />
                     <span className="truncate">خرید</span>
                   </Button>
                 </div>
