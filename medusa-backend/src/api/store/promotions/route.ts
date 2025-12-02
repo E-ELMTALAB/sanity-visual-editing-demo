@@ -102,10 +102,61 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
          promotions = await Promise.all(
            promoList.map(async (promo: any) => {
              try {
-               const fullPromo = await promotionModuleService.retrievePromotion(promo.id, {
-                 relations: ['campaign', 'application_method', 'rules', 'conditions'],
-               });
-               return fullPromo;
+               // Try multiple approaches to get conditions
+               let fullPromo: any = null;
+               let lastError: any = null;
+               
+               // Approach 1: Try with conditions in relations
+               try {
+                 fullPromo = await promotionModuleService.retrievePromotion(promo.id, {
+                   relations: ['campaign', 'application_method', 'rules', 'conditions'],
+                 });
+                 console.log(`[STORE/PROMOTIONS] ✅ Retrieved ${promo.id} with conditions relation`);
+               } catch (e1: any) {
+                 lastError = e1;
+                 // Approach 2: Try with expand parameter (Admin API style)
+                 try {
+                   fullPromo = await promotionModuleService.retrievePromotion(promo.id, {
+                     relations: ['campaign', 'application_method', 'rules'],
+                     expand: ['conditions', 'conditions.products'],
+                   });
+                   console.log(`[STORE/PROMOTIONS] ✅ Retrieved ${promo.id} with expand conditions`);
+                 } catch (e2: any) {
+                   // Approach 3: Try with select all fields
+                   try {
+                     fullPromo = await promotionModuleService.retrievePromotion(promo.id, {
+                       relations: ['campaign', 'application_method', 'rules'],
+                       select: ['*'],
+                     });
+                     console.log(`[STORE/PROMOTIONS] ✅ Retrieved ${promo.id} with select all`);
+                   } catch (e3: any) {
+                     // Approach 4: Try without conditions
+                     try {
+                       fullPromo = await promotionModuleService.retrievePromotion(promo.id, {
+                         relations: ['campaign', 'application_method', 'rules'],
+                       });
+                       console.log(`[STORE/PROMOTIONS] ✅ Retrieved ${promo.id} without conditions`);
+                     } catch (e4: any) {
+                       throw e4;
+                     }
+                   }
+                 }
+               }
+               
+               // If we got a promotion, check if it has conditions in any form
+               if (fullPromo) {
+                 // Check for conditions in various possible locations
+                 const hasConditions = fullPromo.conditions || 
+                                      fullPromo.promotion_conditions ||
+                                      fullPromo.condition ||
+                                      (fullPromo.rules && fullPromo.rules.some((r: any) => r.type === 'condition'));
+                 
+                 if (hasConditions) {
+                   console.log(`[STORE/PROMOTIONS] Found conditions for ${promo.id}`);
+                 }
+               }
+               
+               return fullPromo || promo;
              } catch (err: any) {
                console.log(`[STORE/PROMOTIONS] Could not retrieve full details for ${promo.id}:`, err.message);
                // Return the basic promo if retrieval fails
@@ -135,6 +186,23 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
        console.log("[STORE/PROMOTIONS] Sample promotion structure:");
        console.log("  - ID:", samplePromo.id);
        console.log("  - Rules count:", samplePromo.rules?.length || 0);
+       console.log("  - All promotion keys:", Object.keys(samplePromo));
+       
+       // Check for conditions in various possible field names
+       const conditionFields = ['conditions', 'condition', 'promotion_conditions', 'promotionConditions', 
+                                'target_conditions', 'buy_conditions', 'rule_conditions'];
+       conditionFields.forEach(field => {
+         if (samplePromo[field] !== undefined) {
+           console.log(`  - Found field "${field}":`, 
+             Array.isArray(samplePromo[field]) ? `Array(${samplePromo[field].length})` : 
+             typeof samplePromo[field] === 'object' ? `Object(${Object.keys(samplePromo[field] || {}).length} keys)` :
+             typeof samplePromo[field]);
+           if (Array.isArray(samplePromo[field]) && samplePromo[field].length > 0) {
+             console.log(`  - ${field} content:`, JSON.stringify(samplePromo[field].slice(0, 3), null, 2));
+           }
+         }
+       });
+       
        if (samplePromo.rules && samplePromo.rules.length > 0) {
          console.log("  - Rules:", JSON.stringify(samplePromo.rules.map((r: any) => ({
            attribute: r.attribute,
@@ -142,8 +210,22 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
            values: r.values,
          })), null, 2));
        }
-       console.log("  - All promotion keys:", Object.keys(samplePromo));
        console.log("  - Campaign keys:", samplePromo.campaign ? Object.keys(samplePromo.campaign) : 'no campaign');
+       
+       // Log full promotion structure (limited depth to avoid huge logs)
+       console.log("  - Full promotion (first level):", JSON.stringify(
+         Object.keys(samplePromo).reduce((acc: any, key: string) => {
+           const val = samplePromo[key];
+           if (Array.isArray(val)) {
+             acc[key] = `[Array(${val.length})]`;
+           } else if (typeof val === 'object' && val !== null) {
+             acc[key] = `{Object with keys: ${Object.keys(val).join(', ')}` + (Object.keys(val).length > 10 ? '...' : '') + '}';
+           } else {
+             acc[key] = val;
+           }
+           return acc;
+         }, {}), null, 2
+       ));
      }
 
     // Filter for active promotions
@@ -178,12 +260,46 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
        const productIds: string[] = [];
        const productHandles: string[] = [];
 
-       // Use rules and conditions arrays (conditions may contain product information)
+       // Use rules and check for conditions in various possible locations
        const allRules = promo.rules || [];
-       const conditions = promo.conditions || [];
+       
+       // Check for conditions in multiple possible field names (Medusa v2 may store them differently)
+       let conditions: any[] = [];
+       const possibleConditionFields = [
+         'conditions',
+         'condition', 
+         'promotion_conditions',
+         'promotionConditions',
+         'target_conditions',
+         'buy_conditions',
+         'rule_conditions',
+       ];
+       
+       for (const field of possibleConditionFields) {
+         if (promo[field]) {
+           if (Array.isArray(promo[field])) {
+             conditions = [...conditions, ...promo[field]];
+           } else if (typeof promo[field] === 'object') {
+             // If it's an object, try to extract array from it
+             const nestedArray = (promo[field] as any).conditions || (promo[field] as any).rules || [];
+             if (Array.isArray(nestedArray)) {
+               conditions = [...conditions, ...nestedArray];
+             }
+           }
+         }
+       }
 
        // Debug: Log all rules and conditions
-       console.log(`[STORE/PROMOTIONS] Promotion ${promo.id} has ${allRules.length} rules and ${conditions.length} conditions`);
+       console.log(`[STORE/PROMOTIONS] Promotion ${promo.id} has ${allRules.length} rules`);
+       console.log(`[STORE/PROMOTIONS] Checking conditions in fields:`, possibleConditionFields.map(f => ({
+         field: f,
+         exists: !!promo[f],
+         type: promo[f] ? typeof promo[f] : 'none',
+         isArray: Array.isArray(promo[f]),
+         length: Array.isArray(promo[f]) ? promo[f].length : 'N/A',
+       })));
+       console.log(`[STORE/PROMOTIONS] Found ${conditions.length} total conditions`);
+       
        if (allRules.length > 0) {
          console.log(`[STORE/PROMOTIONS] Rules for ${promo.id}:`, JSON.stringify(allRules.map((r: any) => ({
            attribute: r.attribute,
@@ -196,6 +312,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
        }
 
        // Combine rules and conditions for product matching
+       // Note: In Medusa v2, conditions might be stored separately or as part of rules
        const allConditions = [...allRules, ...conditions];
 
        // If no rules or conditions at all, it's site-wide (applies to all products)
