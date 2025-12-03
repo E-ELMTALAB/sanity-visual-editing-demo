@@ -11,6 +11,18 @@ import { useSiteWidePromotion } from "@/contexts/promotion-context";
 import { toast } from "@/hooks/use-toast";
 import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
 import { PromotionBanner } from "@/components/Hero/PromotionBanner";
+// Import Sanity modules statically for instant loading (data comes from cache anyway)
+import { fetchFromSanity } from "@/lib/sanity.client.light";
+import { validateSanityConfig } from "@/lib/sanity.config";
+import { 
+  homePageQuery, 
+  featuredProductsQuery, 
+  featuredCoursesQuery, 
+  featuredPostsQuery, 
+  productsByCategoryQuery, 
+  faqsByPageQuery 
+} from "@/lib/sanity.queries";
+import * as transformers from "@/lib/sanity.transformers";
 
 // Static hero image for immediate LCP
 import heroBg from "@/assets/hero-ai-cubes.png";
@@ -232,10 +244,10 @@ function DynamicHero({ slide }: { slide: any }) {
               بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
             </span>
             <h1 className="mt-4 text-5xl sm:text-5xl md:text-6xl font-black leading-tight">
-              {slide.title}
+              {slide?.title || HERO_TITLE}
             </h1>
             <p className="mt-4 max-w-xl text-white/90 text-base md:text-lg leading-relaxed whitespace-pre-line">
-              {slide.subtitle}
+              {slide?.subtitle || HERO_SUBTITLE}
             </p>
             <TrustBadges />
           </div>
@@ -366,24 +378,10 @@ const Index = () => {
   const [medusaPrices, setMedusaPrices] = useState<Record<string, ProductPrices>>({});
   const [dataLoaded, setDataLoaded] = useState(false);
 
-  // Load Sanity data AFTER first paint using requestIdleCallback
+  // Load Sanity data immediately - data comes from build-time cache (instant)
   useEffect(() => {
-    // Wait for first paint, then load Sanity
     const loadSanityData = async () => {
       try {
-        // Dynamic import of lightweight Sanity client (production-optimized)
-        const [
-          { fetchFromSanity },
-          { validateSanityConfig },
-          { homePageQuery, featuredProductsQuery, featuredCoursesQuery, featuredPostsQuery, productsByCategoryQuery, faqsByPageQuery },
-          transformers,
-        ] = await Promise.all([
-          import("@/lib/sanity.client.light"),
-          import("@/lib/sanity.config"),
-          import("@/lib/sanity.queries"),
-          import("@/lib/sanity.transformers"),
-        ]);
-
         const isConfigValid = validateSanityConfig();
         if (!isConfigValid) {
           console.warn('[HOMEPAGE] Sanity not configured');
@@ -536,13 +534,8 @@ const Index = () => {
       }
     };
 
-    // Use requestIdleCallback to load after browser is idle
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => loadSanityData(), { timeout: 2000 });
-    } else {
-      // Fallback: load after a short delay
-      setTimeout(loadSanityData, 100);
-    }
+    // Load immediately - data is from build-time cache, no delay needed
+    loadSanityData();
   }, []);
 
   // Intersection Observer for Footer
