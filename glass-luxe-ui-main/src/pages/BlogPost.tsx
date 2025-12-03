@@ -466,6 +466,46 @@ export default function BlogPost() {
                     </span>)}
                 </div>
 
+                {/* Mobile TOC - positioned right above article content */}
+                <div className="lg:hidden mb-6">
+                  <button
+                    onClick={() => setTocOpen(!tocOpen)}
+                    className="w-full flex items-center justify-between p-4 glass rounded-lg hover:bg-surface-glass/50 transition-colors"
+                  >
+                    <span className="font-semibold">فهرست مطالب</span>
+                    <ChevronDown className={cn("w-5 h-5 transition-transform", tocOpen && "rotate-180")} />
+                  </button>
+                  {tocOpen && (
+                    <nav className="mt-3 space-y-1 p-4 glass rounded-lg" dir="rtl">
+                      {tocHeadings.length > 0 ? (
+                        tocHeadings.map((heading) => (
+                          <button
+                            key={heading.id}
+                            onClick={() => {
+                              scrollToHeading(heading.id);
+                              setTocOpen(false);
+                            }}
+                            className={cn(
+                              "block w-full text-right py-2 rounded-lg transition-colors text-sm",
+                              heading.level === 1 ? "pr-3 font-bold text-base" :
+                              heading.level === 2 ? "pr-3 font-semibold" :
+                              heading.level === 3 ? "pr-6 text-xs" :
+                              "pr-9 text-xs",
+                              activeHeading === heading.id ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"
+                            )}
+                          >
+                            {heading.text}
+                          </button>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground text-right">
+                          فهرست مطالب در دسترس نیست
+                        </p>
+                      )}
+                    </nav>
+                  )}
+                </div>
+
                 {/* Article Body */}
                 <div ref={articleRef} className="prose prose-invert prose-lg max-w-none" dir="rtl">
                   {article?.bodyMarkdown && article.bodyMarkdown.trim() ? (
@@ -548,46 +588,6 @@ export default function BlogPost() {
                   </SurfaceGlass>
                 </div>
               </aside>
-
-              {/* Mobile TOC (same as ProductDetail) */}
-              <div className="lg:hidden mb-6">
-                <button
-                  onClick={() => setTocOpen(!tocOpen)}
-                  className="w-full flex items-center justify-between p-4 glass rounded-lg hover:bg-surface-glass/50 transition-colors"
-                >
-                  <span className="font-semibold">فهرست مطالب</span>
-                  <ChevronDown className={cn("w-5 h-5 transition-transform", tocOpen && "rotate-180")} />
-                </button>
-                {tocOpen && (
-                  <nav className="mt-3 space-y-1 p-4 glass rounded-lg" dir="rtl">
-                    {tocHeadings.length > 0 ? (
-                      tocHeadings.map((heading) => (
-                        <button
-                          key={heading.id}
-                          onClick={() => {
-                            scrollToHeading(heading.id);
-                            setTocOpen(false);
-                          }}
-                          className={cn(
-                            "block w-full text-right py-2 rounded-lg transition-colors text-sm",
-                            heading.level === 1 ? "pr-3 font-bold text-base" :
-                            heading.level === 2 ? "pr-3 font-semibold" :
-                            heading.level === 3 ? "pr-6 text-xs" :
-                            "pr-9 text-xs",
-                            activeHeading === heading.id ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"
-                          )}
-                        >
-                          {heading.text}
-                        </button>
-                      ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground text-right">
-                        فهرست مطالب در دسترس نیست
-                      </p>
-                    )}
-                  </nav>
-                )}
-              </div>
             </div>
 
             {/* Related Posts */}

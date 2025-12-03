@@ -127,6 +127,54 @@ function initializeCache(): void {
         console.info(`[SANITY-CACHE] Product FAQs cache: ${faqCount} FAQs`);
       }
 
+      // Validate all posts list cache
+      if (module?.allPostsListCache) {
+        const listCount = Array.isArray(module.allPostsListCache) ? module.allPostsListCache.length : 0;
+        console.info(`[SANITY-CACHE] All posts list cache: ${listCount} posts`);
+        
+        if (listCount === 0) {
+          console.warn('[SANITY-CACHE] ⚠️ All posts list cache is empty');
+        }
+      }
+
+      // Validate posts cache (detail pages)
+      if (module?.postsCache) {
+        const postCount = Object.keys(module.postsCache).length;
+        console.info(`[SANITY-CACHE] Posts cache (detail pages): ${postCount} posts`);
+        
+        if (postCount === 0) {
+          console.warn('[SANITY-CACHE] ⚠️ Posts cache is empty');
+        } else {
+          // Log a sample of post slugs for debugging
+          const sampleSlugs = Object.keys(module.postsCache).slice(0, 5);
+          console.info(`[SANITY-CACHE] Sample post slugs: ${sampleSlugs.join(', ')}${postCount > 5 ? '...' : ''}`);
+        }
+      }
+
+      // Validate all collections list cache
+      if (module?.allCollectionsListCache) {
+        const listCount = Array.isArray(module.allCollectionsListCache) ? module.allCollectionsListCache.length : 0;
+        console.info(`[SANITY-CACHE] All collections list cache: ${listCount} collections`);
+        
+        if (listCount === 0) {
+          console.warn('[SANITY-CACHE] ⚠️ All collections list cache is empty');
+        }
+      }
+
+      // Validate collections cache (detail pages)
+      if (module?.collectionsCache) {
+        const collectionCount = Object.keys(module.collectionsCache).length;
+        console.info(`[SANITY-CACHE] Collections cache (detail pages): ${collectionCount} collections`);
+        
+        if (collectionCount === 0) {
+          console.warn('[SANITY-CACHE] ⚠️ Collections cache is empty');
+        } else {
+          // Log a sample of collection slugs for debugging
+          const sampleSlugs = Object.keys(module.collectionsCache).slice(0, 5);
+          console.info(`[SANITY-CACHE] Sample collection slugs: ${sampleSlugs.join(', ')}${collectionCount > 5 ? '...' : ''}`);
+        }
+      }
+
       return module;
     } catch (error) {
       // Cache not available - that's okay, we'll use API
@@ -292,6 +340,22 @@ export async function getCachedData<T>(
     return data;
   }
 
+  // 5a. All posts query (no limit, no slug param) - check BEFORE featured posts
+  if (normalizedQuery.includes('_type == "post"') && 
+      !normalizedQuery.includes('[0') && // No array slice
+      !normalizedQuery.includes('slug.current == $slug') && // Not post by slug
+      !params?.slug) {
+    const data = (cache.allPostsListCache as T) || null;
+    if (data !== null) {
+      const dataArray = data as any[];
+      const count = Array.isArray(dataArray) ? dataArray.length : 0;
+      console.info(`[SANITY-CACHE] ✅ CACHE HIT: allPostsQuery (count: ${count})`);
+    } else {
+      console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: allPostsQuery (data is null)');
+    }
+    return data;
+  }
+
   // 6. Featured posts query (has [0...6])
   if (normalizedQuery.includes('_type == "post"') && normalizedQuery.includes('[0...6]')) {
     const data = (cache.featuredPostsCache as T) || null;
@@ -343,6 +407,61 @@ export async function getCachedData<T>(
       console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: faqsByPageQuery (page: products, data is null)');
     }
     return data;
+  }
+
+  // 10. Post by slug query (has slug param)
+  if (normalizedQuery.includes('_type == "post"') && 
+      normalizedQuery.includes('slug.current == $slug') && 
+      params?.slug) {
+    const postsMap = cache.postsCache;
+    if (postsMap && typeof postsMap === 'object') {
+      const data = (postsMap[params.slug] as T) || null;
+      
+      if (data !== null) {
+        console.info(`[SANITY-CACHE] ✅ CACHE HIT: postBySlugQuery (slug: ${params.slug})`);
+      } else {
+        console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: postBySlugQuery (slug: ${params.slug}) - post not found in cache`);
+      }
+      
+      return data;
+    }
+    console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: postBySlugQuery (posts map not available)`);
+    return null;
+  }
+
+  // 11. All collections query (no limit, no slug param)
+  if (normalizedQuery.includes('_type == "collection"') && 
+      !normalizedQuery.includes('slug.current == $slug') && 
+      !params?.slug) {
+    const data = (cache.allCollectionsListCache as T) || null;
+    if (data !== null) {
+      const dataArray = data as any[];
+      const count = Array.isArray(dataArray) ? dataArray.length : 0;
+      console.info(`[SANITY-CACHE] ✅ CACHE HIT: allCollectionsQuery (count: ${count})`);
+    } else {
+      console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: allCollectionsQuery (data is null)');
+    }
+    return data;
+  }
+
+  // 12. Collection by slug query (has slug param)
+  if (normalizedQuery.includes('_type == "collection"') && 
+      normalizedQuery.includes('slug.current == $slug') && 
+      params?.slug) {
+    const collectionsMap = cache.collectionsCache;
+    if (collectionsMap && typeof collectionsMap === 'object') {
+      const data = (collectionsMap[params.slug] as T) || null;
+      
+      if (data !== null) {
+        console.info(`[SANITY-CACHE] ✅ CACHE HIT: collectionBySlugQuery (slug: ${params.slug})`);
+      } else {
+        console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: collectionBySlugQuery (slug: ${params.slug}) - collection not found in cache`);
+      }
+      
+      return data;
+    }
+    console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: collectionBySlugQuery (collections map not available)`);
+    return null;
   }
 
   // Query not matched - log for debugging

@@ -16,6 +16,10 @@ import {
   faqsByPageQuery,
   allProductsQuery,
   productBySlugQuery,
+  allPostsQuery,
+  postBySlugQuery,
+  allCollectionsQuery,
+  collectionBySlugQuery,
 } from '../src/lib/sanity.queries';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -282,6 +286,109 @@ async function fetchHomepageData() {
     }
     await saveToCache('products-faqs.json', productFaqs);
 
+    // Fetch all blog posts for listing page
+    console.log('\n📥 Fetching all blog posts for listing page...');
+    const allPostsList = await client.fetch(allPostsQuery);
+    console.log(`📊 All posts count: ${allPostsList?.length || 0}`);
+    if (Array.isArray(allPostsList) && allPostsList.length > 0) {
+      const sample = allPostsList.slice(0, 5).map((p: any) => ({
+        _id: p?._id,
+        title: p?.title,
+        slug: typeof p?.slug === 'string' ? p.slug : p?.slug?.current,
+        category: p?.category,
+      }));
+      console.log('   - Sample posts:', sample);
+    }
+    await saveToCache('all-posts-list.json', allPostsList);
+
+    // Fetch full detail for each blog post (for detail pages)
+    console.log('\n📥 Fetching full details for blog post detail pages...');
+    const postsMap: Record<string, any> = {};
+    const postSlugs = allPostsList?.map((p: any) => p.slug).filter(Boolean) || [];
+
+    console.log(`📦 Fetching full details for ${postSlugs.length} blog posts...`);
+    let postSuccessCount = 0;
+    let postErrorCount = 0;
+
+    for (let i = 0; i < postSlugs.length; i++) {
+      const slug = postSlugs[i];
+      try {
+        const postDetail = await client.fetch(postBySlugQuery, { slug });
+        if (postDetail) {
+          postsMap[slug] = postDetail;
+          postSuccessCount++;
+        } else {
+          console.warn(`   ⚠️ Post "${slug}" returned null/undefined`);
+          postErrorCount++;
+        }
+        
+        // Log progress every 10 posts
+        if ((i + 1) % 10 === 0 || i === postSlugs.length - 1) {
+          console.log(`   Progress: ${i + 1}/${postSlugs.length} posts fetched (${postSuccessCount} success, ${postErrorCount} errors)`);
+        }
+      } catch (error) {
+        console.error(`   ❌ Error fetching post "${slug}":`, error);
+        postErrorCount++;
+      }
+    }
+
+    await saveToCache('posts-map.json', postsMap);
+    console.log(`💾 Saved ${Object.keys(postsMap).length} blog posts to cache`);
+    if (postErrorCount > 0) {
+      console.warn(`⚠️ ${postErrorCount} posts failed to fetch`);
+    }
+
+    // Fetch all collections for listing page
+    console.log('\n📥 Fetching all collections for listing page...');
+    const allCollectionsList = await client.fetch(allCollectionsQuery);
+    console.log(`📊 All collections count: ${allCollectionsList?.length || 0}`);
+    if (Array.isArray(allCollectionsList) && allCollectionsList.length > 0) {
+      const sample = allCollectionsList.slice(0, 5).map((c: any) => ({
+        _id: c?._id,
+        title: c?.title,
+        slug: typeof c?.slug === 'string' ? c.slug : c?.slug?.current,
+      }));
+      console.log('   - Sample collections:', sample);
+    }
+    await saveToCache('all-collections-list.json', allCollectionsList);
+
+    // Fetch full detail for each collection (for detail pages)
+    console.log('\n📥 Fetching full details for collection detail pages...');
+    const collectionsMap: Record<string, any> = {};
+    const collectionSlugs = allCollectionsList?.map((c: any) => c.slug).filter(Boolean) || [];
+
+    console.log(`📦 Fetching full details for ${collectionSlugs.length} collections...`);
+    let collectionSuccessCount = 0;
+    let collectionErrorCount = 0;
+
+    for (let i = 0; i < collectionSlugs.length; i++) {
+      const slug = collectionSlugs[i];
+      try {
+        const collectionDetail = await client.fetch(collectionBySlugQuery, { slug });
+        if (collectionDetail) {
+          collectionsMap[slug] = collectionDetail;
+          collectionSuccessCount++;
+        } else {
+          console.warn(`   ⚠️ Collection "${slug}" returned null/undefined`);
+          collectionErrorCount++;
+        }
+        
+        // Log progress every 5 collections (usually fewer than products/posts)
+        if ((i + 1) % 5 === 0 || i === collectionSlugs.length - 1) {
+          console.log(`   Progress: ${i + 1}/${collectionSlugs.length} collections fetched (${collectionSuccessCount} success, ${collectionErrorCount} errors)`);
+        }
+      } catch (error) {
+        console.error(`   ❌ Error fetching collection "${slug}":`, error);
+        collectionErrorCount++;
+      }
+    }
+
+    await saveToCache('collections-map.json', collectionsMap);
+    console.log(`💾 Saved ${Object.keys(collectionsMap).length} collections to cache`);
+    if (collectionErrorCount > 0) {
+      console.warn(`⚠️ ${collectionErrorCount} collections failed to fetch`);
+    }
+
     // Save metadata
     const metadata = {
       fetchedAt: new Date().toISOString(),
@@ -317,6 +424,14 @@ export const productsCache = ${JSON.stringify(productsMap, null, 2)} as const;
 
 export const productsFaqsCache = ${JSON.stringify(productFaqs, null, 2)} as const;
 
+export const allPostsListCache = ${JSON.stringify(allPostsList, null, 2)} as const;
+
+export const postsCache = ${JSON.stringify(postsMap, null, 2)} as const;
+
+export const allCollectionsListCache = ${JSON.stringify(allCollectionsList, null, 2)} as const;
+
+export const collectionsCache = ${JSON.stringify(collectionsMap, null, 2)} as const;
+
 export const cacheMetadata = ${JSON.stringify(metadata, null, 2)} as const;
 `;
     await writeFile(join(CACHE_DIR, 'index.ts'), indexContent, 'utf-8');
@@ -333,6 +448,10 @@ export const cacheMetadata = ${JSON.stringify(metadata, null, 2)} as const;
     console.log(`   - All Products (listing): ${allProductsList?.length || 0}`);
     console.log(`   - Products (detail pages): ${Object.keys(productsMap).length}`);
     console.log(`   - Product FAQs: ${productFaqs?.length || 0}`);
+    console.log(`   - All Posts (listing): ${allPostsList?.length || 0}`);
+    console.log(`   - Posts (detail pages): ${Object.keys(postsMap).length}`);
+    console.log(`   - All Collections (listing): ${allCollectionsList?.length || 0}`);
+    console.log(`   - Collections (detail pages): ${Object.keys(collectionsMap).length}`);
     console.log(`\n📁 Cache location: ${CACHE_DIR}`);
   } catch (error) {
     console.error('\n❌ Error fetching homepage data:', error);
