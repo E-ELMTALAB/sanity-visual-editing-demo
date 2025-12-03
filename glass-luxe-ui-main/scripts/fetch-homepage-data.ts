@@ -77,18 +77,99 @@ async function fetchHomepageData() {
     // Fetch all homepage queries
     console.log('\n📥 Fetching homepage data...');
     const homeData = await client.fetch(homePageQuery);
+
+    // Log detailed homepage structure
+    if (!homeData) {
+      console.warn('⚠️ homePageQuery returned null/undefined');
+    } else {
+      console.log('📊 Homepage data overview:');
+      console.log('   - heroSlides:', Array.isArray(homeData.heroSlides) ? homeData.heroSlides.length : 0);
+      console.log('   - bestSellerProducts:', Array.isArray(homeData.bestSellerProducts) ? homeData.bestSellerProducts.length : 0);
+      console.log('   - editorialBanners:', Array.isArray(homeData.editorialBanners) ? homeData.editorialBanners.length : 0);
+      console.log('   - collectionsBanner:', homeData.collectionsBanner ? 'present' : 'missing');
+      console.log('   - discountedProducts:', Array.isArray(homeData.discountedProducts) ? homeData.discountedProducts.length : 0);
+      console.log('   - socialMediaProducts:', Array.isArray(homeData.socialMediaProducts) ? homeData.socialMediaProducts.length : 0);
+      console.log('   - educationalProducts:', Array.isArray(homeData.educationalProducts) ? homeData.educationalProducts.length : 0);
+      console.log('   - bestsellingCourses:', Array.isArray(homeData.bestsellingCourses) ? homeData.bestsellingCourses.length : 0);
+      console.log('   - magazinePosts:', Array.isArray(homeData.magazinePosts) ? homeData.magazinePosts.length : 0);
+      console.log('   - featuredBlogs:', Array.isArray(homeData.featuredBlogs) ? homeData.featuredBlogs.length : 0);
+      console.log('   - seoContent:', typeof homeData.seoContent === 'string' && homeData.seoContent.trim().length > 0 ? 'present' : 'empty');
+
+      // Log a few sample items for debugging (without dumping everything)
+      if (Array.isArray(homeData.bestSellerProducts) && homeData.bestSellerProducts.length > 0) {
+        const sample = homeData.bestSellerProducts.slice(0, 3).map((p: any) => ({
+          _id: p?._id,
+          name: p?.name,
+          slug: typeof p?.slug === 'string' ? p.slug : p?.slug?.current,
+          category: p?.category,
+        }));
+        console.log('   - Sample bestSellerProducts:', sample);
+      }
+
+      if (Array.isArray(homeData.socialMediaProducts) && homeData.socialMediaProducts.length > 0) {
+        const sample = homeData.socialMediaProducts.slice(0, 3).map((p: any) => ({
+          _id: p?._id,
+          name: p?.name,
+          slug: typeof p?.slug === 'string' ? p.slug : p?.slug?.current,
+          category: p?.category,
+        }));
+        console.log('   - Sample socialMediaProducts:', sample);
+      }
+
+      if (Array.isArray(homeData.magazinePosts) && homeData.magazinePosts.length > 0) {
+        const sample = homeData.magazinePosts.slice(0, 3).map((p: any) => ({
+          _id: p?._id,
+          title: p?.title,
+          slug: typeof p?.slug === 'string' ? p.slug : p?.slug?.current,
+          category: p?.category,
+        }));
+        console.log('   - Sample magazinePosts:', sample);
+      }
+    }
+
     await saveToCache('homepage.json', homeData);
 
     console.log('\n📥 Fetching featured products...');
     const featuredProducts = await client.fetch(featuredProductsQuery);
+    console.log(`📊 featuredProducts count: ${featuredProducts?.length || 0}`);
+    if (Array.isArray(featuredProducts) && featuredProducts.length > 0) {
+      const sample = featuredProducts.slice(0, 5).map((p: any) => ({
+        _id: p?._id,
+        name: p?.name,
+        slug: typeof p?.slug === 'string' ? p.slug : p?.slug?.current,
+        category: p?.category,
+      }));
+      console.log('   - Sample featuredProducts:', sample);
+    }
     await saveToCache('featured-products.json', featuredProducts);
 
     console.log('\n📥 Fetching featured courses...');
     const featuredCourses = await client.fetch(featuredCoursesQuery);
+    console.log(`📊 featuredCourses count: ${featuredCourses?.length || 0}`);
+    if (Array.isArray(featuredCourses) && featuredCourses.length > 0) {
+      const sample = featuredCourses.slice(0, 3).map((c: any) => ({
+        _id: c?._id,
+        title: c?.title,
+        slug: typeof c?.slug === 'string' ? c.slug : c?.slug?.current,
+        category: c?.category,
+        level: c?.level,
+      }));
+      console.log('   - Sample featuredCourses:', sample);
+    }
     await saveToCache('featured-courses.json', featuredCourses);
 
     console.log('\n📥 Fetching featured posts...');
     const featuredPosts = await client.fetch(featuredPostsQuery);
+    console.log(`📊 featuredPosts count: ${featuredPosts?.length || 0}`);
+    if (Array.isArray(featuredPosts) && featuredPosts.length > 0) {
+      const sample = featuredPosts.slice(0, 3).map((p: any) => ({
+        _id: p?._id,
+        title: p?.title,
+        slug: typeof p?.slug === 'string' ? p.slug : p?.slug?.current,
+        category: p?.category,
+      }));
+      console.log('   - Sample featuredPosts:', sample);
+    }
     await saveToCache('featured-posts.json', featuredPosts);
 
     console.log('\n📥 Fetching products by category...');
@@ -99,7 +180,17 @@ async function fetchHomepageData() {
         const products = await client.fetch(productsByCategoryQuery, { category });
         categoryProductsMap[key] = products;
         await saveToCache(`products-category-${key}.json`, products);
-        console.log(`   ✅ ${key}: ${products?.length || 0} products`);
+        const count = products?.length || 0;
+        console.log(`   ✅ ${key}: ${count} products`);
+        if (Array.isArray(products) && products.length > 0) {
+          const sample = products.slice(0, 3).map((p: any) => ({
+            _id: p?._id,
+            name: p?.name,
+            slug: typeof p?.slug === 'string' ? p.slug : p?.slug?.current,
+            category: p?.category,
+          }));
+          console.log(`     - Sample ${key} products:`, sample);
+        }
       } catch (error) {
         console.error(`   ❌ Error fetching category ${key}:`, error);
         categoryProductsMap[key] = [];
@@ -112,6 +203,15 @@ async function fetchHomepageData() {
 
     console.log('\n📥 Fetching FAQs...');
     const faqs = await client.fetch(faqsByPageQuery, { page: 'home' });
+    console.log(`📊 FAQs count: ${faqs?.length || 0}`);
+    if (Array.isArray(faqs) && faqs.length > 0) {
+      const sample = faqs.slice(0, 3).map((f: any) => ({
+        _id: f?._id,
+        question: f?.question,
+        category: f?.category,
+      }));
+      console.log('   - Sample FAQs:', sample);
+    }
     await saveToCache('faqs-home.json', faqs);
 
     // Save metadata

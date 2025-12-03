@@ -199,11 +199,22 @@ export async function getCachedData<T>(
       };
       const key = categoryKeys[params.category] || params.category;
       const data = (categoryMap[key] as T) || null;
+
       if (data !== null) {
-        console.info(`[SANITY-CACHE] ✅ CACHE HIT: productsByCategoryQuery (category: ${params.category})`);
+        const dataArray = data as any[];
+        const count = Array.isArray(dataArray) ? dataArray.length : 0;
+
+        if (count > 0) {
+          console.info(`[SANITY-CACHE] ✅ CACHE HIT: productsByCategoryQuery (category: ${params.category}, key: ${key}, count: ${count})`);
+        } else {
+          console.warn(
+            `[SANITY-CACHE] ⚠️ CACHE HIT (empty): productsByCategoryQuery (category: ${params.category}, key: ${key}) - cached array is empty`
+          );
+        }
       } else {
         console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: productsByCategoryQuery (category: ${params.category}, key: ${key})`);
       }
+
       return data;
     }
     console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: productsByCategoryQuery (category map not available)`);
