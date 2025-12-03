@@ -216,14 +216,25 @@ async function fetchHomepageData() {
     }
     await saveToCache('faqs-home.json', faqs);
 
-    // Fetch all products for detail pages
-    console.log('\n📥 Fetching all products for detail pages...');
-    const allProducts = await client.fetch(allProductsQuery);
-    console.log(`📊 Found ${allProducts?.length || 0} products`);
+    // Fetch all products (used for both listing page and to get slugs for detail pages)
+    console.log('\n📥 Fetching all products...');
+    const allProductsList = await client.fetch(allProductsQuery);
+    console.log(`📊 All products count: ${allProductsList?.length || 0}`);
+    if (Array.isArray(allProductsList) && allProductsList.length > 0) {
+      const sample = allProductsList.slice(0, 5).map((p: any) => ({
+        _id: p?._id,
+        name: p?.name,
+        slug: typeof p?.slug === 'string' ? p.slug : p?.slug?.current,
+        category: p?.category,
+      }));
+      console.log('   - Sample products:', sample);
+    }
+    await saveToCache('all-products-list.json', allProductsList);
 
-    // Fetch full detail for each product
+    // Fetch full detail for each product (for detail pages)
+    console.log('\n📥 Fetching full details for product detail pages...');
     const productsMap: Record<string, any> = {};
-    const productSlugs = allProducts?.map((p: any) => p.slug).filter(Boolean) || [];
+    const productSlugs = allProductsList?.map((p: any) => p.slug).filter(Boolean) || [];
 
     console.log(`📦 Fetching full details for ${productSlugs.length} products...`);
     let successCount = 0;
@@ -300,6 +311,8 @@ export const categoryProductsCache = ${JSON.stringify(categoryProductsMap, null,
 
 export const faqsHomeCache = ${JSON.stringify(faqs, null, 2)} as const;
 
+export const allProductsListCache = ${JSON.stringify(allProductsList, null, 2)} as const;
+
 export const productsCache = ${JSON.stringify(productsMap, null, 2)} as const;
 
 export const productsFaqsCache = ${JSON.stringify(productFaqs, null, 2)} as const;
@@ -317,6 +330,7 @@ export const cacheMetadata = ${JSON.stringify(metadata, null, 2)} as const;
     console.log(`   - Featured Posts: ${featuredPosts?.length || 0}`);
     console.log(`   - Category Products: ${Object.keys(categoryProductsMap).length} categories`);
     console.log(`   - FAQs: ${faqs?.length || 0}`);
+    console.log(`   - All Products (listing): ${allProductsList?.length || 0}`);
     console.log(`   - Products (detail pages): ${Object.keys(productsMap).length}`);
     console.log(`   - Product FAQs: ${productFaqs?.length || 0}`);
     console.log(`\n📁 Cache location: ${CACHE_DIR}`);

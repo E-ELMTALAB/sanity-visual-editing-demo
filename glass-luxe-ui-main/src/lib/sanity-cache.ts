@@ -97,10 +97,20 @@ function initializeCache(): void {
         });
       }
 
-      // Validate products cache
+      // Validate all products list cache
+      if (module?.allProductsListCache) {
+        const listCount = Array.isArray(module.allProductsListCache) ? module.allProductsListCache.length : 0;
+        console.info(`[SANITY-CACHE] All products list cache: ${listCount} products`);
+        
+        if (listCount === 0) {
+          console.warn('[SANITY-CACHE] ⚠️ All products list cache is empty');
+        }
+      }
+
+      // Validate products cache (detail pages)
       if (module?.productsCache) {
         const productCount = Object.keys(module.productsCache).length;
-        console.info(`[SANITY-CACHE] Products cache: ${productCount} products`);
+        console.info(`[SANITY-CACHE] Products cache (detail pages): ${productCount} products`);
         
         if (productCount === 0) {
           console.warn('[SANITY-CACHE] ⚠️ Products cache is empty');
@@ -242,7 +252,25 @@ export async function getCachedData<T>(
     return null;
   }
 
-  // 3. Featured products query (no category param, has [0...8])
+  // 3. All products query (no limit, no category param, no slug param)
+  if (normalizedQuery.includes('_type == "product"') && 
+      !normalizedQuery.includes('[0') && // No array slice
+      !normalizedQuery.includes('slug.current == $slug') && // Not product by slug
+      !normalizedQuery.includes('category == $category') && // Not by category
+      !params?.slug && 
+      !params?.category) {
+    const data = (cache.allProductsListCache as T) || null;
+    if (data !== null) {
+      const dataArray = data as any[];
+      const count = Array.isArray(dataArray) ? dataArray.length : 0;
+      console.info(`[SANITY-CACHE] ✅ CACHE HIT: allProductsQuery (count: ${count})`);
+    } else {
+      console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: allProductsQuery (data is null)');
+    }
+    return data;
+  }
+
+  // 4. Featured products query (no category param, has [0...8])
   if (normalizedQuery.includes('_type == "product"') && normalizedQuery.includes('[0...8]') && !params?.category) {
     const data = (cache.featuredProductsCache as T) || null;
     if (data !== null) {
@@ -253,7 +281,7 @@ export async function getCachedData<T>(
     return data;
   }
 
-  // 4. Featured courses query (has isFeatured == true and [0...6])
+  // 5. Featured courses query (has isFeatured == true and [0...6])
   if (normalizedQuery.includes('_type == "course"') && normalizedQuery.includes('isFeatured == true') && normalizedQuery.includes('[0...6]')) {
     const data = (cache.featuredCoursesCache as T) || null;
     if (data !== null) {
@@ -264,7 +292,7 @@ export async function getCachedData<T>(
     return data;
   }
 
-  // 5. Featured posts query (has [0...6])
+  // 6. Featured posts query (has [0...6])
   if (normalizedQuery.includes('_type == "post"') && normalizedQuery.includes('[0...6]')) {
     const data = (cache.featuredPostsCache as T) || null;
     if (data !== null) {
@@ -275,7 +303,7 @@ export async function getCachedData<T>(
     return data;
   }
 
-  // 6. FAQs by page query (has page param) - check for home first
+  // 7. FAQs by page query (has page param) - check for home first
   if (normalizedQuery.includes('_type == "faq"') && params?.page === 'home') {
     const data = (cache.faqsHomeCache as T) || null;
     if (data !== null) {
@@ -286,7 +314,7 @@ export async function getCachedData<T>(
     return data;
   }
 
-  // 7. Product by slug query (has slug param)
+  // 8. Product by slug query (has slug param)
   if (normalizedQuery.includes('_type == "product"') && 
       normalizedQuery.includes('slug.current == $slug') && 
       params?.slug) {
@@ -306,7 +334,7 @@ export async function getCachedData<T>(
     return null;
   }
 
-  // 8. Product FAQs query (has page: "products" param)
+  // 9. Product FAQs query (has page: "products" param)
   if (normalizedQuery.includes('_type == "faq"') && params?.page === 'products') {
     const data = (cache.productsFaqsCache as T) || null;
     if (data !== null) {
