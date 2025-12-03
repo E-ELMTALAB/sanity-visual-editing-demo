@@ -96,6 +96,26 @@ function initializeCache(): void {
         });
       }
 
+      // Validate products cache
+      if (module?.productsCache) {
+        const productCount = Object.keys(module.productsCache).length;
+        console.info(`[SANITY-CACHE] Products cache: ${productCount} products`);
+        
+        if (productCount === 0) {
+          console.warn('[SANITY-CACHE] ⚠️ Products cache is empty');
+        } else {
+          // Log a sample of product slugs for debugging
+          const sampleSlugs = Object.keys(module.productsCache).slice(0, 5);
+          console.info(`[SANITY-CACHE] Sample product slugs: ${sampleSlugs.join(', ')}${productCount > 5 ? '...' : ''}`);
+        }
+      }
+
+      // Validate product FAQs cache
+      if (module?.productsFaqsCache) {
+        const faqCount = Array.isArray(module.productsFaqsCache) ? module.productsFaqsCache.length : 0;
+        console.info(`[SANITY-CACHE] Product FAQs cache: ${faqCount} FAQs`);
+      }
+
       return module;
     } catch (error) {
       // Cache not available - that's okay, we'll use API
@@ -254,13 +274,44 @@ export async function getCachedData<T>(
     return data;
   }
 
-  // 6. FAQs by page query (has page param)
+  // 6. FAQs by page query (has page param) - check for home first
   if (normalizedQuery.includes('_type == "faq"') && params?.page === 'home') {
     const data = (cache.faqsHomeCache as T) || null;
     if (data !== null) {
       console.info('[SANITY-CACHE] ✅ CACHE HIT: faqsByPageQuery (page: home)');
     } else {
       console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: faqsByPageQuery (page: home, data is null)');
+    }
+    return data;
+  }
+
+  // 7. Product by slug query (has slug param)
+  if (normalizedQuery.includes('_type == "product"') && 
+      normalizedQuery.includes('slug.current == $slug') && 
+      params?.slug) {
+    const productsMap = cache.productsCache;
+    if (productsMap && typeof productsMap === 'object') {
+      const data = (productsMap[params.slug] as T) || null;
+      
+      if (data !== null) {
+        console.info(`[SANITY-CACHE] ✅ CACHE HIT: productBySlugQuery (slug: ${params.slug})`);
+      } else {
+        console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: productBySlugQuery (slug: ${params.slug}) - product not found in cache`);
+      }
+      
+      return data;
+    }
+    console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: productBySlugQuery (products map not available)`);
+    return null;
+  }
+
+  // 8. Product FAQs query (has page: "products" param)
+  if (normalizedQuery.includes('_type == "faq"') && params?.page === 'products') {
+    const data = (cache.productsFaqsCache as T) || null;
+    if (data !== null) {
+      console.info('[SANITY-CACHE] ✅ CACHE HIT: faqsByPageQuery (page: products)');
+    } else {
+      console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: faqsByPageQuery (page: products, data is null)');
     }
     return data;
   }

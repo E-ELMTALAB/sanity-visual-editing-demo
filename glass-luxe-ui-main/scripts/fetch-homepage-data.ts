@@ -14,6 +14,8 @@ import {
   featuredPostsQuery,
   productsByCategoryQuery,
   faqsByPageQuery,
+  allProductsQuery,
+  productBySlugQuery,
 } from '../src/lib/sanity.queries';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -214,6 +216,61 @@ async function fetchHomepageData() {
     }
     await saveToCache('faqs-home.json', faqs);
 
+    // Fetch all products for detail pages
+    console.log('\n📥 Fetching all products for detail pages...');
+    const allProducts = await client.fetch(allProductsQuery);
+    console.log(`📊 Found ${allProducts?.length || 0} products`);
+
+    // Fetch full detail for each product
+    const productsMap: Record<string, any> = {};
+    const productSlugs = allProducts?.map((p: any) => p.slug).filter(Boolean) || [];
+
+    console.log(`📦 Fetching full details for ${productSlugs.length} products...`);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (let i = 0; i < productSlugs.length; i++) {
+      const slug = productSlugs[i];
+      try {
+        const productDetail = await client.fetch(productBySlugQuery, { slug });
+        if (productDetail) {
+          productsMap[slug] = productDetail;
+          successCount++;
+        } else {
+          console.warn(`   ⚠️ Product "${slug}" returned null/undefined`);
+          errorCount++;
+        }
+        
+        // Log progress every 10 products
+        if ((i + 1) % 10 === 0 || i === productSlugs.length - 1) {
+          console.log(`   Progress: ${i + 1}/${productSlugs.length} products fetched (${successCount} success, ${errorCount} errors)`);
+        }
+      } catch (error) {
+        console.error(`   ❌ Error fetching product "${slug}":`, error);
+        errorCount++;
+      }
+    }
+
+    await saveToCache('products-map.json', productsMap);
+    console.log(`💾 Saved ${Object.keys(productsMap).length} products to cache`);
+    if (errorCount > 0) {
+      console.warn(`⚠️ ${errorCount} products failed to fetch`);
+    }
+
+    // Fetch product FAQs
+    console.log('\n📥 Fetching product FAQs...');
+    const productFaqs = await client.fetch(faqsByPageQuery, { page: 'products' });
+    console.log(`📊 Product FAQs count: ${productFaqs?.length || 0}`);
+    if (Array.isArray(productFaqs) && productFaqs.length > 0) {
+      const sample = productFaqs.slice(0, 3).map((f: any) => ({
+        _id: f?._id,
+        question: f?.question,
+        category: f?.category,
+      }));
+      console.log('   - Sample product FAQs:', sample);
+    }
+    await saveToCache('products-faqs.json', productFaqs);
+
     // Save metadata
     const metadata = {
       fetchedAt: new Date().toISOString(),
@@ -243,6 +300,10 @@ export const categoryProductsCache = ${JSON.stringify(categoryProductsMap, null,
 
 export const faqsHomeCache = ${JSON.stringify(faqs, null, 2)} as const;
 
+export const productsCache = ${JSON.stringify(productsMap, null, 2)} as const;
+
+export const productsFaqsCache = ${JSON.stringify(productFaqs, null, 2)} as const;
+
 export const cacheMetadata = ${JSON.stringify(metadata, null, 2)} as const;
 `;
     await writeFile(join(CACHE_DIR, 'index.ts'), indexContent, 'utf-8');
@@ -256,6 +317,8 @@ export const cacheMetadata = ${JSON.stringify(metadata, null, 2)} as const;
     console.log(`   - Featured Posts: ${featuredPosts?.length || 0}`);
     console.log(`   - Category Products: ${Object.keys(categoryProductsMap).length} categories`);
     console.log(`   - FAQs: ${faqs?.length || 0}`);
+    console.log(`   - Products (detail pages): ${Object.keys(productsMap).length}`);
+    console.log(`   - Product FAQs: ${productFaqs?.length || 0}`);
     console.log(`\n📁 Cache location: ${CACHE_DIR}`);
   } catch (error) {
     console.error('\n❌ Error fetching homepage data:', error);
