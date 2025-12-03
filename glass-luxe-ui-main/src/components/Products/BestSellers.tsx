@@ -64,9 +64,9 @@ export function BestSellers({
               const medusaVariants = productPriceData?.variants || [];
               const medusaProductId = productPriceData?.product_id; // Medusa product ID
               const validPrices = medusaVariants.filter(v => v.price > 0).map(v => v.price);
-              const lowestPrice = validPrices.length > 0 
+              const medusaLowestPrice = validPrices.length > 0 
                 ? Math.min(...validPrices)
-                : product.price;
+                : undefined;
               
               // Use Sanity price as original price (before any discounts)
               // If Medusa variant has original_price, use that, otherwise use Sanity price
