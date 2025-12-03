@@ -1,28 +1,137 @@
 /**
  * Sanity cache reader for build-time cached data
  * Imports cached data that was fetched at build time
+ * 
+ * FIXES:
+ * - Pre-loads cache eagerly when module is imported (prevents race conditions)
+ * - Uses singleton promise pattern to ensure cache loads only once
+ * - Validates homepage cache has all required fields
+ * - Provides detailed logging for cache hits/misses
  */
 
-// Dynamically import cache - this will be bundled at build time
+// Cache module state
 let cacheModule: any = null;
-let cacheLoadAttempted = false;
+let cacheLoadPromise: Promise<any> | null = null;
 
 /**
- * Load cache module (lazy import)
+ * Check if we should use cache (production build)
+ */
+function shouldUseCache(): boolean {
+  // Use cache in production builds (not in dev mode)
+  return import.meta.env.PROD && import.meta.env.MODE === 'production';
+}
+
+/**
+ * Pre-load cache module eagerly when module is imported (in production)
+ * This prevents race conditions by loading cache before any queries run
+ */
+function initializeCache(): void {
+  // Only pre-load in production
+  if (!shouldUseCache()) {
+    return;
+  }
+
+  // Only initialize once
+  if (cacheLoadPromise !== null) {
+    return;
+  }
+
+  // Start loading cache immediately
+  cacheLoadPromise = (async () => {
+    try {
+      // Try to import the generated cache index
+      // This will only work if the cache was generated at build time
+      const module = await import('../data/sanity-cache/index');
+      cacheModule = module;
+      
+      console.info('[SANITY-CACHE] ✅ Pre-loaded build-time cache module');
+      
+      // Log cache metadata if available
+      if (module?.cacheMetadata) {
+        console.info(`[SANITY-CACHE] Cache metadata:`, {
+          fetchedAt: module.cacheMetadata.fetchedAt,
+          projectId: module.cacheMetadata.projectId,
+          dataset: module.cacheMetadata.dataset,
+          categories: module.cacheMetadata.categories,
+        });
+      }
+
+      // Validate homepage cache has all required fields
+      if (module?.homepageCache) {
+        const homeData = module.homepageCache;
+        const requiredFields = [
+          'heroSlides',
+          'bestSellerProducts',
+          'editorialBanners',
+          'collectionsBanner',
+          'discountedProducts',
+          'socialMediaProducts',
+          'educationalProducts',
+          'bestsellingCourses',
+          'magazinePosts',
+          'featuredBlogs',
+          'seoContent',
+        ];
+        
+        const missingFields = requiredFields.filter(field => !(field in homeData));
+        if (missingFields.length > 0) {
+          console.warn(`[SANITY-CACHE] ⚠️ Homepage cache missing fields: ${missingFields.join(', ')}`);
+        } else {
+          console.info('[SANITY-CACHE] ✅ Homepage cache validation passed - all fields present');
+        }
+
+        // Log data counts for debugging
+        console.info('[SANITY-CACHE] Homepage data summary:', {
+          heroSlides: homeData.heroSlides?.length || 0,
+          bestSellerProducts: homeData.bestSellerProducts?.length || 0,
+          editorialBanners: homeData.editorialBanners?.length || 0,
+          discountedProducts: homeData.discountedProducts?.length || 0,
+          socialMediaProducts: homeData.socialMediaProducts?.length || 0,
+          educationalProducts: homeData.educationalProducts?.length || 0,
+          bestsellingCourses: homeData.bestsellingCourses?.length || 0,
+          magazinePosts: homeData.magazinePosts?.length || 0,
+          featuredBlogs: homeData.featuredBlogs?.length || 0,
+          hasCollectionsBanner: !!homeData.collectionsBanner,
+          hasSeoContent: !!homeData.seoContent,
+        });
+      }
+
+      return module;
+    } catch (error) {
+      // Cache not available - that's okay, we'll use API
+      console.warn('[SANITY-CACHE] ⚠️ Cache module not available, will use API');
+      console.debug('[SANITY-CACHE] Error:', error);
+      return null;
+    }
+  })();
+}
+
+/**
+ * Load cache module - returns the pre-loaded promise or loads now
  */
 async function loadCache(): Promise<any> {
-  if (cacheLoadAttempted) {
+  // If already loaded, return immediately
+  if (cacheModule !== null) {
     return cacheModule;
   }
 
-  cacheLoadAttempted = true;
+  // If pre-load is in progress, wait for it
+  if (cacheLoadPromise) {
+    return cacheLoadPromise;
+  }
 
+  // If not initialized yet (shouldn't happen in production, but handle it)
+  if (shouldUseCache()) {
+    initializeCache();
+    if (cacheLoadPromise) {
+      return cacheLoadPromise;
+    }
+  }
+
+  // Fallback: try loading now (for non-production or if pre-load failed)
   try {
-    // Try to import the generated cache index
-    // This will only work if the cache was generated at build time
     cacheModule = await import('../data/sanity-cache/index');
-    console.info('[SANITY-CACHE] ✅ Loaded build-time cache module');
-    // Log cache metadata if available
+    console.info('[SANITY-CACHE] ✅ Loaded build-time cache module (fallback)');
     if (cacheModule?.cacheMetadata) {
       console.info(`[SANITY-CACHE] Cache metadata:`, {
         fetchedAt: cacheModule.cacheMetadata.fetchedAt,
@@ -33,20 +142,15 @@ async function loadCache(): Promise<any> {
     }
     return cacheModule;
   } catch (error) {
-    // Cache not available - that's okay, we'll use API
     console.warn('[SANITY-CACHE] ⚠️ Cache module not available, will use API');
     console.debug('[SANITY-CACHE] Error:', error);
     return null;
   }
 }
 
-/**
- * Check if we should use cache (production build)
- */
-function shouldUseCache(): boolean {
-  // Use cache in production builds (not in dev mode)
-  return import.meta.env.PROD && import.meta.env.MODE === 'production';
-}
+// Initialize cache eagerly when module loads (in production)
+// This runs immediately when the module is imported, ensuring cache is ready before queries
+initializeCache();
 
 /**
  * Get cached data for a query with detailed logging
