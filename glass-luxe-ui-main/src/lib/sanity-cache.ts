@@ -14,11 +14,12 @@ let cacheModule: any = null;
 let cacheLoadPromise: Promise<any> | null = null;
 
 /**
- * Check if we should use cache (production build)
+ * Check if we should use cache (production build or cache-only mode)
  */
 function shouldUseCache(): boolean {
-  // Use cache in production builds (not in dev mode)
-  return import.meta.env.PROD && import.meta.env.MODE === 'production';
+  // Use cache in production builds OR if cache-only mode is enabled (for testing)
+  const cacheOnlyMode = import.meta.env.VITE_SANITY_CACHE_ONLY === 'true' || import.meta.env.VITE_SANITY_CACHE_ONLY === '1';
+  return (import.meta.env.PROD && import.meta.env.MODE === 'production') || cacheOnlyMode;
 }
 
 /**
