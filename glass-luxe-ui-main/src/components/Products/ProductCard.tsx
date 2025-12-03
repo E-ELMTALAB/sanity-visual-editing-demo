@@ -58,6 +58,9 @@ export const ProductCard = React.memo(function ProductCard({
     // Check if any variant has a promotion from Medusa prices
     const variantWithPromo = (medusaVariants ?? []).find(v => v.has_promotion && v.original_price);
     
+    // Also check for variants with original_price even if has_promotion flag is not set
+    const variantWithOriginalPrice = (medusaVariants ?? []).find(v => v.original_price && v.original_price > v.price);
+    
     // Extract valid Medusa prices
     const medusaPrices = (medusaVariants ?? [])
       .map((variant) => variant.price)
@@ -81,7 +84,7 @@ export const ProductCard = React.memo(function ProductCard({
       // Use the discounted price from promotion
       displayPrice = promotion.discountedPrice;
     }
-    // Priority 2: Variant-level promotion from Medusa
+    // Priority 2: Variant-level promotion from Medusa (with has_promotion flag)
     else if (variantWithPromo) {
       originalPrice = variantWithPromo.original_price;
       discountPercentage = variantWithPromo.discount_percentage;
@@ -89,11 +92,24 @@ export const ProductCard = React.memo(function ProductCard({
       // Use the discounted price from variant
       displayPrice = variantWithPromo.price;
     }
-    // Priority 3: Compare Sanity price with Medusa price
-    else if (typeof medusaLowestPrice === "number" && price > 0 && price !== medusaLowestPrice && price > medusaLowestPrice) {
+    // Priority 2b: Variant with original_price (even without has_promotion flag)
+    else if (variantWithOriginalPrice) {
+      originalPrice = variantWithOriginalPrice.original_price;
+      displayPrice = variantWithOriginalPrice.price;
+      discountPercentage = Math.round(((originalPrice - displayPrice) / originalPrice) * 100);
+      promotionEndsAt = variantWithOriginalPrice.promotion_ends_at;
+    }
+    // Priority 3: Compare Sanity price with Medusa price (if Medusa price is lower)
+    // This catches cases where Medusa has a discounted price but no original_price field
+    else if (typeof medusaLowestPrice === "number" && price > 0 && price > medusaLowestPrice) {
       originalPrice = price;
       discountPercentage = Math.round(((price - medusaLowestPrice) / price) * 100);
       displayPrice = medusaLowestPrice;
+      // Try to get promotion end date from any variant
+      const variantWithEndDate = (medusaVariants ?? []).find(v => v.promotion_ends_at);
+      if (variantWithEndDate?.promotion_ends_at) {
+        promotionEndsAt = variantWithEndDate.promotion_ends_at;
+      }
     }
     // No promotion - use lowest available price
     else {

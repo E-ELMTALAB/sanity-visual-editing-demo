@@ -175,9 +175,9 @@ function StaticHero() {
 
       {/* Content - Fixed dimensions to prevent CLS */}
       <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-28 pb-16 lg:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-8 min-h-[70vh]">
+        <div className="flex items-center justify-center min-h-[70vh]">
           <div 
-            className="text-white text-center lg:text-right flex flex-col justify-center items-center lg:items-start"
+            className="text-white text-center flex flex-col justify-center items-center max-w-3xl"
             style={{ minHeight: '300px' }} // Fixed height to prevent CLS
           >
             <span className="inline-block rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs md:text-sm w-fit border border-white/20">
@@ -191,7 +191,6 @@ function StaticHero() {
             </p>
             <TrustBadges />
           </div>
-          <div className="hidden lg:block" />
         </div>
       </div>
     </section>
@@ -235,9 +234,9 @@ function DynamicHero({ slide }: { slide: any }) {
       />
 
       <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-28 pb-16 lg:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-8 min-h-[70vh]">
+        <div className="flex items-center justify-center min-h-[70vh]">
           <div 
-            className="text-white text-center lg:text-right flex flex-col justify-center items-center lg:items-start"
+            className="text-white text-center flex flex-col justify-center items-center max-w-3xl"
             style={{ minHeight: '300px' }}
           >
             <span className="inline-block rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs md:text-sm w-fit border border-white/20">
@@ -251,7 +250,6 @@ function DynamicHero({ slide }: { slide: any }) {
             </p>
             <TrustBadges />
           </div>
-          <div className="hidden lg:block" />
         </div>
       </div>
     </section>
@@ -677,7 +675,7 @@ const Index = () => {
         </div>
       )}
 
-      <TestimonialsRow />
+      {/* <TestimonialsRow /> */}
 
       {/* Dynamic content sections - only render when data is loaded */}
       {dataLoaded && sanityData && (
@@ -812,18 +810,18 @@ const Index = () => {
       )}
 
       {/* Floating UI - Lazy loaded */}
-      <Suspense fallback={null}>
+      {/* <Suspense fallback={null}>
         <FloatingDock
           onOpenChat={() => setChatOpen(true)}
           onOpenSupport={() => setSupportOpen(true)}
           onOpenCart={() => setCartOpen(true)}
           cartItemCount={cartState.itemCount}
         />
-      </Suspense>
+      </Suspense> */}
 
-      <Suspense fallback={null}>
+      {/* <Suspense fallback={null}>
       <ChatbotPanel open={chatOpen} onClose={() => setChatOpen(false)} />
-      </Suspense>
+      </Suspense> */}
 
       <Suspense fallback={null}>
       <SupportPanel open={supportOpen} onClose={() => setSupportOpen(false)} />

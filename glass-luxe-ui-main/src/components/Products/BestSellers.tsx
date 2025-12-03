@@ -79,6 +79,18 @@ export function BestSellers({
                 ? getPromotionForProduct(product.slug, productIdForMatching, originalPrice)
                 : null;
 
+              // Debug logging for products with potential discounts
+              if (product.slug && (variantWithOriginalPrice || (medusaLowestPrice && product.price > medusaLowestPrice))) {
+                console.log(`[BEST-SELLERS] Product ${product.slug}:`, {
+                  hasPromotionProp: !!promotionInfo,
+                  hasVariantPromo: !!variantWithOriginalPrice,
+                  priceDiff: medusaLowestPrice ? product.price - medusaLowestPrice : 0,
+                  originalPrice,
+                  lowestPrice: medusaLowestPrice,
+                  productPrice: product.price,
+                });
+              }
+
               return (
                 <motion.div 
                   key={product.id} 

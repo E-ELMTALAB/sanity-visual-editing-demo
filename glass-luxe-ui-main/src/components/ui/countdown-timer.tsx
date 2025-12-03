@@ -183,11 +183,8 @@ export function CompactCountdownTimer({
 
   const isUrgent = timeLeft.total < 60 * 60 * 1000; // Less than 1 hour
 
-  // Format full countdown: days (if > 0), hours, minutes, seconds
-  // Always show hours:minutes:seconds, and days if > 0
-  const timeString = timeLeft.days > 0
-    ? `${toPersianNumber(timeLeft.days)} روز ${toPersianNumber(timeLeft.hours).padStart(2, '۰')}:${toPersianNumber(timeLeft.minutes).padStart(2, '۰')}:${toPersianNumber(timeLeft.seconds).padStart(2, '۰')}`
-    : `${toPersianNumber(timeLeft.hours).padStart(2, '۰')}:${toPersianNumber(timeLeft.minutes).padStart(2, '۰')}:${toPersianNumber(timeLeft.seconds).padStart(2, '۰')}`;
+  // Format full countdown: always show days, hours, minutes, seconds
+  const timeString = `${toPersianNumber(timeLeft.days).padStart(2, '۰')} روز ${toPersianNumber(timeLeft.hours).padStart(2, '۰')}:${toPersianNumber(timeLeft.minutes).padStart(2, '۰')}:${toPersianNumber(timeLeft.seconds).padStart(2, '۰')}`;
 
   return (
     <motion.div
