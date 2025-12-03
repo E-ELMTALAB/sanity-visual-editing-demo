@@ -189,7 +189,7 @@ function StaticHero() {
 // Dynamic hero that updates when Sanity data loads
 function DynamicHero({ slide }: { slide: any }) {
   if (!slide?.image) return null;
-  
+
   return (
     <section 
       dir="rtl"
@@ -232,10 +232,10 @@ function DynamicHero({ slide }: { slide: any }) {
               بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
             </span>
             <h1 className="mt-4 text-5xl sm:text-5xl md:text-6xl font-black leading-tight">
-              {HERO_TITLE}
+              {slide.title}
             </h1>
             <p className="mt-4 max-w-xl text-white/90 text-base md:text-lg leading-relaxed whitespace-pre-line">
-              {HERO_SUBTITLE}
+              {slide.subtitle}
             </p>
             <TrustBadges />
           </div>
