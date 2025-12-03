@@ -2,6 +2,7 @@
 // This doesn't include visual editing features - much smaller bundle
 import { createClient } from '@sanity/client'
 import { projectId, dataset, apiVersion } from './sanity.config'
+import { getCachedData, isCacheAvailable } from './sanity-cache'
 
 /**
  * Lightweight browser-only Sanity client.
@@ -21,6 +22,7 @@ const shouldUseProxy = Boolean(proxyEndpoint)
 
 let hasLoggedClientOrigin = false
 let hasLoggedProxyOrigin = false
+let hasLoggedCacheUsage = false
 
 function logDirectClientOrigin() {
   if (hasLoggedClientOrigin) {
@@ -42,6 +44,15 @@ function logProxyOrigin() {
 
   console.info('[SANITY] Using Cloudflare worker proxy →', proxyEndpoint)
   hasLoggedProxyOrigin = true
+}
+
+function logCacheUsage() {
+  if (hasLoggedCacheUsage) {
+    return
+  }
+
+  console.info('[SANITY] Using build-time cached data (no API calls)')
+  hasLoggedCacheUsage = true
 }
 
 async function fetchViaProxy<T>(query: string, params?: Record<string, any>): Promise<T | null> {
@@ -80,16 +91,42 @@ export async function fetchFromSanity<T>(query: string, params?: Record<string, 
     return null
   }
 
+  // In production, try to use cached data first
+  if (import.meta.env.PROD) {
+    const cached = await getCachedData<T>(query, params)
+    if (cached !== null) {
+      // Cache hit - logCacheUsage already called in getCachedData
+      if (!hasLoggedCacheUsage) {
+        logCacheUsage()
+      }
+      return cached
+    }
+    // Cache miss - log fallback to API
+    const queryName = query.includes('_type == "home"') ? 'homePageQuery' :
+                     query.includes('_type == "product"') && params?.category ? `productsByCategoryQuery (${params.category})` :
+                     query.includes('_type == "product"') ? 'featuredProductsQuery' :
+                     query.includes('_type == "course"') ? 'featuredCoursesQuery' :
+                     query.includes('_type == "post"') ? 'featuredPostsQuery' :
+                     query.includes('_type == "faq"') ? 'faqsByPageQuery' :
+                     'unknown query'
+    console.info(`[SANITY] ⚠️ CACHE MISS → Fetching from API: ${queryName}`)
+  }
+
   if (shouldUseProxy) {
     try {
+      if (!hasLoggedProxyOrigin) {
+        logProxyOrigin()
+      }
       return await fetchViaProxy<T>(query, params)
     } catch (error) {
-      console.error(error)
+      console.error('[SANITY] Proxy fetch failed:', error)
       return null
     }
   }
 
-  logDirectClientOrigin()
+  if (!hasLoggedClientOrigin) {
+    logDirectClientOrigin()
+  }
 
   try {
     return await client.fetch<T>(query, params)

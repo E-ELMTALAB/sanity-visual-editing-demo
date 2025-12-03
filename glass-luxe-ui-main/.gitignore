@@ -32,3 +32,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Sanity build-time cache
+src/data/sanity-cache/*.json
+src/data/sanity-cache/*.ts
+!src/data/sanity-cache/.gitkeep
