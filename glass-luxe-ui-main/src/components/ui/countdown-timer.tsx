@@ -202,11 +202,12 @@ export function CompactCountdownTimer({
   const isUrgent = timeLeft.total < 60 * 60 * 1000; // Less than 1 hour
 
   // Format full countdown: days (if > 0), hours, minutes, seconds
-  // Always show hours:minutes:seconds, and days if > 0
-  const timeString = timeLeft.days > 0
-    ? `${toPersianNumber(timeLeft.days)} روز ${toPersianNumber(timeLeft.hours).padStart(2, '۰')}:${toPersianNumber(timeLeft.minutes).padStart(2, '۰')}:${toPersianNumber(timeLeft.seconds).padStart(2, '۰')}`
-    : `${toPersianNumber(timeLeft.hours).padStart(2, '۰')}:${toPersianNumber(timeLeft.minutes).padStart(2, '۰')}:${toPersianNumber(timeLeft.seconds).padStart(2, '۰')}`;
-
+  // Format should be: "۱۳ روز ۰۱:۱۴:۳۲" (13 days 01:14:32) - days first, then time
+  const formattedHours = toPersianNumber(timeLeft.hours).padStart(2, '۰');
+  const formattedMinutes = toPersianNumber(timeLeft.minutes).padStart(2, '۰');
+  const formattedSeconds = toPersianNumber(timeLeft.seconds).padStart(2, '۰');
+  const timePart = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+  
   return (
     <motion.div
       key={endsAt} // Unique key for each timer instance
@@ -220,9 +221,18 @@ export function CompactCountdownTimer({
         className
       )}
       dir="ltr"
+      style={{ direction: 'ltr' }}
     >
       <Clock className="w-3 h-3 flex-shrink-0" />
-      <span className="tabular-nums">{timeString}</span>
+      <span className="tabular-nums flex items-center gap-0.5" dir="ltr" style={{ direction: 'ltr' }}>
+        {timeLeft.days > 0 && (
+          <>
+            <span>{toPersianNumber(timeLeft.days)}</span>
+            <span>روز</span>
+          </>
+        )}
+        <span>{timePart}</span>
+      </span>
     </motion.div>
   );
 }

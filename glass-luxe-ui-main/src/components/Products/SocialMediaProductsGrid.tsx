@@ -108,8 +108,15 @@ export function SocialMediaProductsGrid({
                   ? getPromotionForProduct(product.slug, productIdForMatching, originalPrice)
                   : null;
 
-                // Use site-wide promotion end date as fallback if product-specific promotion doesn't have one
-                const endsAt = promotionInfo?.endsAt || siteWidePromotion?.campaign?.ends_at;
+                // Check if product has a discount from variant
+                const hasVariantDiscount = lowestPriceVariant?.original_price && lowestPriceVariant.original_price > lowestPriceVariant.price;
+                
+                // Determine endsAt: priority is promotionInfo > variant promotion_ends_at > site-wide promotion
+                const variantEndsAt = lowestPriceVariant?.promotion_ends_at;
+                const endsAt = promotionInfo?.endsAt || variantEndsAt || siteWidePromotion?.campaign?.ends_at;
+                
+                // Check if product has any discount (from promotion or variant)
+                const hasDiscount = promotionInfo || hasVariantDiscount || (lowestPriceVariant?.price && lowestPriceVariant.price < originalPrice);
 
                 return (
                   <div 
@@ -129,7 +136,14 @@ export function SocialMediaProductsGrid({
                         originalPrice: promotionInfo.originalPrice,
                         discountedPrice: promotionInfo.discountedPrice,
                         endsAt: endsAt,
-                      } : undefined}
+                      } : (hasDiscount && endsAt ? {
+                        discountPercentage: hasVariantDiscount && lowestPriceVariant?.discount_percentage 
+                          ? lowestPriceVariant.discount_percentage 
+                          : (originalPrice > 0 ? Math.round(((originalPrice - (lowestPriceVariant?.price || originalPrice)) / originalPrice) * 100) : 0),
+                        originalPrice: originalPrice,
+                        discountedPrice: lowestPriceVariant?.price || originalPrice,
+                        endsAt: endsAt,
+                      } : undefined)}
                     />
                   </div>
                 );

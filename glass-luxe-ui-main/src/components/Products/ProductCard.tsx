@@ -77,7 +77,7 @@ export const ProductCard = React.memo(function ProductCard({
     if (promotion) {
       originalPrice = promotion.originalPrice;
       discountPercentage = promotion.discountPercentage;
-      promotionEndsAt = promotion.endsAt;
+      promotionEndsAt = promotion.endsAt; // Use endsAt from promotion prop
       // Use the discounted price from promotion
       displayPrice = promotion.discountedPrice;
     }
@@ -85,7 +85,7 @@ export const ProductCard = React.memo(function ProductCard({
     else if (variantWithPromo) {
       originalPrice = variantWithPromo.original_price;
       discountPercentage = variantWithPromo.discount_percentage;
-      promotionEndsAt = variantWithPromo.promotion_ends_at;
+      promotionEndsAt = variantWithPromo.promotion_ends_at; // Use variant's promotion_ends_at
       // Use the discounted price from variant
       displayPrice = variantWithPromo.price;
     }
