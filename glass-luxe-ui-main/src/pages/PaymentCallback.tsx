@@ -6,6 +6,8 @@ import { useCart } from "@/contexts/cart-context";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer/Footer";
+import { Copy, Check, Send } from "lucide-react";
+import { toast } from "sonner";
 
 export default function PaymentCallback() {
   const [searchParams] = useSearchParams();
@@ -14,7 +16,21 @@ export default function PaymentCallback() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [verifyData, setVerifyData] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [copied, setCopied] = useState(false);
   const hasVerifiedRef = useRef(false); // Use ref to prevent duplicate calls (doesn't cause re-renders)
+
+  const copyTrackingCode = async () => {
+    if (verifyData?.ref_id) {
+      try {
+        await navigator.clipboard.writeText(verifyData.ref_id);
+        setCopied(true);
+        toast.success('کد رهگیری کپی شد');
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        toast.error('خطا در کپی کردن کد رهگیری');
+      }
+    }
+  };
 
   useEffect(() => {
     // Prevent multiple verification attempts
@@ -190,24 +206,84 @@ export default function PaymentCallback() {
           <p className="text-gray-600 mb-6">سفارش شما با موفقیت ثبت شد</p>
           
           {verifyData && (
-            <div className="bg-gray-50 rounded-lg p-4 mb-6 text-right">
-              <h3 className="font-bold text-gray-800 mb-2">جزئیات سفارش</h3>
-              <p className="text-sm text-gray-600">کد پیگیری: {verifyData.ref_id}</p>
-              <p className="text-sm text-gray-600">مبلغ: {Number(verifyData.amount || 0).toLocaleString()} {verifyData.currency_code || ''}</p>
-              <p className="text-sm text-gray-600">تعداد کالا: {verifyData.items?.length || 0} عدد</p>
-            </div>
+            <>
+              {/* Tracking Code Section */}
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-6">
+                <div className="text-center mb-4">
+                  <h3 className="font-bold text-gray-800 mb-2 text-lg">کد رهگیری سفارش</h3>
+                  <p className="text-sm text-gray-600 mb-4">لطفاً این کد را کپی کنید</p>
+                  
+                  {/* Tracking Code Display with Copy Button */}
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <code className="bg-white border-2 border-blue-300 rounded-lg px-4 py-3 text-lg font-bold text-blue-700 font-mono">
+                      {verifyData.ref_id}
+                    </code>
+                    <Button
+                      onClick={copyTrackingCode}
+                      variant="outline"
+                      size="lg"
+                      className="flex items-center gap-2"
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="w-5 h-5 text-green-600" />
+                          <span className="text-green-600">کپی شد</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-5 h-5" />
+                          <span>کپی</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Other Order Details */}
+                <div className="border-t border-blue-200 pt-4 text-right">
+                  <p className="text-sm text-gray-600 mb-1">مبلغ: {Number(verifyData.amount || 0).toLocaleString()} {verifyData.currency_code || ''}</p>
+                  <p className="text-sm text-gray-600">تعداد کالا: {verifyData.items?.length || 0} عدد</p>
+                </div>
+              </div>
+
+              {/* Telegram Support Instructions */}
+              <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-6 mb-6">
+                <div className="text-center">
+                  <h3 className="font-bold text-gray-800 mb-3 text-lg">دریافت اکانت</h3>
+                  <p className="text-sm text-gray-700 mb-4 leading-relaxed">
+                    برای دریافت اکانت خود، لطفاً کد رهگیری را برای پشتیبانی در تلگرام ارسال کنید.
+                  </p>
+                  
+                  <Button
+                    asChild
+                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+                    size="lg"
+                  >
+                    <a
+                      href="https://t.me/sharifgpt"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2"
+                    >
+                      <Send className="w-5 h-5" />
+                      <span>ارسال پیام به پشتیبانی تلگرام</span>
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            </>
           )}
 
           <div className="space-y-3">
             <Link
               to="/products"
-              className="block w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="block w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center"
             >
               ادامه خرید
             </Link>
             <Link
               to="/"
-              className="block w-full px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="block w-full px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-center"
             >
               بازگشت به خانه
             </Link>
