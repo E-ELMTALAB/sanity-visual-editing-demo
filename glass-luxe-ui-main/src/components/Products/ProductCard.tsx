@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CompactCountdownTimer } from "@/components/ui/countdown-timer";
 import { toPersianNumber } from "@/lib/medusa-promotions";
+import { useSiteWidePromotion } from "@/contexts/promotion-context";
 
 interface MedusaVariant {
   variant_id: string;
@@ -52,6 +53,7 @@ export const ProductCard = React.memo(function ProductCard({
   promotion,
 }: ProductCardProps) {
   const navigate = useNavigate();
+  const siteWidePromotion = useSiteWidePromotion();
 
   // Calculate pricing and promotion info
   const pricingInfo = useMemo(() => {
@@ -101,6 +103,12 @@ export const ProductCard = React.memo(function ProductCard({
     }
 
     const hasPromotion = !!originalPrice && originalPrice > displayPrice;
+    
+    // If we have a promotion but no endsAt yet, check site-wide promotion as fallback
+    if (hasPromotion && !promotionEndsAt && siteWidePromotion?.campaign?.ends_at) {
+      promotionEndsAt = siteWidePromotion.campaign.ends_at;
+    }
+    
     const showRangeLabel = medusaPrices.length > 1;
 
     return {
@@ -111,7 +119,7 @@ export const ProductCard = React.memo(function ProductCard({
       promotionEndsAt,
       showRangeLabel,
     };
-  }, [medusaVariants, price, promotion]);
+  }, [medusaVariants, price, promotion, siteWidePromotion]);
 
   const formatPrice = (value: number) => value.toLocaleString("fa-IR");
 

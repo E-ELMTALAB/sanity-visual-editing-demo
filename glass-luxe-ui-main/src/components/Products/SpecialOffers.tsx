@@ -106,13 +106,13 @@ export function SpecialOffers({ products, onAdd, onViewAll, className, productPr
                         originalPrice: promotionInfo.originalPrice,
                         discountedPrice: promotionInfo.discountedPrice,
                         endsAt: endsAt,
-                      } : (hasDiscount && endsAt ? {
+                      } : (hasDiscount ? {
                         discountPercentage: hasVariantDiscount && lowestPriceVariant?.discount_percentage 
                           ? lowestPriceVariant.discount_percentage 
                           : (originalPrice > 0 ? Math.round(((originalPrice - (lowestPriceVariant?.price || originalPrice)) / originalPrice) * 100) : 0),
                         originalPrice: originalPrice,
                         discountedPrice: lowestPriceVariant?.price || originalPrice,
-                        endsAt: endsAt,
+                        endsAt: endsAt, // Will be used if available, ProductCard will fallback to site-wide
                       } : undefined)}
                     />
                   </div>

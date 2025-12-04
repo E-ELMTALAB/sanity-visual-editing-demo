@@ -202,7 +202,7 @@ export function CompactCountdownTimer({
   const isUrgent = timeLeft.total < 60 * 60 * 1000; // Less than 1 hour
 
   // Format full countdown: days (if > 0), hours, minutes, seconds
-  // Format should be: "۱۳ روز ۰۱:۱۴:۳۲" (13 days 01:14:32) - days first, then time
+  // Format should be: "۱۳:۰۱:۱۴:۳۲" (13:01:14:32) if days > 0, or "۰۱:۱۴:۳۲" (01:14:32) if no days
   const formattedHours = toPersianNumber(timeLeft.hours).padStart(2, '۰');
   const formattedMinutes = toPersianNumber(timeLeft.minutes).padStart(2, '۰');
   const formattedSeconds = toPersianNumber(timeLeft.seconds).padStart(2, '۰');
@@ -226,10 +226,7 @@ export function CompactCountdownTimer({
       <Clock className="w-3 h-3 flex-shrink-0" />
       <span className="tabular-nums flex items-center gap-0.5" dir="ltr" style={{ direction: 'ltr' }}>
         {timeLeft.days > 0 && (
-          <>
-            <span>{toPersianNumber(timeLeft.days)}</span>
-            <span>روز</span>
-          </>
+          <span>{toPersianNumber(timeLeft.days)}:</span>
         )}
         <span>{timePart}</span>
       </span>
