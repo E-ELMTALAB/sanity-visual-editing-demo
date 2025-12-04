@@ -64,9 +64,9 @@ export function BestSellers({
               const medusaVariants = productPriceData?.variants || [];
               const medusaProductId = productPriceData?.product_id; // Medusa product ID
               const validPrices = medusaVariants.filter(v => v.price > 0).map(v => v.price);
-              const medusaLowestPrice = validPrices.length > 0 
+              const lowestPrice = validPrices.length > 0 
                 ? Math.min(...validPrices)
-                : undefined;
+                : product.price;
               
               // Use Sanity price as original price (before any discounts)
               // If Medusa variant has original_price, use that, otherwise use Sanity price
@@ -78,18 +78,6 @@ export function BestSellers({
               const promotionInfo = product.slug && originalPrice > 0
                 ? getPromotionForProduct(product.slug, productIdForMatching, originalPrice)
                 : null;
-
-              // Debug logging for products with potential discounts
-              if (product.slug && (variantWithOriginalPrice || (medusaLowestPrice && product.price > medusaLowestPrice))) {
-                console.log(`[BEST-SELLERS] Product ${product.slug}:`, {
-                  hasPromotionProp: !!promotionInfo,
-                  hasVariantPromo: !!variantWithOriginalPrice,
-                  priceDiff: medusaLowestPrice ? product.price - medusaLowestPrice : 0,
-                  originalPrice,
-                  lowestPrice: medusaLowestPrice,
-                  productPrice: product.price,
-                });
-              }
 
               return (
                 <motion.div 
