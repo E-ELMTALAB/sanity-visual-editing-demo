@@ -27,7 +27,8 @@ interface SpecialOffersProps {
 
 export function SpecialOffers({ products, onAdd, onViewAll, className, productPrices }: SpecialOffersProps) {
   const { isRTL } = useDirection();
-  const { getPromotionForProduct } = usePromotions();
+  const { getPromotionForProduct, getSiteWidePromotion } = usePromotions();
+  const siteWidePromotion = getSiteWidePromotion();
   
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
@@ -76,6 +77,9 @@ export function SpecialOffers({ products, onAdd, onViewAll, className, productPr
                   ? getPromotionForProduct(product.slug, productIdForMatching, originalPrice)
                   : null;
 
+                // Use site-wide promotion end date as fallback if product-specific promotion doesn't have one
+                const endsAt = promotionInfo?.endsAt || siteWidePromotion?.campaign?.ends_at;
+
                 return (
                   <div
                     key={product.id}
@@ -94,7 +98,7 @@ export function SpecialOffers({ products, onAdd, onViewAll, className, productPr
                         discountPercentage: promotionInfo.discountPercentage,
                         originalPrice: promotionInfo.originalPrice,
                         discountedPrice: promotionInfo.discountedPrice,
-                        endsAt: promotionInfo.endsAt,
+                        endsAt: endsAt,
                       } : undefined}
                     />
                   </div>

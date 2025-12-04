@@ -39,7 +39,8 @@ export function SocialMediaProductsGrid({
   productPrices,
 }: SocialMediaProductsGridProps) {
   const { isRTL } = useDirection();
-  const { getPromotionForProduct } = usePromotions();
+  const { getPromotionForProduct, getSiteWidePromotion } = usePromotions();
+  const siteWidePromotion = getSiteWidePromotion();
   
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
@@ -107,6 +108,9 @@ export function SocialMediaProductsGrid({
                   ? getPromotionForProduct(product.slug, productIdForMatching, originalPrice)
                   : null;
 
+                // Use site-wide promotion end date as fallback if product-specific promotion doesn't have one
+                const endsAt = promotionInfo?.endsAt || siteWidePromotion?.campaign?.ends_at;
+
                 return (
                   <div 
                     key={product.id} 
@@ -124,7 +128,7 @@ export function SocialMediaProductsGrid({
                         discountPercentage: promotionInfo.discountPercentage,
                         originalPrice: promotionInfo.originalPrice,
                         discountedPrice: promotionInfo.discountedPrice,
-                        endsAt: promotionInfo.endsAt,
+                        endsAt: endsAt,
                       } : undefined}
                     />
                   </div>

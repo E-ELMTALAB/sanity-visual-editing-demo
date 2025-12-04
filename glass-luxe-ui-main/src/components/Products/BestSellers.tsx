@@ -32,7 +32,8 @@ export function BestSellers({
   productPrices,
   className
 }: BestSellersProps) {
-  const { getPromotionForProduct } = usePromotions();
+  const { getPromotionForProduct, getSiteWidePromotion } = usePromotions();
+  const siteWidePromotion = getSiteWidePromotion();
   
   // Limit to 8 products for 2 rows x 4 columns grid
   const displayProducts = products.slice(0, 8);
@@ -82,6 +83,9 @@ export function BestSellers({
                 ? getPromotionForProduct(product.slug, productIdForMatching, originalPrice)
                 : null;
 
+              // Use site-wide promotion end date as fallback if product-specific promotion doesn't have one
+              const endsAt = promotionInfo?.endsAt || siteWidePromotion?.campaign?.ends_at;
+
               return (
                 <motion.div 
                   key={product.id} 
@@ -105,7 +109,7 @@ export function BestSellers({
                       discountPercentage: promotionInfo.discountPercentage,
                       originalPrice: promotionInfo.originalPrice,
                       discountedPrice: promotionInfo.discountedPrice,
-                      endsAt: promotionInfo.endsAt,
+                      endsAt: endsAt,
                     } : undefined}
                   />
                 </motion.div>

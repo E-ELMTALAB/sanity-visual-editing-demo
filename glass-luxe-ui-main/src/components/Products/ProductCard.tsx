@@ -163,7 +163,7 @@ export const ProductCard = React.memo(function ProductCard({
 
         {/* Countdown Timer for time-limited promotions */}
         {pricingInfo.hasPromotion && pricingInfo.promotionEndsAt && (
-          <div className="mt-2">
+          <div className="mt-2" key={`timer-${id}-${pricingInfo.promotionEndsAt}`}>
             <CompactCountdownTimer endsAt={pricingInfo.promotionEndsAt} />
           </div>
         )}

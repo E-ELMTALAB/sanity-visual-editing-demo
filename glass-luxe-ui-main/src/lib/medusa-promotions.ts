@@ -520,22 +520,38 @@ export function getTimeRemaining(endsAt: string): {
   total: number;
   expired: boolean;
 } {
-  const now = new Date().getTime();
-  const end = new Date(endsAt).getTime();
-  const total = end - now;
-
-  if (total <= 0) {
+  if (!endsAt) {
     return { days: 0, hours: 0, minutes: 0, seconds: 0, total: 0, expired: true };
   }
 
-  return {
-    days: Math.floor(total / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((total % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-    minutes: Math.floor((total % (1000 * 60 * 60)) / (1000 * 60)),
-    seconds: Math.floor((total % (1000 * 60)) / 1000),
-    total,
-    expired: false,
-  };
+  try {
+    const now = new Date().getTime();
+    const end = new Date(endsAt).getTime();
+    
+    // Check if date is valid
+    if (isNaN(end)) {
+      console.warn('[getTimeRemaining] Invalid date:', endsAt);
+      return { days: 0, hours: 0, minutes: 0, seconds: 0, total: 0, expired: true };
+    }
+
+    const total = end - now;
+
+    if (total <= 0) {
+      return { days: 0, hours: 0, minutes: 0, seconds: 0, total: 0, expired: true };
+    }
+
+    return {
+      days: Math.floor(total / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((total % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+      minutes: Math.floor((total % (1000 * 60 * 60)) / (1000 * 60)),
+      seconds: Math.floor((total % (1000 * 60)) / 1000),
+      total,
+      expired: false,
+    };
+  } catch (error) {
+    console.error('[getTimeRemaining] Error calculating time remaining:', error, endsAt);
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, total: 0, expired: true };
+  }
 }
 
 /**

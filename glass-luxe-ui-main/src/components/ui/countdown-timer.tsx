@@ -160,26 +160,44 @@ export function CompactCountdownTimer({
   className?: string;
   onExpire?: () => void;
 }) {
-  const [timeLeft, setTimeLeft] = useState(() => getTimeRemaining(endsAt));
+  // Validate endsAt date before using it
+  const isValidDate = endsAt && !isNaN(new Date(endsAt).getTime());
+  
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (!isValidDate) {
+      return { days: 0, hours: 0, minutes: 0, seconds: 0, total: 0, expired: true };
+    }
+    return getTimeRemaining(endsAt);
+  });
   const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
+    if (!isValidDate) {
+      setIsExpired(true);
+      return;
+    }
+
     const updateTimer = () => {
-      const remaining = getTimeRemaining(endsAt);
-      setTimeLeft(remaining);
-      
-      if (remaining.expired && !isExpired) {
+      try {
+        const remaining = getTimeRemaining(endsAt);
+        setTimeLeft(remaining);
+        
+        if (remaining.expired && !isExpired) {
+          setIsExpired(true);
+          onExpire?.();
+        }
+      } catch (error) {
+        console.error('[CompactCountdownTimer] Error updating timer:', error);
         setIsExpired(true);
-        onExpire?.();
       }
     };
 
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [endsAt, isExpired, onExpire]);
+  }, [endsAt, isExpired, onExpire, isValidDate]);
 
-  if (isExpired) return null;
+  if (isExpired || !isValidDate) return null;
 
   const isUrgent = timeLeft.total < 60 * 60 * 1000; // Less than 1 hour
 
@@ -191,6 +209,7 @@ export function CompactCountdownTimer({
 
   return (
     <motion.div
+      key={endsAt} // Unique key for each timer instance
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className={cn(
