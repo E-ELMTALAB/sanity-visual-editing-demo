@@ -407,29 +407,45 @@ export function getBestPromotionForProduct(
 
     console.log(`[PROMOTIONS] Promotion ${promo.id}: ${discountPercentage}% discount (${originalPrice} -> ${discountedPrice})`);
 
-    // Extract end date from campaign, with comprehensive logging for debugging
+    // Extract end date from campaign, with comprehensive logging and fallback logic
     let endsAt: string | undefined = undefined;
     if (promo.campaign) {
-      console.log(`[PROMOTIONS] Promotion ${promo.id} campaign structure:`, JSON.stringify({
-        id: promo.campaign.id,
-        name: promo.campaign.name,
-        campaign_identifier: promo.campaign.campaign_identifier,
-        starts_at: promo.campaign.starts_at,
-        ends_at: promo.campaign.ends_at,
-        has_ends_at: !!promo.campaign.ends_at,
-      }, null, 2));
       endsAt = promo.campaign.ends_at;
       
       if (!endsAt) {
         console.warn(`[PROMOTIONS] ⚠️ Promotion ${promo.id} has campaign ${promo.campaign.id} but ends_at is missing!`);
-        console.warn(`[PROMOTIONS] Full campaign object:`, JSON.stringify(promo.campaign, null, 2));
-      } else {
+        // Fallback: Try to find the campaign's ends_at from another promotion in the same campaign
+        const campaignId = promo.campaign.id || promo.campaign_id;
+        if (campaignId) {
+          const otherPromoWithCampaign = promotions.find(p => 
+            p.id !== promo.id && // Don't match the current promotion
+            (p.campaign?.id === campaignId || p.campaign_id === campaignId) && 
+            p.campaign?.ends_at
+          );
+          if (otherPromoWithCampaign?.campaign?.ends_at) {
+            endsAt = otherPromoWithCampaign.campaign.ends_at;
+            console.log(`[PROMOTIONS] ✅ Found ends_at from another promotion in same campaign (${campaignId}): ${endsAt}`);
+          }
+        }
+      }
+      
+      if (endsAt) {
         console.log(`[PROMOTIONS] ✅ Promotion ${promo.id} has valid ends_at: ${endsAt}`);
       }
     } else {
       console.log(`[PROMOTIONS] Promotion ${promo.id} has no campaign object`);
       if (promo.campaign_id) {
-        console.warn(`[PROMOTIONS] ⚠️ Promotion ${promo.id} has campaign_id (${promo.campaign_id}) but campaign object is missing! This means the relation was not loaded.`);
+        console.warn(`[PROMOTIONS] ⚠️ Promotion ${promo.id} has campaign_id (${promo.campaign_id}) but campaign object is missing!`);
+        // Fallback: Try to find the campaign from another promotion with the same campaign_id
+        const otherPromoWithCampaign = promotions.find(p => 
+          p.id !== promo.id && // Don't match the current promotion
+          (p.campaign_id === promo.campaign_id || p.campaign?.id === promo.campaign_id) && 
+          p.campaign?.ends_at
+        );
+        if (otherPromoWithCampaign?.campaign?.ends_at) {
+          endsAt = otherPromoWithCampaign.campaign.ends_at;
+          console.log(`[PROMOTIONS] ✅ Found ends_at from another promotion with same campaign_id (${promo.campaign_id}): ${endsAt}`);
+        }
       }
     }
 
@@ -445,8 +461,17 @@ export function getBestPromotionForProduct(
     }
   }
 
+  // Final fallback: If bestPromo doesn't have endsAt, try to get it from site-wide promotion
+  if (bestPromo && !bestPromo.endsAt) {
+    const siteWidePromo = getPrimarySiteWidePromotion(promotions);
+    if (siteWidePromo?.campaign?.ends_at) {
+      bestPromo.endsAt = siteWidePromo.campaign.ends_at;
+      console.log(`[PROMOTIONS] ✅ Using site-wide promotion ends_at as fallback: ${bestPromo.endsAt}`);
+    }
+  }
+
   if (bestPromo) {
-    console.log(`[PROMOTIONS] ✅ Best promotion for ${productSlug}: ${bestPromo.discountPercentage}% discount, ends at ${bestPromo.endsAt}`);
+    console.log(`[PROMOTIONS] ✅ Best promotion for ${productSlug}: ${bestPromo.discountPercentage}% discount, ends at ${bestPromo.endsAt || 'undefined'}`);
   }
 
   return bestPromo;
