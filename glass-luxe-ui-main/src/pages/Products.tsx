@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { useDirection } from "@/contexts/DirectionContext";
 import { useCart } from "@/contexts/cart-context";
 import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
+import { usePromotions } from "@/contexts/promotion-context";
 import { fetchFromSanity } from "@/lib/sanity.client.light";
 import { validateSanityConfig } from "@/lib/sanity.config";
 import { allProductsQuery, faqsByPageQuery } from "@/lib/sanity.queries";
@@ -69,6 +70,8 @@ export default function Products() {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [productPrices, setProductPrices] = useState<Record<string, ProductPrices>>({});
   const { addItem, state: cartState } = useCart();
+  const { getPromotionForProduct, getSiteWidePromotion } = usePromotions();
+  const siteWidePromotion = getSiteWidePromotion();
 
   useEffect(() => {
     const isConfigValid = validateSanityConfig();
@@ -391,7 +394,41 @@ export default function Products() {
                       </div>
                     ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
-                        {filteredProducts.map((product, index) => (
+                        {filteredProducts.map((product, index) => {
+                      // Get promotion info for this product
+                      const productPriceData = product.slug ? productPrices?.[product.slug] : undefined;
+                      const medusaVariants = productPriceData?.variants || [];
+                      const medusaProductId = productPriceData?.product_id; // Medusa product ID
+                      
+                      // Find the variant with the lowest current price
+                      const validVariants = medusaVariants.filter(v => v.price > 0);
+                      const lowestPriceVariant = validVariants.length > 0
+                        ? validVariants.reduce((lowest, current) => 
+                            current.price < lowest.price ? current : lowest
+                          )
+                        : null;
+                      
+                      // For product cards: original price should be the lowest variant's original_price
+                      // If the lowest variant has original_price, use it; otherwise use its current price as original
+                      const originalPrice = lowestPriceVariant?.original_price || lowestPriceVariant?.price || product.price;
+                      
+                      // Use Medusa product ID if available, otherwise fall back to Sanity ID
+                      const productIdForMatching = medusaProductId || product.id;
+                      const promotionInfo = product.slug && originalPrice > 0
+                        ? getPromotionForProduct(product.slug, productIdForMatching, originalPrice)
+                        : null;
+
+                      // Check if product has a discount from variant
+                      const hasVariantDiscount = lowestPriceVariant?.original_price && lowestPriceVariant.original_price > lowestPriceVariant.price;
+                      
+                      // Determine endsAt: priority is promotionInfo > variant promotion_ends_at > site-wide promotion
+                      const variantEndsAt = lowestPriceVariant?.promotion_ends_at;
+                      const endsAt = promotionInfo?.endsAt || variantEndsAt || siteWidePromotion?.campaign?.ends_at;
+                      
+                      // Check if product has any discount (from promotion or variant)
+                      const hasDiscount = promotionInfo || hasVariantDiscount || (lowestPriceVariant?.price && lowestPriceVariant.price < originalPrice);
+
+                      return (
                       <motion.div
                         key={product.id}
                         initial={{ opacity: 0, y: 20 }}
@@ -408,11 +445,25 @@ export default function Products() {
                           title={product.title}
                           image={product.image}
                           price={product.price}
-                          medusaVariants={productPrices[product.slug]?.variants || []}
+                          medusaVariants={medusaVariants}
                           onAdd={handleAddToCart}
+                          promotion={promotionInfo ? {
+                            discountPercentage: promotionInfo.discountPercentage,
+                            originalPrice: promotionInfo.originalPrice,
+                            discountedPrice: promotionInfo.discountedPrice,
+                            endsAt: endsAt,
+                          } : (hasDiscount ? {
+                            discountPercentage: hasVariantDiscount && lowestPriceVariant?.discount_percentage 
+                              ? lowestPriceVariant.discount_percentage 
+                              : (originalPrice > 0 ? Math.round(((originalPrice - (lowestPriceVariant?.price || originalPrice)) / originalPrice) * 100) : 0),
+                            originalPrice: originalPrice,
+                            discountedPrice: lowestPriceVariant?.price || originalPrice,
+                            endsAt: endsAt, // Will be used if available, ProductCard will fallback to site-wide
+                          } : undefined)}
                         />
                       </motion.div>
-                    ))}
+                    );
+                    })}
                     </div>
                     )}
                   </div>
