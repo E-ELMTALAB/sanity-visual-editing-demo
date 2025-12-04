@@ -407,6 +407,32 @@ export function getBestPromotionForProduct(
 
     console.log(`[PROMOTIONS] Promotion ${promo.id}: ${discountPercentage}% discount (${originalPrice} -> ${discountedPrice})`);
 
+    // Extract end date from campaign, with comprehensive logging for debugging
+    let endsAt: string | undefined = undefined;
+    if (promo.campaign) {
+      console.log(`[PROMOTIONS] Promotion ${promo.id} campaign structure:`, JSON.stringify({
+        id: promo.campaign.id,
+        name: promo.campaign.name,
+        campaign_identifier: promo.campaign.campaign_identifier,
+        starts_at: promo.campaign.starts_at,
+        ends_at: promo.campaign.ends_at,
+        has_ends_at: !!promo.campaign.ends_at,
+      }, null, 2));
+      endsAt = promo.campaign.ends_at;
+      
+      if (!endsAt) {
+        console.warn(`[PROMOTIONS] ⚠️ Promotion ${promo.id} has campaign ${promo.campaign.id} but ends_at is missing!`);
+        console.warn(`[PROMOTIONS] Full campaign object:`, JSON.stringify(promo.campaign, null, 2));
+      } else {
+        console.log(`[PROMOTIONS] ✅ Promotion ${promo.id} has valid ends_at: ${endsAt}`);
+      }
+    } else {
+      console.log(`[PROMOTIONS] Promotion ${promo.id} has no campaign object`);
+      if (promo.campaign_id) {
+        console.warn(`[PROMOTIONS] ⚠️ Promotion ${promo.id} has campaign_id (${promo.campaign_id}) but campaign object is missing! This means the relation was not loaded.`);
+      }
+    }
+
     if (!bestPromo || discountAmount > bestPromo.discountAmount) {
       bestPromo = {
         promotion: promo,
@@ -414,7 +440,7 @@ export function getBestPromotionForProduct(
         discountedPrice,
         discountAmount,
         discountPercentage,
-        endsAt: promo.campaign?.ends_at,
+        endsAt: endsAt,
       };
     }
   }
