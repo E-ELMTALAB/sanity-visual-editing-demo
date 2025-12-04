@@ -88,15 +88,18 @@ export function SocialMediaProductsGrid({
                 const productPriceData = product.slug ? productPrices?.[product.slug] : undefined;
                 const medusaVariants = productPriceData?.variants || [];
                 const medusaProductId = productPriceData?.product_id; // Medusa product ID
-                const validPrices = medusaVariants.filter(v => v.price > 0).map(v => v.price);
-                const lowestPrice = validPrices.length > 0 
-                  ? Math.min(...validPrices)
-                  : product.price;
                 
-                // Use Sanity price as original price (before any discounts)
-                // If Medusa variant has original_price, use that, otherwise use Sanity price
-                const variantWithOriginalPrice = medusaVariants.find(v => v.original_price);
-                const originalPrice = variantWithOriginalPrice?.original_price || product.price;
+                // Find the variant with the lowest current price
+                const validVariants = medusaVariants.filter(v => v.price > 0);
+                const lowestPriceVariant = validVariants.length > 0
+                  ? validVariants.reduce((lowest, current) => 
+                      current.price < lowest.price ? current : lowest
+                    )
+                  : null;
+                
+                // For product cards: original price should be the lowest variant's original_price
+                // If the lowest variant has original_price, use it; otherwise use its current price as original
+                const originalPrice = lowestPriceVariant?.original_price || lowestPriceVariant?.price || product.price;
                 
                 // Use Medusa product ID if available, otherwise fall back to Sanity ID
                 const productIdForMatching = medusaProductId || product.id;
