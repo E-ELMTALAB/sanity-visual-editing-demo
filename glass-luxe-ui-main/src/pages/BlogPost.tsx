@@ -377,7 +377,7 @@ export default function BlogPost() {
         <Header onSearch={() => {}} active="blog" />
 
         <main className="flex-1 py-16">
-          <div className="max-w-[1600px] px-4 md:px-6 lg:px-8 mx-[50px] my-[75px]">
+          <div className="max-w-[1600px] px-4 md:px-6 lg:px-8 mx-auto my-[75px]">
             <div className="flex justify-center gap-12 lg:gap-16 xl:gap-20">
               {/* Main Content */}
               <article className="w-full max-w-[820px]">
