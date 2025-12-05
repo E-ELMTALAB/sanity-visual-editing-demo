@@ -182,7 +182,7 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       // Try to retrieve payment collection to get metadata
       let paymentCollectionMetadata: any = {};
       try {
-        const paymentModuleService: IPaymentModuleService = (this.container_ as any)?.resolve?.(Modules.PAYMENT);
+        const paymentModuleService: IPaymentModuleService = (this.container as any)?.resolve?.(Modules.PAYMENT);
         if (paymentModuleService && (input as any)?.payment_collection_id) {
           const collection = await paymentModuleService.retrievePaymentCollection((input as any).payment_collection_id);
           paymentCollectionMetadata = collection?.metadata || {};

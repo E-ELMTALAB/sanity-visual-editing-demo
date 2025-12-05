@@ -124,11 +124,6 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         mobile: customer_phone,
         resource_id: resourceId,
         description: paymentDescription // Pass description in session data
-      },
-      context: {
-        metadata: {
-          description: paymentDescription // Also pass in context metadata
-        }
       }
     });
     console.log('[SIMPLE-PAYMENT] ✅ Payment session created:', paymentSession.id);
