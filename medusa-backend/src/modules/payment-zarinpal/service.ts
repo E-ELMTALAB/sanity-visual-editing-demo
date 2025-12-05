@@ -20,10 +20,11 @@ import type {
   UpdatePaymentInput,
   UpdatePaymentOutput,
   ProviderWebhookPayload,
-  WebhookActionResult
+  WebhookActionResult,
+  IPaymentModuleService
 } from "@medusajs/framework/types";
 import { AbstractPaymentProvider } from "@medusajs/utils";
-import { MedusaError, PaymentSessionStatus as PaymentStatus } from "@medusajs/framework/utils";
+import { MedusaError, PaymentSessionStatus as PaymentStatus, Modules } from "@medusajs/framework/utils";
 import { CURRENCY_TO_IRR } from "../../lib/constants";
 import axios from "axios";
 
@@ -163,8 +164,9 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       const offline = this.offline_ || process.env.ZARINPAL_OFFLINE === "true"
       console.log("[ZARINPAL-initiatePayment] Offline mode:", offline)
       
-      const { amount, currency_code, email, context: paymentContext, resource_id } = input as any;
+      const { amount, currency_code, email, context: paymentContext, resource_id, data: inputData } = input as any;
       console.log("[ZARINPAL-initiatePayment] Extracted params:", { amount, currency_code, email, resource_id })
+      console.log("[ZARINPAL-initiatePayment] Input data:", JSON.stringify(inputData, null, 2))
 
       // Ensure resource_id is available (get from context if not provided)
       const actualResourceId = resource_id ||
@@ -176,6 +178,19 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
 
       console.log("[ZARINPAL-initiatePayment] Input context:", JSON.stringify(paymentContext, null, 2))
       console.log("[ZARINPAL-initiatePayment] Actual resource_id:", actualResourceId)
+      
+      // Try to retrieve payment collection to get metadata
+      let paymentCollectionMetadata: any = {};
+      try {
+        const paymentModuleService: IPaymentModuleService = (this.container_ as any)?.resolve?.(Modules.PAYMENT);
+        if (paymentModuleService && (input as any)?.payment_collection_id) {
+          const collection = await paymentModuleService.retrievePaymentCollection((input as any).payment_collection_id);
+          paymentCollectionMetadata = collection?.metadata || {};
+          console.log("[ZARINPAL-initiatePayment] Retrieved payment collection metadata:", JSON.stringify(paymentCollectionMetadata, null, 2));
+        }
+      } catch (e: any) {
+        console.log("[ZARINPAL-initiatePayment] Could not retrieve payment collection:", e?.message || e);
+      }
 
       // Convert amount based on currency using predefined rates
       const conversionRate = CURRENCY_TO_IRR[currency_code as keyof typeof CURRENCY_TO_IRR] || CURRENCY_TO_IRR.default;
@@ -220,9 +235,25 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
         }
       })
 
+      // Try to get description from multiple sources (priority order)
       const metadata = paymentContext?.metadata || {};
-      const description = metadata.description || this.description_;
-      const mobile = metadata.mobile || "";
+      const sessionData = inputData || {};
+      const description = 
+        paymentCollectionMetadata.description ||  // First: from payment collection metadata
+        metadata.description ||                    // Second: from context metadata
+        sessionData.description ||                // Third: from session data
+        (paymentContext as any)?.description ||  // Fourth: from context directly
+        this.description_;                        // Last: fallback to default
+      const mobile = metadata.mobile || sessionData.mobile || paymentCollectionMetadata.customer_phone || "";
+      
+      console.log("[ZARINPAL-initiatePayment] Description sources:", {
+        paymentCollectionMetadata: paymentCollectionMetadata.description,
+        contextMetadata: metadata.description,
+        sessionData: sessionData.description,
+        contextDirect: (paymentContext as any)?.description,
+        fallback: this.description_,
+        final: description
+      });
 
       // Build callback URL with order/cart ID
       const callbackUrl = `${this.callbackUrl_}?resource_id=${actualResourceId}`;

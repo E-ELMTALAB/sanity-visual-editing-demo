@@ -144,7 +144,13 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         data: {
           email: customer_email || cart.email,
           mobile: customer_phone,
-          cart_id: cart_id
+          cart_id: cart_id,
+          description: paymentDescription // Pass description in session data
+        },
+        context: {
+          metadata: {
+            description: paymentDescription // Also pass in context metadata
+          }
         }
       }
     );
