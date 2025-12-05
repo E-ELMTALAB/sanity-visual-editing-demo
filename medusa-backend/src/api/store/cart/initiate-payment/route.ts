@@ -112,6 +112,13 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       product_id: item.product_id,
     }));
 
+    // Build payment description from cart items
+    const paymentDescription = cartItemsMetadata.length === 1
+      ? cartItemsMetadata[0].title + (cartItemsMetadata[0].quantity > 1 ? ` (${cartItemsMetadata[0].quantity} عدد)` : '')
+      : cartItemsMetadata.map(item => 
+          `${item.title}${item.quantity > 1 ? ` (${item.quantity} عدد)` : ''}`
+        ).join('، ');
+
     // Create payment collection linked to this cart
     // Use standard Medusa API with cart_id in body (proper linking)
     const paymentCollection = await paymentModuleService.createPaymentCollections({
@@ -122,7 +129,8 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         customer_email: customer_email || cart.email,
         customer_phone: customer_phone,
         original_amount: cartAmount,
-        items: cartItemsMetadata // Store product info for admin verification
+        items: cartItemsMetadata, // Store product info for admin verification
+        description: paymentDescription // Add description for payment gateway
       }
     });
 

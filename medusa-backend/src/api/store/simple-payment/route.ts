@@ -86,6 +86,13 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     const resourceId = `simple_payment_${Date.now()}`;
     console.log('[SIMPLE-PAYMENT] Generated resource ID:', resourceId);
 
+    // Build payment description from items
+    const paymentDescription = items.length === 1
+      ? items[0].title + (items[0].quantity > 1 ? ` (${items[0].quantity} عدد)` : '')
+      : items.map(item => 
+          `${item.title}${item.quantity > 1 ? ` (${item.quantity} عدد)` : ''}`
+        ).join('، ');
+
     // Get payment module service
     console.log('[SIMPLE-PAYMENT] Resolving payment module service...');
     const paymentModuleService: IPaymentModuleService = req.scope.resolve(Modules.PAYMENT);
@@ -101,7 +108,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         customer_email: customer_email,
         customer_phone: customer_phone,
         items: items,
-        description: `پرداخت سفارش ${items.length} کالا`
+        description: paymentDescription
       }
     });
     console.log('[SIMPLE-PAYMENT] ✅ Payment collection created:', paymentCollection.id);

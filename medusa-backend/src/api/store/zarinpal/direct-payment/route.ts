@@ -45,7 +45,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       description?: string;
     };
 
-    const { items, customer_email, customer_phone, description = "Payment for order" } = body;
+    const { items, customer_email, customer_phone, description } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
@@ -53,6 +53,13 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         error: "Items array is required and cannot be empty"
       });
     }
+
+    // Build payment description from items if not provided
+    const paymentDescription = description || (items.length === 1
+      ? items[0].title + (items[0].quantity > 1 ? ` (${items[0].quantity} عدد)` : '')
+      : items.map(item => 
+          `${item.title}${item.quantity > 1 ? ` (${item.quantity} عدد)` : ''}`
+        ).join('، '));
 
     // Calculate total amount
     const totalAmount = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -75,7 +82,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         customer_email: customer_email,
         customer_phone: customer_phone,
         items: items,
-        description: description
+        description: paymentDescription
       }
     });
 
