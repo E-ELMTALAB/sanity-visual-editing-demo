@@ -183,10 +183,10 @@ function StaticHero() {
             <span className="inline-block rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs md:text-sm w-fit border border-white/20">
             بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
             </span>
-            <h1 className="mt-4 text-5xl sm:text-5xl md:text-6xl font-black leading-tight">
+            <h1 className="mt-4 text-7xl sm:text-8xl md:text-9xl font-black leading-tight">
               {HERO_TITLE}
             </h1>
-            <p className="mt-4 max-w-xl text-white/90 text-base md:text-lg leading-relaxed whitespace-pre-line">
+            <p className="mt-4 max-w-xl text-white/90 text-xl md:text-2xl lg:text-3xl leading-relaxed whitespace-pre-line">
               {HERO_SUBTITLE}
             </p>
             <TrustBadges />
@@ -242,10 +242,10 @@ function DynamicHero({ slide }: { slide: any }) {
             <span className="inline-block rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs md:text-sm w-fit border border-white/20">
               بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
             </span>
-            <h1 className="mt-4 text-5xl sm:text-5xl md:text-6xl font-black leading-tight">
+            <h1 className="mt-4 text-7xl sm:text-8xl md:text-9xl font-black leading-tight">
               {slide?.title || HERO_TITLE}
             </h1>
-            <p className="mt-4 max-w-xl text-white/90 text-base md:text-lg leading-relaxed whitespace-pre-line">
+            <p className="mt-4 max-w-xl text-white/90 text-xl md:text-2xl lg:text-3xl leading-relaxed whitespace-pre-line">
               {slide?.subtitle || HERO_SUBTITLE}
             </p>
             <TrustBadges />
