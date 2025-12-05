@@ -315,17 +315,31 @@ const ProductDetail = () => {
   };
 
   useEffect(() => {
-    if (selectedVariant) return;
+    // Skip if we don't have product data yet
+    if (!product) return;
+    
+    // Always prioritize Medusa variants (they're the source of truth)
     const medusaDefault = getLowestPricedMedusaVariantId();
     if (medusaDefault) {
-      setSelectedVariant(medusaDefault);
+      // If we have Medusa variants, use them (even if a Sanity variant was selected)
+      if (selectedVariant !== medusaDefault) {
+        console.log('[PRODUCT-DETAIL] Setting default variant from Medusa:', medusaDefault);
+        setSelectedVariant(medusaDefault);
+      }
       return;
     }
-    const sanityDefault = getLowestPricedSanityVariantId();
-    if (sanityDefault) {
-      setSelectedVariant(sanityDefault);
+    
+    // Only use Sanity variants if no variant is selected AND Medusa variants aren't available
+    if (!selectedVariant) {
+      const sanityDefault = getLowestPricedSanityVariantId();
+      if (sanityDefault) {
+        console.log('[PRODUCT-DETAIL] Setting default variant from Sanity (fallback):', sanityDefault);
+        setSelectedVariant(sanityDefault);
+      } else {
+        console.log('[PRODUCT-DETAIL] No variants available yet - waiting for Medusa prices...');
+      }
     }
-  }, [medusaVariants, product?.variants, selectedVariant]);
+  }, [medusaVariants, product?.variants, selectedVariant, product]);
 
   // Get current price based on selected variant
   const getCurrentPrice = () => {
