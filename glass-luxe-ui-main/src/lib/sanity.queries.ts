@@ -172,7 +172,22 @@ export const homePageQuery = `
     },
 
     // SEO Content Section
-    seoContent
+    seoContent,
+    
+    // SEO Fields
+    seo{
+      metaTitle,
+      metaDescription,
+      canonicalUrl,
+      robotsMeta,
+      openGraphTitle,
+      openGraphDescription,
+      openGraphImage{
+        ...,
+        asset->
+      },
+      structuredData
+    }
   }
 `
 

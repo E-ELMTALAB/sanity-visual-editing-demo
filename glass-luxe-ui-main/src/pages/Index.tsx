@@ -23,6 +23,7 @@ import {
   faqsByPageQuery 
 } from "@/lib/sanity.queries";
 import * as transformers from "@/lib/sanity.transformers";
+import { getImageUrl } from "@/lib/sanity.image";
 
 // Static hero image for immediate LCP
 import heroBg from "@/assets/hero-ai-cubes.png";
@@ -140,6 +141,16 @@ interface SanityData {
   collectionsBanner: any;
   seoContent: string | null;
   faqs: Array<{ q: string; a: string }>;
+  seo?: {
+    metaTitle?: string;
+    metaDescription?: string;
+    canonicalUrl?: string;
+    robotsMeta?: string;
+    openGraphTitle?: string;
+    openGraphDescription?: string;
+    openGraphImage?: any;
+    structuredData?: string;
+  };
 }
 
 // Static hero component for immediate FCP/LCP - NO external dependencies
@@ -523,6 +534,7 @@ const Index = () => {
           collectionsBanner,
           seoContent,
           faqs,
+          seo: homeData?.seo || undefined,
         });
         setDataLoaded(true);
         setShowDynamicContent(true);
@@ -535,6 +547,97 @@ const Index = () => {
     // Load immediately - data is from build-time cache, no delay needed
     loadSanityData();
   }, []);
+
+  // Set title and description from Sanity SEO data (directly in document head, no Helmet)
+  useEffect(() => {
+    if (!sanityData?.seo) return;
+
+    const seo = sanityData.seo;
+    
+    // Update document title
+    if (seo.metaTitle) {
+      document.title = seo.metaTitle;
+    }
+
+    // Update meta description
+    let metaDescription = document.querySelector('meta[name="description"]');
+    if (!metaDescription) {
+      metaDescription = document.createElement('meta');
+      metaDescription.setAttribute('name', 'description');
+      document.head.appendChild(metaDescription);
+    }
+    if (seo.metaDescription) {
+      metaDescription.setAttribute('content', seo.metaDescription);
+    }
+
+    // Update Open Graph title
+    let ogTitle = document.querySelector('meta[property="og:title"]');
+    if (!ogTitle) {
+      ogTitle = document.createElement('meta');
+      ogTitle.setAttribute('property', 'og:title');
+      document.head.appendChild(ogTitle);
+    }
+    if (seo.openGraphTitle || seo.metaTitle) {
+      ogTitle.setAttribute('content', seo.openGraphTitle || seo.metaTitle || '');
+    }
+
+    // Update Open Graph description
+    let ogDescription = document.querySelector('meta[property="og:description"]');
+    if (!ogDescription) {
+      ogDescription = document.createElement('meta');
+      ogDescription.setAttribute('property', 'og:description');
+      document.head.appendChild(ogDescription);
+    }
+    if (seo.openGraphDescription || seo.metaDescription) {
+      ogDescription.setAttribute('content', seo.openGraphDescription || seo.metaDescription || '');
+    }
+
+    // Update canonical URL
+    if (seo.canonicalUrl) {
+      let canonical = document.querySelector('link[rel="canonical"]');
+      if (!canonical) {
+        canonical = document.createElement('link');
+        canonical.setAttribute('rel', 'canonical');
+        document.head.appendChild(canonical);
+      }
+      canonical.setAttribute('href', seo.canonicalUrl);
+    }
+
+    // Update robots meta
+    if (seo.robotsMeta) {
+      let robots = document.querySelector('meta[name="robots"]');
+      if (!robots) {
+        robots = document.createElement('meta');
+        robots.setAttribute('name', 'robots');
+        document.head.appendChild(robots);
+      }
+      robots.setAttribute('content', seo.robotsMeta);
+    }
+
+    // Update Open Graph image
+    if (seo.openGraphImage?.asset) {
+      const ogImageUrl = getImageUrl(seo.openGraphImage, 1200);
+      
+      let ogImage = document.querySelector('meta[property="og:image"]');
+      if (!ogImage) {
+        ogImage = document.createElement('meta');
+        ogImage.setAttribute('property', 'og:image');
+        document.head.appendChild(ogImage);
+      }
+      ogImage.setAttribute('content', ogImageUrl);
+    }
+
+    // Add structured data if available
+    if (seo.structuredData) {
+      let structuredDataScript = document.querySelector('script[type="application/ld+json"]');
+      if (!structuredDataScript) {
+        structuredDataScript = document.createElement('script');
+        structuredDataScript.setAttribute('type', 'application/ld+json');
+        document.head.appendChild(structuredDataScript);
+      }
+      structuredDataScript.textContent = seo.structuredData;
+    }
+  }, [sanityData?.seo]);
 
   // Intersection Observer for Footer
   useEffect(() => {
