@@ -162,9 +162,6 @@ export default function AdminVerify() {
                     onKeyPress={handleKeyPress}
                     className="glass border-white/20"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    رمز پیش‌فرض: sharifgpt-admin-2025 (در متغیر محیطی ADMIN_VERIFY_PASSWORD تنظیم کنید)
-                  </p>
                 </div>
 
                 <Button 

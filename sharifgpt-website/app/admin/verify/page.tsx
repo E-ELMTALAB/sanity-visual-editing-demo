@@ -79,9 +79,6 @@ export default function AdminVerifyPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                رمز پیش‌فرض: sharifgpt-admin-2025 (در متغیر محیطی ADMIN_VERIFY_PASSWORD تنظیم کنید)
-              </p>
             </div>
 
             <Button 
