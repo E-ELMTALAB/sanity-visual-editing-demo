@@ -621,7 +621,9 @@ const ProductDetail = () => {
     );
   }
 
-  // Prices are already calculated above for promotion calculation
+  // Calculate prices based on selected variant - these will recalculate on every render when selectedVariant changes
+  const currentPrice = getCurrentPrice();
+  const originalPrice = getOriginalPrice();
   const shouldShowOriginalPrice =
     hasMedusaPricing &&
     originalPrice > 0 &&
