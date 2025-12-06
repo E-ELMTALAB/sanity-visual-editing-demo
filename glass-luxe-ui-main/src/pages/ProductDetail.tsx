@@ -318,28 +318,27 @@ const ProductDetail = () => {
     // Skip if we don't have product data yet
     if (!product) return;
     
+    // Only set default variant if no variant is currently selected (initial load only)
+    // Once user selects a variant, don't override their choice
+    if (selectedVariant !== null) return;
+    
     // Always prioritize Medusa variants (they're the source of truth)
     const medusaDefault = getLowestPricedMedusaVariantId();
     if (medusaDefault) {
-      // If we have Medusa variants, use them (even if a Sanity variant was selected)
-      if (selectedVariant !== medusaDefault) {
-        console.log('[PRODUCT-DETAIL] Setting default variant from Medusa:', medusaDefault);
-        setSelectedVariant(medusaDefault);
-      }
+      console.log('[PRODUCT-DETAIL] Setting default variant from Medusa:', medusaDefault);
+      setSelectedVariant(medusaDefault);
       return;
     }
     
-    // Only use Sanity variants if no variant is selected AND Medusa variants aren't available
-    if (!selectedVariant) {
-      const sanityDefault = getLowestPricedSanityVariantId();
-      if (sanityDefault) {
-        console.log('[PRODUCT-DETAIL] Setting default variant from Sanity (fallback):', sanityDefault);
-        setSelectedVariant(sanityDefault);
-      } else {
-        console.log('[PRODUCT-DETAIL] No variants available yet - waiting for Medusa prices...');
-      }
+    // Fallback to Sanity variants if Medusa variants aren't available yet
+    const sanityDefault = getLowestPricedSanityVariantId();
+    if (sanityDefault) {
+      console.log('[PRODUCT-DETAIL] Setting default variant from Sanity (fallback):', sanityDefault);
+      setSelectedVariant(sanityDefault);
+    } else {
+      console.log('[PRODUCT-DETAIL] No variants available yet - waiting for Medusa prices...');
     }
-  }, [medusaVariants, product?.variants, selectedVariant, product]);
+  }, [medusaVariants, product?.variants, product]);
 
   // Get current price based on selected variant
   const getCurrentPrice = () => {
@@ -842,11 +841,8 @@ const ProductDetail = () => {
                   </motion.div>
 
                   {/* Variants Selection */}
-                  {((medusaVariants.length > 0 ? medusaVariants : product.variants) && (medusaVariants.length > 0 ? medusaVariants : product.variants).length > 0) && <div className="space-y-3 mt-4">
-                      <label className="text-sm font-medium text-foreground">
-                        {isRTL ? "انتخاب مدت زمان:" : "Select Duration:"}
-                      </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
+                    {((medusaVariants.length > 0 ? medusaVariants : product.variants) && (medusaVariants.length > 0 ? medusaVariants : product.variants).length > 0) && <div className="space-y-3 mt-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
                         {(medusaVariants.length > 0 ? medusaVariants : product.variants).map((variant, idx) => {
                           const variantId = medusaVariants.length > 0 ? variant.variant_id : variant.id;
                           const variantName = medusaVariants.length > 0 ? variant.name : (isRTL ? variant.nameFa : variant.name);
