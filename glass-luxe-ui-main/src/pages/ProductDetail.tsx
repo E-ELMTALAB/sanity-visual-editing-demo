@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, type CSSProperties } from "react";
+import { useState, useEffect, useRef, type CSSProperties } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
@@ -595,9 +595,9 @@ const ProductDetail = () => {
     );
   }
 
-  // Calculate prices based on selected variant - use useMemo to ensure updates when variant changes
-  const currentPrice = useMemo(() => getCurrentPrice(), [selectedVariant, medusaVariants, product?.variants, product, pricesLoading]);
-  const originalPrice = useMemo(() => getOriginalPrice(), [selectedVariant, medusaVariants, product?.variants, product]);
+  // Calculate prices based on selected variant - these will recalculate on every render when selectedVariant changes
+  const currentPrice = getCurrentPrice();
+  const originalPrice = getOriginalPrice();
   const shouldShowOriginalPrice =
     hasMedusaPricing &&
     originalPrice > 0 &&
