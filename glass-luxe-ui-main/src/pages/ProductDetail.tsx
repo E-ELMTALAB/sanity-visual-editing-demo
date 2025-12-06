@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type CSSProperties } from "react";
+import { useState, useEffect, useRef, useMemo, type CSSProperties } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
@@ -395,17 +395,35 @@ const ProductDetail = () => {
   const getOriginalPrice = () => {
     if (!product) return 0;
 
+    // Priority 1: Medusa variant original_price (if variant selected)
+    if (medusaVariants.length > 0 && selectedVariant) {
+      const variant = medusaVariants.find(v => v.variant_id === selectedVariant);
+      if (variant?.original_price && variant.original_price > 0) {
+        return variant.original_price;
+      }
+      // If no original_price but has price, use price as original
+      if (variant?.price && variant.price > 0) {
+        return variant.price;
+      }
+    }
+
+    // Priority 2: Sanity variant price (if variant selected)
     if (product.variants && selectedVariant) {
       const sanityVariant = product.variants.find((variant) => variant.id === selectedVariant);
+      if (typeof sanityVariant?.originalPrice === "number" && sanityVariant.originalPrice > 0) {
+        return sanityVariant.originalPrice;
+      }
       if (typeof sanityVariant?.price === "number" && sanityVariant.price > 0) {
         return sanityVariant.price;
       }
     }
 
+    // Priority 3: Product originalPrice
     if (typeof product.originalPrice === "number" && product.originalPrice > 0) {
       return product.originalPrice;
     }
 
+    // Priority 4: Product price (fallback)
     return typeof product.price === "number" ? product.price : 0;
   };
 
@@ -577,8 +595,9 @@ const ProductDetail = () => {
     );
   }
 
-  const currentPrice = getCurrentPrice();
-  const originalPrice = getOriginalPrice();
+  // Calculate prices based on selected variant - use useMemo to ensure updates when variant changes
+  const currentPrice = useMemo(() => getCurrentPrice(), [selectedVariant, medusaVariants, product?.variants, product, pricesLoading]);
+  const originalPrice = useMemo(() => getOriginalPrice(), [selectedVariant, medusaVariants, product?.variants, product]);
   const shouldShowOriginalPrice =
     hasMedusaPricing &&
     originalPrice > 0 &&
