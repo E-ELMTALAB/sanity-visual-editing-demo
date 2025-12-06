@@ -126,12 +126,38 @@ const ProductDetail = () => {
   const [tocHeadings, setTocHeadings] = useState<Array<{ level: number; text: string; id: string }>>([]);
   
   // Get promotion info from context - use Medusa product ID if available
-  const validMedusaPrices = medusaVariants.filter(v => v.price > 0).map(v => v.price);
-  const lowestMedusaPrice = validMedusaPrices.length > 0 
-    ? Math.min(...validMedusaPrices)
-    : product?.price || 0;
   const productIdForPromotion = medusaProductId || product?.id; // Prefer Medusa product ID
-  const productPromotion = useProductPromotion(slug, productIdForPromotion, lowestMedusaPrice);
+  
+  // Calculate the price for promotion based on selected variant (not lowest price)
+  // This needs to be calculated inline since getCurrentPrice() is defined later
+  const getPriceForPromotion = () => {
+    // Priority 1: Medusa variant price (if variant selected)
+    if (medusaVariants.length > 0 && selectedVariant) {
+      const variant = medusaVariants.find(v => v.variant_id === selectedVariant);
+      if (variant?.price) {
+        return variant.price;
+      }
+    }
+    // Priority 2: Lowest Medusa variant price (if no variant selected but Medusa has data)
+    if (medusaVariants.length > 0) {
+      const lowestPrice = Math.min(...medusaVariants.filter(v => v.price > 0).map(v => v.price));
+      if (lowestPrice && lowestPrice !== Infinity) {
+        return lowestPrice;
+      }
+    }
+    // Priority 3: Sanity variant price (fallback)
+    if (product?.variants && selectedVariant) {
+      const variant = product.variants.find(v => v.id === selectedVariant);
+      if (variant?.price) {
+        return variant.price;
+      }
+    }
+    // Fallback to product price
+    return product?.price || 0;
+  };
+  
+  const priceForPromotion = getPriceForPromotion();
+  const productPromotion = useProductPromotion(slug, productIdForPromotion, priceForPromotion);
 
   // Extract headings from description when product loads
   useEffect(() => {
@@ -595,9 +621,7 @@ const ProductDetail = () => {
     );
   }
 
-  // Calculate prices based on selected variant - these will recalculate on every render when selectedVariant changes
-  const currentPrice = getCurrentPrice();
-  const originalPrice = getOriginalPrice();
+  // Prices are already calculated above for promotion calculation
   const shouldShowOriginalPrice =
     hasMedusaPricing &&
     originalPrice > 0 &&
