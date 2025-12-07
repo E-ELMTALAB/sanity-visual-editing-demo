@@ -4,7 +4,7 @@
  */
 
 import { createClient } from '@sanity/client';
-import { writeFile, mkdir } from 'fs/promises';
+import { writeFile, mkdir, readFile } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import {
@@ -56,6 +56,145 @@ async function saveToCache(filename: string, data: any) {
   const filePath = join(CACHE_DIR, filename);
   await writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
   console.log(`💾 Saved: ${filename}`);
+}
+
+/**
+ * Update index.html with SEO data from Sanity cache
+ * This ensures Google crawlers see the correct meta tags in static HTML
+ * NO FALLBACKS - Only uses values from Sanity cache
+ */
+async function updateIndexHtmlWithSeo(seo: any) {
+  const indexPath = join(__dirname, '../index.html');
+  
+  try {
+    // Read current index.html
+    let html = await readFile(indexPath, 'utf-8');
+    
+    if (!seo) {
+      console.warn('⚠️  No SEO data provided, skipping index.html update');
+      return;
+    }
+
+    // Escape HTML entities to prevent XSS and ensure valid HTML
+    const escapeHtml = (text: string): string => {
+      if (!text) return '';
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    };
+
+    let updated = false;
+
+    // Update title - ONLY if metaTitle exists in Sanity
+    if (seo.metaTitle && typeof seo.metaTitle === 'string' && seo.metaTitle.trim()) {
+      const escapedTitle = escapeHtml(seo.metaTitle.trim());
+      html = html.replace(
+        /<title>.*?<\/title>/,
+        `<title>${escapedTitle}</title>`
+      );
+      console.log(`   ✅ Updated <title>: ${seo.metaTitle.substring(0, 50)}...`);
+      updated = true;
+    } else {
+      console.warn('   ⚠️  metaTitle not found in Sanity SEO data, keeping existing title');
+    }
+
+    // Update meta description - ONLY if metaDescription exists in Sanity
+    if (seo.metaDescription && typeof seo.metaDescription === 'string' && seo.metaDescription.trim()) {
+      const escapedDesc = escapeHtml(seo.metaDescription.trim());
+      html = html.replace(
+        /<meta\s+name=["']description["']\s+content=["'][^"']*["']\s*\/?>/,
+        `<meta name="description" content="${escapedDesc}" />`
+      );
+      console.log(`   ✅ Updated meta description: ${seo.metaDescription.substring(0, 50)}...`);
+      updated = true;
+    } else {
+      console.warn('   ⚠️  metaDescription not found in Sanity SEO data, keeping existing description');
+    }
+
+    // Update Open Graph title - Use openGraphTitle if available, otherwise metaTitle (NO OTHER FALLBACKS)
+    const ogTitle = seo.openGraphTitle || seo.metaTitle;
+    if (ogTitle && typeof ogTitle === 'string' && ogTitle.trim()) {
+      const escapedOgTitle = escapeHtml(ogTitle.trim());
+      html = html.replace(
+        /<meta\s+property=["']og:title["']\s+content=["'][^"']*["']\s*\/?>/,
+        `<meta property="og:title" content="${escapedOgTitle}" />`
+      );
+      console.log(`   ✅ Updated og:title: ${ogTitle.substring(0, 50)}...`);
+      updated = true;
+    } else {
+      console.warn('   ⚠️  og:title not found in Sanity SEO data, keeping existing og:title');
+    }
+
+    // Update Open Graph description - Use openGraphDescription if available, otherwise metaDescription (NO OTHER FALLBACKS)
+    const ogDescription = seo.openGraphDescription || seo.metaDescription;
+    if (ogDescription && typeof ogDescription === 'string' && ogDescription.trim()) {
+      const escapedOgDesc = escapeHtml(ogDescription.trim());
+      html = html.replace(
+        /<meta\s+property=["']og:description["']\s+content=["'][^"']*["']\s*\/?>/,
+        `<meta property="og:description" content="${escapedOgDesc}" />`
+      );
+      console.log(`   ✅ Updated og:description: ${ogDescription.substring(0, 50)}...`);
+      updated = true;
+    } else {
+      console.warn('   ⚠️  og:description not found in Sanity SEO data, keeping existing og:description');
+    }
+
+    // Update canonical URL if provided
+    if (seo.canonicalUrl && typeof seo.canonicalUrl === 'string' && seo.canonicalUrl.trim()) {
+      const escapedCanonical = escapeHtml(seo.canonicalUrl.trim());
+      // Check if canonical link already exists
+      if (html.includes('<link rel="canonical"')) {
+        html = html.replace(
+          /<link\s+rel=["']canonical["']\s+href=["'][^"']*["']\s*\/?>/,
+          `<link rel="canonical" href="${escapedCanonical}" />`
+        );
+      } else {
+        // Insert before closing </head>
+        html = html.replace(
+          '</head>',
+          `    <link rel="canonical" href="${escapedCanonical}" />\n  </head>`
+        );
+      }
+      console.log(`   ✅ Updated canonical URL: ${seo.canonicalUrl}`);
+      updated = true;
+    }
+
+    // Update robots meta if provided
+    if (seo.robotsMeta && typeof seo.robotsMeta === 'string' && seo.robotsMeta.trim()) {
+      const escapedRobots = escapeHtml(seo.robotsMeta.trim());
+      // Check if robots meta already exists
+      if (html.includes('<meta name="robots"')) {
+        html = html.replace(
+          /<meta\s+name=["']robots["']\s+content=["'][^"']*["']\s*\/?>/,
+          `<meta name="robots" content="${escapedRobots}" />`
+        );
+      } else {
+        // Insert before closing </head>
+        html = html.replace(
+          '</head>',
+          `    <meta name="robots" content="${escapedRobots}" />\n  </head>`
+        );
+      }
+      console.log(`   ✅ Updated robots meta: ${seo.robotsMeta}`);
+      updated = true;
+    }
+
+    // Write updated HTML back
+    if (updated) {
+      await writeFile(indexPath, html, 'utf-8');
+      console.log('✅ Successfully updated index.html with SEO data from Sanity cache');
+      console.log('   📝 Meta tags are now hardcoded in index.html and will be visible to Google crawlers');
+    } else {
+      console.warn('⚠️  No SEO updates were made to index.html (no valid SEO data found)');
+    }
+  } catch (error) {
+    console.error('❌ Failed to update index.html with SEO data:', error);
+    // Don't throw - allow build to continue even if HTML update fails
+    console.warn('⚠️  Build will continue, but index.html was not updated with SEO data');
+  }
 }
 
 async function fetchHomepageData() {
@@ -134,6 +273,21 @@ async function fetchHomepageData() {
     }
 
     await saveToCache('homepage.json', homeData);
+
+    // Update index.html with SEO data from Sanity cache (BEFORE build)
+    // This ensures Google crawlers see correct meta tags in static HTML
+    if (homeData?.seo) {
+      console.log('\n📝 Updating index.html with SEO data from Sanity cache...');
+      console.log('   - Meta Title:', homeData.seo.metaTitle || 'NOT SET in Sanity');
+      console.log('   - Meta Description:', homeData.seo.metaDescription || 'NOT SET in Sanity');
+      console.log('   - Open Graph Title:', homeData.seo.openGraphTitle || homeData.seo.metaTitle || 'NOT SET in Sanity');
+      console.log('   - Open Graph Description:', homeData.seo.openGraphDescription || homeData.seo.metaDescription || 'NOT SET in Sanity');
+      await updateIndexHtmlWithSeo(homeData.seo);
+    } else {
+      console.warn('\n⚠️  No SEO data found in homepage data from Sanity');
+      console.warn('   index.html will NOT be updated - meta tags will remain as hardcoded values');
+      console.warn('   Please ensure SEO fields are set in Sanity Studio → Home → SEO tab');
+    }
 
     console.log('\n📥 Fetching featured products...');
     const featuredProducts = await client.fetch(featuredProductsQuery);
