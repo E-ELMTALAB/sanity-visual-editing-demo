@@ -25,10 +25,6 @@ import {
 import * as transformers from "@/lib/sanity.transformers";
 import { getImageUrl } from "@/lib/sanity.image";
 
-// Static hero image for immediate LCP (responsive, optimized). In some build modes
-// vite-imagetools returns a string URL; in others it returns a picture descriptor.
-import heroBg from "@/assets/hero-ai-cubes.png?w=1200;1600;2000&format=webp;avif;png&as=picture";
-
 // Lazy load heavy components - don't load until needed
 const Footer = lazy(() => import("@/components/Footer/Footer").then((m) => ({ default: m.Footer })));
 const FloatingDock = lazy(() => import("@/components/FloatingDock/FloatingDock").then((m) => ({ default: m.FloatingDock })));
@@ -165,38 +161,8 @@ function StaticHero() {
         WebkitMaskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
       }}
     >
-      {/* Static background image - responsive and preloaded */}
-      {typeof heroBg === "string" ? (
-        <img
-          src={heroBg}
-          alt="Hero background"
-          loading="eager"
-          decoding="async"
-          fetchPriority="high"
-          className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
-          style={{ filter: 'brightness(0.85)' }}
-          width={1200}
-          height={800}
-        />
-      ) : (
-        <picture className="absolute inset-0 h-full w-full -z-10">
-          {Array.isArray(heroBg?.sources) &&
-            heroBg.sources.map((source) => (
-              <source key={source.type} type={source.type} srcSet={source.srcset} sizes="(max-width: 1024px) 100vw, 1200px" />
-            ))}
-          <img
-            src={heroBg?.img?.src}
-            alt="Hero background"
-            loading="eager"
-            decoding="async"
-            fetchPriority="high"
-            className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
-            style={{ filter: 'brightness(0.85)' }}
-            width={heroBg?.img?.width || 1200}
-            height={heroBg?.img?.height || 800}
-          />
-        </picture>
-      )}
+      {/* Static background placeholder - no local image, just gradient */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
       
       {/* Overlay */}
       <div className="absolute inset-0 -z-10 mix-blend-soft-light opacity-85 md:opacity-60 bg-gradient-to-br from-[#1E67C6]/60 via-transparent to-[#8B5CF6]/60" />
@@ -392,8 +358,6 @@ const Index = () => {
   const navigate = useNavigate();
   const { state: cartState } = useCart();
   const footerTriggerRef = useRef<HTMLDivElement>(null);
-  const [allowDynamicHero, setAllowDynamicHero] = useState(false);
-  
   // Promotions from Medusa
   const siteWidePromotion = useSiteWidePromotion();
   
@@ -408,40 +372,6 @@ const Index = () => {
   const [sanityData, setSanityData] = useState<SanityData | null>(null);
   const [medusaPrices, setMedusaPrices] = useState<Record<string, ProductPrices>>({});
   const [dataLoaded, setDataLoaded] = useState(false);
-
-  // Preload hero image with actual built URL to speed up LCP (support string or picture object)
-  useEffect(() => {
-    const isPicture = typeof heroBg === "object" && heroBg !== null;
-    const primarySrc = isPicture
-      ? (heroBg as any)?.img?.src ||
-        (heroBg as any)?.sources?.[0]?.srcset?.split(",")?.[0]?.trim()?.split(" ")?.[0]
-      : (heroBg as string);
-    if (!primarySrc) return;
-    const link = document.createElement("link");
-    link.rel = "preload";
-    link.as = "image";
-    link.href = primarySrc;
-    link.setAttribute("imagesizes", "(max-width: 1024px) 100vw, 1200px");
-    if (isPicture && Array.isArray((heroBg as any)?.sources) && (heroBg as any).sources[0]?.srcset) {
-      link.setAttribute("imagesrcset", (heroBg as any).sources[0].srcset);
-    }
-    document.head.appendChild(link);
-    return () => {
-      if (link.parentNode) {
-        document.head.removeChild(link);
-      }
-    };
-  }, []);
-
-  // Allow dynamic hero only after idle so static hero stays LCP
-  useEffect(() => {
-    const allow = () => setAllowDynamicHero(true);
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(allow, { timeout: 1200 });
-    } else {
-      setTimeout(allow, 600);
-    }
-  }, []);
 
   // Load Sanity data off the critical path (idle)
   useEffect(() => {
@@ -827,8 +757,8 @@ const Index = () => {
       {/* Header - lightweight, loads immediately */}
       <Header onSearch={handleSearch} megaItems={megaItems} />
 
-      {/* Hero Section - Static first for SEO/LCP, dynamic only after idle */}
-      {allowDynamicHero && showDynamicContent && sanityData?.heroSlide?.image ? (
+      {/* Hero Section - Static fallback; prefer Sanity hero when available */}
+      {showDynamicContent && sanityData?.heroSlide?.image ? (
         <DynamicHero slide={sanityData.heroSlide} />
       ) : (
         <StaticHero />
