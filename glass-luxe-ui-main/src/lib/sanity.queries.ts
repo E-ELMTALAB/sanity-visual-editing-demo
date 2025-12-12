@@ -309,6 +309,19 @@ export const allPostsQuery = `
     readTime,
     category,
     author,
+    seo{
+      metaTitle,
+      metaDescription,
+      canonicalUrl,
+      robotsMeta,
+      openGraphTitle,
+      openGraphDescription,
+      openGraphImage{
+        ...,
+        asset->
+      },
+      structuredData
+    },
     "slug": slug.current
   }
 `
@@ -324,6 +337,19 @@ export const featuredPostsQuery = `
     readTime,
     category,
     author,
+    seo{
+      metaTitle,
+      metaDescription,
+      canonicalUrl,
+      robotsMeta,
+      openGraphTitle,
+      openGraphDescription,
+      openGraphImage{
+        ...,
+        asset->
+      },
+      structuredData
+    },
     "slug": slug.current
   }
 `
@@ -398,6 +424,19 @@ export const productBySlugQuery = `
       author,
       "slug": slug.current
     },
+    seo{
+      metaTitle,
+      metaDescription,
+      canonicalUrl,
+      robotsMeta,
+      openGraphTitle,
+      openGraphDescription,
+      openGraphImage{
+        ...,
+        asset->
+      },
+      structuredData
+    },
     "slug": slug.current
   }
 `
@@ -429,6 +468,19 @@ export const postBySlugQuery = `
       publishedAt,
       readTime,
       "slug": slug.current
+    },
+    seo{
+      metaTitle,
+      metaDescription,
+      canonicalUrl,
+      robotsMeta,
+      openGraphTitle,
+      openGraphDescription,
+      openGraphImage{
+        ...,
+        asset->
+      },
+      structuredData
     },
     "slug": slug.current
   }
@@ -464,6 +516,19 @@ export const collectionBySlugQuery = `
       inStock,
       "slug": slug.current
     },
+    seo{
+      metaTitle,
+      metaDescription,
+      canonicalUrl,
+      robotsMeta,
+      openGraphTitle,
+      openGraphDescription,
+      openGraphImage{
+        ...,
+        asset->
+      },
+      structuredData
+    },
     "slug": slug.current
   }
 `
@@ -477,7 +542,19 @@ export const pageBySlugQuery = `
       ...,
       asset->
     },
-    seo,
+    seo{
+      metaTitle,
+      metaDescription,
+      canonicalUrl,
+      robotsMeta,
+      openGraphTitle,
+      openGraphDescription,
+      openGraphImage{
+        ...,
+        asset->
+      },
+      structuredData
+    },
     "slug": slug.current
   }
 `

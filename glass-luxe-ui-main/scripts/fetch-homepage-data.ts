@@ -7,6 +7,7 @@ import { createClient } from '@sanity/client';
 import { writeFile, mkdir, readFile } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import imageUrlBuilder from '@sanity/image-url';
 import {
   homePageQuery,
   featuredProductsQuery,
@@ -88,6 +89,17 @@ async function updateIndexHtmlWithSeo(seo: any) {
 
     let updated = false;
 
+    // Helper to build image URL for Open Graph
+    const ogImageUrl =
+      seo?.openGraphImage?.asset
+        ? imageUrlBuilder({ projectId, dataset })
+            .image(seo.openGraphImage)
+            .width(1200)
+            .fit('max')
+            .auto('format')
+            .url()
+        : '';
+
     // Update title - ONLY if metaTitle exists in Sanity
     if (seo.metaTitle && typeof seo.metaTitle === 'string' && seo.metaTitle.trim()) {
       const escapedTitle = escapeHtml(seo.metaTitle.trim());
@@ -160,6 +172,18 @@ async function updateIndexHtmlWithSeo(seo: any) {
       }
       console.log(`   ✅ Updated canonical URL: ${seo.canonicalUrl}`);
       updated = true;
+    }
+
+    // Update Open Graph image - ONLY if image exists in Sanity
+    if (ogImageUrl) {
+      html = html.replace(
+        /<meta\s+property=["']og:image["']\s+content=["'][^"']*["']\s*\/?>/,
+        `<meta property="og:image" content="${ogImageUrl}" />`
+      );
+      console.log(`   ✅ Updated og:image: ${ogImageUrl}`);
+      updated = true;
+    } else {
+      console.warn('   ⚠️  og:image not found in Sanity SEO data, keeping existing og:image');
     }
 
     // Update robots meta if provided

@@ -21,8 +21,9 @@ import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
 import { usePromotions } from "@/contexts/promotion-context";
 import { fetchFromSanity } from "@/lib/sanity.client.light";
 import { validateSanityConfig } from "@/lib/sanity.config";
-import { allProductsQuery, faqsByPageQuery } from "@/lib/sanity.queries";
+import { allProductsQuery, faqsByPageQuery, pageBySlugQuery } from "@/lib/sanity.queries";
 import { transformFaqItem, transformProductListItem } from "@/lib/sanity.transformers";
+import { getImageUrl } from "@/lib/sanity.image";
 
 const springTransition = {
   type: "spring" as const,
@@ -55,6 +56,17 @@ interface FaqItem {
   a: string;
 }
 
+type SeoMeta = {
+  metaTitle?: string;
+  metaDescription?: string;
+  canonicalUrl?: string;
+  robotsMeta?: string;
+  openGraphTitle?: string;
+  openGraphDescription?: string;
+  openGraphImage?: string;
+  structuredData?: string;
+};
+
 export default function Products() {
   const { isRTL } = useDirection();
   const [cartOpen, setCartOpen] = useState(false);
@@ -72,6 +84,7 @@ export default function Products() {
   const { addItem, state: cartState } = useCart();
   const { getPromotionForProduct, getSiteWidePromotion } = usePromotions();
   const siteWidePromotion = getSiteWidePromotion();
+  const [pageSeo, setPageSeo] = useState<SeoMeta | null>(null);
 
   useEffect(() => {
     const isConfigValid = validateSanityConfig();
@@ -85,9 +98,10 @@ export default function Products() {
     async function loadProductsPage() {
       try {
         setIsLoading(true);
-        const [productsResult, faqsResult] = await Promise.all([
+        const [productsResult, faqsResult, seoResult] = await Promise.all([
           fetchFromSanity<any[]>(allProductsQuery),
           fetchFromSanity<any[]>(faqsByPageQuery, { page: "products" }),
+          fetchFromSanity<any>(pageBySlugQuery, { slug: "products" }),
         ]);
 
         if (!isMounted) return;
@@ -103,6 +117,20 @@ export default function Products() {
         setProducts(transformedProducts);
         setFaqItems(transformedFaqs);
         setFetchError(null);
+
+        if (seoResult?.seo) {
+          const seo = seoResult.seo;
+          setPageSeo({
+            metaTitle: seo.metaTitle || "فروشگاه محصولات دیجیتال | SharifGPT",
+            metaDescription: seo.metaDescription || "فروشگاه محصولات دیجیتال SharifGPT - دوره‌های آموزشی، کتاب‌های الکترونیکی، ابزارها و قالب‌های آماده در حوزه هوش مصنوعی و برنامه‌نویسی",
+            canonicalUrl: seo.canonicalUrl || "https://sharifgpt.ir/products",
+            robotsMeta: seo.robotsMeta || "",
+            openGraphTitle: seo.openGraphTitle || seo.metaTitle || "فروشگاه محصولات دیجیتال | SharifGPT",
+            openGraphDescription: seo.openGraphDescription || seo.metaDescription || "فروشگاه محصولات دیجیتال SharifGPT - دوره‌های آموزشی، کتاب‌های الکترونیکی، ابزارها و قالب‌های آماده در حوزه هوش مصنوعی و برنامه‌نویسی",
+            openGraphImage: seo.openGraphImage ? getImageUrl(seo.openGraphImage, 1200) : undefined,
+            structuredData: seo.structuredData || "",
+          });
+        }
       } catch (error) {
         console.error("[PRODUCTS] Failed to fetch Sanity data", error);
         if (isMounted) {
@@ -296,16 +324,27 @@ export default function Products() {
   return (
     <>
       <Helmet>
-        <title>فروشگاه محصولات دیجیتال | SharifGPT</title>
-        <meta name="description" content="فروشگاه محصولات دیجیتال SharifGPT - دوره‌های آموزشی، کتاب‌های الکترونیکی، ابزارها و قالب‌های آماده در حوزه هوش مصنوعی و برنامه‌نویسی" />
-        <link rel="canonical" href="https://sharifgpt.ir/products" />
-        <meta property="og:title" content="فروشگاه محصولات دیجیتال | SharifGPT" />
-        <meta property="og:description" content="فروشگاه محصولات دیجیتال SharifGPT - دوره‌های آموزشی، کتاب‌های الکترونیکی، ابزارها و قالب‌های آماده در حوزه هوش مصنوعی و برنامه‌نویسی" />
-        <meta property="og:url" content="https://sharifgpt.ir/products" />
+        <title>{pageSeo?.metaTitle || "فروشگاه محصولات دیجیتال | SharifGPT"}</title>
+        <meta name="description" content={pageSeo?.metaDescription || "فروشگاه محصولات دیجیتال SharifGPT - دوره‌های آموزشی، کتاب‌های الکترونیکی، ابزارها و قالب‌های آماده در حوزه هوش مصنوعی و برنامه‌نویسی"} />
+        <link rel="canonical" href={pageSeo?.canonicalUrl || "https://sharifgpt.ir/products"} />
+        {pageSeo?.robotsMeta && <meta name="robots" content={pageSeo.robotsMeta} />}
+        <meta property="og:title" content={pageSeo?.openGraphTitle || pageSeo?.metaTitle || "فروشگاه محصولات دیجیتال | SharifGPT"} />
+        <meta property="og:description" content={pageSeo?.openGraphDescription || pageSeo?.metaDescription || "فروشگاه محصولات دیجیتال SharifGPT - دوره‌های آموزشی، کتاب‌های الکترونیکی، ابزارها و قالب‌های آماده در حوزه هوش مصنوعی و برنامه‌نویسی"} />
+        <meta property="og:url" content={pageSeo?.canonicalUrl || "https://sharifgpt.ir/products"} />
         <meta property="og:type" content="website" />
+        {pageSeo?.openGraphImage && <meta property="og:image" content={pageSeo.openGraphImage} />}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageSeo?.openGraphTitle || pageSeo?.metaTitle || "فروشگاه محصولات دیجیتال | SharifGPT"} />
+        <meta name="twitter:description" content={pageSeo?.openGraphDescription || pageSeo?.metaDescription || "فروشگاه محصولات دیجیتال SharifGPT - دوره‌های آموزشی، کتاب‌های الکترونیکی، ابزارها و قالب‌های آماده در حوزه هوش مصنوعی و برنامه‌نویسی"} />
+        {pageSeo?.openGraphImage && <meta name="twitter:image" content={pageSeo.openGraphImage} />}
         <script type="application/ld+json">
           {JSON.stringify(jsonLd)}
         </script>
+        {pageSeo?.structuredData && (
+          <script type="application/ld+json">
+            {pageSeo.structuredData}
+          </script>
+        )}
       </Helmet>
 
       <div className="min-h-screen flex flex-col">

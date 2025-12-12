@@ -18,6 +18,17 @@ import { transformBlogPost, transformBlogPostDetail } from "@/lib/sanity.transfo
 import EnhancedMarkdownRenderer from "@/components/EnhancedMarkdownRenderer";
 import { useDirection } from "@/contexts/DirectionContext";
 
+type SeoMeta = {
+  metaTitle?: string;
+  metaDescription?: string;
+  canonicalUrl?: string;
+  robotsMeta?: string;
+  openGraphTitle?: string;
+  openGraphDescription?: string;
+  openGraphImage?: string;
+  structuredData?: string;
+};
+
 interface ArticleDetail {
   _id: string;
   slug: string;
@@ -33,6 +44,7 @@ interface ArticleDetail {
   body?: any[];
   bodyMarkdown?: string; // Markdown content for blog posts
   excerpt?: string;
+  seo?: SeoMeta;
 }
 
 // Helper function to extract headings from markdown content (same as ProductDetail)
@@ -343,17 +355,32 @@ export default function BlogPost() {
   return <>
       <Helmet>
         <title>
-          {article ? `${article.title} - مجله SharifGPT` : "مجله SharifGPT"}
+          {article?.seo?.metaTitle || (article ? `${article.title} - مجله SharifGPT` : "مجله SharifGPT")}
         </title>
         <meta
           name="description"
           content={
-            article?.excerpt || "مقاله‌ای از مجله SharifGPT"
+            article?.seo?.metaDescription || article?.excerpt || "مقاله‌ای از مجله SharifGPT"
           }
         />
+        <link
+          rel="canonical"
+          href={article?.seo?.canonicalUrl || `${window.location.origin}/blog/${slug}`}
+        />
+        {article?.seo?.robotsMeta && <meta name="robots" content={article.seo.robotsMeta} />}
         <meta property="og:type" content="article" />
-        <meta property="og:title" content={article?.title || "SharifGPT"} />
-        {article?.cover && <meta property="og:image" content={article.cover} />}
+        <meta property="og:title" content={article?.seo?.openGraphTitle || article?.seo?.metaTitle || article?.title || "SharifGPT"} />
+        <meta property="og:description" content={article?.seo?.openGraphDescription || article?.seo?.metaDescription || article?.excerpt || "مقاله‌ای از مجله SharifGPT"} />
+        <meta property="og:url" content={article?.seo?.canonicalUrl || `${window.location.origin}/blog/${slug}`} />
+        { (article?.seo?.openGraphImage || article?.cover) && (
+          <meta property="og:image" content={article?.seo?.openGraphImage || article?.cover} />
+        )}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={article?.seo?.openGraphTitle || article?.seo?.metaTitle || article?.title || "SharifGPT"} />
+        <meta name="twitter:description" content={article?.seo?.openGraphDescription || article?.seo?.metaDescription || article?.excerpt || "مقاله‌ای از مجله SharifGPT"} />
+        { (article?.seo?.openGraphImage || article?.cover) && (
+          <meta name="twitter:image" content={article?.seo?.openGraphImage || article?.cover} />
+        )}
         {article?.publishedAt && (
           <meta property="article:published_time" content={article.publishedAt} />
         )}
@@ -365,6 +392,9 @@ export default function BlogPost() {
         ))}
         {structuredData && (
         <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+        )}
+        {article?.seo?.structuredData && (
+          <script type="application/ld+json">{article.seo.structuredData}</script>
         )}
       </Helmet>
 

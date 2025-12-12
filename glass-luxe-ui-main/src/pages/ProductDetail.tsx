@@ -33,6 +33,17 @@ const springTransition = {
   damping: 28
 };
 
+type SeoMeta = {
+  metaTitle?: string;
+  metaDescription?: string;
+  canonicalUrl?: string;
+  robotsMeta?: string;
+  openGraphTitle?: string;
+  openGraphDescription?: string;
+  openGraphImage?: string;
+  structuredData?: string;
+};
+
 type ProductBadge = "sale" | "new" | "hot" | string;
 
 interface ProductVariant {
@@ -74,6 +85,7 @@ interface ProductDetailData {
   reviewCount?: number;
   relatedProducts: RelatedProductCardData[];
   relatedPosts: BlogCardPost[];
+  seo?: SeoMeta;
 }
 
 interface FaqItem {
@@ -676,13 +688,34 @@ const ProductDetail = () => {
   const relatedProducts = product.relatedProducts || [];
   const relatedPosts = product.relatedPosts || [];
   const faqs = faqItems;
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://sharifgpt.ai";
+  const seo = product.seo || {};
+  const seoTitle = seo.metaTitle || ((isRTL || forceRTL) ? product.titleFa : product.title) || "SharifGPT";
+  const seoDescription = seo.metaDescription || ((isRTL || forceRTL) ? product.descriptionFa : product.description) || "";
+  const canonicalUrl = seo.canonicalUrl || `${origin}/products/${slug}`;
+  const ogTitle = seo.openGraphTitle || seo.metaTitle || seoTitle;
+  const ogDescription = seo.openGraphDescription || seo.metaDescription || seoDescription;
+  const ogImage = seo.openGraphImage || product.image || currentImage;
   return <>
       <Helmet>
-        <title>{((isRTL || forceRTL) ? product.titleFa : product.title) + " | SharifGPT"}</title>
-        <meta name="description" content={(isRTL || forceRTL) ? product.descriptionFa : product.description} />
-        <link rel="canonical" href={`https://sharifgpt.ai/products/${slug}`} />
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDescription} />
+        <link rel="canonical" href={canonicalUrl} />
+        {seo.robotsMeta && <meta name="robots" content={seo.robotsMeta} />}
+        <meta property="og:type" content="product" />
+        <meta property="og:title" content={ogTitle} />
+        <meta property="og:description" content={ogDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        {ogImage && <meta property="og:image" content={ogImage} />}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={ogTitle} />
+        <meta name="twitter:description" content={ogDescription} />
+        {ogImage && <meta name="twitter:image" content={ogImage} />}
         <script type="application/ld+json">{JSON.stringify(productJsonLd)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbJsonLd)}</script>
+        {seo.structuredData && (
+          <script type="application/ld+json">{seo.structuredData}</script>
+        )}
       </Helmet>
 
       <div className="min-h-screen">

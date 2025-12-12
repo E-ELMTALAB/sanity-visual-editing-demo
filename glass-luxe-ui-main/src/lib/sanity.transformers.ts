@@ -253,12 +253,18 @@ export function transformBlogPost(post: any, index: number) {
     typeof post?.slug === 'string'
       ? post.slug
       : post?.slug?.current || ''
+  const fallbackTitle = post?.title || 'مقاله'
+  const fallbackDescription = Array.isArray(post?.excerpt)
+    ? portableTextToPlainText(post.excerpt)
+    : post?.excerpt || ''
+  const ogImage =
+    post?.seo?.openGraphImage ? getImageUrl(post.seo.openGraphImage, 800) : (post?.coverImage ? getImageUrl(post.coverImage, 800) : '')
 
   return {
     _id: post?._id || `post-${index}`,
     slug: slugValue || `post-${index}`,
-    title: post?.title || 'مقاله',
-    excerpt: Array.isArray(post?.excerpt) ? portableTextToPlainText(post.excerpt) : post?.excerpt || '',
+    title: fallbackTitle,
+    excerpt: fallbackDescription,
     readTime: post?.readTime || 5,
     image: {
       asset: {
@@ -267,6 +273,16 @@ export function transformBlogPost(post: any, index: number) {
     },
     category: post?.category || 'tutorials',
     publishedAt: post?.publishedAt || new Date().toISOString(),
+    seo: {
+      metaTitle: post?.seo?.metaTitle || fallbackTitle,
+      metaDescription: post?.seo?.metaDescription || fallbackDescription,
+      canonicalUrl: post?.seo?.canonicalUrl || '',
+      robotsMeta: post?.seo?.robotsMeta || '',
+      openGraphTitle: post?.seo?.openGraphTitle || post?.seo?.metaTitle || fallbackTitle,
+      openGraphDescription: post?.seo?.openGraphDescription || post?.seo?.metaDescription || fallbackDescription,
+      openGraphImage: ogImage,
+      structuredData: post?.seo?.structuredData || ''
+    }
   }
 }
 
@@ -275,6 +291,11 @@ export function transformBlogPostDetail(post: any) {
     typeof post?.slug === 'string'
       ? post.slug
       : post?.slug?.current || ''
+  const fallbackTitle = post?.title || ''
+  const fallbackDescription =
+    Array.isArray(post?.excerpt) ? portableTextToPlainText(post.excerpt) : post?.excerpt || ''
+  const ogImage =
+    post?.seo?.openGraphImage ? getImageUrl(post.seo.openGraphImage, 1200) : (post?.coverImage ? getImageUrl(post.coverImage, 1200) : '')
 
   return {
     _id: post?._id || '',
@@ -291,10 +312,25 @@ export function transformBlogPostDetail(post: any) {
     body: Array.isArray(post?.body) ? post.body : [],
     excerpt: Array.isArray(post?.excerpt) ? portableTextToPlainText(post.excerpt) : post?.excerpt || '',
     category: post?.category || '',
+    seo: {
+      metaTitle: post?.seo?.metaTitle || fallbackTitle,
+      metaDescription: post?.seo?.metaDescription || fallbackDescription,
+      canonicalUrl: post?.seo?.canonicalUrl || '',
+      robotsMeta: post?.seo?.robotsMeta || '',
+      openGraphTitle: post?.seo?.openGraphTitle || post?.seo?.metaTitle || fallbackTitle,
+      openGraphDescription: post?.seo?.openGraphDescription || post?.seo?.metaDescription || fallbackDescription,
+      openGraphImage: ogImage,
+      structuredData: post?.seo?.structuredData || ''
+    }
   }
 }
 
 export function transformCollectionDetail(collection: any) {
+  const fallbackTitle = collection?.heroTitle || collection?.title || ''
+  const fallbackDescription = collection?.heroSubtitle || collection?.heroTitle || collection?.title || ''
+  const ogImage =
+    collection?.seo?.openGraphImage ? getImageUrl(collection.seo.openGraphImage, 1600) : (collection?.coverImage ? getImageUrl(collection.coverImage, 1600) : '')
+
   return {
     _id: collection?._id || '',
     title: collection?.title || '',
@@ -308,6 +344,16 @@ export function transformCollectionDetail(collection: any) {
       : [],
     faq: Array.isArray(collection?.faq) ? collection.faq : [],
     slug: collection?.slug || collection?.slug?.current || '',
+    seo: {
+      metaTitle: collection?.seo?.metaTitle || fallbackTitle,
+      metaDescription: collection?.seo?.metaDescription || fallbackDescription,
+      canonicalUrl: collection?.seo?.canonicalUrl || '',
+      robotsMeta: collection?.seo?.robotsMeta || '',
+      openGraphTitle: collection?.seo?.openGraphTitle || collection?.seo?.metaTitle || fallbackTitle,
+      openGraphDescription: collection?.seo?.openGraphDescription || collection?.seo?.metaDescription || fallbackDescription,
+      openGraphImage: ogImage,
+      structuredData: collection?.seo?.structuredData || ''
+    }
   }
 }
 
@@ -413,6 +459,19 @@ export function transformProductDetail(product: any) {
     relatedPosts: Array.isArray(product?.relatedBlogs)
       ? product.relatedBlogs.map((item: any, index: number) => transformBlogPost(item, index))
       : [],
+    seo: {
+      metaTitle: product?.seo?.metaTitle || product?.name || '',
+      metaDescription: product?.seo?.metaDescription || product?.description || '',
+      canonicalUrl: product?.seo?.canonicalUrl || '',
+      robotsMeta: product?.seo?.robotsMeta || '',
+      openGraphTitle: product?.seo?.openGraphTitle || product?.seo?.metaTitle || product?.name || '',
+      openGraphDescription: product?.seo?.openGraphDescription || product?.seo?.metaDescription || product?.description || '',
+      openGraphImage:
+        product?.seo?.openGraphImage
+          ? getImageUrl(product.seo.openGraphImage, 1200)
+          : primaryImageUrl,
+      structuredData: product?.seo?.structuredData || ''
+    }
   }
 }
 

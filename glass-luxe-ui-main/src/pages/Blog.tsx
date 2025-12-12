@@ -10,8 +10,20 @@ import { useDirection } from "@/contexts/DirectionContext";
 import { toast } from "@/hooks/use-toast";
 import { fetchFromSanity } from "@/lib/sanity.client.light";
 import { validateSanityConfig } from "@/lib/sanity.config";
-import { allPostsQuery } from "@/lib/sanity.queries";
+import { allPostsQuery, pageBySlugQuery } from "@/lib/sanity.queries";
 import { transformBlogPost } from "@/lib/sanity.transformers";
+import { getImageUrl } from "@/lib/sanity.image";
+
+type SeoMeta = {
+  metaTitle?: string;
+  metaDescription?: string;
+  canonicalUrl?: string;
+  robotsMeta?: string;
+  openGraphTitle?: string;
+  openGraphDescription?: string;
+  openGraphImage?: string;
+  structuredData?: string;
+};
 
 export default function Blog() {
   const { isRTL } = useDirection();
@@ -19,6 +31,7 @@ export default function Blog() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [pageSeo, setPageSeo] = useState<SeoMeta | null>(null);
 
   const handleOpenCart = () => {
     toast({
@@ -83,6 +96,7 @@ export default function Blog() {
       try {
         setIsLoading(true);
         const response = await fetchFromSanity<any[]>(allPostsQuery);
+        const pageSeoResult = await fetchFromSanity<any>(pageBySlugQuery, { slug: "blog" });
 
         if (!isMounted) return;
 
@@ -92,6 +106,20 @@ export default function Blog() {
 
         setPosts(transformed);
         setFetchError(null);
+
+        if (pageSeoResult?.seo) {
+          const seo = pageSeoResult.seo;
+          setPageSeo({
+            metaTitle: seo.metaTitle || "مقالات و راهنماها | SharifGPT",
+            metaDescription: seo.metaDescription || "مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال - SharifGPT",
+            canonicalUrl: seo.canonicalUrl || canonicalUrl,
+            robotsMeta: seo.robotsMeta || "",
+            openGraphTitle: seo.openGraphTitle || seo.metaTitle || "مقالات و راهنماها | SharifGPT",
+            openGraphDescription: seo.openGraphDescription || seo.metaDescription || "مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال",
+            openGraphImage: seo.openGraphImage ? getImageUrl(seo.openGraphImage, 1200) : undefined,
+            structuredData: seo.structuredData || "",
+          });
+        }
       } catch (error) {
         console.error("[BLOG] Failed to fetch posts from Sanity", error);
         if (isMounted) {
@@ -114,34 +142,42 @@ export default function Blog() {
   return (
     <>
       <Helmet>
-        <title>مقالات و راهنماها | SharifGPT</title>
+        <title>{pageSeo?.metaTitle || "مقالات و راهنماها | SharifGPT"}</title>
         <meta
           name="description"
-          content="مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال - SharifGPT"
+          content={pageSeo?.metaDescription || "مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال - SharifGPT"}
         />
-        <link rel="canonical" href={canonicalUrl} />
+        <link rel="canonical" href={pageSeo?.canonicalUrl || canonicalUrl} />
+        {pageSeo?.robotsMeta && <meta name="robots" content={pageSeo.robotsMeta} />}
         
         {/* Open Graph */}
-        <meta property="og:title" content="مقالات و راهنماها | SharifGPT" />
+        <meta property="og:title" content={pageSeo?.openGraphTitle || pageSeo?.metaTitle || "مقالات و راهنماها | SharifGPT"} />
         <meta
           property="og:description"
-          content="مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال"
+          content={pageSeo?.openGraphDescription || pageSeo?.metaDescription || "مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال"}
         />
-        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:url" content={pageSeo?.canonicalUrl || canonicalUrl} />
         <meta property="og:type" content="website" />
+        {pageSeo?.openGraphImage && <meta property="og:image" content={pageSeo.openGraphImage} />}
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="مقالات و راهنماها | SharifGPT" />
+        <meta name="twitter:title" content={pageSeo?.openGraphTitle || pageSeo?.metaTitle || "مقالات و راهنماها | SharifGPT"} />
         <meta
           name="twitter:description"
-          content="مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال"
+          content={pageSeo?.openGraphDescription || pageSeo?.metaDescription || "مقالات آموزشی، راهنماها و اخبار دنیای دیجیتال"}
         />
+        {pageSeo?.openGraphImage && <meta name="twitter:image" content={pageSeo.openGraphImage} />}
 
         {/* JSON-LD Structured Data */}
         <script type="application/ld+json">
           {JSON.stringify(blogSchema)}
         </script>
+        {pageSeo?.structuredData && (
+          <script type="application/ld+json">
+            {pageSeo.structuredData}
+          </script>
+        )}
       </Helmet>
 
       <div className="min-h-screen flex flex-col">

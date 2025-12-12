@@ -129,15 +129,33 @@ export default function Collection() {
     );
   }
 
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://sharifgpt.com";
+  const seo = collection.seo || {};
+  const seoTitle = seo.metaTitle || collection.heroTitle || collection.title || "شریف‌GPT";
+  const seoDescription = seo.metaDescription || collection.heroSubtitle || collection.heroTitle || collection.title || "";
+  const canonicalUrl = seo.canonicalUrl || `${origin}/collections/${slug}`;
+  const ogTitle = seo.openGraphTitle || seo.metaTitle || seoTitle;
+  const ogDescription = seo.openGraphDescription || seo.metaDescription || seoDescription;
+  const ogImage = seo.openGraphImage || collection.cover;
+
   return <>
       <Helmet>
-        <title>{collection.heroTitle || collection.title} | شریف‌GPT</title>
-        <meta name="description" content={collection.heroSubtitle || collection.heroTitle} />
-        <link rel="canonical" href={`https://sharifgpt.com/collections/${slug}`} />
-        <meta property="og:title" content={collection.heroTitle || collection.title} />
-        <meta property="og:description" content={collection.heroSubtitle || collection.heroTitle} />
-        {collection.cover && <meta property="og:image" content={collection.cover} />}
+        <title>{seoTitle} | شریف‌GPT</title>
+        <meta name="description" content={seoDescription} />
+        <link rel="canonical" href={canonicalUrl} />
+        {seo.robotsMeta && <meta name="robots" content={seo.robotsMeta} />}
+        <meta property="og:title" content={ogTitle} />
+        <meta property="og:description" content={ogDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        {ogImage && <meta property="og:image" content={ogImage} />}
         <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={ogTitle} />
+        <meta name="twitter:description" content={ogDescription} />
+        {ogImage && <meta name="twitter:image" content={ogImage} />}
+        {seo.structuredData && (
+          <script type="application/ld+json">{seo.structuredData}</script>
+        )}
       </Helmet>
 
       <div className="min-h-screen text-foreground" dir="rtl">
