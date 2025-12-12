@@ -1,14 +1,7 @@
-import { motion } from "framer-motion";
 import { ProductCard } from "./ProductCard";
 import { cn } from "@/lib/utils";
 import { ProductPrices } from "@/lib/medusa-prices";
 import { usePromotions } from "@/contexts/promotion-context";
-
-const springTransition = {
-  type: "spring" as const,
-  stiffness: 220,
-  damping: 28
-};
 
 interface Product {
   id: string;
@@ -42,19 +35,14 @@ export function BestSellers({
     <section className={cn("relative py-8 sm:py-10 lg:py-12 px-6 lg:px-[100px] bg-transparent", className)}>
       <div className="max-w-[1400px] mx-auto">
         {/* Section Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={springTransition} 
-          className="mb-8 text-center"
-        >
+        <div className="mb-8 text-center animate-fadeIn">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-2">
             محصولات منتخب
           </h2>
           <p className="text-foreground/70 text-sm sm:text-base">
             پرفروش‌ترین محصولات ما
           </p>
-        </motion.div>
+        </div>
 
         {/* Grid Container - 1 column on mobile, 2 on sm, 4 on md+ */}
         <div className="flex justify-center">
@@ -94,15 +82,10 @@ export function BestSellers({
               const hasDiscount = promotionInfo || hasVariantDiscount || (lowestPriceVariant?.price && lowestPriceVariant.price < originalPrice);
 
               return (
-                <motion.div 
+                <div 
                   key={product.id} 
-                  className="w-full"
-                  initial={{ opacity: 0, y: 20 }} 
-                  animate={{ opacity: 1, y: 0 }} 
-                  transition={{
-                    ...springTransition,
-                    delay: index * 0.05
-                  }}
+                  className="w-full animate-fadeIn"
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <ProductCard
                     id={product.id}
@@ -126,7 +109,7 @@ export function BestSellers({
                       endsAt: endsAt, // Will be used if available, ProductCard will fallback to site-wide
                     } : undefined)}
                   />
-                </motion.div>
+                </div>
               );
             })}
           </div>

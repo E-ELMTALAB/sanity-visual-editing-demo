@@ -1,13 +1,6 @@
-import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDirection } from "@/contexts/DirectionContext";
-
-const springTransition = {
-  type: "spring" as const,
-  stiffness: 220,
-  damping: 28,
-};
 
 interface Banner {
   id: string;
@@ -31,12 +24,10 @@ export function EditorialBanners({ banners, className }: EditorialBannersProps) 
       <div className="max-w-[1100px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
           {banners.map((banner, index) => (
-          <motion.div
+          <div
             key={banner.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...springTransition, delay: index * 0.1 }}
-            className="group relative h-[280px] sm:h-[320px] md:h-[360px] rounded-3xl overflow-hidden cursor-pointer ring-1 ring-white/10"
+            className="group relative h-[280px] sm:h-[320px] md:h-[360px] rounded-3xl overflow-hidden cursor-pointer ring-1 ring-white/10 animate-fadeIn"
+            style={{ animationDelay: `${index * 100}ms` }}
             onClick={banner.onClick}
           >
             {/* Background Image */}
@@ -56,44 +47,36 @@ export function EditorialBanners({ banners, className }: EditorialBannersProps) 
               "relative z-10 h-full flex flex-col justify-center px-8 md:px-12 lg:px-16",
               isRTL ? "items-end text-right" : "items-start text-left"
             )}>
-              <motion.h2
-                initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ ...springTransition, delay: index * 0.1 + 0.2 }}
-                className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-3 md:mb-4"
-                style={{ filter: 'drop-shadow(0 0 20px rgba(0,0,0,0.5))' }}
+              <h2
+                className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-3 md:mb-4 animate-fadeIn"
+                style={{ filter: 'drop-shadow(0 0 20px rgba(0,0,0,0.5))', animationDelay: `${index * 100 + 200}ms` }}
               >
                 {banner.title}
-              </motion.h2>
+              </h2>
               
-              <motion.p
-                initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ ...springTransition, delay: index * 0.1 + 0.3 }}
-                className="text-base sm:text-lg md:text-xl text-white/90 mb-6 md:mb-8 max-w-2xl"
-                style={{ filter: 'drop-shadow(0 0 15px rgba(0,0,0,0.4))' }}
+              <p
+                className="text-base sm:text-lg md:text-xl text-white/90 mb-6 md:mb-8 max-w-2xl animate-fadeIn"
+                style={{ filter: 'drop-shadow(0 0 15px rgba(0,0,0,0.4))', animationDelay: `${index * 100 + 300}ms` }}
               >
                 {banner.subtitle}
-              </motion.p>
+              </p>
 
-              <motion.button
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ ...springTransition, delay: index * 0.1 + 0.4 }}
+              <button
                 className={cn(
                   "glass px-6 py-3 rounded-full border border-white/35 text-white font-medium",
                   "hover:bg-white/15 transition-all duration-200",
-                  "flex items-center gap-2 group/btn"
+                  "flex items-center gap-2 group/btn animate-fadeIn"
                 )}
+                style={{ animationDelay: `${index * 100 + 400}ms` }}
               >
                 <span>{banner.ctaText}</span>
                 <ArrowRight className={cn(
                   "h-4 w-4 transition-transform group-hover/btn:translate-x-1",
                   isRTL && "rotate-180"
                 )} />
-              </motion.button>
+              </button>
             </div>
-          </motion.div>
+          </div>
           ))}
         </div>
       </div>

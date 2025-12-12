@@ -37,6 +37,28 @@ const AdminVerify = lazy(() => import("./pages/AdminVerify"));
 
 const queryClient = new QueryClient();
 
+// Defer hydration-heavy toasters until after idle
+const DeferredToasters = () => {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const enable = () => setReady(true);
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      requestIdleCallback(enable, { timeout: 1200 });
+    } else {
+      setTimeout(enable, 400);
+    }
+  }, []);
+
+  if (!ready) return null;
+  return (
+    <>
+      <Toaster />
+      <Sonner />
+    </>
+  );
+};
+
 const RouteFallback = () => (
   <div className="min-h-screen w-full flex items-center justify-center text-white/80">
     در حال بارگذاری...
@@ -68,9 +90,8 @@ const App = () => (
             }
           `}</style>
 
-          {/* Global toasters */}
-          <Toaster />
-          <Sonner />
+          {/* Global toasters (defer until idle to avoid layout thrash) */}
+          <DeferredToasters />
           <BrowserRouter>
             <ScrollToTop />
             <Suspense fallback={<RouteFallback />}>

@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Sparkles, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
@@ -10,12 +9,6 @@ interface PromotionBannerProps {
   variant?: 'hero' | 'strip' | 'floating';
 }
 
-const springTransition = {
-  type: "spring" as const,
-  stiffness: 220,
-  damping: 28,
-};
-
 /**
  * Hero-style promotion banner - large, prominent display
  */
@@ -24,11 +17,9 @@ function HeroBanner({ promotion, className }: { promotion: MedusaPromotion; clas
   const hasTimeLimit = !!promotion.campaign?.ends_at;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={springTransition}
+    <div
       className={cn(
+        "animate-fadeIn",
         "relative overflow-hidden rounded-2xl",
         "bg-gradient-to-r from-red-600/90 via-red-500/80 to-orange-500/90",
         "border border-red-400/30 backdrop-blur-sm",
@@ -79,17 +70,12 @@ function HeroBanner({ promotion, className }: { promotion: MedusaPromotion; clas
       </div>
 
       {/* Discount badge */}
-      <motion.div
-        initial={{ scale: 0, rotate: -12 }}
-        animate={{ scale: 1, rotate: -12 }}
-        transition={{ ...springTransition, delay: 0.3 }}
-        className="absolute -top-2 -left-2 md:top-4 md:left-4"
-      >
+      <div className="absolute -top-2 -left-2 md:top-4 md:left-4 animate-fadeIn">
         <div className="bg-yellow-400 text-red-900 font-black text-lg md:text-xl px-4 py-2 rounded-full shadow-lg transform">
           {discountLabel}
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
 
@@ -101,11 +87,9 @@ function StripBanner({ promotion, className }: { promotion: MedusaPromotion; cla
   const hasTimeLimit = !!promotion.campaign?.ends_at;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={springTransition}
+    <div
       className={cn(
+        "animate-fadeIn",
         "w-full py-3 px-4",
         "bg-gradient-to-r from-red-600 via-red-500 to-red-600",
         "border-y border-red-400/30",
@@ -139,7 +123,7 @@ function StripBanner({ promotion, className }: { promotion: MedusaPromotion; cla
           </>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -151,11 +135,9 @@ function FloatingBanner({ promotion, className }: { promotion: MedusaPromotion; 
   const hasTimeLimit = !!promotion.campaign?.ends_at;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={springTransition}
+    <div
       className={cn(
+        "animate-slideInRight",
         "fixed bottom-24 right-4 z-40",
         "bg-gradient-to-br from-red-600 to-red-700",
         "rounded-2xl shadow-2xl shadow-red-900/50",
@@ -189,7 +171,7 @@ function FloatingBanner({ promotion, className }: { promotion: MedusaPromotion; 
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 

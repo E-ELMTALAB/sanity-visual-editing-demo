@@ -1,16 +1,10 @@
-import { motion, HTMLMotionProps } from "framer-motion";
+import React from "react";
 import { cn } from "@/lib/utils";
 
-interface SurfaceGlassProps extends HTMLMotionProps<"div"> {
+interface SurfaceGlassProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "subtle" | "strong";
   children: React.ReactNode;
 }
-
-const springTransition = {
-  type: "spring" as const,
-  stiffness: 220,
-  damping: 28,
-};
 
 export function SurfaceGlass({
   variant = "default",
@@ -25,14 +19,11 @@ export function SurfaceGlass({
   }[variant];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={springTransition}
-      className={cn(variantClass, className)}
+    <div
+      className={cn("animate-fadeIn", variantClass, className)}
       {...props}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }

@@ -1,5 +1,4 @@
 import { useCallback } from "react";
-import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { Button } from "@/components/ui/button";
@@ -24,12 +23,6 @@ interface SocialMediaProductsGridProps {
   className?: string;
   productPrices?: Record<string, ProductPrices>;
 }
-
-const springTransition = {
-  type: "spring" as const,
-  stiffness: 220,
-  damping: 28
-};
 
 export function SocialMediaProductsGrid({
   products,
@@ -60,27 +53,19 @@ export function SocialMediaProductsGrid({
     <section className={cn("py-8 sm:py-10 lg:py-12 px-6 lg:px-[100px] bg-transparent", className)}>
       <div className="max-w-[1400px] mx-auto">
         {/* Section Title */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={springTransition} 
-          className="mb-8 text-center"
-        >
+        <div className="mb-8 text-center animate-fadeIn">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
             پرفروش‌ترین محصولات سوشیال مدیا
           </h2>
           <p className="text-white/70 text-sm sm:text-base">
             اکانت‌های اینستاگرام، تیک‌تاک، تلگرام و بیشتر
           </p>
-        </motion.div>
+        </div>
 
         {/* Product Carousel */}
         <div className="relative">
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            transition={springTransition} 
-            className="overflow-hidden" 
+          <div 
+            className="overflow-hidden animate-fadeIn" 
             ref={emblaRef}
           >
             <div className="flex gap-4 md:gap-5 py-[5px]">
@@ -149,7 +134,7 @@ export function SocialMediaProductsGrid({
                 );
               })}
             </div>
-          </motion.div>
+          </div>
 
           {/* Navigation Arrows */}
           <button 
@@ -180,16 +165,11 @@ export function SocialMediaProductsGrid({
 
         {/* View All Link */}
         {products.length > 8 && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            transition={{ ...springTransition, delay: 0.2 }} 
-            className="mt-6 text-center"
-          >
+          <div className="mt-6 text-center animate-fadeIn" style={{ animationDelay: '200ms' }}>
             <Button onClick={onViewAll} variant="viewAll" size="lg" className="rounded-2xl">
               {isRTL ? "مشاهده همه" : "View All"}
             </Button>
-          </motion.div>
+          </div>
         )}
       </div>
     </section>
