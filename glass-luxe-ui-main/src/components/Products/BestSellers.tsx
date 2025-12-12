@@ -1,6 +1,6 @@
 import { ProductCard } from "./ProductCard";
 import { cn } from "@/lib/utils";
-import { ProductPrices } from "@/lib/medusa-prices";
+import type { ProductPrices } from "@/lib/medusa-prices";
 import { usePromotions } from "@/contexts/promotion-context";
 
 interface Product {

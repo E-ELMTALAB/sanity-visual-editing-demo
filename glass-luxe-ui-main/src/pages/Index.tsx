@@ -676,7 +676,7 @@ const Index = () => {
     return Array.from(new Set(combined));
   }, [bestSellerSlugs, socialProductSlugs, tabbedProductSlugs]);
 
-  // Defer Medusa price fetch to user interaction or late idle to avoid blocking LCP
+  // Defer Medusa price fetch to explicit user interaction (no idle fallback) to keep it out of LCP chains
   useEffect(() => {
     if (!medusaSlugs.length) {
       return;
@@ -710,40 +710,16 @@ const Index = () => {
       window.removeEventListener("keydown", onFirstInteraction);
     };
 
-    // Prefer user interaction; fallback to late idle (3s)
+    // Trigger only on user interaction
     window.addEventListener("scroll", onFirstInteraction, { passive: true, once: true });
     window.addEventListener("pointerdown", onFirstInteraction, { passive: true, once: true });
     window.addEventListener("keydown", onFirstInteraction, { passive: true, once: true });
-
-    let idleId: number | undefined;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-    if (typeof globalThis.requestIdleCallback === "function") {
-      idleId = globalThis.requestIdleCallback(
-        () => {
-          if (!hasInteracted) {
-            loadPrices();
-          }
-        },
-        { timeout: 3000 }
-      ) as unknown as number;
-    } else {
-      timeoutId = setTimeout(() => {
-        if (!hasInteracted) {
-          loadPrices();
-        }
-      }, 3000);
-    }
 
     return () => {
       cancelled = true;
       window.removeEventListener("scroll", onFirstInteraction);
       window.removeEventListener("pointerdown", onFirstInteraction);
       window.removeEventListener("keydown", onFirstInteraction);
-      if (idleId && typeof globalThis.cancelIdleCallback === "function") {
-        globalThis.cancelIdleCallback(idleId);
-      }
-      if (timeoutId) clearTimeout(timeoutId);
     };
   }, [medusaSlugs.join("|")]);
 

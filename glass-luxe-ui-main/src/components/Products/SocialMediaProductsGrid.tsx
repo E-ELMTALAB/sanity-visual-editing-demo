@@ -6,7 +6,7 @@ import { useDirection } from "@/contexts/DirectionContext";
 import { usePromotions } from "@/contexts/promotion-context";
 import { cn } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
-import { ProductPrices } from "@/lib/medusa-prices";
+import type { ProductPrices } from "@/lib/medusa-prices";
 
 interface Product {
   id: string;
