@@ -49,20 +49,39 @@ export const PromotionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     await loadPromotions();
   }, [loadPromotions]);
 
-  // Load promotions on mount
+  // Defer loading promotions until user interaction to keep initial network chain clean
   useEffect(() => {
-    loadPromotions();
-  }, [loadPromotions]);
+    let cancelled = false;
+    let interval: ReturnType<typeof setInterval> | null = null;
+    let triggered = false;
 
-  // Auto-refresh promotions periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      console.log('[PROMOTION-CONTEXT] Auto-refreshing promotions...');
-      refreshPromotions();
-    }, REFRESH_INTERVAL);
+    const startPromotions = async () => {
+      if (triggered || cancelled) return;
+      triggered = true;
+      window.removeEventListener("scroll", startPromotions);
+      window.removeEventListener("pointerdown", startPromotions);
+      window.removeEventListener("keydown", startPromotions);
+      await loadPromotions();
+      if (!cancelled) {
+        interval = setInterval(() => {
+          console.log('[PROMOTION-CONTEXT] Auto-refreshing promotions...');
+          refreshPromotions();
+        }, REFRESH_INTERVAL);
+      }
+    };
 
-    return () => clearInterval(interval);
-  }, [refreshPromotions]);
+    window.addEventListener("scroll", startPromotions, { passive: true, once: true });
+    window.addEventListener("pointerdown", startPromotions, { passive: true, once: true });
+    window.addEventListener("keydown", startPromotions, { passive: true, once: true });
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("scroll", startPromotions);
+      window.removeEventListener("pointerdown", startPromotions);
+      window.removeEventListener("keydown", startPromotions);
+      if (interval) clearInterval(interval);
+    };
+  }, [loadPromotions, refreshPromotions]);
 
   const getPromotionForProduct = useCallback(
     (productSlug: string, productId: string, originalPrice: number): ProductPromotionInfo | null => {
