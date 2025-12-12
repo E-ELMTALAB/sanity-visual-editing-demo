@@ -176,7 +176,8 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
             srcSet={heroImage.srcSet}
             sizes={heroImage.srcSet ? "100vw" : undefined}
             alt="Hero background"
-            loading="lazy"
+            loading="eager"
+            fetchPriority="high"
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
             style={{ filter: 'brightness(0.85)' }}

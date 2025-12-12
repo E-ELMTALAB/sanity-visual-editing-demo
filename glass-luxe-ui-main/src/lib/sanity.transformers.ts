@@ -63,7 +63,7 @@ export function transformHeroSlide(slide: any) {
   const hasValidImage = slide?.image && (slide.image.asset?._ref || slide.image.asset?._id)
   
   const responsiveImage = hasValidImage
-    ? buildResponsiveImageSet(slide.image, [640, 960, 1200, 1400], { quality: 70, maxWidth: 1400 })
+    ? buildResponsiveImageSet(slide.image, [640, 960, 1200], { quality: 60, maxWidth: 1200 })
     : null
 
   // Debug logging in development
@@ -74,7 +74,7 @@ export function transformHeroSlide(slide: any) {
       assetRef: slide.image.asset?._ref,
       assetId: slide.image.asset?._id,
       responsiveImage: !!responsiveImage,
-      finalImage: responsiveImage?.src || (slide.image ? getImageUrl(slide.image, 1400, undefined, 70) : '')
+      finalImage: responsiveImage?.src || (slide.image ? getImageUrl(slide.image, 1200, undefined, 60) : '')
     })
   }
 
@@ -83,7 +83,7 @@ export function transformHeroSlide(slide: any) {
     subtitle: slide?.subtitle || '',
     buttonText: slide?.buttonText || '',
     buttonHref: slide?.buttonHref || '#',
-    image: responsiveImage?.src || (hasValidImage ? getImageUrl(slide.image, 1400, undefined, 70) : ''),
+    image: responsiveImage?.src || (hasValidImage ? getImageUrl(slide.image, 1200, undefined, 60) : ''),
     imageSrcSet: responsiveImage?.srcSet,
   }
 }
