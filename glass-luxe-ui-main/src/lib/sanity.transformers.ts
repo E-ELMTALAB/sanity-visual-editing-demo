@@ -93,8 +93,8 @@ export function transformBestSellerProduct(product: any, index: number) {
   return {
     id: product?._id || `best-${index}`,
     title: product?.name || 'محصول',
-    image: product?.image ? getImageUrl(product.image, 400) : '',
-    imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [300, 400, 600], { quality: 80 }).srcSet : '',
+    image: product?.image ? getImageUrl(product.image, 600, undefined, 70) : '',
+    imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [300, 420, 560, 700], { quality: 65, maxWidth: 700 }).srcSet : '',
     oldPrice: undefined, // Prices come from Medusa
     price: 0, // Prices come from Medusa
     badge: product?.badge || undefined,
@@ -110,7 +110,11 @@ export function transformEditorialBanner(banner: any) {
     title: banner?.title || '',
     subtitle: banner?.subtitle || '',
     ctaText: banner?.ctaText || '',
-    backgroundImage: banner?.backgroundImage ? getImageUrl(banner.backgroundImage, 1200) : '',
+    // Card displays roughly 420-560px wide; cap width and quality accordingly
+    backgroundImage: banner?.backgroundImage ? getImageUrl(banner.backgroundImage, 700, undefined, 65) : '',
+    backgroundImageSrcSet: banner?.backgroundImage
+      ? buildResponsiveImageSet(banner.backgroundImage, [420, 560, 700], { quality: 65, maxWidth: 700 }).srcSet
+      : '',
     onClick: () => {
       if (banner?.ctaLink) {
         window.location.href = banner.ctaLink
@@ -146,8 +150,8 @@ export function transformSpecialOfferProduct(product: any, index: number) {
   return {
     id: product?._key || product?._id || `offer-${index}`,
     title: product?.name || 'محصول',
-    image: product?.image ? getImageUrl(product.image, 500) : '',
-    imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [400, 500, 700], { quality: 80 }).srcSet : '',
+    image: product?.image ? getImageUrl(product.image, 600, undefined, 70) : '',
+    imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [300, 420, 560, 700], { quality: 65, maxWidth: 700 }).srcSet : '',
     oldPrice: oldPrice > 0 ? oldPrice : undefined,
     price,
     discountPct: discountPct > 0 ? discountPct : undefined,
@@ -170,8 +174,8 @@ export function transformSocialMediaProduct(product: any, index: number) {
     slug: product?.slug || product?.slug?.current || '',
     platform: 'Instagram' as const, // Default, can be enhanced later
     title: product?.name || 'محصول سوشیال مدیا',
-    image: product?.image ? getImageUrl(product.image, 350) : '',
-    imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [300, 350, 500], { quality: 80 }).srcSet : '',
+    image: product?.image ? getImageUrl(product.image, 560, undefined, 70) : '',
+    imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [320, 420, 560, 700], { quality: 65, maxWidth: 700 }).srcSet : '',
     price,
     oldPrice,
     discountPct: discountPctFromField ?? calculatedDiscount,
@@ -188,8 +192,8 @@ export function transformEducationalProduct(product: any, index: number) {
     id: product?._key || `edu-${index}`,
     provider: 'Coursera' as const, // Default, can be enhanced later
     title: product?.name || 'محصول آموزشی',
-    image: product?.image ? getImageUrl(product.image, 350) : '',
-    imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [300, 350, 500], { quality: 80 }).srcSet : '',
+    image: product?.image ? getImageUrl(product.image, 560, undefined, 70) : '',
+    imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [320, 420, 560, 700], { quality: 65, maxWidth: 700 }).srcSet : '',
     price: product?.price || 0,
     duration: product?.duration || '۶ ماه',
   }

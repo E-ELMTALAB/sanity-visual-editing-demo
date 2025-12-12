@@ -152,7 +152,7 @@ export const ProductCard = React.memo(function ProductCard({
         <img
           src={image}
           srcSet={imageSrcSet || ''}
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          sizes="(max-width: 768px) 100vw, 560px"
           alt={title}
           loading="lazy"
           decoding="async"

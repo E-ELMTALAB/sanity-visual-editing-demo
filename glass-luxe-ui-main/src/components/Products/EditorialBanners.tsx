@@ -34,8 +34,11 @@ export function EditorialBanners({ banners, className }: EditorialBannersProps) 
             <div className="absolute inset-0">
               <img
                 src={banner.backgroundImage}
+                srcSet={banner.backgroundImageSrcSet}
+                sizes="(max-width: 768px) 100vw, 560px"
                 alt={banner.title}
                 loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               {/* Dark overlay gradient */}

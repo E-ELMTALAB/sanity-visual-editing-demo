@@ -91,6 +91,8 @@ export function BestSellers({
                     id={product.id}
                     title={product.title}
                     image={product.image}
+                    imageSrcSet={product.imageSrcSet}
+                    imageSizes="(max-width: 768px) 100vw, 560px"
                     price={product.price}
                     medusaVariants={medusaVariants}
                     slug={product.slug}
