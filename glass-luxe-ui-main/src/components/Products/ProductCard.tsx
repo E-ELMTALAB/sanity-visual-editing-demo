@@ -1,9 +1,10 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { CompactCountdownTimer } from "@/components/ui/countdown-timer";
+import { lazy, Suspense, useMemo } from "react";
 import { toPersianNumber } from "@/lib/medusa-promotions";
 import { useSiteWidePromotion } from "@/contexts/promotion-context";
+const CompactCountdownTimer = lazy(() => import("@/components/ui/countdown-timer").then(m => ({ default: m.CompactCountdownTimer })));
 
 interface MedusaVariant {
   variant_id: string;
@@ -172,7 +173,9 @@ export const ProductCard = React.memo(function ProductCard({
         {/* Countdown Timer for time-limited promotions */}
         {pricingInfo.hasPromotion && pricingInfo.promotionEndsAt && (
           <div className="mt-2" key={`timer-${id}-${pricingInfo.promotionEndsAt}`}>
-            <CompactCountdownTimer endsAt={pricingInfo.promotionEndsAt} />
+            <Suspense fallback={null}>
+              <CompactCountdownTimer endsAt={pricingInfo.promotionEndsAt} />
+            </Suspense>
           </div>
         )}
 

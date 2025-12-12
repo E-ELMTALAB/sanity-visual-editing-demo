@@ -676,14 +676,17 @@ const Index = () => {
     return Array.from(new Set(combined));
   }, [bestSellerSlugs, socialProductSlugs, tabbedProductSlugs]);
 
+  // Defer Medusa price fetch to user interaction or late idle to avoid blocking LCP
   useEffect(() => {
     if (!medusaSlugs.length) {
       return;
     }
 
     let cancelled = false;
+    let hasInteracted = false;
 
     const loadPrices = async () => {
+      if (cancelled) return;
       try {
         const prices = await fetchProductPrices(medusaSlugs);
         if (!cancelled) {
@@ -697,20 +700,49 @@ const Index = () => {
       }
     };
 
+    const onFirstInteraction = () => {
+      if (hasInteracted) return;
+      hasInteracted = true;
+      loadPrices();
+      window.removeEventListener("scroll", onFirstInteraction);
+      window.removeEventListener("pointerdown", onFirstInteraction);
+      window.removeEventListener("keydown", onFirstInteraction);
+    };
+
+    // Prefer user interaction; fallback to late idle (3s)
+    window.addEventListener("scroll", onFirstInteraction, { passive: true, once: true });
+    window.addEventListener("pointerdown", onFirstInteraction, { passive: true, once: true });
+    window.addEventListener("keydown", onFirstInteraction, { passive: true, once: true });
+
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
     if (typeof globalThis.requestIdleCallback === "function") {
-      const idleId = globalThis.requestIdleCallback(loadPrices, { timeout: 1500 });
-      return () => {
-        cancelled = true;
-        if (typeof globalThis.cancelIdleCallback === "function") {
-          globalThis.cancelIdleCallback(idleId);
+      idleId = globalThis.requestIdleCallback(
+        () => {
+          if (!hasInteracted) {
+            loadPrices();
+          }
+        },
+        { timeout: 3000 }
+      ) as unknown as number;
+    } else {
+      timeoutId = setTimeout(() => {
+        if (!hasInteracted) {
+          loadPrices();
         }
-      };
+      }, 3000);
     }
 
-    const timeoutId = setTimeout(loadPrices, 0);
     return () => {
       cancelled = true;
-      clearTimeout(timeoutId);
+      window.removeEventListener("scroll", onFirstInteraction);
+      window.removeEventListener("pointerdown", onFirstInteraction);
+      window.removeEventListener("keydown", onFirstInteraction);
+      if (idleId && typeof globalThis.cancelIdleCallback === "function") {
+        globalThis.cancelIdleCallback(idleId);
+      }
+      if (timeoutId) clearTimeout(timeoutId);
     };
   }, [medusaSlugs.join("|")]);
 
