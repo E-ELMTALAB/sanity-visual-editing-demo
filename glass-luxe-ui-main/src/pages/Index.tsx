@@ -150,8 +150,10 @@ interface SanityData {
   };
 }
 
-// Static hero component for immediate FCP/LCP - NO external dependencies
-function StaticHero() {
+type HeroImage = { src: string; srcSet?: string };
+
+// Single hero component: starts with lightweight gradient; optionally overlays deferred image
+function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
   return (
     <section 
       dir="rtl"
@@ -163,6 +165,24 @@ function StaticHero() {
     >
       {/* Static background placeholder - gradient only (counts as LCP, extremely cheap) */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
+      {/* Deferred hero image overlays when ready */}
+      {heroImage?.src && (
+        <picture className="absolute inset-0 h-full w-full -z-10">
+          {heroImage.srcSet && (
+            <source srcSet={heroImage.srcSet} sizes="100vw" />
+          )}
+          <img
+            src={heroImage.src}
+            srcSet={heroImage.srcSet}
+            sizes={heroImage.srcSet ? "100vw" : undefined}
+            alt="Hero background"
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
+            style={{ filter: 'brightness(0.85)' }}
+          />
+        </picture>
+      )}
       
       {/* Overlay */}
       <div className="absolute inset-0 -z-10 mix-blend-soft-light opacity-85 md:opacity-60 bg-gradient-to-br from-[#1E67C6]/60 via-transparent to-[#8B5CF6]/60" />
@@ -186,64 +206,6 @@ function StaticHero() {
             </h1>
             <p className="mt-4 max-w-xl text-white/90 text-xl md:text-lg lg:text-xl leading-relaxed whitespace-pre-line">
               {HERO_SUBTITLE}
-            </p>
-            <TrustBadges />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// Dynamic hero that updates when Sanity data loads
-function DynamicHero({ slide }: { slide: any }) {
-  if (!slide?.image) return null;
-
-  return (
-    <section 
-      dir="rtl"
-      className="relative min-h-[92vh] w-full overflow-hidden bg-transparent"
-      style={{
-        maskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
-        WebkitMaskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
-      }}
-    >
-      <picture className="absolute inset-0 h-full w-full -z-10">
-        {slide.imageSrcSet && (
-          <source srcSet={slide.imageSrcSet} type="image/webp" sizes="100vw" />
-      )}
-        <img
-          src={slide.image}
-          srcSet={slide.imageSrcSet}
-          sizes={slide.imageSrcSet ? "100vw" : undefined}
-          alt={slide.title || "Hero background"}
-          loading="lazy"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
-          style={{ filter: 'brightness(0.85)' }}
-        />
-      </picture>
-      
-      <div className="absolute inset-0 -z-10 mix-blend-soft-light opacity-85 md:opacity-60 bg-gradient-to-br from-[#1E67C6]/60 via-transparent to-[#8B5CF6]/60" />
-      <div 
-        className="absolute inset-0 -z-10"
-        style={{ background: "radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%)" }} 
-      />
-
-      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-28 pb-16 lg:py-24">
-        <div className="flex items-center justify-center min-h-[70vh]">
-          <div 
-            className="text-white text-center flex flex-col justify-center items-center max-w-3xl"
-            style={{ minHeight: '300px' }}
-          >
-            <span className="inline-block rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs md:text-sm w-fit border border-white/20">
-              بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
-            </span>
-            <h1 className="mt-4 text-7xl sm:text-8xl md:text-6xl lg:text-7xl font-black leading-tight">
-              {slide?.title || HERO_TITLE}
-            </h1>
-            <p className="mt-4 max-w-xl text-white/90 text-xl md:text-lg lg:text-xl leading-relaxed whitespace-pre-line">
-              {slide?.subtitle || HERO_SUBTITLE}
             </p>
             <TrustBadges />
           </div>
@@ -756,11 +718,14 @@ const Index = () => {
       {/* Header - lightweight, loads immediately */}
       <Header onSearch={handleSearch} megaItems={megaItems} />
 
-      {/* Hero Section - Static gradient is LCP; Sanity hero swaps in lazily after load */}
-      <StaticHero />
-      {showDynamicContent && sanityData?.heroSlide?.image && (
-        <DynamicHero slide={sanityData.heroSlide} />
-      )}
+      {/* Hero Section - single instance; gradient is LCP, image swaps in lazily */}
+      <HeroSection
+        heroImage={
+          showDynamicContent && sanityData?.heroSlide?.image
+            ? { src: sanityData.heroSlide.image, srcSet: sanityData.heroSlide.imageSrcSet }
+            : null
+        }
+      />
 
       {/* Site-wide Promotion Banner - from Medusa */}
       {siteWidePromotion && (
