@@ -9,7 +9,7 @@ import { useDirection } from "@/contexts/DirectionContext";
 import { useCart } from "@/contexts/cart-context";
 import { useSiteWidePromotion } from "@/contexts/promotion-context";
 import { toast } from "@/hooks/use-toast";
-import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
+import type { ProductPrices } from "@/lib/medusa-prices";
 import { PromotionBanner } from "@/components/Hero/PromotionBanner";
 // Import Sanity modules statically for instant loading (data comes from cache anyway)
 import { fetchFromSanity } from "@/lib/sanity.client.light";
@@ -688,6 +688,7 @@ const Index = () => {
     const loadPrices = async () => {
       if (cancelled) return;
       try {
+        const { fetchProductPrices } = await import("@/lib/medusa-prices");
         const prices = await fetchProductPrices(medusaSlugs);
         if (!cancelled) {
           setMedusaPrices(prices);
