@@ -161,7 +161,7 @@ function StaticHero() {
         WebkitMaskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
       }}
     >
-      {/* Static background placeholder - no local image, just gradient */}
+      {/* Static background placeholder - gradient only (counts as LCP, extremely cheap) */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
       
       {/* Overlay */}
@@ -210,16 +210,15 @@ function DynamicHero({ slide }: { slide: any }) {
     >
       <picture className="absolute inset-0 h-full w-full -z-10">
         {slide.imageSrcSet && (
-          <source srcSet={slide.imageSrcSet} type="image/webp" sizes="(max-width: 1024px) 100vw, 1200px" />
+          <source srcSet={slide.imageSrcSet} type="image/webp" sizes="100vw" />
       )}
         <img
           src={slide.image}
           srcSet={slide.imageSrcSet}
-          sizes={slide.imageSrcSet ? "(max-width: 1024px) 100vw, 1200px" : undefined}
+          sizes={slide.imageSrcSet ? "100vw" : undefined}
           alt={slide.title || "Hero background"}
-          loading="eager"
+          loading="lazy"
           decoding="async"
-          fetchPriority="high"
           className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
           style={{ filter: 'brightness(0.85)' }}
         />
@@ -757,11 +756,10 @@ const Index = () => {
       {/* Header - lightweight, loads immediately */}
       <Header onSearch={handleSearch} megaItems={megaItems} />
 
-      {/* Hero Section - Static fallback; prefer Sanity hero when available */}
-      {showDynamicContent && sanityData?.heroSlide?.image ? (
+      {/* Hero Section - Static gradient is LCP; Sanity hero swaps in lazily after load */}
+      <StaticHero />
+      {showDynamicContent && sanityData?.heroSlide?.image && (
         <DynamicHero slide={sanityData.heroSlide} />
-      ) : (
-        <StaticHero />
       )}
 
       {/* Site-wide Promotion Banner - from Medusa */}
