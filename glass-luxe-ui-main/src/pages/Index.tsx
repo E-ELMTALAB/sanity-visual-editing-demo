@@ -11,9 +11,19 @@ import { useSiteWidePromotion } from "@/contexts/promotion-context";
 import { toast } from "@/hooks/use-toast";
 import type { ProductPrices } from "@/lib/medusa-prices";
 import { PromotionBanner } from "@/components/Hero/PromotionBanner";
-// Import transformers statically (used extensively, small size)
+// Import Sanity modules statically (lazy-loading caused initialization issues)
+import { fetchFromSanity } from "@/lib/sanity.client.light";
+import { validateSanityConfig } from "@/lib/sanity.config";
+import { 
+  homePageQuery, 
+  featuredProductsQuery, 
+  featuredCoursesQuery, 
+  featuredPostsQuery, 
+  productsByCategoryQuery, 
+  faqsByPageQuery 
+} from "@/lib/sanity.queries";
 import * as transformers from "@/lib/sanity.transformers";
-// Sanity client/queries will be lazy-loaded when needed to reduce initial bundle size
+import { getImageUrl } from "@/lib/sanity.image";
 
 // Lazy load heavy components - don't load until needed
 const Footer = lazy(() => import("@/components/Footer/Footer").then((m) => ({ default: m.Footer })));
@@ -329,21 +339,6 @@ const Index = () => {
   useEffect(() => {
     const loadSanityData = async () => {
       try {
-        // Lazy-load Sanity client/queries to reduce initial bundle size (transformers imported statically)
-        const [
-          sanityClientModule,
-          sanityConfigModule,
-          sanityQueriesModule,
-        ] = await Promise.all([
-          import("@/lib/sanity.client.light"),
-          import("@/lib/sanity.config"),
-          import("@/lib/sanity.queries"),
-        ]);
-
-        const { fetchFromSanity } = sanityClientModule;
-        const { validateSanityConfig } = sanityConfigModule;
-        const sanityQueries = sanityQueriesModule;
-
         const isConfigValid = validateSanityConfig();
         if (!isConfigValid) {
           console.warn('[HOMEPAGE] Sanity not configured');
@@ -364,15 +359,15 @@ const Index = () => {
 
         const [homeData, featuredProductsData, featuredCoursesData, featuredPostsData, tabbedProductGroups, faqsData] = 
           await Promise.all([
-            fetchFromSanity<any>(sanityQueries.homePageQuery),
-            fetchFromSanity<any[]>(sanityQueries.featuredProductsQuery),
-            fetchFromSanity<any[]>(sanityQueries.featuredCoursesQuery),
-            fetchFromSanity<any[]>(sanityQueries.featuredPostsQuery),
+            fetchFromSanity<any>(homePageQuery),
+            fetchFromSanity<any[]>(featuredProductsQuery),
+            fetchFromSanity<any[]>(featuredCoursesQuery),
+            fetchFromSanity<any[]>(featuredPostsQuery),
             Promise.all(
               Object.entries(categoryMap).map(async ([key, category]) => {
                 try {
                   console.log(`[HOMEPAGE] 📦 Fetching products for tab "${key}" (Sanity category: "${category}")`);
-                  const categoryProducts = await fetchFromSanity<any[]>(sanityQueries.productsByCategoryQuery, { category });
+                  const categoryProducts = await fetchFromSanity<any[]>(productsByCategoryQuery, { category });
                   console.log(`[HOMEPAGE] 📦 Category "${key}" returned:`, categoryProducts?.length || 0, 'products');
                   if (categoryProducts?.length) {
                     console.log(`[HOMEPAGE] 📦 First product in "${key}":`, categoryProducts[0]);
@@ -390,7 +385,7 @@ const Index = () => {
                 }
               }),
             ),
-            fetchFromSanity<any[]>(sanityQueries.faqsByPageQuery, { page: 'home' }).catch((err) => {
+            fetchFromSanity<any[]>(faqsByPageQuery, { page: 'home' }).catch((err) => {
               console.warn('[HOMEPAGE] Failed to fetch FAQs:', err);
               return [];
             }),
@@ -574,19 +569,17 @@ const Index = () => {
       robots.setAttribute('content', seo.robotsMeta);
     }
 
-    // Update Open Graph image (lazy-load getImageUrl)
+    // Update Open Graph image
     if (seo.openGraphImage?.asset) {
-      import("@/lib/sanity.image").then(({ getImageUrl }) => {
-        const ogImageUrl = getImageUrl(seo.openGraphImage, 1200);
-        
-        let ogImage = document.querySelector('meta[property="og:image"]');
-        if (!ogImage) {
-          ogImage = document.createElement('meta');
-          ogImage.setAttribute('property', 'og:image');
-          document.head.appendChild(ogImage);
-        }
-        ogImage.setAttribute('content', ogImageUrl);
-      });
+      const ogImageUrl = getImageUrl(seo.openGraphImage, 1200);
+      
+      let ogImage = document.querySelector('meta[property="og:image"]');
+      if (!ogImage) {
+        ogImage = document.createElement('meta');
+        ogImage.setAttribute('property', 'og:image');
+        document.head.appendChild(ogImage);
+      }
+      ogImage.setAttribute('content', ogImageUrl);
     }
 
     // Add structured data if available
