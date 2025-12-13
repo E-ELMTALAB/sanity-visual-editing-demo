@@ -81,7 +81,25 @@ export default defineConfig(({ mode }) => {
     target: 'es2020',
     rollupOptions: {
       output: {
-        // Let Rollup decide chunk graph to avoid circular dependencies in vendor bundles
+        // Manual chunks for better code splitting and caching
+        manualChunks: (id) => {
+          // Sanity-related code in separate chunk
+          if (id.includes('@sanity/') || id.includes('sanity')) {
+            return 'sanity';
+          }
+          // React core in vendor chunk
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+            return 'vendor';
+          }
+          // Other large vendor libraries
+          if (id.includes('node_modules')) {
+            // Check for other large dependencies
+            if (id.includes('framer-motion') || id.includes('embla-carousel')) {
+              return 'vendor-ui';
+            }
+            return 'vendor';
+          }
+        },
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith('.css')) {
             return 'assets/[name]-[hash][extname]';
