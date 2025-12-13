@@ -11,7 +11,9 @@ import { useSiteWidePromotion } from "@/contexts/promotion-context";
 import { toast } from "@/hooks/use-toast";
 import type { ProductPrices } from "@/lib/medusa-prices";
 import { PromotionBanner } from "@/components/Hero/PromotionBanner";
-// Sanity modules will be lazy-loaded when needed to reduce initial bundle size
+// Import transformers statically (used extensively, small size)
+import * as transformers from "@/lib/sanity.transformers";
+// Sanity client/queries will be lazy-loaded when needed to reduce initial bundle size
 
 // Lazy load heavy components - don't load until needed
 const Footer = lazy(() => import("@/components/Footer/Footer").then((m) => ({ default: m.Footer })));
@@ -327,18 +329,20 @@ const Index = () => {
   useEffect(() => {
     const loadSanityData = async () => {
       try {
-        // Lazy-load Sanity modules to reduce initial bundle size
+        // Lazy-load Sanity client/queries to reduce initial bundle size (transformers imported statically)
         const [
-          { fetchFromSanity },
-          { validateSanityConfig },
-          sanityQueries,
-          sanityTransformers,
+          sanityClientModule,
+          sanityConfigModule,
+          sanityQueriesModule,
         ] = await Promise.all([
           import("@/lib/sanity.client.light"),
           import("@/lib/sanity.config"),
           import("@/lib/sanity.queries"),
-          import("@/lib/sanity.transformers"),
         ]);
+
+        const { fetchFromSanity } = sanityClientModule;
+        const { validateSanityConfig } = sanityConfigModule;
+        const sanityQueries = sanityQueriesModule;
 
         const isConfigValid = validateSanityConfig();
         if (!isConfigValid) {
@@ -377,7 +381,7 @@ const Index = () => {
                     console.log(`[HOMEPAGE] ⚠️ No products found for category "${key}" (Sanity: "${category}")`);
                     return [];
                   }
-                  const transformed = categoryProducts.map((p: any, i: number) => sanityTransformers.transformTabbedProduct(p, key, i));
+                  const transformed = categoryProducts.map((p: any, i: number) => transformers.transformTabbedProduct(p, key, i));
                   console.log(`[HOMEPAGE] ✅ Transformed ${transformed.length} products for "${key}":`, transformed);
                   return transformed;
                 } catch (err) {
@@ -396,36 +400,36 @@ const Index = () => {
 
         // Transform data
         const heroSlide = homeData?.heroSlides?.length 
-          ? sanityTransformers.transformHeroSlide(homeData.heroSlides[0]) 
+          ? transformers.transformHeroSlide(homeData.heroSlides[0]) 
           : null;
 
         const sanitizedBestSellers = homeData?.bestSellerProducts?.filter((item: any) => item?._id) ?? [];
         const bestSellerProducts = sanitizedBestSellers.length
-          ? sanitizedBestSellers.map((item: any, i: number) => sanityTransformers.transformBestSellerProduct(item, i))
+          ? sanitizedBestSellers.map((item: any, i: number) => transformers.transformBestSellerProduct(item, i))
           : featuredProductsData?.length
-            ? featuredProductsData.map((p: any, i: number) => sanityTransformers.transformBestSellerProduct(p, i))
+            ? featuredProductsData.map((p: any, i: number) => transformers.transformBestSellerProduct(p, i))
             : [];
 
         const editorialBanners = homeData?.editorialBanners?.length
-          ? [...homeData.editorialBanners].sort((a: any, b: any) => (a.order || 0) - (b.order || 0)).map(sanityTransformers.transformEditorialBanner)
+          ? [...homeData.editorialBanners].sort((a: any, b: any) => (a.order || 0) - (b.order || 0)).map(transformers.transformEditorialBanner)
           : [];
 
         const specialOfferProducts = homeData?.discountedProducts?.length
-          ? homeData.discountedProducts.map((p: any, i: number) => sanityTransformers.transformSpecialOfferProduct(p, i))
+          ? homeData.discountedProducts.map((p: any, i: number) => transformers.transformSpecialOfferProduct(p, i))
           : [];
 
         const socialMediaProducts = homeData?.socialMediaProducts?.length
-          ? homeData.socialMediaProducts.map((p: any, i: number) => sanityTransformers.transformSocialMediaProduct(p, i))
+          ? homeData.socialMediaProducts.map((p: any, i: number) => transformers.transformSocialMediaProduct(p, i))
           : [];
 
         const eduProducts = homeData?.educationalProducts?.length
-          ? homeData.educationalProducts.map((p: any, i: number) => sanityTransformers.transformEducationalProduct(p, i))
+          ? homeData.educationalProducts.map((p: any, i: number) => transformers.transformEducationalProduct(p, i))
           : [];
 
         const courses = homeData?.bestsellingCourses?.length
-          ? homeData.bestsellingCourses.map((c: any, i: number) => sanityTransformers.transformCourse(c, i))
+          ? homeData.bestsellingCourses.map((c: any, i: number) => transformers.transformCourse(c, i))
           : featuredCoursesData?.length
-            ? featuredCoursesData.map((c: any, i: number) => sanityTransformers.transformCourse(c, i))
+            ? featuredCoursesData.map((c: any, i: number) => transformers.transformCourse(c, i))
             : [];
 
         const blogPostsSource = homeData?.magazinePosts?.length 
@@ -434,7 +438,7 @@ const Index = () => {
             ? homeData.featuredBlogs 
             : featuredPostsData;
         const magazinePosts = blogPostsSource?.length
-          ? blogPostsSource.map((p: any, i: number) => sanityTransformers.transformBlogPost(p, i))
+          ? blogPostsSource.map((p: any, i: number) => transformers.transformBlogPost(p, i))
           : [];
 
         let tabbedProducts = tabbedProductGroups?.flat() ?? [];
@@ -448,7 +452,7 @@ const Index = () => {
           tabbedProducts = featuredProductsData.map((p: any, i: number) => {
             // Assign products to categories in round-robin fashion
             const categoryKey = categoryKeys[i % categoryKeys.length];
-            return sanityTransformers.transformTabbedProduct(p, categoryKey, i);
+            return transformers.transformTabbedProduct(p, categoryKey, i);
           });
           console.log('[HOMEPAGE] 📊 Fallback tabbedProducts:', tabbedProducts);
         }
@@ -459,7 +463,7 @@ const Index = () => {
         }
         
         const collectionsBanner = homeData?.collectionsBanner
-          ? sanityTransformers.transformCollectionsBanner(homeData.collectionsBanner)
+          ? transformers.transformCollectionsBanner(homeData.collectionsBanner)
           : null;
 
         const seoContent = homeData?.seoContent && typeof homeData.seoContent === 'string'
@@ -467,7 +471,7 @@ const Index = () => {
           : null;
 
         const faqs = faqsData?.length
-          ? faqsData.map((faq: any) => sanityTransformers.transformFaqItem(faq))
+          ? faqsData.map((faq: any) => transformers.transformFaqItem(faq))
           : [];
 
         setSanityData({
