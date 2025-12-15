@@ -4,7 +4,7 @@ import { assist } from '@sanity/assist'
 import { structureTool } from 'sanity/structure'
 import { unsplashImageAsset } from 'sanity-plugin-asset-source-unsplash'
 import { debugSecrets } from '@sanity/preview-url-secret/sanity-plugin-debug-secrets'
-import { presentationTool } from '@sanity/presentation'
+import { presentationTool } from 'sanity/presentation'
 import { schemaTypes } from 'sanity-schema'
 
 // Import locations from local file
