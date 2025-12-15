@@ -12,5 +12,8 @@
     "dev:studio": "npm --workspace apps/studio run dev",
     "build:studio": "npm --workspace apps/studio run build",
     "check": "npm run build:web && npm run build:studio"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.22.4"
   }
 }
