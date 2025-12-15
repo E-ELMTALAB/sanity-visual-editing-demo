@@ -6,6 +6,7 @@
     "packages/*"
   ],
   "scripts": {
+    "build": "npm run build:studio",
     "dev:web": "npm --workspace apps/web run dev",
     "build:web": "npm --workspace apps/web run build",
     "dev:studio": "npm --workspace apps/studio run dev",
