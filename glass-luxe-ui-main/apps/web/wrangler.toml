@@ -1,0 +1,16 @@
+name = "glass-luxe-ui"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "dist"
+
+# Enable Cloudflare Pages Functions
+[build]
+command = "npm run build"
+
+# Functions configuration
+[[pages_build_config]]
+# Build command for functions
+build_command = "npm run build"
+
+# Function directories
+functions = ["functions"]
+

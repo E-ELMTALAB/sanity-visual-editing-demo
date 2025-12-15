@@ -1,0 +1,21 @@
+{
+  "name": "sanity-studio",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "sanity dev",
+    "build": "sanity build",
+    "start": "sanity start"
+  },
+  "dependencies": {
+    "@sanity/assist": "^5.0.2",
+    "@sanity/icons": "^3.7.4",
+    "@sanity/presentation": "^2.0.0",
+    "@sanity/preview-url-secret": "^1.6.4",
+    "@sanity/vision": "^4.15.0",
+    "sanity": "^4.15.0",
+    "sanity-plugin-asset-source-unsplash": "^4.0.1",
+    "sanity-schema": "file:../../packages/sanity-schema",
+    "styled-components": "^6.1.8"
+  }
+}
