@@ -17,7 +17,7 @@ if (!projectId) {
 }
 
 const dataset = process.env.SANITY_STUDIO_DATASET || 'production'
-const siteUrl = process.env.PUBLIC_SITE_URL || 'http://localhost:5173'
+const siteUrl = process.env.PUBLIC_SITE_URL || 'https://sharifgpt.com'
 
 export default defineConfig({
   name: 'default',
