@@ -6,18 +6,13 @@ import { fetchFromSanityVisualEditing } from './sanity.client.visual-editing'
 function isVisualEditing(): boolean {
   if (typeof window === 'undefined') return false
 
-  // Check if we're in an iframe (Presentation tool)
-  const inIframe = window !== window.parent || !!window.opener
+  // Only enable on the Presentation tool iframe (or popup) AND when preview cookie exists
+  const inPresentation = window !== window.parent || !!window.opener
+  const hasPreviewCookie = document.cookie.includes('__sanity_preview_token=')
 
-  // Check for preview query param
-  const urlParams = new URLSearchParams(window.location.search)
-  const hasPreviewParam = urlParams.has('preview')
-
-  // Check for preview cookie
-  const hasPreviewCookie = document.cookie.includes('__sanity_preview_token')
-
-  return inIframe || hasPreviewParam || hasPreviewCookie
+  return inPresentation && hasPreviewCookie
 }
+
 
 /**
  * Unified fetch function that automatically switches between production and visual editing clients
