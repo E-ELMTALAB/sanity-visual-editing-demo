@@ -52,6 +52,8 @@ export default defineConfig(({ mode }) => {
         "react-lite-youtube-embed",
         "@sanity/client",
         "@sanity/image-url",
+        "@sanity/vision",
+        "sanity",
       ],
     },
     build: {
@@ -63,8 +65,11 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: (id) => {
-            if (id.includes("@sanity/") || id.includes("sanity")) return "sanity";
-            // Put all node_modules in single vendor chunk to avoid React availability issues
+            // Exclude Sanity packages from production bundle - they're only needed in studio
+            if (id.includes("@sanity/") || id.includes("/sanity/") || id.includes("sanity-plugin")) {
+              return undefined; // Don't bundle Sanity packages in production
+            }
+            // Put all other node_modules in single vendor chunk
             if (id.includes("node_modules")) return "vendor";
           },
           assetFileNames: (assetInfo) => {
