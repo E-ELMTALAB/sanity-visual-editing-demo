@@ -47,6 +47,7 @@ export default defineConfig(({ mode }) => {
         "react",
         "react-dom",
         "react/jsx-runtime",
+        "framer-motion",
         "get-youtube-id",
         "react-lite-youtube-embed",
         "@sanity/client",
