@@ -64,14 +64,8 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: (id) => {
             if (id.includes("@sanity/") || id.includes("sanity")) return "sanity";
-            if (id.includes("node_modules")) {
-              // Put React and UI libraries together in vendor-ui to avoid loading order issues
-              if (id.includes("framer-motion") || id.includes("embla-carousel") ||
-                  id.includes("node_modules/react") || id.includes("node_modules/react-dom")) {
-                return "vendor-ui";
-              }
-              return "vendor";
-            }
+            // Put all node_modules in single vendor chunk to avoid React availability issues
+            if (id.includes("node_modules")) return "vendor";
           },
           assetFileNames: (assetInfo) => {
             if (assetInfo.name?.endsWith(".css")) return "assets/[name]-[hash][extname]";
