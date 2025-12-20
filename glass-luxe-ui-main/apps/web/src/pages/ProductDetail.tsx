@@ -259,14 +259,43 @@ const ProductDetail = () => {
 
     async function loadFaqs() {
       try {
-        const result = await fetchFromSanity(faqsByPageQuery, { page: "products" });
+        // Fetch global FAQs for products page
+        const globalFaqs = await fetchFromSanity(faqsByPageQuery, { page: "products" });
+        const mappedGlobal = Array.isArray(globalFaqs) ? globalFaqs.map(transformFaqItem) : [];
+
+        // Get product-specific FAQs
+        let productFaqs: FaqItem[] = [];
+        if (product?.faqs) {
+          productFaqs = product.faqs
+            .filter((faq: any) => faq.isActive !== false) // Include FAQs that are active (default true)
+            .sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) // Sort by order
+            .map((faq: any) => ({
+              q: faq.question,
+              a: faq.answer,
+            }));
+        }
+
+        // Combine product-specific FAQs first, then global FAQs
+        const combinedFaqs = [...productFaqs, ...mappedGlobal];
         if (!isMounted) return;
-        const mapped = Array.isArray(result) ? result.map(transformFaqItem) : [];
-        setFaqItems(mapped.filter((item) => item.q && item.a));
+
+        setFaqItems(combinedFaqs.filter((item) => item.q && item.a));
       } catch (err) {
         console.error("[PRODUCT DETAIL] Failed to fetch FAQs", err);
         if (isMounted) {
-          setFaqItems([]);
+          // Fallback to product-specific FAQs only if global fetch fails
+          if (product?.faqs) {
+            const productFaqs = product.faqs
+              .filter((faq: any) => faq.isActive !== false)
+              .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+              .map((faq: any) => ({
+                q: faq.question,
+                a: faq.answer,
+              }));
+            setFaqItems(productFaqs.filter((item) => item.q && item.a));
+          } else {
+            setFaqItems([]);
+          }
         }
       }
     }
@@ -275,7 +304,7 @@ const ProductDetail = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [product]); // Added product dependency since we now use product.faqs
 
   // Fetch prices from Medusa backend
   useEffect(() => {

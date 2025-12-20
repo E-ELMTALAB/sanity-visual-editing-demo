@@ -424,6 +424,13 @@ export const productBySlugQuery = `
       author,
       "slug": slug.current
     },
+    faqs[]{
+      _key,
+      question,
+      answer,
+      isActive,
+      order
+    },
     seo{
       metaTitle,
       metaDescription,
