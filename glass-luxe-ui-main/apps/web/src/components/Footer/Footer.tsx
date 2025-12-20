@@ -66,26 +66,17 @@ export function Footer({ links, socials }: FooterProps) {
             <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
               پلتفرم پیشرو در ارائه خدمات دیجیتال، محصولات هوش مصنوعی و دوره‌های آموزشی تخصصی
             </p>
-            
+
             {/* Trust Badge Section */}
             <div className="mt-6">
               <h4 className="text-sm font-semibold mb-3 text-foreground">
                 نشان اعتماد الکترونیکی
               </h4>
-              <a
-                referrerPolicy="origin"
-                target="_blank"
-                rel="noopener noreferrer"
-                href="https://trustseal.enamad.ir/?id=448519&Code=uURt26vL9uLWH6uXkjKEHWCmPpawIR7P"
-              >
-                <img
-                  referrerPolicy="origin"
-                  alt="enamad trust seal"
-                  code="uURt26vL9uLWH6uXkjKEHWCmPpawIR7P"
-                  src="https://trustseal.enamad.ir/logo.aspx?id=448519&Code=uURt26vL9uLWH6uXkjKEHWCmPpawIR7P"
-                  style={{ cursor: "pointer" }}
-                />
-              </a>
+              <div className="w-32 h-32 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center bg-muted/20">
+                <span className="text-xs text-muted-foreground text-center px-2">
+                  نشان اعتماد
+                </span>
+              </div>
             </div>
           </div>
 
@@ -129,6 +120,17 @@ export function Footer({ links, socials }: FooterProps) {
                   </a>
                 );
               })}
+            </div>
+
+            {/* Contact Information */}
+            <div className="mt-6">
+              <h4 className="text-sm font-semibold mb-3 text-foreground">
+                اطلاعات تماس
+              </h4>
+              <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">
+                <p>آدرس: تهران , آزادی , خیابان اکبری , بلوار شهید صالحی (محله طرشت) , برج فناوری شریف طبقه 2 پلاک 3</p>
+                <p>تلفن: 09381296421</p>
+              </div>
             </div>
           </div>
         </div>
