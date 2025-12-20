@@ -4,6 +4,7 @@ import { readToken } from 'lib/sanity.api'
 import { productDocBySlugQuery, productDocPaths } from 'lib/sanity.queries'
 import { urlForImage } from 'lib/sanity.image'
 import ProductOverlay from 'components/site/product/ProductOverlay'
+import ProductDetail from 'components/site/product/ProductDetail'
 // Client component removed - using server component directly
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
@@ -130,10 +131,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
   return (
     <>
       <ProductOverlay product={product} />
-      <div>
-        {/* Product page client component to be implemented */}
-        <pre>{JSON.stringify(productForClient, null, 2)}</pre>
-      </div>
+      <ProductDetail product={productForClient} />
     </>
   )
 }
