@@ -275,62 +275,6 @@ export default defineType({
       readOnly: true,
       group: 'seo',
     }),
-    defineField({
-      name: 'faqs',
-      title: 'Product FAQs',
-      type: 'array',
-      of: [{
-        type: 'object',
-        name: 'faq',
-        title: 'FAQ',
-        fields: [
-          defineField({
-            name: 'question',
-            title: 'Question',
-            type: 'string',
-            validation: (Rule) => Rule.required().max(200),
-            description: 'The question (max 200 characters for better readability)',
-          }),
-          defineField({
-            name: 'answer',
-            title: 'Answer',
-            type: 'text',
-            rows: 4,
-            validation: (Rule) => Rule.required(),
-            description: 'The detailed answer to the question',
-          }),
-          defineField({
-            name: 'isActive',
-            title: 'Active',
-            type: 'boolean',
-            description: 'Toggle to show/hide this FAQ',
-            initialValue: true,
-          }),
-          defineField({
-            name: 'order',
-            title: 'Display Order',
-            type: 'number',
-            description: 'Order in which this FAQ appears (lower numbers appear first)',
-            initialValue: 0,
-          }),
-        ],
-        preview: {
-          select: {
-            title: 'question',
-            active: 'isActive',
-            order: 'order',
-          },
-          prepare({ title, active, order }) {
-            return {
-              title: title || 'Untitled FAQ',
-              subtitle: `Order: ${order} | ${active ? '✓ Active' : '✗ Inactive'}`,
-            }
-          },
-        },
-      }],
-      description: 'Product-specific frequently asked questions that will appear on this product page',
-      group: 'content'
-    }),
   ],
   preview: {
     select: {
