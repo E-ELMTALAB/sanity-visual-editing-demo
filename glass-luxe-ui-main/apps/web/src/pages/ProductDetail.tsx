@@ -12,6 +12,7 @@ import { Price } from "@/components/ui/price";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FaqAccordion } from "@/components/Products/FaqAccordion";
+import { DeliveryProcessSection } from "@/components/Products/DeliveryProcessSection";
 import { CartDrawer } from "@/components/FloatingDock/CartDrawer";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
@@ -981,6 +982,9 @@ const ProductDetail = () => {
               {/* Specs Table */}
               
             </SurfaceGlass>
+
+            {/* Delivery Process Section */}
+            <DeliveryProcessSection />
 
             {/* Description Section with TOC */}
             <SurfaceGlass className="rounded-2xl p-6 md:p-8">
