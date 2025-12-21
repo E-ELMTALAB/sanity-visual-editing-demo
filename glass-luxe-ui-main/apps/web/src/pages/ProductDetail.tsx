@@ -23,8 +23,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { fetchFromSanity } from "@/lib/sanity.client.unified";
 import { validateSanityConfig } from "@/lib/sanity.config";
-import { productBySlugQuery } from "@/lib/sanity.queries";
-import { transformProductDetail } from "@/lib/sanity.transformers";
+import { productBySlugQuery, faqsByPageQuery } from "@/lib/sanity.queries";
+import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";
 import { fetchProductPrices, type MedusaVariant } from "@/lib/medusa-prices";
 import { toPersianNumber, calculateDiscountedPrice } from "@/lib/medusa-promotions";
 import EnhancedMarkdownRenderer from "@/components/EnhancedMarkdownRenderer";
@@ -257,29 +257,60 @@ const ProductDetail = () => {
   useEffect(() => {
     let isMounted = true;
 
-    function loadFaqs() {
-      if (!isMounted) return;
+    async function loadFaqs() {
+      try {
+        // Build the page URL for specific page matching
+        const pageUrl = `/products/${slug}`;
 
-      // Get product-specific FAQs only
-      let productFaqs: FaqItem[] = [];
-      if (product?.faqs) {
-        productFaqs = product.faqs
-          .filter((faq: any) => faq.isActive !== false) // Include FAQs that are active (default true)
-          .sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) // Sort by order
-          .map((faq: any) => ({
-            q: faq.question,
-            a: faq.answer,
-          }));
+        // Fetch global FAQs that match either page type ("products") or specific page URL
+        const globalFaqs = await fetchFromSanity(faqsByPageQuery, {
+          page: "products", // Page type
+          pageUrl: pageUrl   // Specific page URL
+        });
+        const mappedGlobal = Array.isArray(globalFaqs) ? globalFaqs.map(transformFaqItem) : [];
+
+        // Get product-specific FAQs
+        let productFaqs: FaqItem[] = [];
+        if (product?.faqs) {
+          productFaqs = product.faqs
+            .filter((faq: any) => faq.isActive !== false) // Include FAQs that are active (default true)
+            .sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) // Sort by order
+            .map((faq: any) => ({
+              q: faq.question,
+              a: faq.answer,
+            }));
+        }
+
+        // Combine product-specific FAQs first, then global FAQs
+        const combinedFaqs = [...productFaqs, ...mappedGlobal];
+        if (!isMounted) return;
+
+        setFaqItems(combinedFaqs.filter((item) => item.q && item.a));
+      } catch (err) {
+        console.error("[PRODUCT DETAIL] Failed to fetch FAQs", err);
+        if (isMounted) {
+          // Fallback to product-specific FAQs only if global fetch fails
+          if (product?.faqs) {
+            const productFaqs = product.faqs
+              .filter((faq: any) => faq.isActive !== false)
+              .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+              .map((faq: any) => ({
+                q: faq.question,
+                a: faq.answer,
+              }));
+            setFaqItems(productFaqs.filter((item) => item.q && item.a));
+          } else {
+            setFaqItems([]);
+          }
+        }
       }
-
-      setFaqItems(productFaqs.filter((item) => item.q && item.a));
     }
 
     loadFaqs();
     return () => {
       isMounted = false;
     };
-  }, [product]); // Only depends on product for product-specific FAQs
+  }, [product, slug]); // Added slug dependency for pageUrl
 
   // Fetch prices from Medusa backend
   useEffect(() => {

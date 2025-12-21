@@ -504,6 +504,11 @@ export const collectionBySlugQuery = `
       asset->
     },
     key,
+    faq[]{
+      _key,
+      question,
+      answer
+    },
     "products": *[_type == "product" && collectionType == ^.key] | order(_createdAt desc){
       _id,
       name,
@@ -583,4 +588,30 @@ export const instructorBySlugQuery = `
   }
 `
 
+export const faqsByPageQuery = `
+  *[_type == "faq" && isActive == true &&
+    (
+      (defined(pageLocations) && $page in pageLocations) ||
+      (defined(specificPages) && $pageUrl in specificPages)
+    )
+  ]
+    | order(order asc){
+      _id,
+      question,
+      answer,
+      category,
+      order
+    }
+`
+
+export const allFaqsQuery = `
+  *[_type == "faq" && isActive == true] | order(order asc){
+    _id,
+    question,
+    answer,
+    category,
+    pageLocations,
+    order
+  }
+`
 

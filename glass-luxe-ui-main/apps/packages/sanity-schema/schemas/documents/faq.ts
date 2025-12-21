@@ -70,11 +70,10 @@ export default defineType({
     // Settings - Page Location
     defineField({
       name: 'pageLocations',
-      title: 'Show on Pages',
+      title: 'Show on Page Types',
       type: 'array',
       of: [{ type: 'string' }],
-      description: 'Select which page(s) this FAQ should appear on',
-      validation: (Rule) => Rule.required().min(1),
+      description: 'Select page types where this FAQ should appear',
       options: {
         list: [
           { title: 'Products Page', value: 'products' },
@@ -87,6 +86,14 @@ export default defineType({
           { title: 'Blog Page', value: 'blog' },
         ],
       },
+      group: 'settings',
+    }),
+    defineField({
+      name: 'specificPages',
+      title: 'Show on Specific Pages',
+      type: 'array',
+      of: [{ type: 'string' }],
+      description: 'Enter specific page URLs or slugs where this FAQ should appear (e.g., "/products/chatgpt-plus", "/courses/ai-basics")',
       group: 'settings',
     }),
     defineField({
