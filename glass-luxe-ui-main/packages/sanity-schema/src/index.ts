@@ -1,7 +1,6 @@
 // Documents
 import collection from './schemas/documents/collection'
 import course from './schemas/documents/course'
-import faq from './schemas/documents/faq'
 import instructor from './schemas/documents/instructor'
 import page from './schemas/documents/page'
 import post from './schemas/documents/post'
@@ -36,7 +35,6 @@ export const schemaTypes = [
   project,
   post,
   product,
-  faq,
   course,
   instructor,
   collection,
