@@ -459,6 +459,7 @@ export function transformProductDetail(product: any) {
     relatedPosts: Array.isArray(product?.relatedBlogs)
       ? product.relatedBlogs.map((item: any, index: number) => transformBlogPost(item, index))
       : [],
+    faqs: Array.isArray(product?.faqs) ? product.faqs : [],
     seo: {
       metaTitle: product?.seo?.metaTitle || product?.name || '',
       metaDescription: product?.seo?.metaDescription || product?.description || '',
