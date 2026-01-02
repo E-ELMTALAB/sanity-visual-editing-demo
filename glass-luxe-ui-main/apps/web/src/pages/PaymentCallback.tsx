@@ -26,6 +26,13 @@ export default function PaymentCallback() {
         setCopied(true);
         toast.success('کد رهگیری کپی شد');
         setTimeout(() => setCopied(false), 2000);
+
+        // Fire tracking_code_copied event
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: "tracking_code_copied",
+          order_id: verifyData.ref_id
+        });
       } catch (err) {
         toast.error('خطا در کپی کردن کد رهگیری');
       }
@@ -109,9 +116,43 @@ export default function PaymentCallback() {
 
         if (result.success) {
           console.log('[PAYMENT-CALLBACK] ✅ Payment verified - Ref ID:', result.data?.ref_id);
-          
+
           setStatus('success');
           setVerifyData(result.data);
+
+          // Fire purchase event for GA4 ecommerce tracking
+          if (result.data) {
+            const amountInRial = Number(result.data.amount || 0) * 10; // Convert toman to rial
+            const orderId = result.data.ref_id || 'UNKNOWN';
+
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+              event: "purchase",
+              ecommerce: {
+                transaction_id: orderId,
+                currency: "IRR",
+                value: amountInRial,
+                tax: 0,
+                shipping: 0,
+                coupon: "",
+                items: (result.data.items || []).map((item: any) => ({
+                  item_id: item.id || 'unknown',
+                  item_name: item.title || 'Unknown Product',
+                  item_category: "AI Accounts",
+                  item_variant: "default",
+                  price: amountInRial / (result.data.items?.length || 1), // Distribute total price
+                  quantity: item.quantity || 1
+                }))
+              }
+            });
+
+            // Fire tracking_code_shown event
+            window.dataLayer.push({
+              event: "tracking_code_shown",
+              tracking_code: orderId,
+              order_id: orderId
+            });
+          }
           
           // Clear pending data (matches sharifgpt-website exactly)
           localStorage.removeItem('pending_resource_id');
@@ -264,6 +305,15 @@ export default function PaymentCallback() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2"
+                      onClick={() => {
+                        // Fire telegram_support_click event
+                        window.dataLayer = window.dataLayer || [];
+                        window.dataLayer.push({
+                          event: "telegram_support_click",
+                          order_id: verifyData?.ref_id || 'UNKNOWN',
+                          placement: "payment_success_page"
+                        });
+                      }}
                     >
                       <Send className="w-5 h-5" />
                       <span>ارسال پیام به پشتیبانی تلگرام</span>

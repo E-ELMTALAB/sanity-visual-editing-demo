@@ -1,4 +1,4 @@
 /*
-  Content-Security-Policy: frame-ancestors 'self' https://*.vercel.app https://*.vercel-preview.app https://test.sharifgpt.com https://studio.sharifgpt.com https://*.sharifgpt.com;
+  Content-Security-Policy: frame-ancestors 'self' https://*.vercel.app https://*.vercel-preview.app https://test.sharifgpt.com https://studio.sharifgpt.com https://*.sharifgpt.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.clarity.ms; connect-src 'self' https://www.google-analytics.com https://www.clarity.ms; img-src 'self' data: https:; style-src 'self' 'unsafe-inline';
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin

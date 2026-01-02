@@ -48,6 +48,16 @@
       });
     </script>
     
+    <!-- Google Tag Manager -->
+    <script>
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','GTM-PW97M4XV');
+    </script>
+    <!-- End Google Tag Manager -->
+
     <title>SharifGPT - محصولات و خدمات هوش مصنوعی</title>
     <meta name="description" content="SharifGPT - ارائه دهنده محصولات و خدمات هوش مصنوعی" />
     <meta name="author" content="SharifGPT" />
@@ -63,54 +73,14 @@
   </head>
 
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+      <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PW97M4XV"
+      height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    
-    <!-- Analytics - Load only after user interaction; skip bots/Lighthouse -->
-    <script>
-      (function() {
-        const ua = navigator.userAgent || '';
-        const isBot = /Lighthouse|PageSpeed|Chrome-Lighthouse|Headless|bot|crawler/i.test(ua);
-        const doNotTrack = navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true;
-        if (isBot || doNotTrack) return;
-
-        let loaded = false;
-        function loadAnalytics() {
-          if (loaded) return;
-          loaded = true;
-          window.removeEventListener('scroll', loadAnalytics);
-          window.removeEventListener('pointerdown', loadAnalytics);
-          window.removeEventListener('keydown', loadAnalytics);
-
-          // Google Analytics (gtag.js)
-          var ga = document.createElement('script');
-          ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-LHYSKTSHFS';
-          ga.async = true;
-          document.body.appendChild(ga);
-          
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          window.gtag = gtag;
-          gtag('js', new Date());
-          gtag('config', 'G-LHYSKTSHFS');
-          
-          // Google Tag Manager
-          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','GTM-PW97M4XV');
-        }
-
-        window.addEventListener('scroll', loadAnalytics, { passive: true, once: true });
-        window.addEventListener('pointerdown', loadAnalytics, { passive: true, once: true });
-        window.addEventListener('keydown', loadAnalytics, { passive: true, once: true });
-
-        // Fallback: still load after 8s if no interaction
-        setTimeout(loadAnalytics, 8000);
-      })();
-    </script>
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PW97M4XV"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </body>
 </html>

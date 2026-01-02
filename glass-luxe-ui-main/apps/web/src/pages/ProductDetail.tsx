@@ -374,6 +374,31 @@ const ProductDetail = () => {
     }
   }, [product?.relatedProducts]);
 
+  // Fire view_item event for GA4 ecommerce tracking
+  useEffect(() => {
+    if (!product || !product.price) return;
+
+    // Convert toman price to rial (multiply by 10)
+    const priceInRial = product.price * 10;
+
+    // Push view_item event to dataLayer
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "view_item",
+      ecommerce: {
+        currency: "IRR",
+        value: priceInRial,
+        items: [{
+          item_id: product.handle || slug || product.id,
+          item_name: product.titleFa || product.title,
+          item_category: product.categoryFa || product.category,
+          item_variant: "default",
+          price: priceInRial
+        }]
+      }
+    });
+  }, [product, slug]);
+
   const getLowestPricedMedusaVariantId = () => {
     if (!medusaVariants.length) return null;
     const sorted = [...medusaVariants].filter(v => typeof v.price === "number" && v.price > 0)
@@ -644,8 +669,30 @@ const ProductDetail = () => {
 
   const handleBuyNow = () => {
     if (addProductToCart()) {
+      // Fire begin_checkout event for GA4 ecommerce tracking
+      if (product) {
+        const priceInRial = getCurrentPrice() * 10; // Convert toman to rial
+
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: "begin_checkout",
+          ecommerce: {
+            currency: "IRR",
+            value: priceInRial,
+            items: [{
+              item_id: product.handle || slug || product.id,
+              item_name: product.titleFa || product.title,
+              item_category: product.categoryFa || product.category,
+              item_variant: selectedVariant || "default",
+              price: priceInRial,
+              quantity: quantity
+            }]
+          }
+        });
+      }
+
       // Navigate to checkout page
-    navigate("/checkout");
+      navigate("/checkout");
     }
   };
 
