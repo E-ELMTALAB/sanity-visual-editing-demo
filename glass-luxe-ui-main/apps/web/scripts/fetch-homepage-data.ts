@@ -385,17 +385,20 @@ async function fetchHomepageData() {
     // Save combined category products map
     await saveToCache('category-products-map.json', categoryProductsMap);
 
-    console.log('\n📥 Fetching FAQs...');
-    const faqs = await client.fetch(faqsByPageQuery, { page: 'home' });
-    console.log(`📊 FAQs count: ${faqs?.length || 0}`);
-    if (Array.isArray(faqs) && faqs.length > 0) {
-      const sample = faqs.slice(0, 3).map((f: any) => ({
-        _id: f?._id,
-        question: f?.question,
-        category: f?.category,
-      }));
-      console.log('   - Sample FAQs:', sample);
-    }
+    console.log('\n📥 Skipping FAQs fetch (temporarily disabled)...');
+    // TEMPORARILY DISABLED: FAQ fetching to prevent build errors
+    // const faqs = await client.fetch(faqsByPageQuery, { page: 'home' });
+    // console.log(`📊 FAQs count: ${faqs?.length || 0}`);
+    // if (Array.isArray(faqs) && faqs.length > 0) {
+    //   const sample = faqs.slice(0, 3).map((f: any) => ({
+    //     _id: f?._id,
+    //     question: f?.question,
+    //     category: f?.category,
+    //   }));
+    //   console.log('   - Sample FAQs:', sample);
+    // }
+    // await saveToCache('faqs-home.json', faqs);
+    const faqs = []; // Empty array for FAQs
     await saveToCache('faqs-home.json', faqs);
 
     // Fetch all products (used for both listing page and to get slugs for detail pages)
@@ -450,18 +453,20 @@ async function fetchHomepageData() {
       console.warn(`⚠️ ${errorCount} products failed to fetch`);
     }
 
-    // Fetch product FAQs
-    console.log('\n📥 Fetching product FAQs...');
-    const productFaqs = await client.fetch(faqsByPageQuery, { page: 'products' });
-    console.log(`📊 Product FAQs count: ${productFaqs?.length || 0}`);
-    if (Array.isArray(productFaqs) && productFaqs.length > 0) {
-      const sample = productFaqs.slice(0, 3).map((f: any) => ({
-        _id: f?._id,
-        question: f?.question,
-        category: f?.category,
-      }));
-      console.log('   - Sample product FAQs:', sample);
-    }
+    // Fetch product FAQs - TEMPORARILY DISABLED
+    console.log('\n📥 Skipping product FAQs fetch (temporarily disabled)...');
+    // const productFaqs = await client.fetch(faqsByPageQuery, { page: 'products' });
+    // console.log(`📊 Product FAQs count: ${productFaqs?.length || 0}`);
+    // if (Array.isArray(productFaqs) && productFaqs.length > 0) {
+    //   const sample = productFaqs.slice(0, 3).map((f: any) => ({
+    //     _id: f?._id,
+    //     question: f?.question,
+    //     category: f?.category,
+    //   }));
+    //   console.log('   - Sample product FAQs:', sample);
+    // }
+    // await saveToCache('products-faqs.json', productFaqs);
+    const productFaqs = []; // Empty array for product FAQs
     await saveToCache('products-faqs.json', productFaqs);
 
     // Fetch all blog posts for listing page
@@ -622,10 +627,10 @@ export const cacheMetadata = ${JSON.stringify(metadata, null, 2)} as const;
     console.log(`   - Featured Courses: ${featuredCourses?.length || 0}`);
     console.log(`   - Featured Posts: ${featuredPosts?.length || 0}`);
     console.log(`   - Category Products: ${Object.keys(categoryProductsMap).length} categories`);
-    console.log(`   - FAQs: ${faqs?.length || 0}`);
+    console.log(`   - FAQs: DISABLED (temporarily)`);
     console.log(`   - All Products (listing): ${allProductsList?.length || 0}`);
     console.log(`   - Products (detail pages): ${Object.keys(productsMap).length}`);
-    console.log(`   - Product FAQs: ${productFaqs?.length || 0}`);
+    console.log(`   - Product FAQs: DISABLED (temporarily)`);
     console.log(`   - All Posts (listing): ${allPostsList?.length || 0}`);
     console.log(`   - Posts (detail pages): ${Object.keys(postsMap).length}`);
     console.log(`   - All Collections (listing): ${allCollectionsList?.length || 0}`);
