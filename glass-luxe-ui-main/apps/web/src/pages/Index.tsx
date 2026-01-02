@@ -385,10 +385,12 @@ const Index = () => {
                 }
               }),
             ),
-            fetchFromSanity<any[]>(faqsByPageQuery, { page: 'home' }).catch((err) => {
-              console.warn('[HOMEPAGE] Failed to fetch FAQs:', err);
-              return [];
-            }),
+            // TEMPORARILY DISABLED: Fetch FAQs from Sanity to prevent build errors
+            // fetchFromSanity<any[]>(faqsByPageQuery, { page: 'home' }).catch((err) => {
+            //   console.warn('[HOMEPAGE] Failed to fetch FAQs:', err);
+            //   return [];
+            // }),
+            Promise.resolve([]), // Return empty array for FAQs
           ]);
         
         console.log('[HOMEPAGE] 📊 Raw tabbedProductGroups:', tabbedProductGroups);
@@ -622,6 +624,16 @@ const Index = () => {
   }, []);
 
   const handleCollectionsBanner = useCallback(() => {
+    // Track banner click event for GA4
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "banner_click",
+      banner_name: "collections_banner",
+      banner_position: "homepage_hero",
+      banner_link: sanityData?.collectionsBanner?.ctaLink || "default_collections",
+      page_location: window.location.href
+    });
+
     if (sanityData?.collectionsBanner?.ctaLink) {
       navigate(sanityData.collectionsBanner.ctaLink);
     } else {
@@ -722,6 +734,18 @@ const Index = () => {
       window.removeEventListener("keydown", onFirstInteraction);
     };
   }, [medusaSlugs.join("|")]);
+
+  // Track homepage view for GA4
+  useEffect(() => {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "page_view",
+      page_title: "Homepage - SharifGPT",
+      page_location: window.location.href,
+      page_path: window.location.pathname,
+      page_type: "homepage"
+    });
+  }, []);
 
   return (
     <div className="min-h-screen relative">

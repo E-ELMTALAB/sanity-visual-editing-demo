@@ -259,17 +259,17 @@ const ProductDetail = () => {
 
     async function loadFaqs() {
       try {
-        // Build the page URL for specific page matching
-        const pageUrl = `/products/${slug}`;
+        // TEMPORARILY DISABLED: Build the page URL for specific page matching
+        // const pageUrl = `/products/${slug}`;
 
-        // Fetch global FAQs that match either page type ("products") or specific page URL
-        const globalFaqs = await fetchFromSanity(faqsByPageQuery, {
-          page: "products", // Page type
-          pageUrl: pageUrl   // Specific page URL
-        });
-        const mappedGlobal = Array.isArray(globalFaqs) ? globalFaqs.map(transformFaqItem) : [];
+        // TEMPORARILY DISABLED: Fetch global FAQs that match either page type ("products") or specific page URL
+        // const globalFaqs = await fetchFromSanity(faqsByPageQuery, {
+        //   page: "products", // Page type
+        //   pageUrl: pageUrl   // Specific page URL
+        // });
+        // const mappedGlobal = Array.isArray(globalFaqs) ? globalFaqs.map(transformFaqItem) : [];
 
-        // Get product-specific FAQs
+        // Get product-specific FAQs only (temporarily disabled global FAQ fetching)
         let productFaqs: FaqItem[] = [];
         if (product?.faqs) {
           productFaqs = product.faqs
@@ -281,15 +281,16 @@ const ProductDetail = () => {
             }));
         }
 
-        // Combine product-specific FAQs first, then global FAQs
-        const combinedFaqs = [...productFaqs, ...mappedGlobal];
+        // TEMPORARILY DISABLED: Combine product-specific FAQs first, then global FAQs
+        // const combinedFaqs = [...productFaqs, ...mappedGlobal];
+        const combinedFaqs = [...productFaqs]; // Only product FAQs for now
         if (!isMounted) return;
 
         setFaqItems(combinedFaqs.filter((item) => item.q && item.a));
       } catch (err) {
         console.error("[PRODUCT DETAIL] Failed to fetch FAQs", err);
         if (isMounted) {
-          // Fallback to product-specific FAQs only if global fetch fails
+          // Fallback to product-specific FAQs only
           if (product?.faqs) {
             const productFaqs = product.faqs
               .filter((faq: any) => faq.isActive !== false)

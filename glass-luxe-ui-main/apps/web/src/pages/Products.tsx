@@ -100,7 +100,9 @@ export default function Products() {
         setIsLoading(true);
         const [productsResult, faqsResult, seoResult] = await Promise.all([
           fetchFromSanity<any[]>(allProductsQuery),
-          fetchFromSanity<any[]>(faqsByPageQuery, { page: "products" }),
+          // TEMPORARILY DISABLED: Fetch FAQs from Sanity to prevent build errors
+          // fetchFromSanity<any[]>(faqsByPageQuery, { page: "products" }),
+          Promise.resolve([]), // Return empty array for FAQs
           fetchFromSanity<any>(pageBySlugQuery, { slug: "products" }),
         ]);
 
