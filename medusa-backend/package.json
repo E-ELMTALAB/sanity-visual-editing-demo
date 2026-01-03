@@ -4,6 +4,11 @@
   "description": "A Prebaked Medusa 2.0 backend",
   "author": "Rasmus Puls",
   "license": "MIT",
+  "pnpm": {
+    "overrides": {
+      "next": "^15.1.11"
+    }
+  },
   "keywords": [
     "sqlite",
     "postgres",
