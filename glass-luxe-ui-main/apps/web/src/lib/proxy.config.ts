@@ -15,7 +15,7 @@
 export const PROXY_ENABLED = true;
 
 // Hardcoded Cloudflare Worker URL - deploy the worker in cloudflare-worker/unified-proxy.js
-export const UNIFIED_PROXY_URL = 'https://glassluxe-proxy.elmtalabx.workers.dev';
+export const UNIFIED_PROXY_URL = 'https://jaeshproxy.elmtalabx.workers.dev';
 
 // ============================================================================
 // SERVICE CONFIGURATION
