@@ -2,24 +2,39 @@
  * Cloudflare Proxy Configuration
  * 
  * This file centralizes all proxy URLs for bypassing internet filtering in Iran.
- * Deploy the Cloudflare Worker from /cloudflare/unified-proxy.js and set these env vars:
  * 
- * Environment Variables:
+ * QUICK SETUP:
+ * 1. Deploy the Cloudflare Worker from /cloudflare/unified-proxy.js
+ * 2. Replace YOUR-SUBDOMAIN below with your Cloudflare account subdomain
+ * 3. Set PROXY_ENABLED to true
+ * 
+ * Or use environment variables:
  * - NEXT_PUBLIC_PROXY_ENABLED: Set to "true" to enable proxy mode
  * - NEXT_PUBLIC_UNIFIED_PROXY_URL: URL of your unified Cloudflare Worker
- *   Example: https://sharifgpt-proxy.your-account.workers.dev
- * 
- * Alternative (separate workers):
- * - NEXT_PUBLIC_SANITY_CDN_PROXY_URL: URL of Sanity CDN proxy
- * - NEXT_PUBLIC_SANITY_API_PROXY_URL: URL of Sanity API proxy
- * - NEXT_PUBLIC_MEDUSA_PROXY_URL: URL of Medusa proxy
  */
 
-// Check if proxy mode is enabled
-export const isProxyEnabled = process.env.NEXT_PUBLIC_PROXY_ENABLED === 'true';
+// ============================================================================
+// CONFIGURATION - CHANGE THESE VALUES
+// ============================================================================
+
+// Set to true to enable proxy (bypasses internet filtering)
+const PROXY_ENABLED = true;
+
+// Your Cloudflare Worker URL - REPLACE YOUR-SUBDOMAIN with your actual subdomain
+// Example: https://sharifgpt-proxy.john123.workers.dev
+const DEFAULT_PROXY_URL = 'https://jaeshproxy.elmtalabx.workers.dev/';
+
+// ============================================================================
+// DO NOT MODIFY BELOW THIS LINE
+// ============================================================================
+
+// Check if proxy mode is enabled (env var takes priority)
+export const isProxyEnabled = 
+  process.env.NEXT_PUBLIC_PROXY_ENABLED === 'true' || 
+  process.env.NEXT_PUBLIC_PROXY_ENABLED === undefined && PROXY_ENABLED;
 
 // Unified proxy URL (handles all services with path prefixes)
-export const UNIFIED_PROXY_URL = process.env.NEXT_PUBLIC_UNIFIED_PROXY_URL || '';
+export const UNIFIED_PROXY_URL = process.env.NEXT_PUBLIC_UNIFIED_PROXY_URL || DEFAULT_PROXY_URL;
 
 // Individual proxy URLs (for separate worker deployments)
 export const SANITY_CDN_PROXY_URL = process.env.NEXT_PUBLIC_SANITY_CDN_PROXY_URL || '';
@@ -30,12 +45,17 @@ export const MEDUSA_PROXY_URL = process.env.NEXT_PUBLIC_MEDUSA_PROXY_URL || '';
 const ORIGINAL_SANITY_CDN = 'https://cdn.sanity.io';
 const ORIGINAL_MEDUSA_BACKEND = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com';
 
+// Check if proxy URL is valid (not placeholder)
+function isProxyUrlValid(): boolean {
+  return UNIFIED_PROXY_URL && !UNIFIED_PROXY_URL.includes('YOUR-SUBDOMAIN');
+}
+
 /**
  * Get the Sanity CDN base URL
- * Returns proxy URL if enabled, otherwise original
+ * Returns proxy URL if enabled and valid, otherwise original
  */
 export function getSanityCDNUrl(): string {
-  if (!isProxyEnabled) return ORIGINAL_SANITY_CDN;
+  if (!isProxyEnabled || !isProxyUrlValid()) return ORIGINAL_SANITY_CDN;
   
   // Prefer unified proxy with /cdn prefix
   if (UNIFIED_PROXY_URL) return `${UNIFIED_PROXY_URL}/cdn`;
@@ -51,7 +71,7 @@ export function getSanityCDNUrl(): string {
  * Note: The Sanity client internally constructs URLs, so we return the proxy base
  */
 export function getSanityAPIProxyUrl(): string | undefined {
-  if (!isProxyEnabled) return undefined;
+  if (!isProxyEnabled || !isProxyUrlValid()) return undefined;
   
   // Prefer unified proxy with /api prefix
   if (UNIFIED_PROXY_URL) return `${UNIFIED_PROXY_URL}/api`;
@@ -64,10 +84,10 @@ export function getSanityAPIProxyUrl(): string | undefined {
 
 /**
  * Get the Medusa backend URL
- * Returns proxy URL if enabled, otherwise original
+ * Returns proxy URL if enabled and valid, otherwise original
  */
 export function getMedusaBackendUrl(): string {
-  if (!isProxyEnabled) return ORIGINAL_MEDUSA_BACKEND;
+  if (!isProxyEnabled || !isProxyUrlValid()) return ORIGINAL_MEDUSA_BACKEND;
   
   // Prefer unified proxy with /medusa prefix
   if (UNIFIED_PROXY_URL) return `${UNIFIED_PROXY_URL}/medusa`;
@@ -83,7 +103,7 @@ export function getMedusaBackendUrl(): string {
  * Converts: https://cdn.sanity.io/images/... → {proxy}/images/...
  */
 export function proxySanityCDNUrl(originalUrl: string): string {
-  if (!isProxyEnabled) return originalUrl;
+  if (!isProxyEnabled || !isProxyUrlValid()) return originalUrl;
   if (!originalUrl) return originalUrl;
   
   const cdnProxy = getSanityCDNUrl();
@@ -97,7 +117,7 @@ export function proxySanityCDNUrl(originalUrl: string): string {
  * Transform a Medusa backend URL to use the proxy
  */
 export function proxyMedusaUrl(originalUrl: string): string {
-  if (!isProxyEnabled) return originalUrl;
+  if (!isProxyEnabled || !isProxyUrlValid()) return originalUrl;
   if (!originalUrl) return originalUrl;
   
   const medusaProxy = getMedusaBackendUrl();
@@ -110,7 +130,7 @@ export function proxyMedusaUrl(originalUrl: string): string {
  * Get the hostname from proxy URL for Next.js image config
  */
 export function getProxyHostname(): string | undefined {
-  if (!isProxyEnabled) return undefined;
+  if (!isProxyEnabled || !isProxyUrlValid()) return undefined;
   
   const proxyUrl = UNIFIED_PROXY_URL || SANITY_CDN_PROXY_URL;
   if (!proxyUrl) return undefined;
@@ -127,7 +147,8 @@ export function getProxyHostname(): string | undefined {
 export function getProxyConfig() {
   return {
     enabled: isProxyEnabled,
-    unifiedProxy: UNIFIED_PROXY_URL || 'not set',
+    proxyUrlValid: isProxyUrlValid(),
+    unifiedProxy: UNIFIED_PROXY_URL,
     sanityCdn: getSanityCDNUrl(),
     sanityApi: getSanityAPIProxyUrl() || 'using default',
     medusa: getMedusaBackendUrl(),
@@ -135,8 +156,16 @@ export function getProxyConfig() {
   };
 }
 
-// Log proxy config on load (only in development)
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+// Log proxy config on load (in development and production for debugging)
+if (typeof window !== 'undefined') {
   console.log('[Proxy Config]', getProxyConfig());
+  
+  if (!isProxyUrlValid()) {
+    console.warn(
+      '⚠️ Proxy is enabled but URL is not configured!\n' +
+      'Please deploy the Cloudflare Worker and update lib/proxy.config.ts:\n' +
+      '1. Deploy cloudflare/unified-proxy.js to Cloudflare Workers\n' +
+      '2. Replace YOUR-SUBDOMAIN in lib/proxy.config.ts with your actual subdomain'
+    );
+  }
 }
-
