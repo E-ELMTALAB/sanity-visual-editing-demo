@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getMedusaBackendUrl, MEDUSA_PUBLISHABLE_KEY } from '@/lib/proxy.server'
 
 /**
  * POST /api/products/prices
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'
+    const backend = getMedusaBackendUrl()
     const prices: Record<string, any> = {}
 
     // Fetch prices for each slug from Medusa
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
+            'x-publishable-api-key': MEDUSA_PUBLISHABLE_KEY
           },
         })
 

@@ -1,0 +1,33 @@
+# Wrangler configuration for Cloudflare Worker deployment
+# See https://developers.cloudflare.com/workers/configuration/
+
+name = "sharifgpt-proxy"
+main = "unified-proxy.js"
+compatibility_date = "2024-01-01"
+
+# Workers Paid features (optional)
+# workers_dev = true
+# routes = [{ pattern = "proxy.sharifgpt.com/*", zone_name = "sharifgpt.com" }]
+
+# Environment variables (can be overridden in Cloudflare Dashboard)
+[vars]
+SANITY_PROJECT_ID = "zrvdkcjy"
+SANITY_DATASET = "production"
+SANITY_API_VERSION = "2023-06-21"
+SANITY_HOST_TYPE = "apicdn"
+MEDUSA_BACKEND_URL = "https://backend.sharifgpt.com"
+
+# Development environment
+[env.dev]
+name = "sharifgpt-proxy-dev"
+
+# Production environment
+[env.production]
+name = "sharifgpt-proxy"
+
+# To deploy:
+# 1. Install Wrangler: npm install -g wrangler
+# 2. Login to Cloudflare: wrangler login
+# 3. Deploy: wrangler deploy
+# Or deploy via Cloudflare Dashboard (paste unified-proxy.js content)
+

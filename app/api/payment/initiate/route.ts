@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getMedusaBackendUrl } from '@/lib/proxy.config'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    // Forward the request to the Medusa backend
-    const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'}/store/simple-payment`, {
+    // Forward the request to the Medusa backend (supports Cloudflare proxy)
+    const backend = getMedusaBackendUrl()
+    const response = await fetch(`${backend}/store/simple-payment`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

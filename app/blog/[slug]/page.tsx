@@ -5,7 +5,7 @@ import { postBySlugQuery } from 'lib/sanity.queries'
 import { defaultPost } from 'lib/defaults/post'
 import { fetchWithFallback } from 'lib/fetchWithFallback'
 import BlogPost from 'components/site/blog/BlogPost'
-import { urlForImage } from 'lib/sanity.image'
+import { urlForImage, toProxiedUrl } from 'lib/sanity.image'
 import type { Metadata } from 'next'
 
 function extractTextFromPortableText(blocks: any[]): string {
@@ -31,8 +31,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
   const seo = post.seo || {}
   const excerptText = post.excerpt ? extractTextFromPortableText(post.excerpt) : ''
-  const coverImageUrl = post.coverImage ? urlForImage(post.coverImage)?.url() : undefined
-  const ogImageUrl = seo.openGraphImage ? urlForImage(seo.openGraphImage)?.url() : coverImageUrl
+  const coverImageUrl = post.coverImage ? toProxiedUrl(urlForImage(post.coverImage)?.url()) : undefined
+  const ogImageUrl = seo.openGraphImage ? toProxiedUrl(urlForImage(seo.openGraphImage)?.url()) : coverImageUrl
 
   return {
     title: seo.metaTitle || post.title || 'مقاله',

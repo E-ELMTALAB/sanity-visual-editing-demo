@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import ProductCard from "components/product-card"
 import type { ProductDoc, FAQ } from "types"
-import { urlForImage } from "lib/sanity.image"
+import { urlForImage, toProxiedUrl } from "lib/sanity.image"
 
 interface ProductsPageClientProps {
   productsData?: ProductDoc[]
@@ -46,7 +46,7 @@ export default function ProductsPageClient({ productsData = [], faqsData = [] }:
     discount: product.discountPercentage || 0,
     rating: product.rating || 0,
     reviews: product.reviewCount || 0,
-    image: product.image ? urlForImage(product.image)?.url() || '/placeholder.svg' : '/placeholder.svg',
+    image: product.image ? toProxiedUrl(urlForImage(product.image)?.url()) || '/placeholder.svg' : '/placeholder.svg',
     category: product.category || 'all',
     features: product.features || [],
     badge: product.badges?.[0] || undefined,

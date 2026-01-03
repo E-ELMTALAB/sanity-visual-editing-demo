@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getClient } from 'lib/sanity.client'
 import { productDocBySlugQuery, faqsByPageQuery } from 'lib/sanity.queries'
-import { urlForImage } from 'lib/sanity.image'
+import { urlForImage, toProxiedUrl } from 'lib/sanity.image'
 
 export async function GET(
   request: Request,
@@ -30,8 +30,8 @@ export async function GET(
         : undefined,
       originalPrice: product.originalPrice,
       discountPercentage: product.discountPercentage,
-      imageUrl: product.image ? urlForImage(product.image)?.url() : null,
-      galleryUrls: Array.isArray(product.gallery) ? product.gallery.map((img: any) => (img ? urlForImage(img)?.url() : null)) : [],
+      imageUrl: product.image ? toProxiedUrl(urlForImage(product.image)?.url()) : null,
+      galleryUrls: Array.isArray(product.gallery) ? product.gallery.map((img: any) => (img ? toProxiedUrl(urlForImage(img)?.url()) : null)) : [],
       features: product.features || [],
       badges: product.badges || [],
       inStock: product.inStock,
@@ -45,7 +45,7 @@ export async function GET(
          price: related.price,
          originalPrice: related.originalPrice,
          discountPercentage: related.discountPercentage,
-         image: related.image ? urlForImage(related.image)?.url() : null,
+         image: related.image ? toProxiedUrl(urlForImage(related.image)?.url()) : null,
          category: related.category,
          rating: related.rating,
          reviewCount: related.reviewCount
@@ -55,7 +55,7 @@ export async function GET(
          title: blog.title,
          slug: blog.slug,
          excerpt: blog.excerpt,
-         coverImage: blog.coverImage ? urlForImage(blog.coverImage)?.url() : null,
+         coverImage: blog.coverImage ? toProxiedUrl(urlForImage(blog.coverImage)?.url()) : null,
          publishedAt: blog.publishedAt,
          tags: blog.tags || []
        })) : [],

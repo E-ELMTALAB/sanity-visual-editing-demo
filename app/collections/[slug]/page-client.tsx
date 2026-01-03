@@ -47,7 +47,7 @@ import {
 } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 
-import { urlForImage } from 'lib/sanity.image'
+import { urlForImage, toProxiedUrl } from 'lib/sanity.image'
 import type { CollectionPayload, ProductDoc } from 'types'
 import ProductCard from 'components/product-card'
 
@@ -226,7 +226,7 @@ function CollectionProductCard({
     price: product.price || 0,
     originalPrice: product.originalPrice || 0,
     discountPercentage: product.discountPercentage || 0,
-    image: product.image ? urlForImage(product.image)?.width(600).height(400).url() || '/placeholder.svg' : '/placeholder.svg',
+    image: product.image ? toProxiedUrl(urlForImage(product.image)?.width(600).height(400).url()) || '/placeholder.svg' : '/placeholder.svg',
     category: product.category || '',
     rating: product.rating || 0,
     reviews: product.reviewCount || 0,
@@ -797,7 +797,7 @@ export default function CollectionPageClient({
             <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-900/60 to-slate-950" />
             {collection.coverImage ? (
               <Image
-                src={urlForImage(collection.coverImage)?.width(1920).height(600).url() || ''}
+                src={toProxiedUrl(urlForImage(collection.coverImage)?.width(1920).height(600).url()) || ''}
                 alt={`${collection.title} cover`}
                 fill
                 priority

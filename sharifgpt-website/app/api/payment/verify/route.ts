@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getMedusaBackendUrl, MEDUSA_PUBLISHABLE_KEY } from '@/lib/proxy.server'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'
-    const publishableApiKey = 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
+    const backend = getMedusaBackendUrl()
+    const publishableApiKey = MEDUSA_PUBLISHABLE_KEY
     const response = await fetch(`${backend}/store/zarinpal/verify`, {
       method: 'POST',
       headers: { 

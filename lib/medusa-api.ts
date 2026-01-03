@@ -2,13 +2,24 @@
  * Medusa API Service Layer
  * Native fetch implementation for Medusa v2 API communication
  * No SDK dependency - direct HTTP calls
+ * 
+ * Supports Cloudflare proxy for bypassing internet filtering
  */
 
-const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'
+import { getMedusaBackendUrl, isProxyEnabled } from 'lib/proxy.config'
+
+// Use proxy-aware URL getter
+const MEDUSA_BACKEND_URL = getMedusaBackendUrl()
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 
 if (!PUBLISHABLE_KEY) {
   console.warn('NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY is not set. Some operations may fail.')
+}
+
+// Log proxy status in development
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  console.log('[Medusa API] Backend URL:', MEDUSA_BACKEND_URL)
+  console.log('[Medusa API] Proxy enabled:', isProxyEnabled)
 }
 
 // Common headers for all API calls
@@ -29,10 +40,11 @@ class MedusaAPIError extends Error {
   }
 }
 
-// Generic API call function
+// Generic API call function with retry logic for proxy failures
 async function apiCall<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  retryCount = 0
 ): Promise<T> {
   const url = `${MEDUSA_BACKEND_URL}${endpoint}`
   
@@ -59,6 +71,14 @@ async function apiCall<T>(
     if (error instanceof MedusaAPIError) {
       throw error
     }
+    
+    // Retry logic for network errors (useful when proxy might timeout)
+    if (retryCount < 2 && isProxyEnabled) {
+      console.warn(`[Medusa API] Retry ${retryCount + 1} for ${endpoint}`)
+      await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)))
+      return apiCall<T>(endpoint, options, retryCount + 1)
+    }
+    
     throw new MedusaAPIError(
       `Network error: ${error instanceof Error ? error.message : 'Unknown error'}`,
       0,
@@ -263,6 +283,9 @@ export const productAPI = {
     return apiCall<{ products: any[] }>(`/store/products?handle=${handle}`)
   }
 }
+
+// Export the backend URL for components that need direct access
+export { MEDUSA_BACKEND_URL }
 
 // Export error class for external use
 export { MedusaAPIError }

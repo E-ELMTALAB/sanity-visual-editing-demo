@@ -6,7 +6,7 @@ import { useCart } from "@/contexts/cart-context"
 import CartDropdown from "@/components/cart-dropdown"
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { urlForImage } from '@/lib/sanity.image'
+import { urlForImage, toProxiedUrl } from '@/lib/sanity.image'
 
 interface ProductPageClientProps {
   productData: any
@@ -221,10 +221,10 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
     discount: 0, // Will be calculated from Medusa prices
     rating: typeof productData?.rating === 'number' ? productData.rating : 0,
     reviews: typeof productData?.reviewCount === 'number' ? productData.reviewCount : 0,
-    image: productData?.image ? urlForImage(productData.image)?.width(800).height(600).url() : "/placeholder.svg",
+    image: productData?.image ? toProxiedUrl(urlForImage(productData.image)?.width(800).height(600).url()) : "/placeholder.svg",
     gallery: Array.isArray(productData?.gallery) && productData?.gallery?.length
-      ? productData.gallery.map((img: any) => urlForImage(img)?.width(800).height(600).url()).filter(Boolean)
-      : productData?.image ? [urlForImage(productData.image)?.width(800).height(600).url()].filter(Boolean) : ["/placeholder.svg"],
+      ? productData.gallery.map((img: any) => toProxiedUrl(urlForImage(img)?.width(800).height(600).url())).filter(Boolean)
+      : productData?.image ? [toProxiedUrl(urlForImage(productData.image)?.width(800).height(600).url())].filter(Boolean) : ["/placeholder.svg"],
     features: Array.isArray(productData?.features) ? productData.features : [],
     // Options now come from Medusa variants with accurate prices
     options: transformedOptions,
@@ -237,7 +237,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
       price: null, // Prices must come from Medusa - will be fetched when user visits product page
       originalPrice: null,
       discountPercentage: 0,
-      image: p.image ? urlForImage(p.image)?.width(400).height(300).url() : "/placeholder.svg",
+      image: p.image ? toProxiedUrl(urlForImage(p.image)?.width(400).height(300).url()) : "/placeholder.svg",
       category: p.category,
       rating: p.rating || 0,
       reviewCount: p.reviewCount || 0
@@ -246,7 +246,7 @@ export default function ProductPageClient({ productData, faqsData = [] }: Produc
       id: b._id,
       title: b.title,
       slug: b.slug?.current,
-      coverImage: b.coverImage ? urlForImage(b.coverImage)?.width(400).height(250).url() : "/placeholder.svg",
+      coverImage: b.coverImage ? toProxiedUrl(urlForImage(b.coverImage)?.width(400).height(250).url()) : "/placeholder.svg",
       tags: b.tags || []
     })) : [],
   }

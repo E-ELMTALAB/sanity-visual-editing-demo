@@ -2,7 +2,7 @@ import { draftMode } from 'next/headers'
 import { getClient } from 'lib/sanity.client'
 import { readToken } from 'lib/sanity.api'
 import { courseBySlugQuery, faqsByPageQuery } from 'lib/sanity.queries'
-import { urlForImage } from 'lib/sanity.image'
+import { urlForImage, toProxiedUrl } from 'lib/sanity.image'
 import type { CoursePayload, FAQ } from 'types'
 import CourseOverlay from 'components/site/course/CourseOverlay'
 import FAQOverlay from 'components/site/product/FAQOverlay'
@@ -23,8 +23,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     }
   }
 
-  const imageUrl = course.featuredImage ? urlForImage(course.featuredImage)?.url() : undefined
-  const ogImageUrl = course.seo?.openGraphImage ? urlForImage(course.seo.openGraphImage)?.url() : imageUrl
+  const imageUrl = course.featuredImage ? toProxiedUrl(urlForImage(course.featuredImage)?.url()) : undefined
+  const ogImageUrl = course.seo?.openGraphImage ? toProxiedUrl(urlForImage(course.seo.openGraphImage)?.url()) : imageUrl
 
   return {
     title: course.seo?.metaTitle || course.title || 'دوره آموزشی',
@@ -59,14 +59,14 @@ export default async function CoursePage({ params }: { params: { slug: string } 
   // Transform image URLs
   const transformedCourse = course ? {
     ...course,
-    imageUrl: course.featuredImage ? urlForImage(course.featuredImage)?.url() : null,
+    imageUrl: course.featuredImage ? toProxiedUrl(urlForImage(course.featuredImage)?.url()) : null,
     instructor: course.instructor ? {
       ...course.instructor,
-      imageUrl: course.instructor.image ? urlForImage(course.instructor.image)?.url() : null,
+      imageUrl: course.instructor.image ? toProxiedUrl(urlForImage(course.instructor.image)?.url()) : null,
     } : undefined,
     relatedCourses: course.relatedCourses?.map(rc => ({
       ...rc,
-      imageUrl: rc.featuredImage ? urlForImage(rc.featuredImage)?.url() : null,
+      imageUrl: rc.featuredImage ? toProxiedUrl(urlForImage(rc.featuredImage)?.url()) : null,
     })),
   } : null
 

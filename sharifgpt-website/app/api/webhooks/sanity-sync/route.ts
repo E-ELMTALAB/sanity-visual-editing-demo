@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getMedusaBackendUrl, MEDUSA_PUBLISHABLE_KEY } from '@/lib/proxy.server'
 
 /**
  * Sanity Webhook Handler - Automatic Product Sync
@@ -9,12 +10,9 @@ import { NextRequest, NextResponse } from 'next/server'
  * Webhook URL: https://your-domain.com/api/webhooks/sanity-sync
  */
 
-const MEDUSA_SYNC_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL 
-  ? `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/products/sync-from-sanity`
-  : 'https://backend.sharifgpt.com/store/products/sync-from-sanity';
+const MEDUSA_SYNC_URL = `${getMedusaBackendUrl()}/store/products/sync-from-sanity`;
 
-const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || 
-  'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4';
+const PUBLISHABLE_KEY = MEDUSA_PUBLISHABLE_KEY;
 
 // Simple secret for webhook verification (optional but recommended)
 const WEBHOOK_SECRET = process.env.SANITY_WEBHOOK_SECRET || 'your-webhook-secret';

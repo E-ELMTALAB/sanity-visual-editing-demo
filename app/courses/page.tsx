@@ -2,7 +2,7 @@ import { draftMode } from 'next/headers'
 import { getClient } from 'lib/sanity.client'
 import { readToken } from 'lib/sanity.api'
 import { allCoursesQuery, faqsByPageQuery } from 'lib/sanity.queries'
-import { urlForImage } from 'lib/sanity.image'
+import { urlForImage, toProxiedUrl } from 'lib/sanity.image'
 import type { CoursePayload, FAQ } from 'types'
 import type { Metadata } from 'next'
 
@@ -49,7 +49,7 @@ export default async function CoursesPage() {
   // Transform course data with image URLs
   const transformedCourses = courses.map((course) => ({
     ...course,
-    imageUrl: course.featuredImage ? urlForImage(course.featuredImage)?.url() : null,
+    imageUrl: course.featuredImage ? toProxiedUrl(urlForImage(course.featuredImage)?.url()) : null,
     instructorName: course.instructor?.name || undefined,
   }))
 

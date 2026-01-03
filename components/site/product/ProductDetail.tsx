@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Star, ShoppingCart, Heart, Share2, Check, X } from "lucide-react";
 import { DeliveryProcessSection } from "./DeliveryProcessSection";
-import { urlForImage } from "lib/sanity.image";
+import { urlForImage, toProxiedUrl } from "lib/sanity.image";
 
 interface ProductDetailProps {
   product: {
@@ -293,7 +293,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                   <div className="aspect-square bg-gray-200">
                     {relatedProduct.image ? (
                       <Image
-                        src={urlForImage(relatedProduct.image)}
+                        src={toProxiedUrl(urlForImage(relatedProduct.image)?.url()) || ''}
                         alt={relatedProduct.title}
                         width={300}
                         height={300}

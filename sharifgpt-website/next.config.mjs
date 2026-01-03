@@ -8,6 +8,14 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    // Allow images from both direct Sanity CDN and Cloudflare proxy
+    remotePatterns: [
+      { hostname: 'cdn.sanity.io' },
+      // Cloudflare Workers proxy domains
+      { hostname: '*.workers.dev' },
+      // Add your specific worker hostname if needed
+      // { hostname: 'sharifgpt-proxy.xxx.workers.dev' },
+    ],
   },
 }
 

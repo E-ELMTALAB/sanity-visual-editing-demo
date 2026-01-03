@@ -9,7 +9,7 @@ import {
   collectionBySlugQuery,
   productsByCollectionTypeQuery,
 } from 'lib/sanity.queries'
-import { urlForImage } from 'lib/sanity.image'
+import { urlForImage, toProxiedUrl } from 'lib/sanity.image'
 import type { CollectionPayload, ProductDoc } from 'types'
 import CollectionPageClient from './page-client'
 
@@ -37,11 +37,11 @@ function buildSeoMetadata(
     ? [
         {
           url:
-            urlForImage(ogImage)
+            toProxiedUrl(urlForImage(ogImage)
               ?.width(1200)
               .height(630)
               .fit('crop')
-              .url() || '',
+              .url()) || '',
         },
       ]
     : undefined

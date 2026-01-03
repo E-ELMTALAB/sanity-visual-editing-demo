@@ -1,5 +1,5 @@
 import * as demo from 'lib/demo.data'
-import { urlForImage } from 'lib/sanity.image'
+import { urlForImage, toProxiedUrl } from 'lib/sanity.image'
 import Head from 'next/head'
 import type { Image } from 'sanity'
 
@@ -22,8 +22,8 @@ export function SiteMeta({
     ...(baseTitle ? [baseTitle] : []),
   ].join(' | ')
 
-  const imageUrl =
-    image && urlForImage(image)?.width(1200).height(627).fit('crop').url()
+  const rawUrl = image && urlForImage(image)?.width(1200).height(627).fit('crop').url()
+  const imageUrl = toProxiedUrl(rawUrl)
 
   return (
     <Head>

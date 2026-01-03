@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getMedusaBackendUrl } from '@/lib/proxy.server'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'
+    const backend = getMedusaBackendUrl()
     const response = await fetch(`${backend}/internal/admin/verify-payment`, {
       method: 'POST',
       headers: { 

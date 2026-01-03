@@ -1,0 +1,170 @@
+================================================================================
+CLOUDFLARE WORKER PROXY DEPLOYMENT GUIDE
+For bypassing internet filtering in Iran
+================================================================================
+
+This guide helps you deploy a Cloudflare Worker that proxies:
+- Sanity CDN (images)
+- Sanity API (GROQ queries)
+- Medusa Backend (e-commerce API)
+
+================================================================================
+STEP 1: CREATE CLOUDFLARE ACCOUNT (if you don't have one)
+================================================================================
+
+1. Go to https://dash.cloudflare.com/sign-up
+2. Create a free account
+3. Verify your email
+
+================================================================================
+STEP 2: CREATE THE WORKER
+================================================================================
+
+1. Log in to https://dash.cloudflare.com/
+2. In the left sidebar, click "Workers & Pages"
+3. Click "Create Application"
+4. Click "Create Worker"
+5. Name it: sharifgpt-proxy (or any name you prefer)
+6. Click "Deploy" to create the worker with default code
+7. After deployment, click "Edit code"
+8. Delete all the default code
+9. Copy the ENTIRE contents of unified-proxy.js and paste it
+10. Click "Deploy" at the top right
+
+================================================================================
+STEP 3: SET ENVIRONMENT VARIABLES (Optional - defaults are already set)
+================================================================================
+
+1. Go to your worker in the Cloudflare dashboard
+2. Click "Settings" tab
+3. Click "Variables" in the left sidebar
+4. Add these variables (only if you need to override defaults):
+
+   Variable Name          | Value
+   -----------------------|------------------------------------
+   SANITY_PROJECT_ID      | zrvdkcjy (your actual project ID)
+   MEDUSA_BACKEND_URL     | https://backend.sharifgpt.com
+
+5. Click "Save and deploy"
+
+================================================================================
+STEP 4: GET YOUR WORKER URL
+================================================================================
+
+Your worker URL will be something like:
+https://sharifgpt-proxy.YOUR-SUBDOMAIN.workers.dev
+
+Note this URL - you'll need it in the next step.
+
+================================================================================
+STEP 5: CONFIGURE YOUR FRONTEND (Vercel)
+================================================================================
+
+Add these environment variables in Vercel:
+
+Variable Name                      | Value
+-----------------------------------|----------------------------------------
+NEXT_PUBLIC_PROXY_ENABLED          | true
+NEXT_PUBLIC_UNIFIED_PROXY_URL      | https://sharifgpt-proxy.xxx.workers.dev
+
+To add in Vercel:
+1. Go to your project in Vercel dashboard
+2. Click "Settings" → "Environment Variables"
+3. Add both variables for Production, Preview, and Development
+4. Redeploy your project
+
+================================================================================
+STEP 6: TEST THE PROXY
+================================================================================
+
+Test each endpoint:
+
+1. Health Check:
+   curl https://sharifgpt-proxy.xxx.workers.dev/health
+
+2. Sanity CDN Image:
+   curl https://sharifgpt-proxy.xxx.workers.dev/cdn/images/zrvdkcjy/production/abc123-400x400.jpg
+
+3. Sanity API:
+   curl "https://sharifgpt-proxy.xxx.workers.dev/api/v2023-06-21/data/query/production?query=*[_type==\"product\"][0..2]"
+
+4. Medusa Backend:
+   curl https://sharifgpt-proxy.xxx.workers.dev/medusa/store/products
+
+================================================================================
+HOW IT WORKS
+================================================================================
+
+The proxy rewrites URLs like this:
+
+SANITY CDN IMAGES:
+  Original: https://cdn.sanity.io/images/zrvdkcjy/production/abc.jpg
+  Proxied:  https://proxy.xxx.workers.dev/cdn/images/zrvdkcjy/production/abc.jpg
+  Also:     https://proxy.xxx.workers.dev/images/zrvdkcjy/production/abc.jpg
+
+SANITY API:
+  Original: https://zrvdkcjy.apicdn.sanity.io/v2023-06-21/data/query/production
+  Proxied:  https://proxy.xxx.workers.dev/api/v2023-06-21/data/query/production
+
+MEDUSA BACKEND:
+  Original: https://backend.sharifgpt.com/store/products
+  Proxied:  https://proxy.xxx.workers.dev/medusa/store/products
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Problem: Images not loading
+Solution: 
+- Check browser console for errors
+- Verify NEXT_PUBLIC_PROXY_ENABLED=true
+- Verify NEXT_PUBLIC_UNIFIED_PROXY_URL is correct
+- Test the image URL directly in browser
+
+Problem: API requests failing
+Solution:
+- Check worker logs in Cloudflare dashboard (Workers → your worker → Logs)
+- Verify the backend URLs are accessible from Cloudflare
+- Check CORS headers
+
+Problem: Worker returns 524 timeout
+Solution:
+- The target server might be slow
+- Cloudflare Workers have a 30 second timeout on free tier
+- Consider upgrading to Workers Paid or optimizing backend
+
+================================================================================
+COSTS
+================================================================================
+
+Cloudflare Workers Free tier includes:
+- 100,000 requests per day
+- 10ms CPU time per request
+
+This should be more than enough for a typical website.
+If you need more, the Paid plan ($5/month) includes:
+- 10 million requests per month
+- 50ms CPU time per request
+
+================================================================================
+SECURITY NOTES
+================================================================================
+
+1. The proxy allows all origins by default - modify buildCorsHeaders() if needed
+2. API tokens are forwarded but not stored
+3. Consider adding rate limiting for production
+4. Worker logs are available in Cloudflare dashboard for debugging
+
+================================================================================
+ENVIRONMENT VARIABLES SUMMARY
+================================================================================
+
+In Vercel (Frontend):
+- NEXT_PUBLIC_PROXY_ENABLED=true
+- NEXT_PUBLIC_UNIFIED_PROXY_URL=https://sharifgpt-proxy.xxx.workers.dev
+
+In Cloudflare Worker (Optional overrides):
+- SANITY_PROJECT_ID=zrvdkcjy
+- MEDUSA_BACKEND_URL=https://backend.sharifgpt.com
+
+================================================================================

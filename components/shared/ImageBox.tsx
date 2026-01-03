@@ -1,5 +1,5 @@
 "use client"
-import { urlForImage } from 'lib/sanity.image'
+import { urlForImage, toProxiedUrl } from 'lib/sanity.image'
 import Image from 'next/image'
 
 interface ImageBoxProps {
@@ -19,8 +19,8 @@ export default function ImageBox({
   size = '100vw',
   classesWrapper,
 }: ImageBoxProps) {
-  const imageUrl =
-    image && urlForImage(image)?.height(height).width(width).fit('crop').url()
+  const rawUrl = image && urlForImage(image)?.height(height).width(width).fit('crop').url()
+  const imageUrl = toProxiedUrl(rawUrl)
 
   return (
     <div

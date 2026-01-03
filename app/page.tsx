@@ -2,7 +2,7 @@ import { draftMode } from 'next/headers'
 import { getClient } from 'lib/sanity.client'
 import { readToken } from 'lib/sanity.api'
 import { sharifHeroQuery, settingsQuery } from 'lib/sanity.queries'
-import { urlForImage } from 'lib/sanity.image'
+import { urlForImage, toProxiedUrl } from 'lib/sanity.image'
 import HeroPromoOverlay from 'components/site/home/HeroPromoOverlay'
 import SharifHomePage from 'components/site/home/SharifHomePage'
 import Layout from 'components/shared/Layout'
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     const seo = data?.seo || {}
     let ogImageUrl = undefined
     try {
-      ogImageUrl = seo.openGraphImage ? urlForImage(seo.openGraphImage)?.url() : undefined
+      ogImageUrl = seo.openGraphImage ? toProxiedUrl(urlForImage(seo.openGraphImage)?.url()) : undefined
     } catch (error) {
       console.warn('Failed to generate OG image URL:', error)
     }
@@ -96,7 +96,7 @@ export default async function RootPage() {
           return { ...item, imageUrl: null }
         }
         
-        const imageUrl = imageBuilder.url()
+        const imageUrl = toProxiedUrl(imageBuilder.url())
         return { ...item, imageUrl }
       } catch (error) {
         console.warn(`Failed to process image for ${imageField}:`, error, item)

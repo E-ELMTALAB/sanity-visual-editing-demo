@@ -2,7 +2,7 @@ import { draftMode } from 'next/headers'
 import { getClient } from 'lib/sanity.client'
 import { readToken } from 'lib/sanity.api'
 import { productDocBySlugQuery, productDocPaths } from 'lib/sanity.queries'
-import { urlForImage } from 'lib/sanity.image'
+import { urlForImage, toProxiedUrl } from 'lib/sanity.image'
 import ProductOverlay from 'components/site/product/ProductOverlay'
 import ProductDetail from 'components/site/product/ProductDetail'
 // Client component removed - using server component directly
@@ -22,8 +22,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 
   const seo = product.seo || {}
-  const imageUrl = product.image ? urlForImage(product.image)?.url() : undefined
-  const ogImageUrl = seo.openGraphImage ? urlForImage(seo.openGraphImage)?.url() : imageUrl
+  const imageUrl = product.image ? toProxiedUrl(urlForImage(product.image)?.url()) : undefined
+  const ogImageUrl = seo.openGraphImage ? toProxiedUrl(urlForImage(seo.openGraphImage)?.url()) : imageUrl
 
   return {
     title: seo.metaTitle || product.name || 'محصول',
@@ -81,9 +81,9 @@ export default async function Page({ params }: { params: { slug: string } }) {
         price: product.price || 0,
         originalPrice: product.originalPrice || 0,
         discountPercentage: product.discountPercentage || 0,
-        imageUrl: product.image ? urlForImage(product.image)?.url() : null,
+        imageUrl: product.image ? toProxiedUrl(urlForImage(product.image)?.url()) : null,
         galleryUrls: Array.isArray(product.gallery)
-          ? product.gallery.map((img: any) => (img ? urlForImage(img)?.url() : null))
+          ? product.gallery.map((img: any) => (img ? toProxiedUrl(urlForImage(img)?.url()) : null))
           : [],
         features: product.features || [],
         badges: product.badges || [],
@@ -98,7 +98,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
           price: related.price,
           originalPrice: related.originalPrice,
           discountPercentage: related.discountPercentage,
-          image: related.image ? urlForImage(related.image)?.url() : null,
+          image: related.image ? toProxiedUrl(urlForImage(related.image)?.url()) : null,
           category: related.category,
           rating: related.rating,
           reviewCount: related.reviewCount
@@ -108,7 +108,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
           title: blog.title,
           slug: blog.slug,
           excerpt: blog.excerpt,
-          coverImage: blog.coverImage ? urlForImage(blog.coverImage)?.url() : null,
+          coverImage: blog.coverImage ? toProxiedUrl(urlForImage(blog.coverImage)?.url()) : null,
           publishedAt: blog.publishedAt,
           tags: blog.tags || []
         })) : [],

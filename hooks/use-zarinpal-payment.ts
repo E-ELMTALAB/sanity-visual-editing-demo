@@ -6,6 +6,7 @@
 
 import { useState, useCallback } from 'react'
 import { MedusaAPIError } from '@/lib/medusa-api'
+import { getMedusaBackendUrl } from '@/lib/proxy.config'
 
 export interface CustomerInfo {
   firstName: string
@@ -112,7 +113,8 @@ export function useZarinpalPayment() {
       console.log('Total amount:', totalAmount)
 
       // Use the exact same Medusa endpoints that were tested successfully
-      const BASE_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'
+      // Supports Cloudflare proxy for bypassing internet filtering
+      const BASE_URL = getMedusaBackendUrl()
       const PK = 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
       
       // Step 1: Get regions
@@ -287,7 +289,8 @@ export function useZarinpalPayment() {
       }
 
       // Use the exact same Medusa verification endpoint that was tested successfully
-      const BASE_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com'
+      // Supports Cloudflare proxy for bypassing internet filtering
+      const BASE_URL = getMedusaBackendUrl()
       
       const requestBody = {
         authority: authority,

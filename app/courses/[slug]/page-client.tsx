@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import type { CoursePayload, FAQ } from "types"
 import DynamicHeading from "components/shared/DynamicHeading"
-import { urlForImage } from "lib/sanity.image"
+import { urlForImage, toProxiedUrl } from "lib/sanity.image"
 
 interface CoursePageClientProps {
   courseData: (CoursePayload & { imageUrl?: string | null; instructor?: any; relatedCourses?: any[] }) | null
