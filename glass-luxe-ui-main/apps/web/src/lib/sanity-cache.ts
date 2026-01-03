@@ -2,12 +2,15 @@
  * Sanity cache reader for build-time cached data
  * Imports cached data that was fetched at build time
  * 
- * FIXES:
+ * FEATURES:
  * - Pre-loads cache eagerly when module is imported (prevents race conditions)
  * - Uses singleton promise pattern to ensure cache loads only once
  * - Validates homepage cache has all required fields
  * - Provides detailed logging for cache hits/misses
+ * - Transforms Sanity CDN URLs to proxy URLs when serving from cache
  */
+
+import { PROXY_ENABLED, proxySanityCDNUrl, ORIGINAL_SANITY_CDN } from './proxy.config'
 
 // Cache module state
 let cacheModule: any = null;
@@ -20,6 +23,36 @@ function shouldUseCache(): boolean {
   // Use cache in production builds OR if cache-only mode is enabled (for testing)
   const cacheOnlyMode = import.meta.env.VITE_SANITY_CACHE_ONLY === 'true' || import.meta.env.VITE_SANITY_CACHE_ONLY === '1';
   return (import.meta.env.PROD && import.meta.env.MODE === 'production') || cacheOnlyMode;
+}
+
+/**
+ * Transform all Sanity CDN URLs in an object to use the proxy
+ * Recursively walks the object and transforms any strings that look like CDN URLs
+ */
+function transformCdnUrls<T>(data: T): T {
+  if (!PROXY_ENABLED || !data) return data;
+  
+  if (typeof data === 'string') {
+    // Check if this is a Sanity CDN URL
+    if (data.includes('cdn.sanity.io')) {
+      return proxySanityCDNUrl(data) as unknown as T;
+    }
+    return data;
+  }
+  
+  if (Array.isArray(data)) {
+    return data.map(item => transformCdnUrls(item)) as unknown as T;
+  }
+  
+  if (typeof data === 'object' && data !== null) {
+    const transformed: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      transformed[key] = transformCdnUrls(value);
+    }
+    return transformed as T;
+  }
+  
+  return data;
 }
 
 /**
@@ -45,7 +78,10 @@ function initializeCache(): void {
       const module = await import('../data/sanity-cache/index');
       cacheModule = module;
       
-      console.info('[SANITY-CACHE] ✅ Pre-loaded build-time cache module');
+      console.info('[SANITY-CACHE] Pre-loaded build-time cache module');
+      if (PROXY_ENABLED) {
+        console.info('[SANITY-CACHE] Proxy enabled - CDN URLs will be transformed');
+      }
       
       // Log cache metadata if available
       if (module?.cacheMetadata) {
@@ -76,9 +112,9 @@ function initializeCache(): void {
         
         const missingFields = requiredFields.filter(field => !(field in homeData));
         if (missingFields.length > 0) {
-          console.warn(`[SANITY-CACHE] ⚠️ Homepage cache missing fields: ${missingFields.join(', ')}`);
+          console.warn(`[SANITY-CACHE] Homepage cache missing fields: ${missingFields.join(', ')}`);
         } else {
-          console.info('[SANITY-CACHE] ✅ Homepage cache validation passed - all fields present');
+          console.info('[SANITY-CACHE] Homepage cache validation passed - all fields present');
         }
 
         // Log data counts for debugging
@@ -103,7 +139,7 @@ function initializeCache(): void {
         console.info(`[SANITY-CACHE] All products list cache: ${listCount} products`);
         
         if (listCount === 0) {
-          console.warn('[SANITY-CACHE] ⚠️ All products list cache is empty');
+          console.warn('[SANITY-CACHE] All products list cache is empty');
         }
       }
 
@@ -113,7 +149,7 @@ function initializeCache(): void {
         console.info(`[SANITY-CACHE] Products cache (detail pages): ${productCount} products`);
         
         if (productCount === 0) {
-          console.warn('[SANITY-CACHE] ⚠️ Products cache is empty');
+          console.warn('[SANITY-CACHE] Products cache is empty');
         } else {
           // Log a sample of product slugs for debugging
           const sampleSlugs = Object.keys(module.productsCache).slice(0, 5);
@@ -133,7 +169,7 @@ function initializeCache(): void {
         console.info(`[SANITY-CACHE] All posts list cache: ${listCount} posts`);
         
         if (listCount === 0) {
-          console.warn('[SANITY-CACHE] ⚠️ All posts list cache is empty');
+          console.warn('[SANITY-CACHE] All posts list cache is empty');
         }
       }
 
@@ -143,7 +179,7 @@ function initializeCache(): void {
         console.info(`[SANITY-CACHE] Posts cache (detail pages): ${postCount} posts`);
         
         if (postCount === 0) {
-          console.warn('[SANITY-CACHE] ⚠️ Posts cache is empty');
+          console.warn('[SANITY-CACHE] Posts cache is empty');
         } else {
           // Log a sample of post slugs for debugging
           const sampleSlugs = Object.keys(module.postsCache).slice(0, 5);
@@ -157,7 +193,7 @@ function initializeCache(): void {
         console.info(`[SANITY-CACHE] All collections list cache: ${listCount} collections`);
         
         if (listCount === 0) {
-          console.warn('[SANITY-CACHE] ⚠️ All collections list cache is empty');
+          console.warn('[SANITY-CACHE] All collections list cache is empty');
         }
       }
 
@@ -167,7 +203,7 @@ function initializeCache(): void {
         console.info(`[SANITY-CACHE] Collections cache (detail pages): ${collectionCount} collections`);
         
         if (collectionCount === 0) {
-          console.warn('[SANITY-CACHE] ⚠️ Collections cache is empty');
+          console.warn('[SANITY-CACHE] Collections cache is empty');
         } else {
           // Log a sample of collection slugs for debugging
           const sampleSlugs = Object.keys(module.collectionsCache).slice(0, 5);
@@ -178,7 +214,7 @@ function initializeCache(): void {
       return module;
     } catch (error) {
       // Cache not available - that's okay, we'll use API
-      console.warn('[SANITY-CACHE] ⚠️ Cache module not available, will use API');
+      console.warn('[SANITY-CACHE] Cache module not available, will use API');
       console.debug('[SANITY-CACHE] Error:', error);
       return null;
     }
@@ -210,7 +246,7 @@ async function loadCache(): Promise<any> {
   // Fallback: try loading now (for non-production or if pre-load failed)
   try {
     cacheModule = await import('../data/sanity-cache/index');
-    console.info('[SANITY-CACHE] ✅ Loaded build-time cache module (fallback)');
+    console.info('[SANITY-CACHE] Loaded build-time cache module (fallback)');
     if (cacheModule?.cacheMetadata) {
       console.info(`[SANITY-CACHE] Cache metadata:`, {
         fetchedAt: cacheModule.cacheMetadata.fetchedAt,
@@ -221,7 +257,7 @@ async function loadCache(): Promise<any> {
     }
     return cacheModule;
   } catch (error) {
-    console.warn('[SANITY-CACHE] ⚠️ Cache module not available, will use API');
+    console.warn('[SANITY-CACHE] Cache module not available, will use API');
     console.debug('[SANITY-CACHE] Error:', error);
     return null;
   }
@@ -233,6 +269,7 @@ initializeCache();
 
 /**
  * Get cached data for a query with detailed logging
+ * Automatically transforms CDN URLs to proxy URLs when proxy is enabled
  */
 export async function getCachedData<T>(
   query: string,
@@ -245,7 +282,7 @@ export async function getCachedData<T>(
 
   const cache = await loadCache();
   if (!cache) {
-    console.warn('[SANITY-CACHE] ⚠️ Cache module not available, falling back to API');
+    console.warn('[SANITY-CACHE] Cache module not available, falling back to API');
     return null;
   }
 
@@ -255,13 +292,15 @@ export async function getCachedData<T>(
   // Map query to cache export with detailed logging
   // 1. Homepage query
   if (normalizedQuery.includes('_type == "home"') && normalizedQuery.includes('[0]')) {
-    const data = (cache.homepageCache as T) || null;
-    if (data !== null) {
-      console.info('[SANITY-CACHE] ✅ CACHE HIT: homePageQuery');
+    const rawData = (cache.homepageCache as T) || null;
+    if (rawData !== null) {
+      console.info('[SANITY-CACHE] CACHE HIT: homePageQuery');
+      // Transform CDN URLs to proxy URLs
+      return transformCdnUrls(rawData);
     } else {
-      console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: homePageQuery (data is null)');
+      console.warn('[SANITY-CACHE] CACHE MISS: homePageQuery (data is null)');
     }
-    return data;
+    return rawData;
   }
 
   // 2. Products by category query (has category param) - check this FIRST as it's more specific
@@ -277,26 +316,27 @@ export async function getCachedData<T>(
         'sim-card': 'sim',
       };
       const key = categoryKeys[params.category] || params.category;
-      const data = (categoryMap[key] as T) || null;
+      const rawData = (categoryMap[key] as T) || null;
 
-      if (data !== null) {
-        const dataArray = data as any[];
+      if (rawData !== null) {
+        const dataArray = rawData as any[];
         const count = Array.isArray(dataArray) ? dataArray.length : 0;
 
         if (count > 0) {
-          console.info(`[SANITY-CACHE] ✅ CACHE HIT: productsByCategoryQuery (category: ${params.category}, key: ${key}, count: ${count})`);
+          console.info(`[SANITY-CACHE] CACHE HIT: productsByCategoryQuery (category: ${params.category}, key: ${key}, count: ${count})`);
+          return transformCdnUrls(rawData);
         } else {
           console.warn(
-            `[SANITY-CACHE] ⚠️ CACHE HIT (empty): productsByCategoryQuery (category: ${params.category}, key: ${key}) - cached array is empty`
+            `[SANITY-CACHE] CACHE HIT (empty): productsByCategoryQuery (category: ${params.category}, key: ${key}) - cached array is empty`
           );
         }
       } else {
-        console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: productsByCategoryQuery (category: ${params.category}, key: ${key})`);
+        console.warn(`[SANITY-CACHE] CACHE MISS: productsByCategoryQuery (category: ${params.category}, key: ${key})`);
       }
 
-      return data;
+      return rawData;
     }
-    console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: productsByCategoryQuery (category map not available)`);
+    console.warn(`[SANITY-CACHE] CACHE MISS: productsByCategoryQuery (category map not available)`);
     return null;
   }
 
@@ -307,37 +347,40 @@ export async function getCachedData<T>(
       !normalizedQuery.includes('category == $category') && // Not by category
       !params?.slug && 
       !params?.category) {
-    const data = (cache.allProductsListCache as T) || null;
-    if (data !== null) {
-      const dataArray = data as any[];
+    const rawData = (cache.allProductsListCache as T) || null;
+    if (rawData !== null) {
+      const dataArray = rawData as any[];
       const count = Array.isArray(dataArray) ? dataArray.length : 0;
-      console.info(`[SANITY-CACHE] ✅ CACHE HIT: allProductsQuery (count: ${count})`);
+      console.info(`[SANITY-CACHE] CACHE HIT: allProductsQuery (count: ${count})`);
+      return transformCdnUrls(rawData);
     } else {
-      console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: allProductsQuery (data is null)');
+      console.warn('[SANITY-CACHE] CACHE MISS: allProductsQuery (data is null)');
     }
-    return data;
+    return rawData;
   }
 
   // 4. Featured products query (no category param, has [0...8])
   if (normalizedQuery.includes('_type == "product"') && normalizedQuery.includes('[0...8]') && !params?.category) {
-    const data = (cache.featuredProductsCache as T) || null;
-    if (data !== null) {
-      console.info('[SANITY-CACHE] ✅ CACHE HIT: featuredProductsQuery');
+    const rawData = (cache.featuredProductsCache as T) || null;
+    if (rawData !== null) {
+      console.info('[SANITY-CACHE] CACHE HIT: featuredProductsQuery');
+      return transformCdnUrls(rawData);
     } else {
-      console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: featuredProductsQuery (data is null)');
+      console.warn('[SANITY-CACHE] CACHE MISS: featuredProductsQuery (data is null)');
     }
-    return data;
+    return rawData;
   }
 
   // 5. Featured courses query (has isFeatured == true and [0...6])
   if (normalizedQuery.includes('_type == "course"') && normalizedQuery.includes('isFeatured == true') && normalizedQuery.includes('[0...6]')) {
-    const data = (cache.featuredCoursesCache as T) || null;
-    if (data !== null) {
-      console.info('[SANITY-CACHE] ✅ CACHE HIT: featuredCoursesQuery');
+    const rawData = (cache.featuredCoursesCache as T) || null;
+    if (rawData !== null) {
+      console.info('[SANITY-CACHE] CACHE HIT: featuredCoursesQuery');
+      return transformCdnUrls(rawData);
     } else {
-      console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: featuredCoursesQuery (data is null)');
+      console.warn('[SANITY-CACHE] CACHE MISS: featuredCoursesQuery (data is null)');
     }
-    return data;
+    return rawData;
   }
 
   // 5a. All posts query (no limit, no slug param) - check BEFORE featured posts
@@ -345,37 +388,40 @@ export async function getCachedData<T>(
       !normalizedQuery.includes('[0') && // No array slice
       !normalizedQuery.includes('slug.current == $slug') && // Not post by slug
       !params?.slug) {
-    const data = (cache.allPostsListCache as T) || null;
-    if (data !== null) {
-      const dataArray = data as any[];
+    const rawData = (cache.allPostsListCache as T) || null;
+    if (rawData !== null) {
+      const dataArray = rawData as any[];
       const count = Array.isArray(dataArray) ? dataArray.length : 0;
-      console.info(`[SANITY-CACHE] ✅ CACHE HIT: allPostsQuery (count: ${count})`);
+      console.info(`[SANITY-CACHE] CACHE HIT: allPostsQuery (count: ${count})`);
+      return transformCdnUrls(rawData);
     } else {
-      console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: allPostsQuery (data is null)');
+      console.warn('[SANITY-CACHE] CACHE MISS: allPostsQuery (data is null)');
     }
-    return data;
+    return rawData;
   }
 
   // 6. Featured posts query (has [0...6])
   if (normalizedQuery.includes('_type == "post"') && normalizedQuery.includes('[0...6]')) {
-    const data = (cache.featuredPostsCache as T) || null;
-    if (data !== null) {
-      console.info('[SANITY-CACHE] ✅ CACHE HIT: featuredPostsQuery');
+    const rawData = (cache.featuredPostsCache as T) || null;
+    if (rawData !== null) {
+      console.info('[SANITY-CACHE] CACHE HIT: featuredPostsQuery');
+      return transformCdnUrls(rawData);
     } else {
-      console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: featuredPostsQuery (data is null)');
+      console.warn('[SANITY-CACHE] CACHE MISS: featuredPostsQuery (data is null)');
     }
-    return data;
+    return rawData;
   }
 
   // 7. FAQs by page query (has page param) - check for home first
   if (normalizedQuery.includes('_type == "faq"') && params?.page === 'home') {
-    const data = (cache.faqsHomeCache as T) || null;
-    if (data !== null) {
-      console.info('[SANITY-CACHE] ✅ CACHE HIT: faqsByPageQuery (page: home)');
+    const rawData = (cache.faqsHomeCache as T) || null;
+    if (rawData !== null) {
+      console.info('[SANITY-CACHE] CACHE HIT: faqsByPageQuery (page: home)');
+      return transformCdnUrls(rawData);
     } else {
-      console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: faqsByPageQuery (page: home, data is null)');
+      console.warn('[SANITY-CACHE] CACHE MISS: faqsByPageQuery (page: home, data is null)');
     }
-    return data;
+    return rawData;
   }
 
   // 8. Product by slug query (has slug param)
@@ -384,29 +430,31 @@ export async function getCachedData<T>(
       params?.slug) {
     const productsMap = cache.productsCache;
     if (productsMap && typeof productsMap === 'object') {
-      const data = (productsMap[params.slug] as T) || null;
+      const rawData = (productsMap[params.slug] as T) || null;
       
-      if (data !== null) {
-        console.info(`[SANITY-CACHE] ✅ CACHE HIT: productBySlugQuery (slug: ${params.slug})`);
+      if (rawData !== null) {
+        console.info(`[SANITY-CACHE] CACHE HIT: productBySlugQuery (slug: ${params.slug})`);
+        return transformCdnUrls(rawData);
       } else {
-        console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: productBySlugQuery (slug: ${params.slug}) - product not found in cache`);
+        console.warn(`[SANITY-CACHE] CACHE MISS: productBySlugQuery (slug: ${params.slug}) - product not found in cache`);
       }
       
-      return data;
+      return rawData;
     }
-    console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: productBySlugQuery (products map not available)`);
+    console.warn(`[SANITY-CACHE] CACHE MISS: productBySlugQuery (products map not available)`);
     return null;
   }
 
   // 9. Product FAQs query (has page: "products" param)
   if (normalizedQuery.includes('_type == "faq"') && params?.page === 'products') {
-    const data = (cache.productsFaqsCache as T) || null;
-    if (data !== null) {
-      console.info('[SANITY-CACHE] ✅ CACHE HIT: faqsByPageQuery (page: products)');
+    const rawData = (cache.productsFaqsCache as T) || null;
+    if (rawData !== null) {
+      console.info('[SANITY-CACHE] CACHE HIT: faqsByPageQuery (page: products)');
+      return transformCdnUrls(rawData);
     } else {
-      console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: faqsByPageQuery (page: products, data is null)');
+      console.warn('[SANITY-CACHE] CACHE MISS: faqsByPageQuery (page: products, data is null)');
     }
-    return data;
+    return rawData;
   }
 
   // 10. Post by slug query (has slug param)
@@ -415,17 +463,18 @@ export async function getCachedData<T>(
       params?.slug) {
     const postsMap = cache.postsCache;
     if (postsMap && typeof postsMap === 'object') {
-      const data = (postsMap[params.slug] as T) || null;
+      const rawData = (postsMap[params.slug] as T) || null;
       
-      if (data !== null) {
-        console.info(`[SANITY-CACHE] ✅ CACHE HIT: postBySlugQuery (slug: ${params.slug})`);
+      if (rawData !== null) {
+        console.info(`[SANITY-CACHE] CACHE HIT: postBySlugQuery (slug: ${params.slug})`);
+        return transformCdnUrls(rawData);
       } else {
-        console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: postBySlugQuery (slug: ${params.slug}) - post not found in cache`);
+        console.warn(`[SANITY-CACHE] CACHE MISS: postBySlugQuery (slug: ${params.slug}) - post not found in cache`);
       }
       
-      return data;
+      return rawData;
     }
-    console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: postBySlugQuery (posts map not available)`);
+    console.warn(`[SANITY-CACHE] CACHE MISS: postBySlugQuery (posts map not available)`);
     return null;
   }
 
@@ -433,15 +482,16 @@ export async function getCachedData<T>(
   if (normalizedQuery.includes('_type == "collection"') && 
       !normalizedQuery.includes('slug.current == $slug') && 
       !params?.slug) {
-    const data = (cache.allCollectionsListCache as T) || null;
-    if (data !== null) {
-      const dataArray = data as any[];
+    const rawData = (cache.allCollectionsListCache as T) || null;
+    if (rawData !== null) {
+      const dataArray = rawData as any[];
       const count = Array.isArray(dataArray) ? dataArray.length : 0;
-      console.info(`[SANITY-CACHE] ✅ CACHE HIT: allCollectionsQuery (count: ${count})`);
+      console.info(`[SANITY-CACHE] CACHE HIT: allCollectionsQuery (count: ${count})`);
+      return transformCdnUrls(rawData);
     } else {
-      console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: allCollectionsQuery (data is null)');
+      console.warn('[SANITY-CACHE] CACHE MISS: allCollectionsQuery (data is null)');
     }
-    return data;
+    return rawData;
   }
 
   // 12. Collection by slug query (has slug param)
@@ -450,22 +500,23 @@ export async function getCachedData<T>(
       params?.slug) {
     const collectionsMap = cache.collectionsCache;
     if (collectionsMap && typeof collectionsMap === 'object') {
-      const data = (collectionsMap[params.slug] as T) || null;
+      const rawData = (collectionsMap[params.slug] as T) || null;
       
-      if (data !== null) {
-        console.info(`[SANITY-CACHE] ✅ CACHE HIT: collectionBySlugQuery (slug: ${params.slug})`);
+      if (rawData !== null) {
+        console.info(`[SANITY-CACHE] CACHE HIT: collectionBySlugQuery (slug: ${params.slug})`);
+        return transformCdnUrls(rawData);
       } else {
-        console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: collectionBySlugQuery (slug: ${params.slug}) - collection not found in cache`);
+        console.warn(`[SANITY-CACHE] CACHE MISS: collectionBySlugQuery (slug: ${params.slug}) - collection not found in cache`);
       }
       
-      return data;
+      return rawData;
     }
-    console.warn(`[SANITY-CACHE] ⚠️ CACHE MISS: collectionBySlugQuery (collections map not available)`);
+    console.warn(`[SANITY-CACHE] CACHE MISS: collectionBySlugQuery (collections map not available)`);
     return null;
   }
 
   // Query not matched - log for debugging
-  console.warn('[SANITY-CACHE] ⚠️ CACHE MISS: Query not matched to any cache entry');
+  console.warn('[SANITY-CACHE] CACHE MISS: Query not matched to any cache entry');
   console.debug('[SANITY-CACHE] Query snippet:', normalizedQuery.substring(0, 100) + '...');
   if (params) {
     console.debug('[SANITY-CACHE] Params:', params);
@@ -479,4 +530,3 @@ export async function getCachedData<T>(
 export function isCacheAvailable(): boolean {
   return shouldUseCache() && cacheModule !== null;
 }
-

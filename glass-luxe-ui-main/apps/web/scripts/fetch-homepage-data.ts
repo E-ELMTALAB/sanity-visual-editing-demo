@@ -1,6 +1,8 @@
 /**
  * Build-time script to fetch homepage data from Sanity API
  * This runs before vite build to cache all homepage content locally
+ * 
+ * Uses Cloudflare proxy when PROXY_ENABLED=true for Iran filtering bypass
  */
 
 import { createClient } from '@sanity/client';
@@ -26,8 +28,16 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Get Sanity config from environment variables
-const projectId = process.env.VITE_SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID;
+// ============================================================================
+// PROXY CONFIGURATION - Hardcoded for Iran filtering bypass
+// ============================================================================
+const PROXY_ENABLED = true;
+const UNIFIED_PROXY_URL = 'https://glassluxe-proxy.elmtalabx.workers.dev';
+
+// ============================================================================
+// SANITY CONFIGURATION
+// ============================================================================
+const projectId = process.env.VITE_SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID || 'zrvdkcjy';
 const dataset = process.env.VITE_SANITY_DATASET || process.env.SANITY_DATASET || 'production';
 const apiVersion = process.env.VITE_SANITY_API_VERSION || process.env.SANITY_API_VERSION || '2023-06-21';
 
@@ -43,12 +53,61 @@ const categoryMap: Record<string, string> = {
 // Cache directory
 const CACHE_DIR = join(__dirname, '../src/data/sanity-cache');
 
+/**
+ * Fetch from Sanity via Cloudflare proxy (for build-time use in Iran)
+ */
+async function fetchViaProxy<T>(query: string, params?: Record<string, any>): Promise<T | null> {
+  console.log('[BUILD] Fetching via Cloudflare proxy...');
+  
+  const response = await fetch(UNIFIED_PROXY_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query, params }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new Error(`[BUILD] Proxy request failed (${response.status}): ${errorText}`);
+  }
+
+  const payload = await response.json();
+
+  if (!payload?.success) {
+    throw new Error(payload?.error || '[BUILD] Proxy response missing success flag');
+  }
+
+  return (payload.data ?? null) as T | null;
+}
+
+/**
+ * Fetch from Sanity - uses proxy when enabled, direct client otherwise
+ */
+async function fetchFromSanity<T>(
+  client: ReturnType<typeof createClient>,
+  query: string,
+  params?: Record<string, any>
+): Promise<T | null> {
+  if (PROXY_ENABLED) {
+    try {
+      return await fetchViaProxy<T>(query, params);
+    } catch (error) {
+      console.error('[BUILD] Proxy fetch failed, trying direct...', error);
+      // Fall through to direct client
+    }
+  }
+  
+  // Direct fetch (works when not behind filtering)
+  return await client.fetch<T>(query, params);
+}
+
 async function ensureCacheDir() {
   try {
     await mkdir(CACHE_DIR, { recursive: true });
-    console.log(`✅ Cache directory ready: ${CACHE_DIR}`);
+    console.log(`Cache directory ready: ${CACHE_DIR}`);
   } catch (error) {
-    console.error('❌ Failed to create cache directory:', error);
+    console.error('Failed to create cache directory:', error);
     throw error;
   }
 }
@@ -56,7 +115,7 @@ async function ensureCacheDir() {
 async function saveToCache(filename: string, data: any) {
   const filePath = join(CACHE_DIR, filename);
   await writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
-  console.log(`💾 Saved: ${filename}`);
+  console.log(`Saved: ${filename}`);
 }
 
 /**
@@ -72,7 +131,7 @@ async function updateIndexHtmlWithSeo(seo: any) {
     let html = await readFile(indexPath, 'utf-8');
     
     if (!seo) {
-      console.warn('⚠️  No SEO data provided, skipping index.html update');
+      console.warn('No SEO data provided, skipping index.html update');
       return;
     }
 
@@ -90,15 +149,31 @@ async function updateIndexHtmlWithSeo(seo: any) {
     let updated = false;
 
     // Helper to build image URL for Open Graph
-    const ogImageUrl =
-      seo?.openGraphImage?.asset
-        ? imageUrlBuilder({ projectId, dataset })
-            .image(seo.openGraphImage)
-            .width(1200)
-            .fit('max')
-            .auto('format')
-            .url()
-        : '';
+    // Use proxy URL for images when enabled
+    const getOgImageUrl = () => {
+      if (!seo?.openGraphImage?.asset) return '';
+      
+      const baseUrl = PROXY_ENABLED 
+        ? `${UNIFIED_PROXY_URL}/cdn` 
+        : 'https://cdn.sanity.io';
+      
+      const imageBuilder = imageUrlBuilder({ projectId, dataset });
+      const originalUrl = imageBuilder
+        .image(seo.openGraphImage)
+        .width(1200)
+        .fit('max')
+        .auto('format')
+        .url();
+      
+      // Replace CDN URL with proxy if enabled
+      if (PROXY_ENABLED && originalUrl) {
+        return originalUrl.replace('https://cdn.sanity.io', `${UNIFIED_PROXY_URL}/cdn`);
+      }
+      
+      return originalUrl || '';
+    };
+
+    const ogImageUrl = getOgImageUrl();
 
     // Update title - ONLY if metaTitle exists in Sanity
     if (seo.metaTitle && typeof seo.metaTitle === 'string' && seo.metaTitle.trim()) {
@@ -107,10 +182,10 @@ async function updateIndexHtmlWithSeo(seo: any) {
         /<title>.*?<\/title>/,
         `<title>${escapedTitle}</title>`
       );
-      console.log(`   ✅ Updated <title>: ${seo.metaTitle.substring(0, 50)}...`);
+      console.log(`   Updated <title>: ${seo.metaTitle.substring(0, 50)}...`);
       updated = true;
     } else {
-      console.warn('   ⚠️  metaTitle not found in Sanity SEO data, keeping existing title');
+      console.warn('   metaTitle not found in Sanity SEO data, keeping existing title');
     }
 
     // Update meta description - ONLY if metaDescription exists in Sanity
@@ -120,10 +195,10 @@ async function updateIndexHtmlWithSeo(seo: any) {
         /<meta\s+name=["']description["']\s+content=["'][^"']*["']\s*\/?>/,
         `<meta name="description" content="${escapedDesc}" />`
       );
-      console.log(`   ✅ Updated meta description: ${seo.metaDescription.substring(0, 50)}...`);
+      console.log(`   Updated meta description: ${seo.metaDescription.substring(0, 50)}...`);
       updated = true;
     } else {
-      console.warn('   ⚠️  metaDescription not found in Sanity SEO data, keeping existing description');
+      console.warn('   metaDescription not found in Sanity SEO data, keeping existing description');
     }
 
     // Update Open Graph title - Use openGraphTitle if available, otherwise metaTitle (NO OTHER FALLBACKS)
@@ -134,10 +209,10 @@ async function updateIndexHtmlWithSeo(seo: any) {
         /<meta\s+property=["']og:title["']\s+content=["'][^"']*["']\s*\/?>/,
         `<meta property="og:title" content="${escapedOgTitle}" />`
       );
-      console.log(`   ✅ Updated og:title: ${ogTitle.substring(0, 50)}...`);
+      console.log(`   Updated og:title: ${ogTitle.substring(0, 50)}...`);
       updated = true;
     } else {
-      console.warn('   ⚠️  og:title not found in Sanity SEO data, keeping existing og:title');
+      console.warn('   og:title not found in Sanity SEO data, keeping existing og:title');
     }
 
     // Update Open Graph description - Use openGraphDescription if available, otherwise metaDescription (NO OTHER FALLBACKS)
@@ -148,10 +223,10 @@ async function updateIndexHtmlWithSeo(seo: any) {
         /<meta\s+property=["']og:description["']\s+content=["'][^"']*["']\s*\/?>/,
         `<meta property="og:description" content="${escapedOgDesc}" />`
       );
-      console.log(`   ✅ Updated og:description: ${ogDescription.substring(0, 50)}...`);
+      console.log(`   Updated og:description: ${ogDescription.substring(0, 50)}...`);
       updated = true;
     } else {
-      console.warn('   ⚠️  og:description not found in Sanity SEO data, keeping existing og:description');
+      console.warn('   og:description not found in Sanity SEO data, keeping existing og:description');
     }
 
     // Update canonical URL if provided
@@ -170,7 +245,7 @@ async function updateIndexHtmlWithSeo(seo: any) {
           `    <link rel="canonical" href="${escapedCanonical}" />\n  </head>`
         );
       }
-      console.log(`   ✅ Updated canonical URL: ${seo.canonicalUrl}`);
+      console.log(`   Updated canonical URL: ${seo.canonicalUrl}`);
       updated = true;
     }
 
@@ -180,10 +255,10 @@ async function updateIndexHtmlWithSeo(seo: any) {
         /<meta\s+property=["']og:image["']\s+content=["'][^"']*["']\s*\/?>/,
         `<meta property="og:image" content="${ogImageUrl}" />`
       );
-      console.log(`   ✅ Updated og:image: ${ogImageUrl}`);
+      console.log(`   Updated og:image: ${ogImageUrl}`);
       updated = true;
     } else {
-      console.warn('   ⚠️  og:image not found in Sanity SEO data, keeping existing og:image');
+      console.warn('   og:image not found in Sanity SEO data, keeping existing og:image');
     }
 
     // Update robots meta if provided
@@ -202,36 +277,40 @@ async function updateIndexHtmlWithSeo(seo: any) {
           `    <meta name="robots" content="${escapedRobots}" />\n  </head>`
         );
       }
-      console.log(`   ✅ Updated robots meta: ${seo.robotsMeta}`);
+      console.log(`   Updated robots meta: ${seo.robotsMeta}`);
       updated = true;
     }
 
     // Write updated HTML back
     if (updated) {
       await writeFile(indexPath, html, 'utf-8');
-      console.log('✅ Successfully updated index.html with SEO data from Sanity cache');
-      console.log('   📝 Meta tags are now hardcoded in index.html and will be visible to Google crawlers');
+      console.log('Successfully updated index.html with SEO data from Sanity cache');
+      console.log('   Meta tags are now hardcoded in index.html and will be visible to Google crawlers');
     } else {
-      console.warn('⚠️  No SEO updates were made to index.html (no valid SEO data found)');
+      console.warn('No SEO updates were made to index.html (no valid SEO data found)');
     }
   } catch (error) {
-    console.error('❌ Failed to update index.html with SEO data:', error);
+    console.error('Failed to update index.html with SEO data:', error);
     // Don't throw - allow build to continue even if HTML update fails
-    console.warn('⚠️  Build will continue, but index.html was not updated with SEO data');
+    console.warn('Build will continue, but index.html was not updated with SEO data');
   }
 }
 
 async function fetchHomepageData() {
   if (!projectId || projectId === 'placeholder') {
-    console.warn('⚠️  Sanity project ID not configured. Skipping data fetch.');
+    console.warn('Sanity project ID not configured. Skipping data fetch.');
     console.warn('   Set VITE_SANITY_PROJECT_ID or SANITY_PROJECT_ID environment variable.');
     return;
   }
 
-  console.log('🚀 Starting homepage data fetch from Sanity...');
-  console.log(`📦 Project: ${projectId}, Dataset: ${dataset}, API Version: ${apiVersion}`);
+  console.log('Starting homepage data fetch from Sanity...');
+  console.log(`Project: ${projectId}, Dataset: ${dataset}, API Version: ${apiVersion}`);
+  console.log(`Proxy enabled: ${PROXY_ENABLED}`);
+  if (PROXY_ENABLED) {
+    console.log(`Proxy URL: ${UNIFIED_PROXY_URL}`);
+  }
 
-  // Create Sanity client
+  // Create Sanity client (used as fallback when proxy fails)
   const client = createClient({
     projectId,
     dataset,
@@ -244,29 +323,29 @@ async function fetchHomepageData() {
     await ensureCacheDir();
 
     // Fetch all homepage queries
-    console.log('\n📥 Fetching homepage data...');
-    const homeData = await client.fetch(homePageQuery);
+    console.log('\nFetching homepage data...');
+    const homeData = await fetchFromSanity(client, homePageQuery);
 
     // Log detailed homepage structure
     if (!homeData) {
-      console.warn('⚠️ homePageQuery returned null/undefined');
+      console.warn('homePageQuery returned null/undefined');
     } else {
-      console.log('📊 Homepage data overview:');
-      console.log('   - heroSlides:', Array.isArray(homeData.heroSlides) ? homeData.heroSlides.length : 0);
-      console.log('   - bestSellerProducts:', Array.isArray(homeData.bestSellerProducts) ? homeData.bestSellerProducts.length : 0);
-      console.log('   - editorialBanners:', Array.isArray(homeData.editorialBanners) ? homeData.editorialBanners.length : 0);
-      console.log('   - collectionsBanner:', homeData.collectionsBanner ? 'present' : 'missing');
-      console.log('   - discountedProducts:', Array.isArray(homeData.discountedProducts) ? homeData.discountedProducts.length : 0);
-      console.log('   - socialMediaProducts:', Array.isArray(homeData.socialMediaProducts) ? homeData.socialMediaProducts.length : 0);
-      console.log('   - educationalProducts:', Array.isArray(homeData.educationalProducts) ? homeData.educationalProducts.length : 0);
-      console.log('   - bestsellingCourses:', Array.isArray(homeData.bestsellingCourses) ? homeData.bestsellingCourses.length : 0);
-      console.log('   - magazinePosts:', Array.isArray(homeData.magazinePosts) ? homeData.magazinePosts.length : 0);
-      console.log('   - featuredBlogs:', Array.isArray(homeData.featuredBlogs) ? homeData.featuredBlogs.length : 0);
-      console.log('   - seoContent:', typeof homeData.seoContent === 'string' && homeData.seoContent.trim().length > 0 ? 'present' : 'empty');
+      console.log('Homepage data overview:');
+      console.log('   - heroSlides:', Array.isArray((homeData as any).heroSlides) ? (homeData as any).heroSlides.length : 0);
+      console.log('   - bestSellerProducts:', Array.isArray((homeData as any).bestSellerProducts) ? (homeData as any).bestSellerProducts.length : 0);
+      console.log('   - editorialBanners:', Array.isArray((homeData as any).editorialBanners) ? (homeData as any).editorialBanners.length : 0);
+      console.log('   - collectionsBanner:', (homeData as any).collectionsBanner ? 'present' : 'missing');
+      console.log('   - discountedProducts:', Array.isArray((homeData as any).discountedProducts) ? (homeData as any).discountedProducts.length : 0);
+      console.log('   - socialMediaProducts:', Array.isArray((homeData as any).socialMediaProducts) ? (homeData as any).socialMediaProducts.length : 0);
+      console.log('   - educationalProducts:', Array.isArray((homeData as any).educationalProducts) ? (homeData as any).educationalProducts.length : 0);
+      console.log('   - bestsellingCourses:', Array.isArray((homeData as any).bestsellingCourses) ? (homeData as any).bestsellingCourses.length : 0);
+      console.log('   - magazinePosts:', Array.isArray((homeData as any).magazinePosts) ? (homeData as any).magazinePosts.length : 0);
+      console.log('   - featuredBlogs:', Array.isArray((homeData as any).featuredBlogs) ? (homeData as any).featuredBlogs.length : 0);
+      console.log('   - seoContent:', typeof (homeData as any).seoContent === 'string' && (homeData as any).seoContent.trim().length > 0 ? 'present' : 'empty');
 
       // Log a few sample items for debugging (without dumping everything)
-      if (Array.isArray(homeData.bestSellerProducts) && homeData.bestSellerProducts.length > 0) {
-        const sample = homeData.bestSellerProducts.slice(0, 3).map((p: any) => ({
+      if (Array.isArray((homeData as any).bestSellerProducts) && (homeData as any).bestSellerProducts.length > 0) {
+        const sample = (homeData as any).bestSellerProducts.slice(0, 3).map((p: any) => ({
           _id: p?._id,
           name: p?.name,
           slug: typeof p?.slug === 'string' ? p.slug : p?.slug?.current,
@@ -275,8 +354,8 @@ async function fetchHomepageData() {
         console.log('   - Sample bestSellerProducts:', sample);
       }
 
-      if (Array.isArray(homeData.socialMediaProducts) && homeData.socialMediaProducts.length > 0) {
-        const sample = homeData.socialMediaProducts.slice(0, 3).map((p: any) => ({
+      if (Array.isArray((homeData as any).socialMediaProducts) && (homeData as any).socialMediaProducts.length > 0) {
+        const sample = (homeData as any).socialMediaProducts.slice(0, 3).map((p: any) => ({
           _id: p?._id,
           name: p?.name,
           slug: typeof p?.slug === 'string' ? p.slug : p?.slug?.current,
@@ -285,8 +364,8 @@ async function fetchHomepageData() {
         console.log('   - Sample socialMediaProducts:', sample);
       }
 
-      if (Array.isArray(homeData.magazinePosts) && homeData.magazinePosts.length > 0) {
-        const sample = homeData.magazinePosts.slice(0, 3).map((p: any) => ({
+      if (Array.isArray((homeData as any).magazinePosts) && (homeData as any).magazinePosts.length > 0) {
+        const sample = (homeData as any).magazinePosts.slice(0, 3).map((p: any) => ({
           _id: p?._id,
           title: p?.title,
           slug: typeof p?.slug === 'string' ? p.slug : p?.slug?.current,
@@ -300,22 +379,22 @@ async function fetchHomepageData() {
 
     // Update index.html with SEO data from Sanity cache (BEFORE build)
     // This ensures Google crawlers see correct meta tags in static HTML
-    if (homeData?.seo) {
-      console.log('\n📝 Updating index.html with SEO data from Sanity cache...');
-      console.log('   - Meta Title:', homeData.seo.metaTitle || 'NOT SET in Sanity');
-      console.log('   - Meta Description:', homeData.seo.metaDescription || 'NOT SET in Sanity');
-      console.log('   - Open Graph Title:', homeData.seo.openGraphTitle || homeData.seo.metaTitle || 'NOT SET in Sanity');
-      console.log('   - Open Graph Description:', homeData.seo.openGraphDescription || homeData.seo.metaDescription || 'NOT SET in Sanity');
-      await updateIndexHtmlWithSeo(homeData.seo);
+    if ((homeData as any)?.seo) {
+      console.log('\nUpdating index.html with SEO data from Sanity cache...');
+      console.log('   - Meta Title:', (homeData as any).seo.metaTitle || 'NOT SET in Sanity');
+      console.log('   - Meta Description:', (homeData as any).seo.metaDescription || 'NOT SET in Sanity');
+      console.log('   - Open Graph Title:', (homeData as any).seo.openGraphTitle || (homeData as any).seo.metaTitle || 'NOT SET in Sanity');
+      console.log('   - Open Graph Description:', (homeData as any).seo.openGraphDescription || (homeData as any).seo.metaDescription || 'NOT SET in Sanity');
+      await updateIndexHtmlWithSeo((homeData as any).seo);
     } else {
-      console.warn('\n⚠️  No SEO data found in homepage data from Sanity');
+      console.warn('\nNo SEO data found in homepage data from Sanity');
       console.warn('   index.html will NOT be updated - meta tags will remain as hardcoded values');
-      console.warn('   Please ensure SEO fields are set in Sanity Studio → Home → SEO tab');
+      console.warn('   Please ensure SEO fields are set in Sanity Studio -> Home -> SEO tab');
     }
 
-    console.log('\n📥 Fetching featured products...');
-    const featuredProducts = await client.fetch(featuredProductsQuery);
-    console.log(`📊 featuredProducts count: ${featuredProducts?.length || 0}`);
+    console.log('\nFetching featured products...');
+    const featuredProducts = await fetchFromSanity(client, featuredProductsQuery);
+    console.log(`featuredProducts count: ${(featuredProducts as any[])?.length || 0}`);
     if (Array.isArray(featuredProducts) && featuredProducts.length > 0) {
       const sample = featuredProducts.slice(0, 5).map((p: any) => ({
         _id: p?._id,
@@ -327,9 +406,9 @@ async function fetchHomepageData() {
     }
     await saveToCache('featured-products.json', featuredProducts);
 
-    console.log('\n📥 Fetching featured courses...');
-    const featuredCourses = await client.fetch(featuredCoursesQuery);
-    console.log(`📊 featuredCourses count: ${featuredCourses?.length || 0}`);
+    console.log('\nFetching featured courses...');
+    const featuredCourses = await fetchFromSanity(client, featuredCoursesQuery);
+    console.log(`featuredCourses count: ${(featuredCourses as any[])?.length || 0}`);
     if (Array.isArray(featuredCourses) && featuredCourses.length > 0) {
       const sample = featuredCourses.slice(0, 3).map((c: any) => ({
         _id: c?._id,
@@ -342,9 +421,9 @@ async function fetchHomepageData() {
     }
     await saveToCache('featured-courses.json', featuredCourses);
 
-    console.log('\n📥 Fetching featured posts...');
-    const featuredPosts = await client.fetch(featuredPostsQuery);
-    console.log(`📊 featuredPosts count: ${featuredPosts?.length || 0}`);
+    console.log('\nFetching featured posts...');
+    const featuredPosts = await fetchFromSanity(client, featuredPostsQuery);
+    console.log(`featuredPosts count: ${(featuredPosts as any[])?.length || 0}`);
     if (Array.isArray(featuredPosts) && featuredPosts.length > 0) {
       const sample = featuredPosts.slice(0, 3).map((p: any) => ({
         _id: p?._id,
@@ -356,16 +435,16 @@ async function fetchHomepageData() {
     }
     await saveToCache('featured-posts.json', featuredPosts);
 
-    console.log('\n📥 Fetching products by category...');
+    console.log('\nFetching products by category...');
     const categoryProductsMap: Record<string, any[]> = {};
     for (const [key, category] of Object.entries(categoryMap)) {
       try {
         console.log(`   Fetching category: ${key} (${category})...`);
-        const products = await client.fetch(productsByCategoryQuery, { category });
-        categoryProductsMap[key] = products;
+        const products = await fetchFromSanity(client, productsByCategoryQuery, { category });
+        categoryProductsMap[key] = products as any[] || [];
         await saveToCache(`products-category-${key}.json`, products);
-        const count = products?.length || 0;
-        console.log(`   ✅ ${key}: ${count} products`);
+        const count = (products as any[])?.length || 0;
+        console.log(`   ${key}: ${count} products`);
         if (Array.isArray(products) && products.length > 0) {
           const sample = products.slice(0, 3).map((p: any) => ({
             _id: p?._id,
@@ -376,7 +455,7 @@ async function fetchHomepageData() {
           console.log(`     - Sample ${key} products:`, sample);
         }
       } catch (error) {
-        console.error(`   ❌ Error fetching category ${key}:`, error);
+        console.error(`   Error fetching category ${key}:`, error);
         categoryProductsMap[key] = [];
         await saveToCache(`products-category-${key}.json`, []);
       }
@@ -385,26 +464,15 @@ async function fetchHomepageData() {
     // Save combined category products map
     await saveToCache('category-products-map.json', categoryProductsMap);
 
-    console.log('\n📥 Skipping FAQs fetch (temporarily disabled)...');
+    console.log('\nSkipping FAQs fetch (temporarily disabled)...');
     // TEMPORARILY DISABLED: FAQ fetching to prevent build errors
-    // const faqs = await client.fetch(faqsByPageQuery, { page: 'home' });
-    // console.log(`📊 FAQs count: ${faqs?.length || 0}`);
-    // if (Array.isArray(faqs) && faqs.length > 0) {
-    //   const sample = faqs.slice(0, 3).map((f: any) => ({
-    //     _id: f?._id,
-    //     question: f?.question,
-    //     category: f?.category,
-    //   }));
-    //   console.log('   - Sample FAQs:', sample);
-    // }
-    // await saveToCache('faqs-home.json', faqs);
-    const faqs = []; // Empty array for FAQs
+    const faqs: any[] = []; // Empty array for FAQs
     await saveToCache('faqs-home.json', faqs);
 
     // Fetch all products (used for both listing page and to get slugs for detail pages)
-    console.log('\n📥 Fetching all products...');
-    const allProductsList = await client.fetch(allProductsQuery);
-    console.log(`📊 All products count: ${allProductsList?.length || 0}`);
+    console.log('\nFetching all products...');
+    const allProductsList = await fetchFromSanity(client, allProductsQuery);
+    console.log(`All products count: ${(allProductsList as any[])?.length || 0}`);
     if (Array.isArray(allProductsList) && allProductsList.length > 0) {
       const sample = allProductsList.slice(0, 5).map((p: any) => ({
         _id: p?._id,
@@ -417,23 +485,23 @@ async function fetchHomepageData() {
     await saveToCache('all-products-list.json', allProductsList);
 
     // Fetch full detail for each product (for detail pages)
-    console.log('\n📥 Fetching full details for product detail pages...');
+    console.log('\nFetching full details for product detail pages...');
     const productsMap: Record<string, any> = {};
-    const productSlugs = allProductsList?.map((p: any) => p.slug).filter(Boolean) || [];
+    const productSlugs = (allProductsList as any[])?.map((p: any) => p.slug).filter(Boolean) || [];
 
-    console.log(`📦 Fetching full details for ${productSlugs.length} products...`);
+    console.log(`Fetching full details for ${productSlugs.length} products...`);
     let successCount = 0;
     let errorCount = 0;
 
     for (let i = 0; i < productSlugs.length; i++) {
       const slug = productSlugs[i];
       try {
-        const productDetail = await client.fetch(productBySlugQuery, { slug });
+        const productDetail = await fetchFromSanity(client, productBySlugQuery, { slug });
         if (productDetail) {
           productsMap[slug] = productDetail;
           successCount++;
         } else {
-          console.warn(`   ⚠️ Product "${slug}" returned null/undefined`);
+          console.warn(`   Product "${slug}" returned null/undefined`);
           errorCount++;
         }
         
@@ -442,37 +510,26 @@ async function fetchHomepageData() {
           console.log(`   Progress: ${i + 1}/${productSlugs.length} products fetched (${successCount} success, ${errorCount} errors)`);
         }
       } catch (error) {
-        console.error(`   ❌ Error fetching product "${slug}":`, error);
+        console.error(`   Error fetching product "${slug}":`, error);
         errorCount++;
       }
     }
 
     await saveToCache('products-map.json', productsMap);
-    console.log(`💾 Saved ${Object.keys(productsMap).length} products to cache`);
+    console.log(`Saved ${Object.keys(productsMap).length} products to cache`);
     if (errorCount > 0) {
-      console.warn(`⚠️ ${errorCount} products failed to fetch`);
+      console.warn(`${errorCount} products failed to fetch`);
     }
 
     // Fetch product FAQs - TEMPORARILY DISABLED
-    console.log('\n📥 Skipping product FAQs fetch (temporarily disabled)...');
-    // const productFaqs = await client.fetch(faqsByPageQuery, { page: 'products' });
-    // console.log(`📊 Product FAQs count: ${productFaqs?.length || 0}`);
-    // if (Array.isArray(productFaqs) && productFaqs.length > 0) {
-    //   const sample = productFaqs.slice(0, 3).map((f: any) => ({
-    //     _id: f?._id,
-    //     question: f?.question,
-    //     category: f?.category,
-    //   }));
-    //   console.log('   - Sample product FAQs:', sample);
-    // }
-    // await saveToCache('products-faqs.json', productFaqs);
-    const productFaqs = []; // Empty array for product FAQs
+    console.log('\nSkipping product FAQs fetch (temporarily disabled)...');
+    const productFaqs: any[] = []; // Empty array for product FAQs
     await saveToCache('products-faqs.json', productFaqs);
 
     // Fetch all blog posts for listing page
-    console.log('\n📥 Fetching all blog posts for listing page...');
-    const allPostsList = await client.fetch(allPostsQuery);
-    console.log(`📊 All posts count: ${allPostsList?.length || 0}`);
+    console.log('\nFetching all blog posts for listing page...');
+    const allPostsList = await fetchFromSanity(client, allPostsQuery);
+    console.log(`All posts count: ${(allPostsList as any[])?.length || 0}`);
     if (Array.isArray(allPostsList) && allPostsList.length > 0) {
       const sample = allPostsList.slice(0, 5).map((p: any) => ({
         _id: p?._id,
@@ -485,23 +542,23 @@ async function fetchHomepageData() {
     await saveToCache('all-posts-list.json', allPostsList);
 
     // Fetch full detail for each blog post (for detail pages)
-    console.log('\n📥 Fetching full details for blog post detail pages...');
+    console.log('\nFetching full details for blog post detail pages...');
     const postsMap: Record<string, any> = {};
-    const postSlugs = allPostsList?.map((p: any) => p.slug).filter(Boolean) || [];
+    const postSlugs = (allPostsList as any[])?.map((p: any) => p.slug).filter(Boolean) || [];
 
-    console.log(`📦 Fetching full details for ${postSlugs.length} blog posts...`);
+    console.log(`Fetching full details for ${postSlugs.length} blog posts...`);
     let postSuccessCount = 0;
     let postErrorCount = 0;
 
     for (let i = 0; i < postSlugs.length; i++) {
       const slug = postSlugs[i];
       try {
-        const postDetail = await client.fetch(postBySlugQuery, { slug });
+        const postDetail = await fetchFromSanity(client, postBySlugQuery, { slug });
         if (postDetail) {
           postsMap[slug] = postDetail;
           postSuccessCount++;
         } else {
-          console.warn(`   ⚠️ Post "${slug}" returned null/undefined`);
+          console.warn(`   Post "${slug}" returned null/undefined`);
           postErrorCount++;
         }
         
@@ -510,21 +567,21 @@ async function fetchHomepageData() {
           console.log(`   Progress: ${i + 1}/${postSlugs.length} posts fetched (${postSuccessCount} success, ${postErrorCount} errors)`);
         }
       } catch (error) {
-        console.error(`   ❌ Error fetching post "${slug}":`, error);
+        console.error(`   Error fetching post "${slug}":`, error);
         postErrorCount++;
       }
     }
 
     await saveToCache('posts-map.json', postsMap);
-    console.log(`💾 Saved ${Object.keys(postsMap).length} blog posts to cache`);
+    console.log(`Saved ${Object.keys(postsMap).length} blog posts to cache`);
     if (postErrorCount > 0) {
-      console.warn(`⚠️ ${postErrorCount} posts failed to fetch`);
+      console.warn(`${postErrorCount} posts failed to fetch`);
     }
 
     // Fetch all collections for listing page
-    console.log('\n📥 Fetching all collections for listing page...');
-    const allCollectionsList = await client.fetch(allCollectionsQuery);
-    console.log(`📊 All collections count: ${allCollectionsList?.length || 0}`);
+    console.log('\nFetching all collections for listing page...');
+    const allCollectionsList = await fetchFromSanity(client, allCollectionsQuery);
+    console.log(`All collections count: ${(allCollectionsList as any[])?.length || 0}`);
     if (Array.isArray(allCollectionsList) && allCollectionsList.length > 0) {
       const sample = allCollectionsList.slice(0, 5).map((c: any) => ({
         _id: c?._id,
@@ -536,23 +593,23 @@ async function fetchHomepageData() {
     await saveToCache('all-collections-list.json', allCollectionsList);
 
     // Fetch full detail for each collection (for detail pages)
-    console.log('\n📥 Fetching full details for collection detail pages...');
+    console.log('\nFetching full details for collection detail pages...');
     const collectionsMap: Record<string, any> = {};
-    const collectionSlugs = allCollectionsList?.map((c: any) => c.slug).filter(Boolean) || [];
+    const collectionSlugs = (allCollectionsList as any[])?.map((c: any) => c.slug).filter(Boolean) || [];
 
-    console.log(`📦 Fetching full details for ${collectionSlugs.length} collections...`);
+    console.log(`Fetching full details for ${collectionSlugs.length} collections...`);
     let collectionSuccessCount = 0;
     let collectionErrorCount = 0;
 
     for (let i = 0; i < collectionSlugs.length; i++) {
       const slug = collectionSlugs[i];
       try {
-        const collectionDetail = await client.fetch(collectionBySlugQuery, { slug });
+        const collectionDetail = await fetchFromSanity(client, collectionBySlugQuery, { slug });
         if (collectionDetail) {
           collectionsMap[slug] = collectionDetail;
           collectionSuccessCount++;
         } else {
-          console.warn(`   ⚠️ Collection "${slug}" returned null/undefined`);
+          console.warn(`   Collection "${slug}" returned null/undefined`);
           collectionErrorCount++;
         }
         
@@ -561,15 +618,15 @@ async function fetchHomepageData() {
           console.log(`   Progress: ${i + 1}/${collectionSlugs.length} collections fetched (${collectionSuccessCount} success, ${collectionErrorCount} errors)`);
         }
       } catch (error) {
-        console.error(`   ❌ Error fetching collection "${slug}":`, error);
+        console.error(`   Error fetching collection "${slug}":`, error);
         collectionErrorCount++;
       }
     }
 
     await saveToCache('collections-map.json', collectionsMap);
-    console.log(`💾 Saved ${Object.keys(collectionsMap).length} collections to cache`);
+    console.log(`Saved ${Object.keys(collectionsMap).length} collections to cache`);
     if (collectionErrorCount > 0) {
-      console.warn(`⚠️ ${collectionErrorCount} collections failed to fetch`);
+      console.warn(`${collectionErrorCount} collections failed to fetch`);
     }
 
     // Save metadata
@@ -578,6 +635,8 @@ async function fetchHomepageData() {
       projectId,
       dataset,
       apiVersion,
+      proxyEnabled: PROXY_ENABLED,
+      proxyUrl: PROXY_ENABLED ? UNIFIED_PROXY_URL : null,
       categories: Object.keys(categoryMap),
     };
     await saveToCache('metadata.json', metadata);
@@ -618,26 +677,26 @@ export const collectionsCache = ${JSON.stringify(collectionsMap, null, 2)} as co
 export const cacheMetadata = ${JSON.stringify(metadata, null, 2)} as const;
 `;
     await writeFile(join(CACHE_DIR, 'index.ts'), indexContent, 'utf-8');
-    console.log('💾 Saved: index.ts (TypeScript cache exports)');
+    console.log('Saved: index.ts (TypeScript cache exports)');
 
-    console.log('\n✅ Homepage data fetch completed successfully!');
-    console.log(`📊 Summary:`);
-    console.log(`   - Homepage: ${homeData ? '✓' : '✗'}`);
-    console.log(`   - Featured Products: ${featuredProducts?.length || 0}`);
-    console.log(`   - Featured Courses: ${featuredCourses?.length || 0}`);
-    console.log(`   - Featured Posts: ${featuredPosts?.length || 0}`);
+    console.log('\nHomepage data fetch completed successfully!');
+    console.log(`Summary:`);
+    console.log(`   - Homepage: ${homeData ? 'YES' : 'NO'}`);
+    console.log(`   - Featured Products: ${(featuredProducts as any[])?.length || 0}`);
+    console.log(`   - Featured Courses: ${(featuredCourses as any[])?.length || 0}`);
+    console.log(`   - Featured Posts: ${(featuredPosts as any[])?.length || 0}`);
     console.log(`   - Category Products: ${Object.keys(categoryProductsMap).length} categories`);
     console.log(`   - FAQs: DISABLED (temporarily)`);
-    console.log(`   - All Products (listing): ${allProductsList?.length || 0}`);
+    console.log(`   - All Products (listing): ${(allProductsList as any[])?.length || 0}`);
     console.log(`   - Products (detail pages): ${Object.keys(productsMap).length}`);
     console.log(`   - Product FAQs: DISABLED (temporarily)`);
-    console.log(`   - All Posts (listing): ${allPostsList?.length || 0}`);
+    console.log(`   - All Posts (listing): ${(allPostsList as any[])?.length || 0}`);
     console.log(`   - Posts (detail pages): ${Object.keys(postsMap).length}`);
-    console.log(`   - All Collections (listing): ${allCollectionsList?.length || 0}`);
+    console.log(`   - All Collections (listing): ${(allCollectionsList as any[])?.length || 0}`);
     console.log(`   - Collections (detail pages): ${Object.keys(collectionsMap).length}`);
-    console.log(`\n📁 Cache location: ${CACHE_DIR}`);
+    console.log(`\nCache location: ${CACHE_DIR}`);
   } catch (error) {
-    console.error('\n❌ Error fetching homepage data:', error);
+    console.error('\nError fetching homepage data:', error);
     process.exit(1);
   }
 }
@@ -647,4 +706,3 @@ fetchHomepageData().catch((error) => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
-

@@ -1,3 +1,5 @@
+import { getMedusaBackendUrl, MEDUSA_PUBLISHABLE_KEY } from './proxy.config'
+
 export interface MedusaVariant {
   variant_id: string;
   name: string;
@@ -48,7 +50,7 @@ function getCachedPrices(slugs: string[]): Record<string, ProductPrices> | null 
     const hasAllSlugs = slugs.every(slug => cache.slugs.includes(slug));
     if (!hasAllSlugs) return null;
 
-    console.log('[MEDUSA-PRICES] ✅ Using cached prices for:', slugs.length, 'products');
+    console.log('[MEDUSA-PRICES] Using cached prices for:', slugs.length, 'products');
     return cache.data;
   } catch (error) {
     console.warn('[MEDUSA-PRICES] Cache read error:', error);
@@ -64,29 +66,33 @@ function setCachedPrices(slugs: string[], data: Record<string, ProductPrices>): 
       slugs: [...new Set(slugs)] // Remove duplicates
     };
     localStorage.setItem(PRICE_CACHE_KEY, JSON.stringify(cache));
-    console.log('[MEDUSA-PRICES] 💾 Cached prices for:', slugs.length, 'products');
+    console.log('[MEDUSA-PRICES] Cached prices for:', slugs.length, 'products');
   } catch (error) {
     console.warn('[MEDUSA-PRICES] Cache write error:', error);
   }
 }
 
+/**
+ * Fetch product prices from Medusa backend
+ * Routes through Cloudflare proxy when enabled for Iran filtering bypass
+ */
 export async function fetchProductPrices(slugs: string[]): Promise<Record<string, ProductPrices>> {
+  const backend = getMedusaBackendUrl();
+  const publishableKey = import.meta.env.VITE_MEDUSA_PUBLISHABLE_KEY || MEDUSA_PUBLISHABLE_KEY;
+  
   console.log('[MEDUSA-PRICES] ========== BATCH FETCHING PRODUCT PRICES ==========');
-  console.log('[MEDUSA-PRICES] Backend URL:', import.meta.env.VITE_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com');
+  console.log('[MEDUSA-PRICES] Backend URL:', backend);
   console.log('[MEDUSA-PRICES] Slugs to fetch:', slugs);
   console.log('[MEDUSA-PRICES] Slugs count:', slugs.length);
 
-  // 🚀 PERFORMANCE IMPROVEMENT: Check cache first
+  // PERFORMANCE IMPROVEMENT: Check cache first
   const cachedPrices = getCachedPrices(slugs);
   if (cachedPrices) {
     return cachedPrices;
   }
 
-  const backend = import.meta.env.VITE_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com';
-  const publishableKey = import.meta.env.VITE_MEDUSA_PUBLISHABLE_KEY || 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4';
-
   try {
-    // 🚀 PERFORMANCE IMPROVEMENT: Single batched request instead of N individual requests
+    // PERFORMANCE IMPROVEMENT: Single batched request instead of N individual requests
     console.log('[MEDUSA-PRICES] Making single batched request for all products...');
 
     const response = await fetch(`${backend}/store/products/batch-prices`, {
@@ -113,22 +119,22 @@ export async function fetchProductPrices(slugs: string[]): Promise<Record<string
       throw new Error(`Batch API error: ${result.error}`);
     }
 
-    console.log('[MEDUSA-PRICES] ✅ Batch request successful');
+    console.log('[MEDUSA-PRICES] Batch request successful');
     console.log('[MEDUSA-PRICES] Results:', Object.keys(result.data || {}));
 
     const pricesData = result.data || {};
 
-    // 🚀 PERFORMANCE IMPROVEMENT: Cache the results
+    // PERFORMANCE IMPROVEMENT: Cache the results
     setCachedPrices(slugs, pricesData);
 
     console.log('[MEDUSA-PRICES] =========================================');
     return pricesData;
 
   } catch (error: any) {
-    console.error('[MEDUSA-PRICES] ❌ Batch request failed:', error.message);
+    console.error('[MEDUSA-PRICES] Batch request failed:', error.message);
     console.error('[MEDUSA-PRICES] Falling back to individual requests...');
 
-    // 🚨 FALLBACK: Use individual requests if batch fails
+    // FALLBACK: Use individual requests if batch fails
     const prices: Record<string, ProductPrices> = {};
 
     for (const slug of slugs) {
@@ -189,17 +195,17 @@ export async function fetchProductPrices(slugs: string[]): Promise<Record<string
               has_promotion: hasPromotion,
               discount_percentage: discountPercentage,
             };
-          }).filter(v => v.price > 0),
+          }).filter((v: MedusaVariant) => v.price > 0),
         };
 
-        console.log(`[MEDUSA-PRICES] ✅ Fallback successful for ${slug}`);
+        console.log(`[MEDUSA-PRICES] Fallback successful for ${slug}`);
       } catch (fallbackError: any) {
-        console.error(`[MEDUSA-PRICES] ❌ Fallback failed for ${slug}:`, fallbackError.message);
+        console.error(`[MEDUSA-PRICES] Fallback failed for ${slug}:`, fallbackError.message);
         prices[slug] = { product_id: '', variants: [] };
       }
     }
 
-    // 🚀 PERFORMANCE IMPROVEMENT: Cache fallback results too
+    // PERFORMANCE IMPROVEMENT: Cache fallback results too
     setCachedPrices(slugs, prices);
 
     console.log('[MEDUSA-PRICES] Final prices result (fallback):', Object.keys(prices));
@@ -207,4 +213,3 @@ export async function fetchProductPrices(slugs: string[]): Promise<Record<string
     return prices;
   }
 }
-

@@ -17,8 +17,11 @@
  * 3. Or rely on calculated_price in product variants for automatic discounts
  */
 
-const getBackendUrl = () => import.meta.env.VITE_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com';
-const getPublishableKey = () => import.meta.env.VITE_MEDUSA_PUBLISHABLE_KEY || 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4';
+import { getMedusaBackendUrl, MEDUSA_PUBLISHABLE_KEY } from './proxy.config'
+
+// Get backend URL through proxy when enabled
+const getBackendUrl = () => getMedusaBackendUrl();
+const getPublishableKey = () => import.meta.env.VITE_MEDUSA_PUBLISHABLE_KEY || MEDUSA_PUBLISHABLE_KEY;
 
 // ============ TYPES (Aligned with Medusa v2 Promotion Module) ============
 
@@ -137,7 +140,7 @@ function getCachedPromotions(): MedusaPromotion[] | null {
       return null;
     }
 
-    console.log('[MEDUSA-PROMOTIONS] ✅ Using cached promotions:', cache.data.length, 'promotions');
+    console.log('[MEDUSA-PROMOTIONS] Using cached promotions:', cache.data.length, 'promotions');
     return cache.data;
   } catch (error) {
     console.warn('[MEDUSA-PROMOTIONS] Cache read error:', error);
@@ -152,7 +155,7 @@ function setCachedPromotions(data: MedusaPromotion[]): void {
       timestamp: Date.now(),
     };
     localStorage.setItem(PROMOTIONS_CACHE_KEY, JSON.stringify(cache));
-    console.log('[MEDUSA-PROMOTIONS] 💾 Cached', data.length, 'promotions');
+    console.log('[MEDUSA-PROMOTIONS] Cached', data.length, 'promotions');
   } catch (error) {
     console.warn('[MEDUSA-PROMOTIONS] Cache write error:', error);
   }
@@ -160,13 +163,14 @@ function setCachedPromotions(data: MedusaPromotion[]): void {
 
 export function clearPromotionsCache(): void {
   localStorage.removeItem(PROMOTIONS_CACHE_KEY);
-  console.log('[MEDUSA-PROMOTIONS] 🗑️ Cache cleared');
+  console.log('[MEDUSA-PROMOTIONS] Cache cleared');
 }
 
 // ============ API FUNCTIONS ============
 
 /**
  * Fetch all active promotions from Medusa backend
+ * Routes through Cloudflare proxy when enabled for Iran filtering bypass
  * 
  * NOTE: Medusa v2 does NOT have a standard /store/promotions endpoint.
  * This function expects a CUSTOM endpoint to be implemented on your backend.
@@ -180,8 +184,10 @@ export function clearPromotionsCache(): void {
  * src/api/store/promotions/route.ts
  */
 export async function fetchActivePromotions(): Promise<MedusaPromotion[]> {
+  const backendUrl = getBackendUrl();
+  
   console.log('[MEDUSA-PROMOTIONS] ========== FETCHING ACTIVE PROMOTIONS ==========');
-  console.log('[MEDUSA-PROMOTIONS] Backend URL:', getBackendUrl());
+  console.log('[MEDUSA-PROMOTIONS] Backend URL:', backendUrl);
 
   // Check cache first
   const cachedPromotions = getCachedPromotions();
@@ -200,7 +206,7 @@ export async function fetchActivePromotions(): Promise<MedusaPromotion[]> {
     try {
       console.log('[MEDUSA-PROMOTIONS] Trying endpoint:', endpoint);
       
-      const response = await fetch(`${getBackendUrl()}${endpoint}`, {
+      const response = await fetch(`${backendUrl}${endpoint}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -212,9 +218,9 @@ export async function fetchActivePromotions(): Promise<MedusaPromotion[]> {
 
       if (!response.ok) {
         if (response.status === 404) {
-          console.log('[MEDUSA-PROMOTIONS] ℹ️ Endpoint not implemented:', endpoint);
+          console.log('[MEDUSA-PROMOTIONS] Endpoint not implemented:', endpoint);
         } else {
-          console.warn('[MEDUSA-PROMOTIONS] ⚠️ Endpoint error:', endpoint, response.status);
+          console.warn('[MEDUSA-PROMOTIONS] Endpoint error:', endpoint, response.status);
         }
         continue; // Try next endpoint
       }
@@ -260,7 +266,7 @@ export async function fetchActivePromotions(): Promise<MedusaPromotion[]> {
         return promo.status === 'active' || promo.is_automatic;
       });
 
-      console.log('[MEDUSA-PROMOTIONS] ✅ Active promotions:', activePromotions.length);
+      console.log('[MEDUSA-PROMOTIONS] Active promotions:', activePromotions.length);
       
       // Cache the results
       setCachedPromotions(activePromotions);
@@ -275,8 +281,8 @@ export async function fetchActivePromotions(): Promise<MedusaPromotion[]> {
   }
 
   // No promotions found from any endpoint
-  console.log('[MEDUSA-PROMOTIONS] ℹ️ No custom promotions endpoint available');
-  console.log('[MEDUSA-PROMOTIONS] 💡 Tip: Promotions will be applied via cart or calculated_price');
+  console.log('[MEDUSA-PROMOTIONS] No custom promotions endpoint available');
+  console.log('[MEDUSA-PROMOTIONS] Tip: Promotions will be applied via cart or calculated_price');
   console.log('[MEDUSA-PROMOTIONS] =========================================');
   
   // Cache empty result to avoid repeated failed requests
@@ -413,7 +419,7 @@ export function getBestPromotionForProduct(
       endsAt = promo.campaign.ends_at;
       
       if (!endsAt) {
-        console.warn(`[PROMOTIONS] ⚠️ Promotion ${promo.id} has campaign ${promo.campaign.id} but ends_at is missing!`);
+        console.warn(`[PROMOTIONS] Promotion ${promo.id} has campaign ${promo.campaign.id} but ends_at is missing!`);
         // Fallback: Try to find the campaign's ends_at from another promotion in the same campaign
         const campaignId = promo.campaign.id || promo.campaign_id;
         if (campaignId) {
@@ -424,18 +430,18 @@ export function getBestPromotionForProduct(
           );
           if (otherPromoWithCampaign?.campaign?.ends_at) {
             endsAt = otherPromoWithCampaign.campaign.ends_at;
-            console.log(`[PROMOTIONS] ✅ Found ends_at from another promotion in same campaign (${campaignId}): ${endsAt}`);
+            console.log(`[PROMOTIONS] Found ends_at from another promotion in same campaign (${campaignId}): ${endsAt}`);
           }
         }
       }
       
       if (endsAt) {
-        console.log(`[PROMOTIONS] ✅ Promotion ${promo.id} has valid ends_at: ${endsAt}`);
+        console.log(`[PROMOTIONS] Promotion ${promo.id} has valid ends_at: ${endsAt}`);
       }
     } else {
       console.log(`[PROMOTIONS] Promotion ${promo.id} has no campaign object`);
       if (promo.campaign_id) {
-        console.warn(`[PROMOTIONS] ⚠️ Promotion ${promo.id} has campaign_id (${promo.campaign_id}) but campaign object is missing!`);
+        console.warn(`[PROMOTIONS] Promotion ${promo.id} has campaign_id (${promo.campaign_id}) but campaign object is missing!`);
         // Fallback: Try to find the campaign from another promotion with the same campaign_id
         const otherPromoWithCampaign = promotions.find(p => 
           p.id !== promo.id && // Don't match the current promotion
@@ -444,7 +450,7 @@ export function getBestPromotionForProduct(
         );
         if (otherPromoWithCampaign?.campaign?.ends_at) {
           endsAt = otherPromoWithCampaign.campaign.ends_at;
-          console.log(`[PROMOTIONS] ✅ Found ends_at from another promotion with same campaign_id (${promo.campaign_id}): ${endsAt}`);
+          console.log(`[PROMOTIONS] Found ends_at from another promotion with same campaign_id (${promo.campaign_id}): ${endsAt}`);
         }
       }
     }
@@ -466,12 +472,12 @@ export function getBestPromotionForProduct(
     const siteWidePromo = getPrimarySiteWidePromotion(promotions);
     if (siteWidePromo?.campaign?.ends_at) {
       bestPromo.endsAt = siteWidePromo.campaign.ends_at;
-      console.log(`[PROMOTIONS] ✅ Using site-wide promotion ends_at as fallback: ${bestPromo.endsAt}`);
+      console.log(`[PROMOTIONS] Using site-wide promotion ends_at as fallback: ${bestPromo.endsAt}`);
     }
   }
 
   if (bestPromo) {
-    console.log(`[PROMOTIONS] ✅ Best promotion for ${productSlug}: ${bestPromo.discountPercentage}% discount, ends at ${bestPromo.endsAt || 'undefined'}`);
+    console.log(`[PROMOTIONS] Best promotion for ${productSlug}: ${bestPromo.discountPercentage}% discount, ends at ${bestPromo.endsAt || 'undefined'}`);
   }
 
   return bestPromo;

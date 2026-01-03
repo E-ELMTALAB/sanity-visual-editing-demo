@@ -3,6 +3,11 @@
 import { createClient } from '@sanity/client'
 import { projectId, dataset, apiVersion } from './sanity.config'
 import { getCachedData, isCacheAvailable } from './sanity-cache'
+import { 
+  PROXY_ENABLED, 
+  UNIFIED_PROXY_URL, 
+  getSanityAPIUrl 
+} from './proxy.config'
 
 /**
  * Lightweight browser-only Sanity client.
@@ -17,15 +22,16 @@ const client = createClient({
   perspective: 'published',
 })
 
-const proxyEndpoint = (import.meta.env.VITE_SANITY_PROXY_ENDPOINT || 'https://sanityproxy.elmtalabx.workers.dev/').trim()
-const shouldUseProxy = Boolean(proxyEndpoint)
+// Use the centralized proxy configuration
+const proxyEndpoint = PROXY_ENABLED ? UNIFIED_PROXY_URL : ''
+const shouldUseProxy = PROXY_ENABLED && Boolean(proxyEndpoint)
 
 // CACHE-ONLY MODE: Set VITE_SANITY_CACHE_ONLY=true to block all API calls (for testing)
 // This will throw an error if cache miss occurs, helping verify no API calls are made
 const CACHE_ONLY_MODE = import.meta.env.VITE_SANITY_CACHE_ONLY === 'true' || import.meta.env.VITE_SANITY_CACHE_ONLY === '1'
 
 if (CACHE_ONLY_MODE) {
-  console.warn('[SANITY] 🚫 CACHE-ONLY MODE ENABLED - All API calls will be blocked!')
+  console.warn('[SANITY] CACHE-ONLY MODE ENABLED - All API calls will be blocked!')
   console.warn('[SANITY] This mode is for testing. Set VITE_SANITY_CACHE_ONLY=false to disable.')
 }
 
@@ -65,6 +71,10 @@ function logCacheUsage() {
   hasLoggedCacheUsage = true
 }
 
+/**
+ * Fetch from Sanity via Cloudflare proxy
+ * Uses POST /sanity-query endpoint which accepts { query, params }
+ */
 async function fetchViaProxy<T>(query: string, params?: Record<string, any>): Promise<T | null> {
   if (!shouldUseProxy) {
     return null
@@ -72,6 +82,7 @@ async function fetchViaProxy<T>(query: string, params?: Record<string, any>): Pr
 
   logProxyOrigin()
 
+  // Use the /sanity-query endpoint for POST-based GROQ queries
   const response = await fetch(proxyEndpoint, {
     method: 'POST',
     headers: {
@@ -125,7 +136,7 @@ export async function fetchFromSanity<T>(query: string, params?: Record<string, 
     if (CACHE_ONLY_MODE) {
       // In cache-only mode, throw error instead of falling back to API
       if (!hasLoggedCacheOnlyMode) {
-        console.error('[SANITY] 🚫 CACHE-ONLY MODE: API call blocked!')
+        console.error('[SANITY] CACHE-ONLY MODE: API call blocked!')
         console.error(`[SANITY] Query: ${queryName}`)
         console.error('[SANITY] This error indicates a cache miss. Check that:')
         console.error('   1. Build script ran successfully (npm run fetch:homepage)')
@@ -133,11 +144,11 @@ export async function fetchFromSanity<T>(query: string, params?: Record<string, 
         console.error('   3. Query matches cache logic in sanity-cache.ts')
         hasLoggedCacheOnlyMode = true
       }
-      throw new Error(`[SANITY] 🚫 CACHE-ONLY MODE: Cache miss for ${queryName}. API calls are blocked.`)
+      throw new Error(`[SANITY] CACHE-ONLY MODE: Cache miss for ${queryName}. API calls are blocked.`)
     }
     
     // Normal mode: log fallback to API
-    console.info(`[SANITY] ⚠️ CACHE MISS → Fetching from API: ${queryName}`)
+    console.info(`[SANITY] CACHE MISS → Fetching from API: ${queryName}`)
   }
 
   // Block API calls if cache-only mode is enabled
@@ -150,9 +161,10 @@ export async function fetchFromSanity<T>(query: string, params?: Record<string, 
                      query.includes('_type == "post"') ? 'featuredPostsQuery' :
                      query.includes('_type == "faq"') ? 'faqsByPageQuery' :
                      'unknown query'
-    throw new Error(`[SANITY] 🚫 CACHE-ONLY MODE: API call blocked for ${queryName}. This should not happen if cache is working.`)
+    throw new Error(`[SANITY] CACHE-ONLY MODE: API call blocked for ${queryName}. This should not happen if cache is working.`)
   }
 
+  // Always use proxy when enabled (for Iran filtering bypass)
   if (shouldUseProxy) {
     try {
       if (!hasLoggedProxyOrigin) {
@@ -161,10 +173,12 @@ export async function fetchFromSanity<T>(query: string, params?: Record<string, 
       return await fetchViaProxy<T>(query, params)
     } catch (error) {
       console.error('[SANITY] Proxy fetch failed:', error)
+      // Don't fall back to direct - if proxy fails, it means filtering is blocking
       return null
     }
   }
 
+  // Direct client (only used when proxy is disabled)
   if (!hasLoggedClientOrigin) {
     logDirectClientOrigin()
   }
@@ -178,4 +192,3 @@ export async function fetchFromSanity<T>(query: string, params?: Record<string, 
 }
 
 export { client }
-
