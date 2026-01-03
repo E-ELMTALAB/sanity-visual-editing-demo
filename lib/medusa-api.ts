@@ -6,21 +6,15 @@
  * Supports Cloudflare proxy for bypassing internet filtering
  */
 
-import { getMedusaBackendUrl, isProxyEnabled } from 'lib/proxy.config'
+import { getMedusaBackendUrl, isProxyEnabled, UNIFIED_PROXY_URL } from 'lib/proxy.config'
 
-// Use proxy-aware URL getter
-const MEDUSA_BACKEND_URL = getMedusaBackendUrl()
-const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || 
+  'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
 
-if (!PUBLISHABLE_KEY) {
-  console.warn('NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY is not set. Some operations may fail.')
-}
-
-// Log proxy status in development
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  console.log('[Medusa API] Backend URL:', MEDUSA_BACKEND_URL)
-  console.log('[Medusa API] Proxy enabled:', isProxyEnabled)
-}
+// Log proxy status
+console.log('[Medusa API] Proxy enabled:', isProxyEnabled)
+console.log('[Medusa API] Proxy URL:', UNIFIED_PROXY_URL)
+console.log('[Medusa API] Backend URL:', getMedusaBackendUrl())
 
 // Common headers for all API calls
 const getHeaders = () => ({
@@ -41,12 +35,17 @@ class MedusaAPIError extends Error {
 }
 
 // Generic API call function with retry logic for proxy failures
+// Gets the backend URL fresh each call to ensure proxy config is applied
 async function apiCall<T>(
   endpoint: string,
   options: RequestInit = {},
   retryCount = 0
 ): Promise<T> {
-  const url = `${MEDUSA_BACKEND_URL}${endpoint}`
+  // Get URL fresh each time to ensure proxy config changes are picked up
+  const backendUrl = getMedusaBackendUrl()
+  const url = `${backendUrl}${endpoint}`
+  
+  console.log(`[Medusa API] Request to: ${url}`)
   
   try {
     const response = await fetch(url, {
@@ -284,8 +283,8 @@ export const productAPI = {
   }
 }
 
-// Export the backend URL for components that need direct access
-export { MEDUSA_BACKEND_URL }
+// Export the backend URL getter for components that need direct access
+export const MEDUSA_BACKEND_URL = getMedusaBackendUrl()
 
 // Export error class for external use
 export { MedusaAPIError }

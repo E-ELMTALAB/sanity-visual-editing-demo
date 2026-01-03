@@ -1,7 +1,12 @@
 import createImageUrlBuilder from '@sanity/image-url'
 import { dataset, projectId } from 'lib/sanity.api'
-import { proxySanityCDNUrl, isProxyEnabled } from 'lib/proxy.config'
+import { proxySanityCDNUrl, isProxyEnabled, getSanityCDNUrl, UNIFIED_PROXY_URL } from 'lib/proxy.config'
 import type { Image } from 'sanity'
+
+// Log proxy status on module load
+console.log('[Sanity Image] Proxy enabled:', isProxyEnabled)
+console.log('[Sanity Image] Proxy URL:', UNIFIED_PROXY_URL)
+console.log('[Sanity Image] CDN URL:', getSanityCDNUrl())
 
 const imageBuilder = createImageUrlBuilder({
   projectId: projectId || '',
@@ -56,7 +61,9 @@ export const getProxiedImageUrl = (source: Image, options?: {
   if (!url) return undefined
   
   // Apply proxy if enabled
-  return proxySanityCDNUrl(url)
+  const proxiedUrl = proxySanityCDNUrl(url)
+  console.log('[Sanity Image] Original:', url, '→ Proxied:', proxiedUrl)
+  return proxiedUrl
 }
 
 /**
@@ -65,7 +72,12 @@ export const getProxiedImageUrl = (source: Image, options?: {
  */
 export const toProxiedUrl = (url: string | undefined): string | undefined => {
   if (!url) return undefined
-  return proxySanityCDNUrl(url)
+  const proxiedUrl = proxySanityCDNUrl(url)
+  // Only log if URL was actually transformed
+  if (url !== proxiedUrl) {
+    console.log('[Sanity Image] Proxying:', url.substring(0, 50) + '...')
+  }
+  return proxiedUrl
 }
 
 /**

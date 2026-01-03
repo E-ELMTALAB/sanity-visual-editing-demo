@@ -1,6 +1,11 @@
 import { apiVersion, basePath, dataset, projectId } from 'lib/sanity.api'
 import { createClient, type SanityClient } from 'next-sanity'
-import { getSanityAPIProxyUrl, isProxyEnabled } from 'lib/proxy.config'
+import { getSanityAPIProxyUrl, isProxyEnabled, UNIFIED_PROXY_URL } from 'lib/proxy.config'
+
+// Log proxy status on module load
+console.log('[Sanity Client] Proxy enabled:', isProxyEnabled)
+console.log('[Sanity Client] Proxy URL:', UNIFIED_PROXY_URL)
+console.log('[Sanity Client] API Proxy URL:', getSanityAPIProxyUrl())
 
 /**
  * Custom fetch function that routes through Cloudflare proxy when enabled
@@ -9,7 +14,10 @@ import { getSanityAPIProxyUrl, isProxyEnabled } from 'lib/proxy.config'
 function createProxiedFetch(): typeof fetch {
   const proxyUrl = getSanityAPIProxyUrl()
   
+  console.log('[Sanity Client] Creating proxied fetch with URL:', proxyUrl)
+  
   if (!proxyUrl) {
+    console.log('[Sanity Client] No proxy URL, using default fetch')
     return fetch
   }
   
@@ -27,9 +35,7 @@ function createProxiedFetch(): typeof fetch {
       const pathAndQuery = url.pathname + url.search
       const proxiedUrl = `${proxyUrl}${pathAndQuery}`
       
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Sanity Proxy] Routing request through proxy:', proxiedUrl)
-      }
+      console.log('[Sanity Client Proxy] Routing request through proxy:', proxiedUrl)
       
       return fetch(proxiedUrl, init)
     }
@@ -51,8 +57,10 @@ export function getClient(preview?: { token: string }): SanityClient {
     })
   }
 
-  // Use custom fetch for proxy support
+  // Use custom fetch for proxy support - always create to ensure fresh config
   const customFetch = isProxyEnabled ? createProxiedFetch() : undefined
+  
+  console.log('[Sanity Client] getClient called, proxy enabled:', isProxyEnabled, 'customFetch:', !!customFetch)
 
   const client = createClient({
     projectId,
@@ -125,6 +133,8 @@ export async function proxiedSanityQuery<T = any>(
       queryUrl.searchParams.set(`$${key}`, JSON.stringify(value))
     }
   })
+  
+  console.log('[Sanity Query Proxy] Fetching:', queryUrl.toString())
   
   const response = await fetch(queryUrl.toString())
   

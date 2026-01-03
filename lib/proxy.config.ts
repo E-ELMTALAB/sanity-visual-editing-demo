@@ -22,7 +22,7 @@ const PROXY_ENABLED = true;
 
 // Your Cloudflare Worker URL - REPLACE YOUR-SUBDOMAIN with your actual subdomain
 // Example: https://sharifgpt-proxy.john123.workers.dev
-const DEFAULT_PROXY_URL = 'https://jaeshproxy.elmtalabx.workers.dev/';
+const DEFAULT_PROXY_URL = 'https://jaeshproxy.elmtalabx.workers.dev';
 
 // ============================================================================
 // DO NOT MODIFY BELOW THIS LINE

@@ -5,29 +5,11 @@ const config = {
       // Original Sanity CDN
       { hostname: 'cdn.sanity.io' },
       { hostname: 'source.unsplash.com' },
-      // Cloudflare Workers proxy domains
-      // Add your specific worker hostname here when deployed
+      // Your Cloudflare Workers proxy domain
+      { hostname: 'jaeshproxy.elmtalabx.workers.dev' },
+      // Generic workers.dev pattern as fallback
       { hostname: '*.workers.dev' },
-      // Common Cloudflare patterns
-      { hostname: 'sharifgpt-proxy.*.workers.dev' },
     ],
-    // Allow dynamic hostnames via env var for flexibility
-    ...(process.env.NEXT_PUBLIC_UNIFIED_PROXY_URL && {
-      remotePatterns: [
-        { hostname: 'cdn.sanity.io' },
-        { hostname: 'source.unsplash.com' },
-        { hostname: '*.workers.dev' },
-        // Extract hostname from proxy URL
-        (() => {
-          try {
-            const url = new URL(process.env.NEXT_PUBLIC_UNIFIED_PROXY_URL);
-            return { hostname: url.hostname };
-          } catch {
-            return { hostname: '*.workers.dev' };
-          }
-        })(),
-      ],
-    }),
   },
   typescript: {
     // Set this to false if you want production builds to abort if there's type errors
