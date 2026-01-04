@@ -264,14 +264,22 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       });
 
       // Build callback URL with order/cart ID
-      const callbackUrl = `${this.callbackUrl_}?resource_id=${actualResourceId}`;
+      // CRITICAL HARDCODED FIX: Always use proxy URL to bypass Iran filtering
+      // This overrides any misconfigured env vars
+      const HARDCODED_PROXY_CALLBACK = 'https://proxy.sharifgpt.com/medusa/internal/zarinpal-callback';
       
-      // CRITICAL: Log the callback URL being sent to Zarinpal
-      console.log("[ZARINPAL-initiatePayment] CALLBACK URL BEING SENT TO ZARINPAL:", callbackUrl)
-      if (callbackUrl.includes('backend.sharifgpt.com')) {
-        console.error("[ZARINPAL-initiatePayment] ERROR: Callback URL contains backend.sharifgpt.com - this will fail due to filtering!")
-        console.error("[ZARINPAL-initiatePayment] The callback URL should use proxy.sharifgpt.com instead")
+      // Use hardcoded proxy URL if configured URL contains blocked domain or is empty
+      let baseCallbackUrl = this.callbackUrl_;
+      if (!baseCallbackUrl || baseCallbackUrl.includes('backend.sharifgpt.com') || baseCallbackUrl.includes('localhost')) {
+        console.warn("[ZARINPAL-initiatePayment] OVERRIDING callback URL to use proxy!")
+        console.warn("[ZARINPAL-initiatePayment] Original callbackUrl_:", this.callbackUrl_)
+        baseCallbackUrl = HARDCODED_PROXY_CALLBACK;
       }
+      
+      const callbackUrl = `${baseCallbackUrl}?resource_id=${actualResourceId}`;
+      
+      // Log the callback URL being sent to Zarinpal
+      console.log("[ZARINPAL-initiatePayment] FINAL CALLBACK URL BEING SENT TO ZARINPAL:", callbackUrl)
 
       // Build metadata object - only include non-empty values
       const requestMetadata: any = {};
