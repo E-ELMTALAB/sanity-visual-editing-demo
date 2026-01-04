@@ -30,7 +30,8 @@ const CONFIG = {
   SANITY_DATASET: "production",
   SANITY_API_VERSION: "2023-06-21",
   SANITY_HOST_TYPE: "apicdn", // Use CDN for faster reads
-  MEDUSA_BACKEND_URL: "https://backend.sharifgpt.com"
+  MEDUSA_BACKEND_URL: "https://backend.sharifgpt.com",
+  FRONTEND_URL: "https://sharifgpt.com" // Main site for post-payment redirect
 };
 
 // Request timeout in milliseconds (45 seconds for slow connections)
@@ -248,7 +249,8 @@ async function proxySanityAPI(request, pathname, search, corsHeaders, env) {
   const sanityToken = request.headers.get("x-sanity-token");
   if (sanityToken) proxyHeaders.set("Authorization", `Bearer ${sanityToken}`);
 
-  const fetchOptions = { method: request.method, headers: proxyHeaders };
+  // Do NOT auto-follow redirects; let client handle 3xx (prevents loops)
+  const fetchOptions = { method: request.method, headers: proxyHeaders, redirect: "manual" };
 
   if (["POST", "PUT", "PATCH"].includes(request.method)) {
     proxyHeaders.set("Content-Type", request.headers.get("Content-Type") || "application/json");
@@ -383,6 +385,14 @@ async function proxyMedusa(request, pathname, search, corsHeaders, env) {
   const proxyHeaders = new Headers();
   proxyHeaders.set("User-Agent", "Cloudflare-Proxy/1.0 (GlassLuxe)");
 
+  // Preserve original host/proto so backend won't redirect and cause loops
+  try {
+    const backendHost = new URL(backendUrl).host;
+    proxyHeaders.set("Host", backendHost);
+    proxyHeaders.set("X-Forwarded-Host", backendHost);
+    proxyHeaders.set("X-Forwarded-Proto", "https");
+  } catch (_) {}
+
   // Forward all important headers
   const headersToForward = [
     "Content-Type", 
@@ -411,7 +421,8 @@ async function proxyMedusa(request, pathname, search, corsHeaders, env) {
     proxyHeaders.set("Content-Type", "application/json");
   }
 
-  const fetchOptions = { method: request.method, headers: proxyHeaders };
+  // Do NOT auto-follow redirects; let client handle 3xx to avoid loops
+  const fetchOptions = { method: request.method, headers: proxyHeaders, redirect: "manual" };
 
   if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) {
     const contentType = request.headers.get("Content-Type") || "";
@@ -425,13 +436,23 @@ async function proxyMedusa(request, pathname, search, corsHeaders, env) {
   }
 
   const response = await fetchWithRetry(targetUrl, fetchOptions);
+
+  // If backend responds with redirect, forward status + Location without following or rewriting
+  if (response.status >= 300 && response.status < 400) {
+    const location = response.headers.get("Location");
+    const redirectHeaders = new Headers();
+    Object.entries(corsHeaders).forEach(([k, v]) => redirectHeaders.set(k, v));
+    if (location) redirectHeaders.set("Location", location);
+    return new Response(null, { status: response.status, headers: redirectHeaders });
+  }
+
   const responseBody = await response.arrayBuffer();
 
   const responseHeaders = new Headers();
   Object.entries(corsHeaders).forEach(([k, v]) => responseHeaders.set(k, v));
 
   // Forward response headers
-  ["Content-Type", "Set-Cookie", "Cache-Control", "ETag", "X-Medusa-Access-Token"].forEach(header => {
+  ["Content-Type", "Set-Cookie", "Cache-Control", "ETag", "X-Medusa-Access-Token", "Location"].forEach(header => {
     const value = response.headers.get(header);
     if (value) responseHeaders.set(header, value);
   });

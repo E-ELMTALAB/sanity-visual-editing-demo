@@ -98,6 +98,14 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
     this.description_ = options.description ?? "Payment";
     this.callbackUrl_ = options.callback_url ?? "";
       this.offline_ = options.offline ?? (process.env.ZARINPAL_OFFLINE === "true");
+    
+    // CRITICAL: Log the callback URL to debug filtering issues
+    console.log("[ZARINPAL-CONSTRUCTOR] callback_url from options:", options.callback_url)
+    console.log("[ZARINPAL-CONSTRUCTOR] Final callbackUrl_ set to:", this.callbackUrl_)
+    if (!this.callbackUrl_ || this.callbackUrl_.includes('backend.sharifgpt.com')) {
+      console.error("[ZARINPAL-CONSTRUCTOR] ERROR: Callback URL should use proxy.sharifgpt.com, not backend.sharifgpt.com!")
+      console.error("[ZARINPAL-CONSTRUCTOR] Current callback URL:", this.callbackUrl_)
+    }
 
     // Set the appropriate base URL based on sandbox mode
     this.baseUrl_ = this.sandbox_
@@ -257,6 +265,13 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
 
       // Build callback URL with order/cart ID
       const callbackUrl = `${this.callbackUrl_}?resource_id=${actualResourceId}`;
+      
+      // CRITICAL: Log the callback URL being sent to Zarinpal
+      console.log("[ZARINPAL-initiatePayment] CALLBACK URL BEING SENT TO ZARINPAL:", callbackUrl)
+      if (callbackUrl.includes('backend.sharifgpt.com')) {
+        console.error("[ZARINPAL-initiatePayment] ERROR: Callback URL contains backend.sharifgpt.com - this will fail due to filtering!")
+        console.error("[ZARINPAL-initiatePayment] The callback URL should use proxy.sharifgpt.com instead")
+      }
 
       // Build metadata object - only include non-empty values
       const requestMetadata: any = {};

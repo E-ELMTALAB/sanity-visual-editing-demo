@@ -2,7 +2,14 @@ import { loadEnv } from '@medusajs/framework/utils'
 
 import { assertValue } from 'utils/assert-value'
 
+// Load environment variables FIRST before any exports
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
+
+// Debug: Log all Zarinpal-related env vars immediately
+console.log('[CONSTANTS] Loading constants...')
+console.log('[CONSTANTS] ZARINPAL_CALLBACK_URL from env:', process.env.ZARINPAL_CALLBACK_URL)
+console.log('[CONSTANTS] FRONTEND_URL from env:', process.env.FRONTEND_URL)
+console.log('[CONSTANTS] BACKEND_PUBLIC_URL from env:', process.env.BACKEND_PUBLIC_URL)
 
 /**
  * Is development environment
@@ -94,8 +101,16 @@ export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
  */
 export const ZARINPAL_MERCHANT_ID = process.env.ZARINPAL_MERCHANT_ID;
 export const ZARINPAL_SANDBOX = process.env.ZARINPAL_SANDBOX === 'true';
+// CRITICAL: Callback URL must use the proxy to bypass filtering
+// The env var should be set to: https://proxy.sharifgpt.com/medusa/internal/zarinpal-callback
 export const ZARINPAL_CALLBACK_URL = process.env.ZARINPAL_CALLBACK_URL;
 export const ZARINPAL_OFFLINE = process.env.ZARINPAL_OFFLINE === 'true';
+
+// Log Zarinpal config for debugging
+console.log('[CONSTANTS] ZARINPAL_CALLBACK_URL exported as:', ZARINPAL_CALLBACK_URL);
+if (!ZARINPAL_CALLBACK_URL) {
+  console.warn('[CONSTANTS] WARNING: ZARINPAL_CALLBACK_URL is not set! Payments will use fallback URL.');
+}
 
 /**
  * (optional) Meilisearch configuration

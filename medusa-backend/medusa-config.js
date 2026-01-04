@@ -151,13 +151,24 @@ const medusaConfig = {
               },
             }] : []),
             ...((ZARINPAL_MERCHANT_ID || ZARINPAL_OFFLINE) ? (() => {
+              // CRITICAL: Use proxy URL for callback to bypass Iran filtering
+              // The proxy URL should route to the backend through Cloudflare
+              const PROXY_CALLBACK_FALLBACK = 'https://proxy.sharifgpt.com/medusa/internal/zarinpal-callback';
+              const finalCallbackUrl = ZARINPAL_CALLBACK_URL || PROXY_CALLBACK_FALLBACK;
+              
               console.log('[MEDUSA-CONFIG] Adding Zarinpal provider to payment module')
+              console.log('[MEDUSA-CONFIG] ZARINPAL_CALLBACK_URL env value:', ZARINPAL_CALLBACK_URL)
+              console.log('[MEDUSA-CONFIG] Final callback_url being used:', finalCallbackUrl)
               console.log('[MEDUSA-CONFIG] Zarinpal options:', {
                 merchant_id: ZARINPAL_MERCHANT_ID ? 'SET' : 'NOT SET',
                 sandbox: ZARINPAL_SANDBOX,
                 offline: ZARINPAL_OFFLINE,
-                callback_url: ZARINPAL_CALLBACK_URL || `${BACKEND_URL}/store/zarinpal/callback`
+                callback_url: finalCallbackUrl
               })
+              
+              if (!ZARINPAL_CALLBACK_URL) {
+                console.warn('[MEDUSA-CONFIG] WARNING: ZARINPAL_CALLBACK_URL not set, using proxy fallback:', PROXY_CALLBACK_FALLBACK)
+              }
               
               return [{
                 resolve: './src/modules/payment-zarinpal',
@@ -166,7 +177,7 @@ const medusaConfig = {
                   merchant_id: ZARINPAL_MERCHANT_ID,
                   sandbox: ZARINPAL_SANDBOX,
                   description: 'Payment',
-                  callback_url: ZARINPAL_CALLBACK_URL || `${BACKEND_URL}/internal/zarinpal-callback`,
+                  callback_url: finalCallbackUrl,
                   offline: ZARINPAL_OFFLINE,
                 },
               }]
