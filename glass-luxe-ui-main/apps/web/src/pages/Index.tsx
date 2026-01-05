@@ -42,7 +42,6 @@ const CollectionsBanner = lazy(() => import("@/components/Products/CollectionsBa
 const EduProductsSlider = lazy(() => import("@/components/Products/EduProductsSlider").then((m) => ({ default: m.EduProductsSlider })));
 const BlogsCarousel = lazy(() => import("@/components/Blog/BlogsCarousel").then((m) => ({ default: m.BlogsCarousel })));
 const FaqAccordion = lazy(() => import("@/components/Products/FaqAccordion").then((m) => ({ default: m.FaqAccordion })));
-const HomeContentAccordion = lazy(() => import("@/components/Products/HomeContentAccordion").then((m) => ({ default: m.HomeContentAccordion })));
 const EnhancedMarkdownRenderer = lazy(() => import("@/components/EnhancedMarkdownRenderer"));
 
 const fallbackSeoContent = `
@@ -855,9 +854,6 @@ const Index = () => {
               className="mx-[10px]"
             />
           )}
-
-          {/* Home Content Accordion - Quick Summary + SEO Content */}
-          <HomeContentAccordion className="mx-[10px]" />
 
           {/* FAQ Section */}
           {sanityData.faqs.length > 0 && (
