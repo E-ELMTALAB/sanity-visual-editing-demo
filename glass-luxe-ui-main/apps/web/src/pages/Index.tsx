@@ -11,6 +11,7 @@ import { useSiteWidePromotion } from "@/contexts/promotion-context";
 import { toast } from "@/hooks/use-toast";
 import type { ProductPrices } from "@/lib/medusa-prices";
 import { PromotionBanner } from "@/components/Hero/PromotionBanner";
+import { TrustStatsBar } from "@/components/TrustStatsBar";
 import { PromoBanner } from "@/components/PromoBanner";
 // Import Sanity modules statically (lazy-loading caused initialization issues)
 import { fetchFromSanity } from "@/lib/sanity.client.unified";
@@ -858,6 +859,9 @@ const Index = () => {
               className="mx-[10px]"
             />
           )}
+
+          {/* Trust Stats Section - simple 3-column credibility bar */}
+          <TrustStatsBar />
 
           {/* FAQ Section */}
           {sanityData.faqs.length > 0 && (
