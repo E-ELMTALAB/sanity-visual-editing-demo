@@ -11,6 +11,7 @@ import { useSiteWidePromotion } from "@/contexts/promotion-context";
 import { toast } from "@/hooks/use-toast";
 import type { ProductPrices } from "@/lib/medusa-prices";
 import { PromotionBanner } from "@/components/Hero/PromotionBanner";
+import { PromoBanner } from "@/components/PromoBanner";
 // Import Sanity modules statically (lazy-loading caused initialization issues)
 import { fetchFromSanity } from "@/lib/sanity.client.unified";
 import { validateSanityConfig } from "@/lib/sanity.config";
@@ -760,6 +761,9 @@ const Index = () => {
             : null
         }
       />
+
+      {/* Promo Banner - limited-time hero offer */}
+      <PromoBanner />
 
       {/* Site-wide Promotion Banner - from Medusa */}
       {siteWidePromotion && (
