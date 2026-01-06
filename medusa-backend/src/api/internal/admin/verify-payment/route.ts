@@ -1,7 +1,36 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { Modules } from "@medusajs/framework/utils";
 import { IPaymentModuleService, ICartModuleService } from "@medusajs/framework/types";
-import { applyCorsHeaders, handleCorsPreflight } from "../../../../middleware/global-cors";
+
+/**
+ * Internal admin endpoints are called from the storefront domain (sharifgpt.com).
+ * Railway/Medusa global CORS handling can miss these routes, so we set explicit CORS
+ * headers here to guarantee preflight succeeds.
+ */
+function applyInternalAdminCors(req: MedusaRequest, res: MedusaResponse) {
+  const origin = (req.headers as any)?.origin as string | undefined
+
+  // If Origin is present, echo it back (required when Allow-Credentials is true).
+  // Otherwise fall back to '*'. (Browsers won't send credentials without Origin anyway.)
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin)
+    res.setHeader("Vary", "Origin")
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", "*")
+  }
+
+  res.setHeader("Access-Control-Allow-Credentials", "true")
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD")
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Requested-With, x-medusa-access-token, x-publishable-api-key, Accept, Origin, Cache-Control, Pragma"
+  )
+  res.setHeader("Access-Control-Max-Age", "86400")
+  res.setHeader("Access-Control-Expose-Headers", "Content-Length, X-JSON")
+
+  // Debug header so we can confirm this handler is the one responding.
+  res.setHeader("X-Admin-Verify-Cors", "1")
+}
 
 /**
  * POST /internal/admin/verify-payment
@@ -16,13 +45,7 @@ import { applyCorsHeaders, handleCorsPreflight } from "../../../../middleware/gl
  * }
  */
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
-  // Apply CORS headers
-  applyCorsHeaders(req, res);
-  
-  // Handle preflight requests
-  if (handleCorsPreflight(req, res)) {
-    return;
-  }
+  applyInternalAdminCors(req, res)
   try {
     const body = req.body as {
       ref_id: string;
@@ -152,7 +175,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 };
 
 export const OPTIONS = async (req: MedusaRequest, res: MedusaResponse) => {
-  applyCorsHeaders(req, res);
-  res.status(200).end();
+  applyInternalAdminCors(req, res)
+  res.status(204).end()
 };
 

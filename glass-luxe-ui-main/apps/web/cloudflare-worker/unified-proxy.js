@@ -31,7 +31,8 @@ const CONFIG = {
   SANITY_API_VERSION: "2023-06-21",
   SANITY_HOST_TYPE: "apicdn", // Use CDN for faster reads
   MEDUSA_BACKEND_URL: "https://backend.sharifgpt.com",
-  FRONTEND_URL: "https://sharifgpt.com" // Main site for post-payment redirect
+  FRONTEND_URL: "https://sharifgpt.com", // Main site for post-payment redirect
+  VERSION: "2026-01-06-zarinpal-redirect-fix-v5"
 };
 
 // Request timeout in milliseconds (45 seconds for slow connections)
@@ -56,6 +57,7 @@ export default {
       return new Response(JSON.stringify({
         status: "ok",
         worker: "glassluxe-proxy",
+        version: CONFIG.VERSION,
         services: {
           sanity_cdn: "ready",
           sanity_api: "ready",
@@ -80,6 +82,12 @@ export default {
         return await proxySanityCDN(request, pathname, url.search, corsHeaders);
       }
       
+      // Special-case Zarinpal callback: must never redirect the browser to backend.sharifgpt.com
+      // and must allow backend to validate the payment before redirecting to FRONTEND_URL.
+      if (pathname.startsWith("/medusa/internal/zarinpal-callback")) {
+        return await proxyZarinpalCallback(request, pathname, url.search, corsHeaders, env);
+      }
+
       // Sanity API route (GROQ queries via path)
       if (pathname.startsWith("/api/")) {
         return await proxySanityAPI(request, pathname, url.search, corsHeaders, env);
@@ -226,6 +234,63 @@ async function proxySanityCDN(request, pathname, search, corsHeaders) {
 }
 
 // ============================================================================
+// ZARINPAL CALLBACK (SPECIAL-CASE)
+// ============================================================================
+// This endpoint is hit by the user's browser after payment (redirect from Zarinpal).
+// The backend must verify/authorize the payment, then redirect to FRONTEND_URL.
+//
+// Problem in Iran: Railway/backend canonical redirects can leak backend.sharifgpt.com
+// to the browser (filtered). This handler ensures the browser never gets sent to
+// backend.sharifgpt.com, while still letting the backend do verification.
+async function proxyZarinpalCallback(request, pathname, search, corsHeaders, env) {
+  // v5: Do NOT chase redirects. Always call the canonical backend callback URL once,
+  // then forward backend's final redirect (expected: sharifgpt.com/payment/success) to the browser.
+  const backendUrl = CONFIG.MEDUSA_BACKEND_URL;
+  const backendHost = new URL(backendUrl).host;
+
+  // Strip /medusa prefix -> /internal/zarinpal-callback
+  const targetPath = pathname.replace(/^\/medusa/, "");
+  const canonicalUrl = `${backendUrl}${targetPath}${search}`;
+
+  console.log("[Zarinpal Callback Proxy] Incoming:", request.url);
+  console.log("[Zarinpal Callback Proxy] Canonical backend URL:", canonicalUrl);
+
+  const proxyHeaders = new Headers();
+  proxyHeaders.set("User-Agent", "Cloudflare-Proxy/1.0 (GlassLuxe)");
+  proxyHeaders.set("Accept", request.headers.get("Accept") || "text/html,*/*");
+
+  // Tell Railway the canonical host/proto so it doesn't bounce
+  proxyHeaders.set("X-Forwarded-Host", backendHost);
+  proxyHeaders.set("X-Forwarded-Proto", "https");
+  try { proxyHeaders.set("Host", backendHost); } catch (_) {}
+
+  const hdrs = new Headers();
+  Object.entries(corsHeaders).forEach(([k, v]) => hdrs.set(k, v));
+  hdrs.set("Cache-Control", "no-store");
+
+  const resp = await fetchWithRetry(canonicalUrl, {
+    method: "GET",
+    headers: proxyHeaders,
+    redirect: "manual"
+  });
+
+  const loc = resp.headers.get("Location");
+  console.log("[Zarinpal Callback Proxy] Backend response:", resp.status, "Location:", loc);
+
+  // Expected: backend returns 302 to https://sharifgpt.com/payment/success...
+  if (resp.status >= 300 && resp.status < 400 && loc) {
+    hdrs.set("Location", loc);
+    return new Response(null, { status: 302, headers: hdrs });
+  }
+
+  // Fallback: return backend body (rare)
+  const body = await resp.arrayBuffer();
+  const ct = resp.headers.get("Content-Type");
+  if (ct) hdrs.set("Content-Type", ct);
+  return new Response(body, { status: resp.status, headers: hdrs });
+}
+
+// ============================================================================
 // SANITY API PROXY (GROQ Queries via URL path)
 // ============================================================================
 async function proxySanityAPI(request, pathname, search, corsHeaders, env) {
@@ -257,7 +322,7 @@ async function proxySanityAPI(request, pathname, search, corsHeaders, env) {
     fetchOptions.body = await request.text();
   }
 
-  const response = await fetchWithRetry(targetUrl, fetchOptions);
+  let response = await fetchWithRetry(targetUrl, fetchOptions);
   const responseBody = await response.text();
 
   const responseHeaders = new Headers();
@@ -435,15 +500,96 @@ async function proxyMedusa(request, pathname, search, corsHeaders, env) {
     }
   }
 
-  const response = await fetchWithRetry(targetUrl, fetchOptions);
+  // Must be `let` because we may replace it with an internally-followed response
+  let response = await fetchWithRetry(targetUrl, fetchOptions);
 
-  // If backend responds with redirect, forward status + Location without following or rewriting
+  // If backend responds with redirect:
+  // Railway frequently redirects requests that arrive with the "wrong" Host to its canonical domain
+  // (backend.sharifgpt.com). That domain can be filtered in Iran, so we must NOT send the browser there.
+  //
+  // Strategy:
+  // - If Location points to backendHost, follow the redirect INSIDE the worker (Cloudflare can reach it),
+  //   up to a few hops, until we get:
+  //     - a redirect to the frontend (sharifgpt.com) -> return that redirect to browser
+  //     - a non-redirect response -> return it to browser
+  // - If Location points elsewhere (e.g. sharifgpt.com), just forward the redirect as-is.
   if (response.status >= 300 && response.status < 400) {
-    const location = response.headers.get("Location");
-    const redirectHeaders = new Headers();
-    Object.entries(corsHeaders).forEach(([k, v]) => redirectHeaders.set(k, v));
-    if (location) redirectHeaders.set("Location", location);
-    return new Response(null, { status: response.status, headers: redirectHeaders });
+    let backendHost = null;
+    try { backendHost = new URL(backendUrl).host } catch {}
+
+    const startUrl = new URL(request.url);
+    let current = response;
+    let hops = 0;
+
+    while (hops < 3 && current.status >= 300 && current.status < 400) {
+      const loc = current.headers.get("Location");
+      if (!loc) break;
+
+      let locUrl = null;
+      try { locUrl = new URL(loc, backendUrl) } catch { locUrl = null }
+      if (!locUrl) break;
+
+      // If redirect goes to backend domain, follow internally (do not expose to browser)
+      if (backendHost && locUrl.host === backendHost) {
+        const followHeaders = new Headers(fetchOptions.headers);
+        followHeaders.set("x-proxy-follow", "1");
+        followHeaders.set("x-proxy-hop", String(hops + 1));
+
+        const followOptions = {
+          ...fetchOptions,
+          headers: followHeaders,
+          redirect: "manual",
+        };
+
+        current = await fetchWithRetry(locUrl.toString(), followOptions);
+        hops += 1;
+        continue;
+      }
+
+      // Redirect is NOT to backend domain -> safe to return to browser
+      const redirectHeaders = new Headers();
+      Object.entries(corsHeaders).forEach(([k, v]) => redirectHeaders.set(k, v));
+      redirectHeaders.set("Location", locUrl.toString());
+      return new Response(null, { status: current.status, headers: redirectHeaders });
+    }
+
+    // If we exited the loop with a redirect still pointing to backend domain (loop or missing host),
+    // rewrite it to stay on proxy domain so at least the browser doesn't hit the filtered domain.
+    if (current.status >= 300 && current.status < 400) {
+      const loc = current.headers.get("Location");
+      const redirectHeaders = new Headers();
+      Object.entries(corsHeaders).forEach(([k, v]) => redirectHeaders.set(k, v));
+
+      if (loc && backendHost) {
+        try {
+          const locUrl = new URL(loc, backendUrl);
+          if (locUrl.host === backendHost) {
+            locUrl.protocol = startUrl.protocol;
+            locUrl.host = startUrl.host;
+            locUrl.pathname = `/medusa${locUrl.pathname}`;
+            redirectHeaders.set("Location", locUrl.toString());
+            return new Response(null, { status: current.status, headers: redirectHeaders });
+          }
+        } catch {}
+      }
+
+      if (loc) redirectHeaders.set("Location", loc);
+      return new Response(null, { status: current.status, headers: redirectHeaders });
+    }
+
+    // Non-redirect after internal follow -> return final response
+    const body = await current.arrayBuffer();
+    const hdrs = new Headers();
+    Object.entries(corsHeaders).forEach(([k, v]) => hdrs.set(k, v));
+    ["Content-Type", "Set-Cookie", "Cache-Control", "ETag", "X-Medusa-Access-Token"].forEach(h => {
+      const v = current.headers.get(h);
+      if (v) hdrs.set(h, v);
+    });
+    try {
+      const cookies = current.headers.getAll?.("Set-Cookie") || [];
+      cookies.forEach(c => hdrs.append("Set-Cookie", c));
+    } catch (_) {}
+    return new Response(body, { status: current.status, headers: hdrs });
   }
 
   const responseBody = await response.arrayBuffer();

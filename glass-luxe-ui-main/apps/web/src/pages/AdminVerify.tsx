@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Lock, Search, CheckCircle, XCircle, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { getMedusaBackendUrl } from "@/lib/proxy.config";
 
 interface VerificationResult {
   success: boolean;
@@ -61,7 +62,11 @@ export default function AdminVerify() {
     console.log('[ADMIN-VERIFY] Ref ID:', refId.trim());
 
     try {
-      const backendUrl = import.meta.env.VITE_MEDUSA_BACKEND_URL || 'https://backend.sharifgpt.com';
+      // IMPORTANT:
+      // Call through Cloudflare proxy to bypass Railway filtering + avoid CORS issues.
+      // This returns something like: https://jaeshproxy.elmtalabx.workers.dev/medusa
+      const backendUrl = getMedusaBackendUrl();
+      console.log('[ADMIN-VERIFY] Using backend URL:', backendUrl);
       const response = await fetch(`${backendUrl}/internal/admin/verify-payment`, {
         method: 'POST',
         headers: { 
