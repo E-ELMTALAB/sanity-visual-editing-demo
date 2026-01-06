@@ -9,6 +9,7 @@ import { PageIntro } from "@/components/ui/page-intro";
 import { ProductCard } from "@/components/Products/ProductCard";
 import { FiltersSidebar } from "@/components/Products/FiltersSidebar";
 import { FaqAccordion } from "@/components/Products/FaqAccordion";
+import { CustomerReviews, type CustomerReview } from "@/components/Products/CustomerReviews";
 import { FloatingDock } from "@/components/FloatingDock/FloatingDock";
 import { CartDrawer } from "@/components/FloatingDock/CartDrawer";
 import { ChatbotPanel } from "@/components/FloatingDock/ChatbotPanel";
@@ -402,6 +403,41 @@ export default function Products() {
                     </Button>
                   ))}
                 </motion.div>
+
+                {/* Customer Reviews */}
+                <CustomerReviews
+                  reviews={[
+                    {
+                      id: "1",
+                      text: "محصولات عالی و با کیفیت. تحویل سریع و پشتیبانی عالی داشتند. حتماً دوباره خرید می‌کنم.",
+                      screenshot: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80",
+                      source: {
+                        platform: "telegram",
+                        label: "کانال تلگرام",
+                        url: "https://t.me/sharifgpt",
+                      },
+                    },
+                    {
+                      id: "2",
+                      text: "راضی هستم از خرید. قیمت‌ها مناسب و محصولات با کیفیت هستند.",
+                      screenshot: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=800&q=80",
+                      source: {
+                        platform: "instagram",
+                        label: "صفحه اینستاگرام",
+                        url: "https://instagram.com/sharifgpt",
+                      },
+                    },
+                    {
+                      id: "3",
+                      text: "خدمات عالی و سریع. پیشنهاد می‌کنم به همه دوستان.",
+                      source: {
+                        platform: "whatsapp",
+                        label: "واتساپ",
+                        url: "https://wa.me/1234567890",
+                      },
+                    },
+                  ]}
+                />
 
                 {/* Products Grid */}
                 <motion.div

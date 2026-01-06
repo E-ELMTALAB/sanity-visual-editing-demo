@@ -8,7 +8,6 @@ interface PromoBannerProps {
   className?: string;
 }
 
-const DISMISS_KEY = "promo-banner-dismissed-v1";
 const EXPIRY_KEY = "promo-banner-expiry-v1";
 const DEFAULT_DURATION_MS = 48 * 60 * 60 * 1000; // 48 hours
 
@@ -36,45 +35,20 @@ function getOrInitExpiry(): string {
 }
 
 export function PromoBanner({ className }: PromoBannerProps) {
-  const [dismissed, setDismissed] = useState(false);
   const [endsAt, setEndsAt] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    try {
-      const storedDismiss = window.localStorage.getItem(DISMISS_KEY);
-      if (storedDismiss === "true") {
-        setDismissed(true);
-        return;
-      }
-    } catch {
-      // ignore
-    }
-
     const expiry = getOrInitExpiry();
     setEndsAt(expiry);
   }, []);
 
-  const handleDismiss = () => {
-    setDismissed(true);
-    try {
-      window.localStorage.setItem(DISMISS_KEY, "true");
-    } catch {
-      // ignore
-    }
-  };
-
   const handleExpire = () => {
-    setDismissed(true);
-    try {
-      window.localStorage.setItem(DISMISS_KEY, "true");
-    } catch {
-      // ignore
-    }
+    // Banner expires naturally when countdown ends
   };
 
-  const showBanner = !dismissed && !!endsAt;
+  const showBanner = !!endsAt;
 
   const backgroundImageUrl = useMemo(
     () =>
@@ -97,16 +71,15 @@ export function PromoBanner({ className }: PromoBannerProps) {
             "rounded-[24px] border border-white/10",
             "shadow-[0_8px_32px_rgba(0,0,0,0.4),0_0_80px_rgba(147,51,234,0.15)]",
             "flex items-stretch",
-            // Responsive height constraints to match product cards section (2 rows)
-            // Product cards: aspect-[3/4], max-w-[1200px], 2 rows + header (~80px)
-            // Mobile (<640px): 1 col, card ~(vw-48px)×4/3, 2 rows ≈ ~600px max
-            // Tablet (640-1024px): 2 cols, card ~(600px/2)×4/3, 2 rows ≈ ~550px max
-            // Desktop (≥1024px): 4 cols, card ~(1200px/4)×4/3, 2 rows ≈ ~600px max
-            // Using conservative max-heights to ensure banner never exceeds cards area
-            "min-h-[240px] max-h-[580px]",
-            "sm:min-h-[280px] sm:max-h-[540px]",
-            "md:min-h-[320px] md:max-h-[520px]",
-            "lg:min-h-[360px] lg:max-h-[500px]"
+            // Responsive height to match product cards (aspect-[3/4])
+            // Product cards: aspect-[3/4], max-w-[1400px] container
+            // Mobile: 75% width ≈ 300px, height = 300px × 4/3 = 400px
+            // Tablet: 45% width ≈ 360px, height = 360px × 4/3 = 480px
+            // Desktop: 24% width ≈ 336px, height = 336px × 4/3 = 448px
+            "h-[400px]",
+            "sm:h-[480px]",
+            "md:h-[480px]",
+            "lg:h-[448px]"
           )}
           style={{
             backgroundImage: `
@@ -150,9 +123,9 @@ export function PromoBanner({ className }: PromoBannerProps) {
           />
 
           {/* Content */}
-          <div className="relative z-10 flex w-full flex-col sm:flex-row items-center justify-between gap-5 px-6 sm:px-10 lg:px-12 py-6 sm:py-8 lg:py-10 text-center sm:text-right">
+          <div className="relative z-10 flex w-full flex-col sm:flex-row items-center justify-between gap-5 px-6 sm:px-10 lg:px-12 py-6 sm:py-8 lg:py-10 text-right">
             {/* Text + badge */}
-            <div className="flex-1 flex flex-col items-center sm:items-end">
+            <div className="flex-1 flex flex-col items-end">
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -182,7 +155,7 @@ export function PromoBanner({ className }: PromoBannerProps) {
             </div>
 
             {/* CTA + countdown */}
-            <div className="flex flex-col items-center sm:items-end gap-5 min-w-[220px]">
+            <div className="flex flex-col items-end gap-5 min-w-[220px]">
               {endsAt && (
                 <CountdownTimer
                   endsAt={endsAt}
@@ -236,16 +209,6 @@ export function PromoBanner({ className }: PromoBannerProps) {
                 />
               </motion.button>
             </div>
-
-            {/* Dismiss button */}
-            <button
-              type="button"
-              onClick={handleDismiss}
-              className="absolute top-4 left-4 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/40 border border-white/20 text-white/60 hover:text-white hover:bg-black/60 transition-colors"
-              aria-label="بستن بنر تبلیغاتی"
-            >
-              <span className="text-lg leading-none">&times;</span>
-            </button>
           </div>
         </motion.div>
       </div>
