@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import type { ProductPrices } from "@/lib/medusa-prices";
 import { PromotionBanner } from "@/components/Hero/PromotionBanner";
 import { TrustStatsBar } from "@/components/TrustStatsBar";
+import { SeoContentCard } from "@/components/SeoContentCard";
 import { PromoBanner } from "@/components/PromoBanner";
 // Import Sanity modules statically (lazy-loading caused initialization issues)
 import { fetchFromSanity } from "@/lib/sanity.client.unified";
@@ -875,15 +876,13 @@ const Index = () => {
       {/* Trust Elements - Static, always visible */}
       <TrustElements />
 
-      {/* SEO Content / Fallback */}
+      {/* SEO Content / Fallback - progressive reveal card */}
       <section className="container mx-auto px-4 md:px-6 py-16">
-        <SurfaceGlass variant="subtle" className="p-8 md:p-12">
-          <div className="max-w-4xl mx-auto">
-            <Suspense fallback={<SectionPlaceholder />}>
-              <EnhancedMarkdownRenderer content={sanityData?.seoContent || fallbackSeoContent} />
-            </Suspense>
-          </div>
-        </SurfaceGlass>
+        <Suspense fallback={<SectionPlaceholder />}>
+          <SeoContentCard>
+            <EnhancedMarkdownRenderer content={sanityData?.seoContent || fallbackSeoContent} />
+          </SeoContentCard>
+        </Suspense>
       </section>
 
       {/* Footer Trigger Point */}
