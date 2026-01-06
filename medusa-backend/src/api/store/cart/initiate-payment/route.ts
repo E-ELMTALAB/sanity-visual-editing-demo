@@ -153,6 +153,8 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     // Extract authority and payment_url from Zarinpal provider response
     const authority = (paymentSession.data as any)?.authority;
     const payment_url = (paymentSession.data as any)?.payment_url;
+    console.log(`[PAYMENT-INIT] Provider response authority: ${authority}`);
+    console.log(`[PAYMENT-INIT] Provider response payment_url: ${payment_url}`);
 
     if (!payment_url) {
       return res.status(500).json({

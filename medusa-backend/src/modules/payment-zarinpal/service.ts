@@ -334,6 +334,10 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
       this.logger_.info(`[zarinpal] === REQUEST TO ZARINPAL API ===`)
       this.logger_.info(`[zarinpal] URL: ${this.baseUrl_}/request.json`)
       this.logger_.info(`[zarinpal] Request Data: ${JSON.stringify(requestData, null, 2)}`)
+      // Extra explicit, single-line log for easy copy/paste:
+      this.logger_.info(
+        `[zarinpal] REQUEST SUMMARY | method=POST url=${this.baseUrl_}/request.json callback_url=${callbackUrl} amount=${amountInRials} resource_id=${actualResourceId}`
+      )
       this.logger_.info(`[zarinpal] Amount in Rials: ${amountInRials}`)
       this.logger_.info(`[zarinpal] Minimum required: 1000 Rials`)
       this.logger_.info(`[zarinpal] Maximum allowed: 500,000,000 Rials`)
@@ -341,16 +345,22 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
 
       try {
         this.logger_.info(`[zarinpal] Sending request to Zarinpal...`)
+      const zarinpalRequestConfig = {
+        timeout: 30000, // 30 second timeout
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'Medusa-Zarinpal-Integration/1.0'
+        }
+      }
+
+      // Exact axios call details (excluding secrets beyond what's already in requestData)
+      this.logger_.info(`[zarinpal] AXIOS REQUEST CONFIG: ${JSON.stringify(zarinpalRequestConfig, null, 2)}`)
+      this.logger_.info(`[zarinpal] AXIOS REQUEST BODY callback_url: ${callbackUrl}`)
+
       const response = await axios.post<ZarinpalRequestResponse>(
         `${this.baseUrl_}/request.json`,
           requestData,
-          {
-            timeout: 30000, // 30 second timeout
-            headers: {
-              'Content-Type': 'application/json',
-              'User-Agent': 'Medusa-Zarinpal-Integration/1.0'
-            }
-          }
+          zarinpalRequestConfig
         );
 
         this.logger_.info(`[zarinpal] === RESPONSE FROM ZARINPAL API ===`)
