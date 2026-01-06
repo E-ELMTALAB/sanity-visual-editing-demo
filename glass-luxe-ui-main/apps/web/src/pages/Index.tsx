@@ -1,6 +1,5 @@
 import { useState, lazy, Suspense, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, Award, Shield, CheckCircle } from "lucide-react";
 import TrustBadges from "@/components/TrustBadges";
 import TestimonialsRow from "@/components/TestimonialsRow";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
@@ -219,65 +218,6 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
   );
 }
 
-// Trust elements - static, no external deps
-function TrustElements() {
-  return (
-      <section className="container mx-auto px-4 md:px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          <SurfaceGlass variant="default" className="p-8 text-center group hover:scale-105 transition-transform duration-300">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300" />
-                <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 p-4 rounded-full">
-                  <Users className="w-8 h-8 text-white" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-white">+۱۰,۰۰۰</h3>
-                <p className="text-gray-300 font-medium">کاربر راضی</p>
-                <p className="text-sm text-gray-400">از ابزارهای هوش مصنوعی ما استفاده می‌کنند</p>
-              </div>
-              <CheckCircle className="w-5 h-5 text-green-400" />
-            </div>
-          </SurfaceGlass>
-
-          <SurfaceGlass variant="default" className="p-8 text-center group hover:scale-105 transition-transform duration-300">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300" />
-                <div className="relative bg-gradient-to-r from-purple-500 to-pink-600 p-4 rounded-full">
-                  <Award className="w-8 h-8 text-white" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-white">۳+</h3>
-                <p className="text-gray-300 font-medium">سال تجربه</p>
-                <p className="text-sm text-gray-400">در ارائه راهکارهای دیجیتال و هوش مصنوعی</p>
-              </div>
-              <CheckCircle className="w-5 h-5 text-green-400" />
-            </div>
-          </SurfaceGlass>
-
-          <SurfaceGlass variant="default" className="p-8 text-center group hover:scale-105 transition-transform duration-300">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300" />
-                <div className="relative bg-gradient-to-r from-green-500 to-blue-600 p-4 rounded-full">
-                  <Shield className="w-8 h-8 text-white" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-white">۱۰۰%</h3>
-                <p className="text-gray-300 font-medium">امنیت پرداخت</p>
-                <p className="text-sm text-gray-400">تراکنش‌های امن با پشتیبانی از همه کارت‌ها</p>
-              </div>
-              <CheckCircle className="w-5 h-5 text-green-400" />
-            </div>
-          </SurfaceGlass>
-        </div>
-      </section>
-  );
-}
 
 // Loading placeholder for lazy sections
 const SectionPlaceholder = () => (
@@ -861,9 +801,6 @@ const Index = () => {
             />
           )}
 
-          {/* Trust Stats Section - simple 3-column credibility bar */}
-          <TrustStatsBar />
-
           {/* FAQ Section */}
           {sanityData.faqs.length > 0 && (
             <div className="mx-[10px] py-8 sm:py-10 lg:py-12">
@@ -873,8 +810,8 @@ const Index = () => {
         </Suspense>
       )}
 
-      {/* Trust Elements - Static, always visible */}
-      <TrustElements />
+      {/* Trust Stats Bar - Simple icon + number stats */}
+      <TrustStatsBar />
 
       {/* SEO Content / Fallback - progressive reveal card */}
       <section className="container mx-auto px-4 md:px-6 py-16">
