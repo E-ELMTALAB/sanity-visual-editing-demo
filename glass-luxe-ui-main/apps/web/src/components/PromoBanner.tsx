@@ -93,10 +93,20 @@ export function PromoBanner({ className }: PromoBannerProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
           className={cn(
-            "relative overflow-hidden min-h-[180px] sm:min-h-[200px] lg:min-h-[220px]",
+            "relative overflow-hidden",
             "rounded-[24px] border border-white/10",
             "shadow-[0_8px_32px_rgba(0,0,0,0.4),0_0_80px_rgba(147,51,234,0.15)]",
-            "flex items-stretch"
+            "flex items-stretch",
+            // Responsive height constraints to match product cards section (2 rows)
+            // Product cards: aspect-[3/4], max-w-[1200px], 2 rows + header (~80px)
+            // Mobile (<640px): 1 col, card ~(vw-48px)×4/3, 2 rows ≈ ~600px max
+            // Tablet (640-1024px): 2 cols, card ~(600px/2)×4/3, 2 rows ≈ ~550px max
+            // Desktop (≥1024px): 4 cols, card ~(1200px/4)×4/3, 2 rows ≈ ~600px max
+            // Using conservative max-heights to ensure banner never exceeds cards area
+            "min-h-[240px] max-h-[580px]",
+            "sm:min-h-[280px] sm:max-h-[540px]",
+            "md:min-h-[320px] md:max-h-[520px]",
+            "lg:min-h-[360px] lg:max-h-[500px]"
           )}
           style={{
             backgroundImage: `
@@ -140,7 +150,7 @@ export function PromoBanner({ className }: PromoBannerProps) {
           />
 
           {/* Content */}
-          <div className="relative z-10 flex w-full flex-col sm:flex-row items-center justify-between gap-5 px-6 sm:px-10 lg:px-12 py-8 sm:py-10 lg:py-12 text-center sm:text-right">
+          <div className="relative z-10 flex w-full flex-col sm:flex-row items-center justify-between gap-5 px-6 sm:px-10 lg:px-12 py-6 sm:py-8 lg:py-10 text-center sm:text-right">
             {/* Text + badge */}
             <div className="flex-1 flex flex-col items-center sm:items-end">
               <motion.div
