@@ -341,6 +341,12 @@ class ZarinpalProviderService extends AbstractPaymentProvider<ZarinpalOptions> {
 
       try {
         this.logger_.info(`[zarinpal] Sending request to Zarinpal...`)
+        
+        // GUARANTEED CONSOLE LOGS (Railway shows stdout even if logger levels differ)
+        // This is the exact request payload Zarinpal will store and later redirect back to (callback_url).
+        console.log("[ZARINPAL-REQUEST-EXACT] URL:", `${this.baseUrl_}/request.json`)
+        console.log("[ZARINPAL-REQUEST-EXACT] Payload:", JSON.stringify(requestData, null, 2))
+        console.log("[ZARINPAL-REQUEST-EXACT] callback_url:", requestData.callback_url)
       const response = await axios.post<ZarinpalRequestResponse>(
         `${this.baseUrl_}/request.json`,
           requestData,
