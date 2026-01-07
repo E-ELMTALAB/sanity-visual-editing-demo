@@ -161,6 +161,32 @@ export function Footer({ links, socials }: FooterProps) {
                 <p>تلفن: 09381296421</p>
               </div>
             </div>
+
+            {/* Mini-map Placeholder - Directly under Contact Information */}
+            <div className="mt-6">
+              <a
+                href={mapUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  "flex flex-col items-center justify-center gap-2",
+                  "w-full h-[140px]",
+                  "px-4 py-3 rounded-lg",
+                  "bg-gradient-to-br from-muted/40 to-muted/20",
+                  "hover:from-muted/50 hover:to-muted/30",
+                  "border border-border/30",
+                  "shadow-sm",
+                  "text-muted-foreground hover:text-foreground",
+                  "transition-all duration-150 ease-in-out",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                )}
+              >
+                <MapPin className="h-6 w-6 mb-1" />
+                <span className="font-vazirmatn text-xs font-normal leading-[1.4] text-center">
+                  مشاهده روی نقشه
+                </span>
+              </a>
+            </div>
           </div>
         </div>
 
@@ -168,54 +194,26 @@ export function Footer({ links, socials }: FooterProps) {
         <div className={cn(
           "mt-8 pt-6",
           "border-t border-border/20",
-          "flex flex-col gap-6"
+          "flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
         )}>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <p className="font-vazirmatn text-sm font-normal leading-[1.4] text-muted-foreground">
-              © {currentYear} شریف جی‌پی‌تی. تمامی حقوق محفوظ است.
-            </p>
-            <div className="flex flex-wrap items-center gap-6">
-              {legalLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "font-vazirmatn text-sm font-normal leading-[1.4]",
-                    "text-muted-foreground hover:text-foreground",
-                    "transition-colors duration-150 ease-in-out",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  )}
-                >
-                  {link.label}
-                </a>
-              ))}
-            </div>
-          </div>
-          
-          {/* Mini-map Placeholder */}
-          <div className="flex justify-start">
-            <a
-              href={mapUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                "flex flex-col items-center justify-center gap-2",
-                "w-full max-w-[240px] h-[140px]",
-                "px-4 py-3 rounded-lg",
-                "bg-gradient-to-br from-muted/40 to-muted/20",
-                "hover:from-muted/50 hover:to-muted/30",
-                "border border-border/30",
-                "shadow-sm",
-                "text-muted-foreground hover:text-foreground",
-                "transition-all duration-150 ease-in-out",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              )}
-            >
-              <MapPin className="h-6 w-6 mb-1" />
-              <span className="font-vazirmatn text-xs font-normal leading-[1.4] text-center">
-                مشاهده روی نقشه
-              </span>
-            </a>
+          <p className="font-vazirmatn text-sm font-normal leading-[1.4] text-muted-foreground">
+            © {currentYear} شریف جی‌پی‌تی. تمامی حقوق محفوظ است.
+          </p>
+          <div className="flex flex-wrap items-center gap-6">
+            {legalLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "font-vazirmatn text-sm font-normal leading-[1.4]",
+                  "text-muted-foreground hover:text-foreground",
+                  "transition-colors duration-150 ease-in-out",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                )}
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
         </div>
       </div>
