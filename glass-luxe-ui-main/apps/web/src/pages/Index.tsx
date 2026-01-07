@@ -328,12 +328,10 @@ const Index = () => {
                 }
               }),
             ),
-            // TEMPORARILY DISABLED: Fetch FAQs from Sanity to prevent build errors
-            // fetchFromSanity<any[]>(faqsByPageQuery, { page: 'home' }).catch((err) => {
-            //   console.warn('[HOMEPAGE] Failed to fetch FAQs:', err);
-            //   return [];
-            // }),
-            Promise.resolve([]), // Return empty array for FAQs
+            fetchFromSanity<any[]>(faqsByPageQuery, { page: 'home' }).catch((err) => {
+              console.warn('[HOMEPAGE] Failed to fetch FAQs:', err);
+              return [];
+            }),
           ]);
         
         console.log('[HOMEPAGE] 📊 Raw tabbedProductGroups:', tabbedProductGroups);
@@ -822,12 +820,33 @@ const Index = () => {
         </Suspense>
       </section>
 
-      {/* FAQ Section */}
-      {dataLoaded && sanityData && sanityData.faqs && sanityData.faqs.length > 0 && (
-        <Suspense fallback={<SectionPlaceholder />}>
-          <FaqAccordion items={sanityData.faqs} />
-        </Suspense>
-      )}
+      {/* FAQ Section - Always show below SeoContentCard */}
+      <Suspense fallback={<SectionPlaceholder />}>
+        <FaqAccordion 
+          items={
+            (dataLoaded && sanityData?.faqs && sanityData.faqs.length > 0)
+              ? sanityData.faqs
+              : [
+                  {
+                    q: "چگونه می‌توانم محصولات را خریداری کنم؟",
+                    a: "شما می‌توانید با مراجعه به صفحه محصولات، محصول مورد نظر خود را انتخاب کرده و به سبد خرید اضافه کنید. پس از تکمیل اطلاعات، پرداخت را انجام دهید."
+                  },
+                  {
+                    q: "روش‌های پرداخت چیست؟",
+                    a: "ما از روش‌های مختلف پرداخت مانند کارت‌های بانکی، پرداخت آنلاین و سایر روش‌های امن پشتیبانی می‌کنیم."
+                  },
+                  {
+                    q: "آیا محصولات ضمانت دارند؟",
+                    a: "بله، تمام محصولات ما دارای ضمانت کیفیت هستند. در صورت بروز هرگونه مشکل، می‌توانید با پشتیبانی تماس بگیرید."
+                  },
+                  {
+                    q: "چگونه می‌توانم با پشتیبانی تماس بگیرم؟",
+                    a: "شما می‌توانید از طریق صفحه تماس با ما، ایمیل یا چت آنلاین با تیم پشتیبانی در ارتباط باشید."
+                  }
+                ]
+          } 
+        />
+      </Suspense>
 
       {/* Footer Trigger Point */}
       <div ref={footerTriggerRef} className="h-px" />
