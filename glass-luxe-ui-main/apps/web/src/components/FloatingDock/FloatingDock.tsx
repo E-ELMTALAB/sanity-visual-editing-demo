@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, X, ShoppingCart, Headphones, Send } from "lucide-react";
+import { MessageSquare, X, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDirection } from "@/contexts/DirectionContext";
 
@@ -35,7 +35,6 @@ export function FloatingDock({
   const { isRTL } = useDirection();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showNudge, setShowNudge] = useState(false);
-  const [showActions, setShowActions] = useState(false);
   const [nudgeText, setNudgeText] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -94,7 +93,6 @@ export function FloatingDock({
   const handleOpenChat = () => {
     setIsChatOpen(true);
     setShowNudge(false);
-    setShowActions(false);
   };
 
   const handleCloseChat = () => {
@@ -148,7 +146,7 @@ export function FloatingDock({
       >
         {/* Nudge Label - Left side of button */}
         <AnimatePresence>
-          {showNudge && !isChatOpen && !showActions && (
+          {showNudge && !isChatOpen && (
             <motion.div
               initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -170,58 +168,6 @@ export function FloatingDock({
           )}
         </AnimatePresence>
 
-        {/* Action Buttons */}
-        <AnimatePresence>
-          {showActions && !isChatOpen && (
-            <div className="absolute bottom-[64px] sm:bottom-[68px] flex flex-col gap-3">
-              {/* Cart Button */}
-              <motion.button
-                initial={{ opacity: 0, y: 20, scale: 0.8 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 20, scale: 0.8 }}
-                transition={{ ...springTransition, delay: 0 }}
-                onClick={onOpenCart}
-                className={cn(
-                  "relative w-10 h-10 sm:w-11 sm:h-11 rounded-full",
-                  "bg-gradient-to-br from-primary/10 via-background/80 to-background/70",
-                  "border border-primary/20",
-                  "shadow-lg shadow-primary/15",
-                  "hover:bg-background/90 hover:border-primary/30 hover:scale-105",
-                  "transition-all duration-150",
-                  "flex items-center justify-center"
-                )}
-              >
-                <ShoppingCart className="w-5 h-5 text-primary" />
-                {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                    {cartItemCount > 9 ? "9+" : cartItemCount}
-                  </span>
-                )}
-              </motion.button>
-
-              {/* Support Button */}
-              <motion.button
-                initial={{ opacity: 0, y: 20, scale: 0.8 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 20, scale: 0.8 }}
-                transition={{ ...springTransition, delay: 0.05 }}
-                onClick={onOpenSupport}
-                className={cn(
-                  "w-10 h-10 sm:w-11 sm:h-11 rounded-full",
-                  "bg-gradient-to-br from-primary/10 via-background/80 to-background/70",
-                  "border border-primary/20",
-                  "shadow-lg shadow-primary/15",
-                  "hover:bg-background/90 hover:border-primary/30 hover:scale-105",
-                  "transition-all duration-150",
-                  "flex items-center justify-center"
-                )}
-              >
-                <Headphones className="w-5 h-5 text-primary" />
-              </motion.button>
-            </div>
-          )}
-        </AnimatePresence>
-
         {/* Main FAB Button */}
         <motion.button
           whileHover={{ scale: 1.02, opacity: 0.95 }}
@@ -233,8 +179,6 @@ export function FloatingDock({
               handleOpenChat();
             }
           }}
-          onMouseEnter={() => setShowActions(true)}
-          onMouseLeave={() => setShowActions(false)}
           className={cn(
             "relative w-12 h-12 sm:w-14 sm:h-14 rounded-full",
             "bg-gradient-to-br from-primary to-primary/80",
