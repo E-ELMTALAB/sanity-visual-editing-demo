@@ -25,8 +25,6 @@ const springTransition = {
 };
 
 const NUDGE_TEXT = "نیاز به کمک دارید؟";
-const GREETING_TITLE = "سلام! 👋";
-const GREETING_MESSAGE = "چطور می‌تونم کمکتون کنم؟";
 
 export function FloatingDock({
   onOpenChat,
@@ -37,7 +35,6 @@ export function FloatingDock({
   const { isRTL } = useDirection();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showNudge, setShowNudge] = useState(false);
-  const [showGreeting, setShowGreeting] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [nudgeText, setNudgeText] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -52,7 +49,6 @@ export function FloatingDock({
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const nudgeTimeoutRef = useRef<NodeJS.Timeout>();
-  const greetingTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Check if nudge was shown in this session
   useEffect(() => {
@@ -80,13 +76,6 @@ export function FloatingDock({
         // Hide nudge after 4 seconds
         nudgeTimeoutRef.current = setTimeout(() => {
           setShowNudge(false);
-          // Show greeting after nudge hides
-          setTimeout(() => {
-            setShowGreeting(true);
-            greetingTimeoutRef.current = setTimeout(() => {
-              setShowGreeting(false);
-            }, 7000);
-          }, 300);
         }, 4000);
       }
     }, 80);
@@ -94,7 +83,6 @@ export function FloatingDock({
     return () => {
       clearInterval(typeInterval);
       if (nudgeTimeoutRef.current) clearTimeout(nudgeTimeoutRef.current);
-      if (greetingTimeoutRef.current) clearTimeout(greetingTimeoutRef.current);
     };
   }, [showNudge]);
 
@@ -106,7 +94,6 @@ export function FloatingDock({
   const handleOpenChat = () => {
     setIsChatOpen(true);
     setShowNudge(false);
-    setShowGreeting(false);
     setShowActions(false);
   };
 
@@ -159,11 +146,11 @@ export function FloatingDock({
           isRTL ? "left-4 sm:left-6" : "right-4 sm:right-6"
         )}
       >
-        {/* Nudge Label */}
+        {/* Nudge Label - Left side of button */}
         <AnimatePresence>
           {showNudge && !isChatOpen && !showActions && (
             <motion.div
-              initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
+              initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0 }}
               transition={springTransition}
@@ -175,60 +162,10 @@ export function FloatingDock({
                 "shadow-lg shadow-black/10",
                 "font-vazirmatn text-[13px] font-medium leading-[1.4] text-foreground",
                 "whitespace-nowrap",
-                isRTL ? "right-[68px] sm:right-[76px]" : "left-[68px] sm:left-[76px]"
+                isRTL ? "left-[68px] sm:left-[76px]" : "right-[68px] sm:right-[76px]"
               )}
             >
               {nudgeText}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Greeting Bubble */}
-        <AnimatePresence>
-          {showGreeting && !isChatOpen && !showActions && (
-            <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              onClick={handleOpenChat}
-              className={cn(
-                "absolute cursor-pointer",
-                "bottom-[68px] sm:bottom-[72px]",
-                "w-[260px] sm:w-[280px] min-w-[220px]",
-                "px-4 py-3 rounded-2xl",
-                "bg-gradient-to-br from-background/95 via-background/90 to-background/85",
-                "border border-primary/15",
-                "shadow-xl shadow-black/20",
-                "backdrop-blur-[40px]",
-                isRTL ? "right-0" : "left-0"
-              )}
-            >
-              <div className="flex items-start gap-3">
-                <div className="relative flex-shrink-0">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md shadow-primary/30">
-                    <MessageSquare className="w-3.5 h-3.5 text-primary-foreground" />
-                  </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-[#22c55e] rounded-full border-2 border-background" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-vazirmatn text-sm font-semibold leading-[1.4] text-foreground mb-1">
-                    {GREETING_TITLE}
-                  </p>
-                  <p className="font-vazirmatn text-sm font-normal leading-[1.6] text-foreground">
-                    {GREETING_MESSAGE}
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowGreeting(false);
-                  }}
-                  className="flex-shrink-0 w-6 h-6 rounded-full hover:bg-muted/50 flex items-center justify-center transition-colors"
-                >
-                  <X className="w-3 h-3 text-muted-foreground" />
-                </button>
-              </div>
             </motion.div>
           )}
         </AnimatePresence>
