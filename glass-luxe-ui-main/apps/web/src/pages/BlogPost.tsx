@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { Clock, Facebook, Twitter, Linkedin, Link2, ChevronLeft, User } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer/Footer";
-import { Button } from "@/components/ui/button";
 import { BlogCard } from "@/components/Blog/BlogCard";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { toast } from "sonner";
@@ -47,12 +46,23 @@ interface ArticleDetail {
   seo?: SeoMeta;
 }
 
-// Extract headings from markdown and create ToC structure
+interface BlogPost {
+  slug: string;
+  title: string;
+  cover: string;
+  excerpt?: string;
+  publishedAt?: string;
+  readTime?: number;
+}
+
+// Extract headings from markdown
 const extractHeadingsFromMarkdown = (content: string): Array<{ level: number; text: string; id: string }> => {
   if (!content) return [];
+
   const lines = content.split('\n');
   const headings: Array<{ level: number; text: string; id: string }> = [];
   let headingCounter = 0;
+
   lines.forEach(line => {
     const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
     if (headingMatch) {
@@ -62,18 +72,18 @@ const extractHeadingsFromMarkdown = (content: string): Array<{ level: number; te
       headings.push({ level, text, id });
     }
   });
+
   return headings;
 };
 
-// PortableText components with proper IDs for scroll-spy
+// PortableText components with spec styling
 const portableTextComponents = {
   block: {
     normal: ({ children }: { children: React.ReactNode }) => (
       <p className="font-vazirmatn text-lg font-normal leading-[1.9] text-muted-foreground mb-6">{children}</p>
     ),
     h2: ({ children }: { children: React.ReactNode }) => {
-      const text = children?.toString() || '';
-      const id = `heading-${text.toLowerCase().replace(/\s+/g, '-').replace(/[^\u0600-\u06FFa-z0-9-]/g, '')}`;
+      const id = `heading-${children?.toString().toLowerCase().replace(/\s+/g, '-')}`;
       return (
         <h2 id={id} className="font-vazirmatn text-[28px] font-extrabold leading-[1.3] text-foreground mt-12 mb-6 scroll-mt-24">
           {children}
@@ -81,8 +91,7 @@ const portableTextComponents = {
       );
     },
     h3: ({ children }: { children: React.ReactNode }) => {
-      const text = children?.toString() || '';
-      const id = `heading-${text.toLowerCase().replace(/\s+/g, '-').replace(/[^\u0600-\u06FFa-z0-9-]/g, '')}`;
+      const id = `heading-${children?.toString().toLowerCase().replace(/\s+/g, '-')}`;
       return (
         <h3 id={id} className="font-vazirmatn text-[22px] font-bold leading-[1.35] text-foreground mt-8 mb-4 scroll-mt-24">
           {children}
@@ -90,17 +99,17 @@ const portableTextComponents = {
       );
     },
     blockquote: ({ children }: { children: React.ReactNode }) => (
-      <blockquote className="font-vazirmatn border-r-4 border-primary pr-4 py-3 my-6 rounded-xl bg-primary/10 italic text-foreground">
+      <blockquote className="font-vazirmatn border-r-4 border-primary pr-6 py-4 my-8 rounded-xl bg-primary/10 italic text-foreground">
         {children}
       </blockquote>
     ),
   },
   list: {
     bullet: ({ children }: { children: React.ReactNode }) => (
-      <ul className="font-vazirmatn text-lg font-normal leading-[1.7] text-muted-foreground list-disc pr-5 space-y-2 mb-6">{children}</ul>
+      <ul className="font-vazirmatn list-disc pr-5 space-y-2 text-lg text-muted-foreground leading-[1.7] mb-6">{children}</ul>
     ),
     number: ({ children }: { children: React.ReactNode }) => (
-      <ol className="font-vazirmatn text-lg font-normal leading-[1.7] text-muted-foreground list-decimal pr-5 space-y-2 mb-6">{children}</ol>
+      <ol className="font-vazirmatn list-decimal pr-5 space-y-2 text-lg text-muted-foreground leading-[1.7] mb-6">{children}</ol>
     ),
   },
   marks: {
@@ -109,7 +118,7 @@ const portableTextComponents = {
         href={value?.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-primary underline underline-offset-4 hover:no-underline"
+        className="font-vazirmatn text-primary underline underline-offset-2 hover:no-underline"
       >
         {children}
       </a>
@@ -123,7 +132,7 @@ const portableTextComponents = {
         <img
           src={imageUrl}
           alt={alt}
-          className="rounded-2xl my-6 ring-1 ring-white/12 w-full object-cover"
+          className="rounded-2xl my-8 ring-1 ring-white/10 w-full object-cover"
           loading="lazy"
         />
       ) : null;
@@ -136,15 +145,15 @@ export default function BlogPost() {
   const navigate = useNavigate();
   const { isRTL } = useDirection();
   const [readingProgress, setReadingProgress] = useState(0);
-  const [activeHeading, setActiveHeading] = useState<string>("");
+  const [activeHeading, setActiveHeading] = useState("");
   const [headings, setHeadings] = useState<Array<{ level: number; text: string; id: string }>>([]);
   const [article, setArticle] = useState<ArticleDetail | null>(null);
-  const [relatedPosts, setRelatedPosts] = useState<any[]>([]);
+  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const articleRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
 
+  // Fetch article
   useEffect(() => {
     const isConfigValid = validateSanityConfig();
     if (!isConfigValid || !slug) {
@@ -170,7 +179,9 @@ export default function BlogPost() {
         setArticle(transformBlogPostDetail(result));
 
         const transformedRelated = Array.isArray(result?.relatedPosts)
-          ? result.relatedPosts.map((item: any, index: number) => transformBlogPost(item, index))
+          ? result.relatedPosts.map((item: any, index: number) =>
+              transformBlogPost(item, index)
+            )
           : [];
         setRelatedPosts(transformedRelated);
         setFetchError(null);
@@ -193,104 +204,82 @@ export default function BlogPost() {
     };
   }, [slug]);
 
-  // Extract headings and set up scroll-spy
+  // Extract headings from content (from DOM after render)
   useEffect(() => {
-    if (article?.bodyMarkdown) {
-      const extractedHeadings = extractHeadingsFromMarkdown(article.bodyMarkdown);
-      setHeadings(extractedHeadings);
-      // Set first heading as active by default
-      if (extractedHeadings.length > 0) {
-        setActiveHeading(extractedHeadings[0].id);
-      }
-    } else if (article?.body) {
-      const updateHeadings = () => {
-        if (!articleRef.current) return;
-        const headingElements = articleRef.current.querySelectorAll("h2, h3");
-        const extractedHeadings = Array.from(headingElements).map((heading, index) => {
-          if (!heading.id) {
-            heading.id = `heading-${index}`;
-          }
-          return {
-            id: heading.id,
-            text: heading.textContent?.trim() || "",
-            level: parseInt(heading.tagName[1]),
-          };
-        }).filter(h => h.text);
-        setHeadings(extractedHeadings);
-        // Set first heading as active by default
-        if (extractedHeadings.length > 0) {
-          setActiveHeading(extractedHeadings[0].id);
-        }
-      };
-      const timeout = setTimeout(updateHeadings, 200);
-      return () => clearTimeout(timeout);
-    } else {
+    if (!article) {
       setHeadings([]);
+      return;
     }
+
+    const updateHeadings = () => {
+      if (!articleRef.current) return;
+
+      const headingElements = articleRef.current.querySelectorAll("h2, h3");
+      const extractedHeadings = Array.from(headingElements).map((heading, index) => {
+        // Use existing ID or generate one
+        if (!heading.id) {
+          const text = heading.textContent?.trim() || "";
+          const id = text
+            .toLowerCase()
+            .replace(/[^\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFFa-zA-Z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim() || `heading-${index}`;
+          heading.id = id;
+        }
+        return {
+          id: heading.id,
+          text: heading.textContent?.trim() || "",
+          level: parseInt(heading.tagName[1]),
+        };
+      }).filter(h => h.text);
+
+      setHeadings(extractedHeadings);
+    };
+
+    // Wait for content to render
+    const timeout = setTimeout(updateHeadings, 200);
+    return () => clearTimeout(timeout);
   }, [article]);
 
-  // IntersectionObserver for scroll-spy
-  useEffect(() => {
-    if (!articleRef.current || headings.length === 0) return;
-
-    // Clean up previous observer
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
-
-    const observerOptions = {
-      root: null,
-      rootMargin: '-20% 0px -60% 0px',
-      threshold: 0,
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveHeading(entry.target.id);
-        }
-      });
-    }, observerOptions);
-
-    // Observe all headings
-    headings.forEach((heading) => {
-      const element = document.getElementById(heading.id);
-      if (element) {
-        observer.observe(element);
-      }
-    });
-
-    observerRef.current = observer;
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [headings]);
-
-  // Reading progress
+  // Reading progress and scroll spy
   useEffect(() => {
     const handleScroll = () => {
+      if (!articleRef.current) return;
+      
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       const scrollTop = window.scrollY;
       const trackLength = documentHeight - windowHeight;
       const progress = Math.min((scrollTop / trackLength) * 100, 100);
       setReadingProgress(progress);
+
+      // Update active heading
+      const headingElements = articleRef.current.querySelectorAll("h2, h3");
+      let currentHeading = "";
+      headingElements.forEach(heading => {
+        const rect = heading.getBoundingClientRect();
+        if (rect.top <= 150) {
+          currentHeading = heading.id;
+        }
+      });
+      setActiveHeading(currentHeading);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Initial call
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [article]);
 
   const scrollToHeading = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
       const offset = 100;
       const top = element.offsetTop - offset;
-      window.scrollTo({ top, behavior: "smooth" });
-      setActiveHeading(id);
+      window.scrollTo({
+        top,
+        behavior: "smooth",
+      });
     }
   };
 
@@ -353,6 +342,7 @@ export default function BlogPost() {
       }
     : null;
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -361,16 +351,39 @@ export default function BlogPost() {
     );
   }
 
+  // 404 state
   if (!article || fetchError) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4" dir="rtl">
-        <h1 className="font-vazirmatn text-2xl font-bold text-foreground mb-4">مقاله یافت نشد</h1>
-        <Button
-          onClick={() => navigate("/blog")}
-          className="glass border border-white/20"
-        >
-          بازگشت به مقالات
-        </Button>
+      <div dir="rtl" className="min-h-screen flex flex-col">
+        <Header onSearch={() => {}} active="blog" />
+        <main className="flex-1 flex items-center justify-center pt-[84px] px-4">
+          <div className="text-center max-w-md">
+            <h1 className="font-vazirmatn text-2xl font-bold text-foreground mb-4">
+              مقاله یافت نشد
+            </h1>
+            <p className="font-vazirmatn text-muted-foreground mb-6">
+              {fetchError || "مقاله مورد نظر وجود ندارد."}
+            </p>
+            <SurfaceGlass className="inline-block">
+              <Link
+                to="/blog"
+                className="font-vazirmatn px-6 py-3 rounded-lg hover:bg-surface-glass/50 transition-colors block"
+              >
+                بازگشت به مقالات
+              </Link>
+            </SurfaceGlass>
+          </div>
+        </main>
+        <Footer
+          links={{
+            products: "/products",
+            magazine: "/blog",
+            courses: "/courses",
+            pricing: "/pricing",
+            support: "/support",
+          }}
+          socials={[]}
+        />
       </div>
     );
   }
@@ -379,7 +392,7 @@ export default function BlogPost() {
     <>
       <Helmet>
         <title>
-          {article?.seo?.metaTitle || (article ? `${article.title} - مجله SharifGPT` : "مجله SharifGPT")}
+          {article?.seo?.metaTitle || `${article.title} - مجله SharifGPT`}
         </title>
         <meta
           name="description"
@@ -391,15 +404,30 @@ export default function BlogPost() {
         />
         {article?.seo?.robotsMeta && <meta name="robots" content={article.seo.robotsMeta} />}
         <meta property="og:type" content="article" />
-        <meta property="og:title" content={article?.seo?.openGraphTitle || article?.seo?.metaTitle || article?.title || "SharifGPT"} />
-        <meta property="og:description" content={article?.seo?.openGraphDescription || article?.seo?.metaDescription || article?.excerpt || "مقاله‌ای از مجله SharifGPT"} />
-        <meta property="og:url" content={article?.seo?.canonicalUrl || `${window.location.origin}/blog/${slug}`} />
+        <meta
+          property="og:title"
+          content={article?.seo?.openGraphTitle || article?.seo?.metaTitle || article?.title || "SharifGPT"}
+        />
+        <meta
+          property="og:description"
+          content={article?.seo?.openGraphDescription || article?.seo?.metaDescription || article?.excerpt || "مقاله‌ای از مجله SharifGPT"}
+        />
+        <meta
+          property="og:url"
+          content={article?.seo?.canonicalUrl || `${window.location.origin}/blog/${slug}`}
+        />
         {(article?.seo?.openGraphImage || article?.cover) && (
           <meta property="og:image" content={article?.seo?.openGraphImage || article?.cover} />
         )}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={article?.seo?.openGraphTitle || article?.seo?.metaTitle || article?.title || "SharifGPT"} />
-        <meta name="twitter:description" content={article?.seo?.openGraphDescription || article?.seo?.metaDescription || article?.excerpt || "مقاله‌ای از مجله SharifGPT"} />
+        <meta
+          name="twitter:title"
+          content={article?.seo?.openGraphTitle || article?.seo?.metaTitle || article?.title || "SharifGPT"}
+        />
+        <meta
+          name="twitter:description"
+          content={article?.seo?.openGraphDescription || article?.seo?.metaDescription || article?.excerpt || "مقاله‌ای از مجله SharifGPT"}
+        />
         {(article?.seo?.openGraphImage || article?.cover) && (
           <meta name="twitter:image" content={article?.seo?.openGraphImage || article?.cover} />
         )}
@@ -429,16 +457,17 @@ export default function BlogPost() {
         }}
       />
 
-      <div className="min-h-screen flex flex-col" dir="rtl">
+      <div dir="rtl" className="min-h-screen flex flex-col">
         <Header onSearch={() => {}} active="blog" />
 
         <main className="flex-1 pt-[84px]">
-          <div className="w-full px-4 md:px-6 lg:px-8">
+          {/* Page Container */}
+          <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8">
             {/* Breadcrumb */}
-            <nav className="mb-6 flex items-center gap-2 font-vazirmatn text-sm font-normal leading-[1.4] max-w-[1400px] mx-auto">
+            <nav className="mb-6 flex items-center gap-2 font-vazirmatn text-sm font-normal leading-[1.4]">
               <Link
                 to="/"
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors max-w-[200px] md:max-w-[400px] truncate"
               >
                 خانه
               </Link>
@@ -447,7 +476,7 @@ export default function BlogPost() {
               />
               <Link
                 to="/blog"
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors max-w-[200px] md:max-w-[400px] truncate"
               >
                 مقالات
               </Link>
@@ -455,105 +484,73 @@ export default function BlogPost() {
                 className={cn("w-4 h-4 text-muted-foreground", isRTL && "rotate-180")}
               />
               <span className="text-foreground max-w-[200px] md:max-w-[400px] truncate">
-                {article?.title}
+                {article.title}
               </span>
             </nav>
 
-            {/* Two-Column Layout - Left Sidebar, Right Content */}
-            <div className="max-w-[1400px] mx-auto flex gap-8 lg:gap-12">
-              {/* LEFT SIDEBAR - Table of Contents */}
-              <aside className="hidden lg:block w-[280px] shrink-0">
-                <div className="sticky top-24">
-                  <SurfaceGlass
-                    variant="default"
-                    className="p-6 rounded-2xl border border-white/20 backdrop-blur-xl"
-                  >
-                    <h3 className="font-vazirmatn text-lg font-bold leading-[1.4] text-foreground mb-4">
-                      فهرست مطالب
-                    </h3>
-                    <nav className="space-y-1.5" dir="rtl">
-                      {headings.length > 0 ? (
-                        headings.map((heading) => (
-                          <button
-                            key={heading.id}
-                            onClick={() => scrollToHeading(heading.id)}
-                            className={cn(
-                              "block w-full text-right py-2.5 px-4 rounded-lg transition-all duration-200 font-vazirmatn text-sm leading-[1.4]",
-                              heading.level === 1
-                                ? "font-semibold"
-                                : heading.level === 2
-                                ? "pr-4 font-medium"
-                                : "pr-8 font-normal text-xs",
-                              activeHeading === heading.id
-                                ? "bg-primary/20 text-primary font-semibold shadow-sm"
-                                : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
-                            )}
-                          >
-                            {heading.text}
-                          </button>
-                        ))
-                      ) : (
-                        <p className="font-vazirmatn text-sm text-muted-foreground text-right py-2">
-                          فهرست مطالب در دسترس نیست
-                        </p>
-                      )}
-                    </nav>
-                  </SurfaceGlass>
-                </div>
-              </aside>
-
-              {/* RIGHT CONTENT - Main Article */}
-              <article className="flex-1 min-w-0">
+            {/* Two-Column Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 lg:gap-12">
+              {/* Main Article Column */}
+              <article>
                 {/* Cover Image */}
-                {article?.cover && (
-                  <div className="mb-8 relative rounded-3xl overflow-hidden aspect-[2/1] ring-1 ring-white/12">
+                {article.cover && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="relative mb-8 rounded-3xl overflow-hidden ring-1 ring-white/12"
+                  >
                     <img
                       src={article.cover}
                       alt={article.title}
+                      className="w-full aspect-[2/1] object-cover"
                       loading="lazy"
-                      className="w-full h-full object-cover"
                     />
+                    {/* Overlay gradient */}
                     <div
                       className="absolute inset-0 pointer-events-none"
                       style={{
-                        backgroundImage:
+                        background:
                           "linear-gradient(to top, rgba(0,0,0,0.4), transparent, rgba(0,0,0,0.2))",
                       }}
                     />
-                  </div>
+                  </motion.div>
                 )}
 
                 {/* Title */}
                 <h1 className="font-vazirmatn text-[30px] md:text-[36px] lg:text-[48px] font-black leading-[1.2] text-foreground mb-6">
-                  {article?.title}
+                  {article.title}
                 </h1>
 
                 {/* Author Row */}
                 <div className="flex items-center gap-3 mb-4">
-                  {article?.author?.avatar ? (
+                  {article.author?.avatar ? (
                     <img
                       src={article.author.avatar}
                       alt={article.author?.name || ""}
+                      className="w-10 h-10 rounded-full ring-1 ring-white/20 bg-white/10 object-cover"
                       loading="lazy"
-                      className="w-10 h-10 rounded-full bg-white/10 ring-1 ring-white/20"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-white/10 ring-1 ring-white/20 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full ring-1 ring-white/20 bg-white/10 flex items-center justify-center">
                       <User className="w-5 h-5 text-muted-foreground" />
                     </div>
                   )}
                   <span className="font-vazirmatn text-base font-medium leading-[1.4] text-foreground">
-                    {article?.author?.name || "SharifGPT"}
+                    {article.author?.name || "SharifGPT"}
                   </span>
                 </div>
 
                 {/* Meta Row */}
-                <div className="flex flex-wrap items-center gap-4 mb-6 font-vazirmatn text-sm font-normal leading-[1.4] text-muted-foreground">
-                  {article?.publishedAt && <span>{formatDate(article.publishedAt)}</span>}
-                  <span className="text-white/30">•</span>
+                <div className="flex items-center gap-4 mb-6 font-vazirmatn text-sm font-normal leading-[1.4] text-muted-foreground">
+                  {article.publishedAt && (
+                    <>
+                      <span>{formatDate(article.publishedAt)}</span>
+                      <span className="text-white/30">•</span>
+                    </>
+                  )}
                   <span className="flex items-center gap-1.5">
                     <Clock className="w-4 h-4" />
-                    {article?.readTime ?? 0} دقیقه مطالعه
+                    {article.readTime ?? 0} دقیقه
                   </span>
                 </div>
 
@@ -564,38 +561,38 @@ export default function BlogPost() {
                   </span>
                   <div className="flex items-center gap-3">
                     <button
-                      onClick={() => handleShare("copy")}
-                      className="w-9 h-9 rounded-full glass border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
-                      aria-label="Copy link"
+                      onClick={() => handleShare("twitter")}
+                      className="w-9 h-9 rounded-full glass border border-white/20 hover:bg-white/10 transition-all flex items-center justify-center"
+                      aria-label="Share on Twitter"
                     >
-                      <Link2 className="w-4 h-4 text-foreground" />
-                    </button>
-                    <button
-                      onClick={() => handleShare("linkedin")}
-                      className="w-9 h-9 rounded-full glass border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
-                      aria-label="Share on LinkedIn"
-                    >
-                      <Linkedin className="w-4 h-4 text-foreground" />
+                      <Twitter className="w-4 h-4 text-foreground" />
                     </button>
                     <button
                       onClick={() => handleShare("facebook")}
-                      className="w-9 h-9 rounded-full glass border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
+                      className="w-9 h-9 rounded-full glass border border-white/20 hover:bg-white/10 transition-all flex items-center justify-center"
                       aria-label="Share on Facebook"
                     >
                       <Facebook className="w-4 h-4 text-foreground" />
                     </button>
                     <button
-                      onClick={() => handleShare("twitter")}
-                      className="w-9 h-9 rounded-full glass border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
-                      aria-label="Share on Twitter"
+                      onClick={() => handleShare("linkedin")}
+                      className="w-9 h-9 rounded-full glass border border-white/20 hover:bg-white/10 transition-all flex items-center justify-center"
+                      aria-label="Share on LinkedIn"
                     >
-                      <Twitter className="w-4 h-4 text-foreground" />
+                      <Linkedin className="w-4 h-4 text-foreground" />
+                    </button>
+                    <button
+                      onClick={() => handleShare("copy")}
+                      className="w-9 h-9 rounded-full glass border border-white/20 hover:bg-white/10 transition-all flex items-center justify-center"
+                      aria-label="Copy link"
+                    >
+                      <Link2 className="w-4 h-4 text-foreground" />
                     </button>
                   </div>
                 </div>
 
                 {/* Tags Row */}
-                {article?.tags && article.tags.length > 0 && (
+                {article.tags && article.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-8">
                     {article.tags.map(tag => (
                       <span
@@ -611,30 +608,68 @@ export default function BlogPost() {
                 {/* Article Body */}
                 <div
                   ref={articleRef}
-                  className="prose-blog font-vazirmatn"
+                  className="prose prose-lg max-w-none font-vazirmatn"
                   dir="rtl"
                 >
-                  {article?.bodyMarkdown && article.bodyMarkdown.trim() ? (
+                  {article.bodyMarkdown && article.bodyMarkdown.trim() ? (
                     <EnhancedMarkdownRenderer content={article.bodyMarkdown} />
-                  ) : article?.body && Array.isArray(article.body) && article.body.length > 0 ? (
+                  ) : article.body && Array.isArray(article.body) && article.body.length > 0 ? (
                     <PortableText value={article.body} components={portableTextComponents} />
                   ) : (
-                    <p className="font-vazirmatn text-lg text-muted-foreground text-center py-8">
+                    <p className="font-vazirmatn text-muted-foreground text-center py-8">
                       محتوای این مقاله در دسترس نیست.
                     </p>
                   )}
                 </div>
               </article>
+
+              {/* Sidebar - Table of Contents */}
+              <aside className="hidden lg:block">
+                <div className="sticky top-24">
+                  <SurfaceGlass className="p-6 rounded-2xl border border-white/20">
+                    <h3 className="font-vazirmatn text-lg font-bold leading-[1.4] text-foreground mb-4">
+                      فهرست مطالب
+                    </h3>
+                    <nav className="space-y-1" dir="rtl">
+                      {headings.length > 0 ? (
+                        headings.map((heading) => (
+                          <button
+                            key={heading.id}
+                            onClick={() => scrollToHeading(heading.id)}
+                            className={cn(
+                              "block w-full text-right py-2 px-3 rounded-lg transition-colors font-vazirmatn text-sm leading-[1.4]",
+                              heading.level === 1
+                                ? "font-bold"
+                                : heading.level === 2
+                                ? "pr-3"
+                                : "pr-6 text-xs",
+                              activeHeading === heading.id
+                                ? "bg-primary/20 text-primary font-semibold"
+                                : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                            )}
+                          >
+                            {heading.text}
+                          </button>
+                        ))
+                      ) : (
+                        <p className="font-vazirmatn text-sm text-muted-foreground text-right">
+                          فهرست مطالب در دسترس نیست
+                        </p>
+                      )}
+                    </nav>
+                  </SurfaceGlass>
+                </div>
+              </aside>
             </div>
 
-            {/* Related Posts Section */}
+            {/* Related Posts */}
             {relatedPosts.length > 0 && (
-              <section className="mt-16 pt-12 border-t border-white/10 max-w-[1400px] mx-auto">
-                <h2 className="font-vazirmatn text-2xl md:text-[30px] font-bold leading-[1.3] text-foreground mb-8 text-right">
+              <section className="mt-16 pt-12 border-t border-white/10">
+                <h2 className="font-vazirmatn text-2xl md:text-[30px] font-bold leading-[1.3] text-foreground mb-8">
                   مقالات مرتبط
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {relatedPosts.slice(0, 4).map(post => (
+                  {relatedPosts.map(post => (
                     <BlogCard key={post.slug} post={post} />
                   ))}
                 </div>
@@ -646,7 +681,7 @@ export default function BlogPost() {
         <Footer
           links={{
             products: "/products",
-            magazine: "/magazine",
+            magazine: "/blog",
             courses: "/courses",
             pricing: "/pricing",
             support: "/support",
@@ -655,75 +690,76 @@ export default function BlogPost() {
         />
       </div>
 
+      {/* Prose Styles */}
       <style>{`
-        .prose-blog h2 {
+        .prose {
+          color: hsl(var(--muted-foreground));
+        }
+
+        .prose h2 {
           font-family: 'Vazirmatn', sans-serif;
           font-size: 28px;
           font-weight: 800;
           line-height: 1.3;
-          color: hsl(var(--foreground));
           margin-top: 3rem;
           margin-bottom: 1.5rem;
+          color: hsl(var(--foreground));
           scroll-margin-top: 6rem;
         }
 
-        .prose-blog h3 {
+        .prose h3 {
           font-family: 'Vazirmatn', sans-serif;
           font-size: 22px;
           font-weight: 700;
           line-height: 1.35;
-          color: hsl(var(--foreground));
           margin-top: 2rem;
           margin-bottom: 1rem;
+          color: hsl(var(--foreground));
           scroll-margin-top: 6rem;
         }
 
-        .prose-blog p {
+        .prose p {
           font-family: 'Vazirmatn', sans-serif;
           font-size: 18px;
           font-weight: 400;
           line-height: 1.9;
-          color: hsl(var(--muted-foreground));
           margin-bottom: 1.5rem;
+          color: hsl(var(--muted-foreground));
         }
 
-        .prose-blog ul,
-        .prose-blog ol {
+        .prose ul,
+        .prose ol {
           font-family: 'Vazirmatn', sans-serif;
           font-size: 18px;
           font-weight: 400;
           line-height: 1.7;
-          color: hsl(var(--muted-foreground));
-          padding-right: 1.5rem;
           margin-bottom: 1.5rem;
+          padding-right: 1.25rem;
         }
 
-        .prose-blog li {
+        .prose li {
           margin-bottom: 0.5rem;
+          color: hsl(var(--muted-foreground));
         }
 
-        .prose-blog blockquote {
+        .prose blockquote {
           font-family: 'Vazirmatn', sans-serif;
           border-right: 4px solid hsl(var(--primary));
+          padding-right: 1.5rem;
+          padding-top: 1rem;
+          padding-bottom: 1rem;
+          margin: 2rem 0;
           background: hsl(var(--primary) / 0.1);
           border-radius: 12px;
-          padding: 1rem 1.5rem;
-          margin: 2rem 0;
           font-style: italic;
         }
 
-        .prose-blog blockquote p {
+        .prose blockquote p {
           margin: 0;
           color: hsl(var(--foreground));
         }
 
-        .prose-blog code {
-          font-family: 'Courier New', monospace;
-          font-size: 0.875em;
-          color: hsl(var(--primary));
-        }
-
-        .prose-blog pre {
+        .prose pre {
           font-family: 'Courier New', monospace;
           background: hsl(var(--surface-glass));
           border: 1px solid hsl(var(--border-glass));
@@ -733,17 +769,23 @@ export default function BlogPost() {
           overflow-x: auto;
         }
 
-        .prose-blog pre code {
+        .prose code {
+          font-family: 'Courier New', monospace;
+          font-size: 0.875em;
+          color: hsl(var(--primary));
+        }
+
+        .prose pre code {
           color: hsl(var(--foreground));
         }
 
-        .prose-blog a {
+        .prose a {
           color: hsl(var(--primary));
           text-decoration: underline;
           text-underline-offset: 2px;
         }
 
-        .prose-blog a:hover {
+        .prose a:hover {
           text-decoration: none;
         }
       `}</style>
