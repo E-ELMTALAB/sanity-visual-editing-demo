@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import type { ProductPrices } from "@/lib/medusa-prices";
 import { PromotionBanner } from "@/components/Hero/PromotionBanner";
 import { TrustStatsBar } from "@/components/TrustStatsBar";
+import { QuickSummaryTrustBar } from "@/components/QuickSummaryTrustBar";
 import { SeoContentCard } from "@/components/SeoContentCard";
 import { PromoBanner } from "@/components/PromoBanner";
 // Import Sanity modules statically (lazy-loading caused initialization issues)
@@ -810,6 +811,11 @@ const Index = () => {
 
       {/* Trust Stats Bar - Simple icon + number stats */}
       <TrustStatsBar />
+
+      {/* Quick Summary Trust Bar */}
+      <section className="container mx-auto px-4 md:px-6">
+        <QuickSummaryTrustBar />
+      </section>
 
       {/* SEO Content / Fallback - progressive reveal card */}
       <section className="container mx-auto px-4 md:px-6 py-16">
