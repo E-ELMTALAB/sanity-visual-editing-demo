@@ -879,14 +879,14 @@ const Index = () => {
       )}
 
       {/* Floating UI - Lazy loaded */}
-      {/* <Suspense fallback={null}>
+      <Suspense fallback={null}>
         <FloatingDock
           onOpenChat={() => setChatOpen(true)}
           onOpenSupport={() => setSupportOpen(true)}
           onOpenCart={() => setCartOpen(true)}
           cartItemCount={cartState.itemCount}
         />
-      </Suspense> */}
+      </Suspense>
 
       {/* <Suspense fallback={null}>
       <ChatbotPanel open={chatOpen} onClose={() => setChatOpen(false)} />
