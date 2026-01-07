@@ -47,7 +47,7 @@ interface ArticleDetail {
   seo?: SeoMeta;
 }
 
-// Extract headings from markdown
+// Extract headings from markdown and create ToC structure
 const extractHeadingsFromMarkdown = (content: string): Array<{ level: number; text: string; id: string }> => {
   if (!content) return [];
   const lines = content.split('\n');
@@ -65,14 +65,15 @@ const extractHeadingsFromMarkdown = (content: string): Array<{ level: number; te
   return headings;
 };
 
-// PortableText components with spec styling
+// PortableText components with proper IDs for scroll-spy
 const portableTextComponents = {
   block: {
     normal: ({ children }: { children: React.ReactNode }) => (
       <p className="font-vazirmatn text-lg font-normal leading-[1.9] text-muted-foreground mb-6">{children}</p>
     ),
     h2: ({ children }: { children: React.ReactNode }) => {
-      const id = `heading-${children?.toString().toLowerCase().replace(/\s+/g, '-')}`;
+      const text = children?.toString() || '';
+      const id = `heading-${text.toLowerCase().replace(/\s+/g, '-').replace(/[^\u0600-\u06FFa-z0-9-]/g, '')}`;
       return (
         <h2 id={id} className="font-vazirmatn text-[28px] font-extrabold leading-[1.3] text-foreground mt-12 mb-6 scroll-mt-24">
           {children}
@@ -80,7 +81,8 @@ const portableTextComponents = {
       );
     },
     h3: ({ children }: { children: React.ReactNode }) => {
-      const id = `heading-${children?.toString().toLowerCase().replace(/\s+/g, '-')}`;
+      const text = children?.toString() || '';
+      const id = `heading-${text.toLowerCase().replace(/\s+/g, '-').replace(/[^\u0600-\u06FFa-z0-9-]/g, '')}`;
       return (
         <h3 id={id} className="font-vazirmatn text-[22px] font-bold leading-[1.35] text-foreground mt-8 mb-4 scroll-mt-24">
           {children}
@@ -134,13 +136,14 @@ export default function BlogPost() {
   const navigate = useNavigate();
   const { isRTL } = useDirection();
   const [readingProgress, setReadingProgress] = useState(0);
-  const [activeHeading, setActiveHeading] = useState("");
+  const [activeHeading, setActiveHeading] = useState<string>("");
   const [headings, setHeadings] = useState<Array<{ level: number; text: string; id: string }>>([]);
   const [article, setArticle] = useState<ArticleDetail | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const articleRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
     const isConfigValid = validateSanityConfig();
@@ -190,11 +193,15 @@ export default function BlogPost() {
     };
   }, [slug]);
 
-  // Extract headings from content
+  // Extract headings and set up scroll-spy
   useEffect(() => {
     if (article?.bodyMarkdown) {
       const extractedHeadings = extractHeadingsFromMarkdown(article.bodyMarkdown);
       setHeadings(extractedHeadings);
+      // Set first heading as active by default
+      if (extractedHeadings.length > 0) {
+        setActiveHeading(extractedHeadings[0].id);
+      }
     } else if (article?.body) {
       const updateHeadings = () => {
         if (!articleRef.current) return;
@@ -210,35 +217,67 @@ export default function BlogPost() {
           };
         }).filter(h => h.text);
         setHeadings(extractedHeadings);
+        // Set first heading as active by default
+        if (extractedHeadings.length > 0) {
+          setActiveHeading(extractedHeadings[0].id);
+        }
       };
-      const timeout = setTimeout(updateHeadings, 100);
+      const timeout = setTimeout(updateHeadings, 200);
       return () => clearTimeout(timeout);
     } else {
       setHeadings([]);
     }
   }, [article]);
 
-  // Reading progress and scroll spy
+  // IntersectionObserver for scroll-spy
+  useEffect(() => {
+    if (!articleRef.current || headings.length === 0) return;
+
+    // Clean up previous observer
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -60% 0px',
+      threshold: 0,
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveHeading(entry.target.id);
+        }
+      });
+    }, observerOptions);
+
+    // Observe all headings
+    headings.forEach((heading) => {
+      const element = document.getElementById(heading.id);
+      if (element) {
+        observer.observe(element);
+      }
+    });
+
+    observerRef.current = observer;
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [headings]);
+
+  // Reading progress
   useEffect(() => {
     const handleScroll = () => {
-      if (!articleRef.current) return;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       const scrollTop = window.scrollY;
       const trackLength = documentHeight - windowHeight;
       const progress = Math.min((scrollTop / trackLength) * 100, 100);
       setReadingProgress(progress);
-
-      // Update active heading
-      const headingElements = articleRef.current.querySelectorAll("h2, h3");
-      let currentHeading = "";
-      headingElements.forEach(heading => {
-        const rect = heading.getBoundingClientRect();
-        if (rect.top <= 150) {
-          currentHeading = heading.id;
-        }
-      });
-      setActiveHeading(currentHeading);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -251,6 +290,7 @@ export default function BlogPost() {
       const offset = 100;
       const top = element.offsetTop - offset;
       window.scrollTo({ top, behavior: "smooth" });
+      setActiveHeading(id);
     }
   };
 
@@ -393,9 +433,9 @@ export default function BlogPost() {
         <Header onSearch={() => {}} active="blog" />
 
         <main className="flex-1 pt-[84px]">
-          <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8">
+          <div className="w-full px-4 md:px-6 lg:px-8">
             {/* Breadcrumb */}
-            <nav className="mb-6 flex items-center gap-2 font-vazirmatn text-sm font-normal leading-[1.4]">
+            <nav className="mb-6 flex items-center gap-2 font-vazirmatn text-sm font-normal leading-[1.4] max-w-[1400px] mx-auto">
               <Link
                 to="/"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -419,10 +459,51 @@ export default function BlogPost() {
               </span>
             </nav>
 
-            {/* Two-Column Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 lg:gap-12">
-              {/* Main Article Column */}
-              <article className="w-full">
+            {/* Two-Column Layout - Left Sidebar, Right Content */}
+            <div className="max-w-[1400px] mx-auto flex gap-8 lg:gap-12">
+              {/* LEFT SIDEBAR - Table of Contents */}
+              <aside className="hidden lg:block w-[280px] shrink-0">
+                <div className="sticky top-24">
+                  <SurfaceGlass
+                    variant="default"
+                    className="p-6 rounded-2xl border border-white/20 backdrop-blur-xl"
+                  >
+                    <h3 className="font-vazirmatn text-lg font-bold leading-[1.4] text-foreground mb-4">
+                      فهرست مطالب
+                    </h3>
+                    <nav className="space-y-1.5" dir="rtl">
+                      {headings.length > 0 ? (
+                        headings.map((heading) => (
+                          <button
+                            key={heading.id}
+                            onClick={() => scrollToHeading(heading.id)}
+                            className={cn(
+                              "block w-full text-right py-2.5 px-4 rounded-lg transition-all duration-200 font-vazirmatn text-sm leading-[1.4]",
+                              heading.level === 1
+                                ? "font-semibold"
+                                : heading.level === 2
+                                ? "pr-4 font-medium"
+                                : "pr-8 font-normal text-xs",
+                              activeHeading === heading.id
+                                ? "bg-primary/20 text-primary font-semibold shadow-sm"
+                                : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                            )}
+                          >
+                            {heading.text}
+                          </button>
+                        ))
+                      ) : (
+                        <p className="font-vazirmatn text-sm text-muted-foreground text-right py-2">
+                          فهرست مطالب در دسترس نیست
+                        </p>
+                      )}
+                    </nav>
+                  </SurfaceGlass>
+                </div>
+              </aside>
+
+              {/* RIGHT CONTENT - Main Article */}
+              <article className="flex-1 min-w-0">
                 {/* Cover Image */}
                 {article?.cover && (
                   <div className="mb-8 relative rounded-3xl overflow-hidden aspect-[2/1] ring-1 ring-white/12">
@@ -472,7 +553,7 @@ export default function BlogPost() {
                   <span className="text-white/30">•</span>
                   <span className="flex items-center gap-1.5">
                     <Clock className="w-4 h-4" />
-                    {article?.readTime ?? 0} دقیقه
+                    {article?.readTime ?? 0} دقیقه مطالعه
                   </span>
                 </div>
 
@@ -483,18 +564,11 @@ export default function BlogPost() {
                   </span>
                   <div className="flex items-center gap-3">
                     <button
-                      onClick={() => handleShare("twitter")}
+                      onClick={() => handleShare("copy")}
                       className="w-9 h-9 rounded-full glass border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
-                      aria-label="Share on Twitter"
+                      aria-label="Copy link"
                     >
-                      <Twitter className="w-4 h-4 text-foreground" />
-                    </button>
-                    <button
-                      onClick={() => handleShare("facebook")}
-                      className="w-9 h-9 rounded-full glass border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
-                      aria-label="Share on Facebook"
-                    >
-                      <Facebook className="w-4 h-4 text-foreground" />
+                      <Link2 className="w-4 h-4 text-foreground" />
                     </button>
                     <button
                       onClick={() => handleShare("linkedin")}
@@ -504,11 +578,18 @@ export default function BlogPost() {
                       <Linkedin className="w-4 h-4 text-foreground" />
                     </button>
                     <button
-                      onClick={() => handleShare("copy")}
+                      onClick={() => handleShare("facebook")}
                       className="w-9 h-9 rounded-full glass border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
-                      aria-label="Copy link"
+                      aria-label="Share on Facebook"
                     >
-                      <Link2 className="w-4 h-4 text-foreground" />
+                      <Facebook className="w-4 h-4 text-foreground" />
+                    </button>
+                    <button
+                      onClick={() => handleShare("twitter")}
+                      className="w-9 h-9 rounded-full glass border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
+                      aria-label="Share on Twitter"
+                    >
+                      <Twitter className="w-4 h-4 text-foreground" />
                     </button>
                   </div>
                 </div>
@@ -544,57 +625,16 @@ export default function BlogPost() {
                   )}
                 </div>
               </article>
-
-              {/* Sidebar - Table of Contents */}
-              <aside className="hidden lg:block">
-                <div className="sticky top-24">
-                  <SurfaceGlass
-                    variant="default"
-                    className="p-6 rounded-2xl border border-white/20"
-                  >
-                    <h3 className="font-vazirmatn text-lg font-bold leading-[1.4] text-foreground mb-4">
-                      فهرست مطالب
-                    </h3>
-                    <nav className="space-y-1" dir="rtl">
-                      {headings.length > 0 ? (
-                        headings.map((heading) => (
-                          <button
-                            key={heading.id}
-                            onClick={() => scrollToHeading(heading.id)}
-                            className={cn(
-                              "block w-full text-right py-2 px-3 rounded-lg transition-colors font-vazirmatn text-sm leading-[1.4]",
-                              heading.level === 1
-                                ? "font-bold"
-                                : heading.level === 2
-                                ? "pr-3 font-semibold"
-                                : "pr-6 font-normal",
-                              activeHeading === heading.id
-                                ? "bg-primary/20 text-primary font-semibold"
-                                : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
-                            )}
-                          >
-                            {heading.text}
-                          </button>
-                        ))
-                      ) : (
-                        <p className="font-vazirmatn text-sm text-muted-foreground text-right">
-                          فهرست مطالب در دسترس نیست
-                        </p>
-                      )}
-                    </nav>
-                  </SurfaceGlass>
-                </div>
-              </aside>
             </div>
 
-            {/* Related Posts */}
+            {/* Related Posts Section */}
             {relatedPosts.length > 0 && (
-              <section className="mt-16 pt-12 border-t border-white/10">
-                <h2 className="font-vazirmatn text-2xl md:text-[30px] font-bold leading-[1.3] text-foreground mb-8">
+              <section className="mt-16 pt-12 border-t border-white/10 max-w-[1400px] mx-auto">
+                <h2 className="font-vazirmatn text-2xl md:text-[30px] font-bold leading-[1.3] text-foreground mb-8 text-right">
                   مقالات مرتبط
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {relatedPosts.map(post => (
+                  {relatedPosts.slice(0, 4).map(post => (
                     <BlogCard key={post.slug} post={post} />
                   ))}
                 </div>
