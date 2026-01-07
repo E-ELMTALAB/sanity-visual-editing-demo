@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Quote, ZoomIn, Send, Instagram, MessageCircle, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 import { useDirection } from "@/contexts/DirectionContext";
 import { cn } from "@/lib/utils";
@@ -35,9 +36,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   const [canScrollNext, setCanScrollNext] = useState(false);
 
   useEffect(() => {
-    if (!api) {
-      return;
-    }
+    if (!api) return;
 
     const onSelect = () => {
       setCanScrollPrev(api.canScrollPrev());
@@ -82,9 +81,17 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   return (
     <>
       <section dir="rtl" className={cn("py-10 md:py-4", className)}>
-        <div className="rounded-2xl overflow-hidden p-6 md:p-4 glass">
+        <SurfaceGlass className="rounded-2xl overflow-hidden p-6 md:p-4">
+          {/* Background accent gradient */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage: "linear-gradient(to right, hsl(var(--primary) / 0.05), transparent, hsl(var(--accent) / 0.05))",
+            }}
+          />
+
           <div className="relative z-10">
-            {/* Header - Center aligned */}
+            {/* Header */}
             <div className="mb-4 md:mb-3 text-center">
               <h2 className="font-vazirmatn text-[18px] md:text-[20px] lg:text-[24px] font-bold leading-[1.2] text-foreground">
                 نظرات مشتریان
@@ -119,17 +126,12 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                       }}
                       className="h-full flex flex-col"
                     >
-                      <div
+                      <SurfaceGlass
+                        variant="default"
                         className={cn(
-                          "flex-1 p-5 md:p-3 rounded-xl transition-colors duration-300",
-                          "glass hover:border-primary/30"
+                          "flex-1 p-5 md:p-3 rounded-xl border transition-colors duration-300",
+                          "border-border-glass hover:border-primary/30"
                         )}
-                        style={{
-                          backdropFilter: "blur(22px) saturate(160%)",
-                          background: "hsla(0, 0%, 100%, 0.14)",
-                          border: "1px solid hsla(0, 0%, 100%, 0.35)",
-                          boxShadow: "0 8px 34px rgba(0, 0, 0, 0.28), inset 0 1px 0 hsla(0, 0%, 100%, 0.10)",
-                        }}
                       >
                         {/* Screenshot Container */}
                         <div className="relative aspect-[4/3] rounded-lg mb-4 md:mb-2 overflow-hidden cursor-pointer group">
@@ -194,7 +196,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                             {review.source.label}
                           </span>
                         </a>
-                      </div>
+                      </SurfaceGlass>
                     </motion.div>
                   </CarouselItem>
                 ))}
@@ -207,7 +209,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                   disabled={!canScrollPrev}
                   className={cn(
                     "w-8 h-8 md:w-8 md:h-8 rounded-full",
-                    "glass hover:bg-primary hover:text-primary-foreground",
+                    "glass border border-border-glass hover:bg-primary hover:text-primary-foreground",
                     "transition-colors duration-200 flex items-center justify-center",
                     "disabled:opacity-35 disabled:cursor-not-allowed"
                   )}
@@ -224,7 +226,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                   disabled={!canScrollNext}
                   className={cn(
                     "w-8 h-8 md:w-8 md:h-8 rounded-full",
-                    "glass hover:bg-primary hover:text-primary-foreground",
+                    "glass border border-border-glass hover:bg-primary hover:text-primary-foreground",
                     "transition-colors duration-200 flex items-center justify-center",
                     "disabled:opacity-35 disabled:cursor-not-allowed"
                   )}
@@ -239,7 +241,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
               </div>
             </Carousel>
           </div>
-        </div>
+        </SurfaceGlass>
       </section>
 
       {/* Lightbox Modal */}

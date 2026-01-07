@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { SurfaceGlass } from "@/components/ui/surface-glass";
 
 interface SeoContentCardProps {
   children: ReactNode;
@@ -37,50 +38,79 @@ export function SeoContentCard({ children, className }: SeoContentCardProps) {
 
   return (
     <div dir="rtl" className={cn("max-w-4xl mx-auto", className)}>
-      <div
+      <SurfaceGlass
         className={cn(
-          "relative glass rounded-2xl p-5 md:p-6",
-          "overflow-hidden"
+          "rounded-2xl overflow-hidden",
+          "bg-gradient-to-br from-white/5 via-white/10 to-white/5",
+          "backdrop-blur-xl"
         )}
-        style={{
-          maxHeight,
-          transition: reduceMotion
-            ? undefined
-            : "max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        }}
       >
+        {/* Subtle background gradient */}
         <div
-          ref={contentRef}
-          className="space-y-6 text-sm md:text-base text-muted-foreground leading-relaxed"
-        >
-          {children}
-        </div>
-
-        {/* Gradient fade overlay (bottom) */}
-        <div
-          aria-hidden="true"
-          className={cn(
-            "pointer-events-none absolute inset-x-0 bottom-0 h-24",
-            "bg-gradient-to-t from-[hsl(var(--card))] via-[hsl(var(--card))/0.6] to-transparent",
-            "transition-opacity duration-300 ease-out"
-          )}
-          style={{ opacity: expanded ? 0 : 1 }}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, hsl(var(--primary) / 0.03), transparent, hsl(var(--accent) / 0.03))",
+          }}
         />
-      </div>
 
-      {/* Toggle button */}
-      <button
-        type="button"
-        onClick={toggle}
-        className={cn(
-          "mt-4 text-sm font-normal font-vazirmatn",
-          "text-muted-foreground hover:text-foreground",
-          "transition-colors duration-200",
-          "flex items-center justify-center md:justify-end gap-1"
-        )}
-      >
-        {expanded ? "بستن توضیحات" : "مشاهده توضیحات کامل ←"}
-      </button>
+        <div className="relative z-10">
+          {/* Content container */}
+          <div
+            className={cn(
+              "relative overflow-hidden",
+              "px-6 md:px-8 pt-6 md:pt-8 pb-4"
+            )}
+            style={{
+              maxHeight,
+              transition: reduceMotion
+                ? undefined
+                : "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            {/* Content with proper hierarchy and RTL alignment */}
+            <div
+              ref={contentRef}
+              className={cn(
+                "space-y-4 md:space-y-6",
+                "text-sm md:text-base text-foreground/90 leading-relaxed",
+                "text-center"
+              )}
+            >
+              {children}
+            </div>
+
+            {/* Gradient fade overlay (bottom) - only when collapsed */}
+            {!expanded && (
+              <div
+                aria-hidden="true"
+                className={cn(
+                  "pointer-events-none absolute inset-x-0 bottom-0 h-20",
+                  "bg-gradient-to-t from-[hsl(var(--card))] via-[hsl(var(--card))/0.4] to-transparent"
+                )}
+              />
+            )}
+          </div>
+
+          {/* Toggle button - inside card, centered */}
+          <div className="px-6 md:px-8 pb-6 md:pb-8 pt-2">
+            <button
+              type="button"
+              onClick={toggle}
+              className={cn(
+                "w-full text-sm font-medium font-vazirmatn",
+                "text-muted-foreground hover:text-foreground",
+                "transition-all duration-200",
+                "flex items-center justify-center gap-2",
+                "cursor-pointer",
+                "hover:underline underline-offset-2"
+              )}
+            >
+              {expanded ? "بستن توضیحات" : "مشاهده توضیحات کامل ←"}
+            </button>
+          </div>
+        </div>
+      </SurfaceGlass>
     </div>
   );
 }

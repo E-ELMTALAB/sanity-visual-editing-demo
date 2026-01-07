@@ -822,6 +822,13 @@ const Index = () => {
         </Suspense>
       </section>
 
+      {/* FAQ Section */}
+      {dataLoaded && sanityData && sanityData.faqs && sanityData.faqs.length > 0 && (
+        <Suspense fallback={<SectionPlaceholder />}>
+          <FaqAccordion items={sanityData.faqs} />
+        </Suspense>
+      )}
+
       {/* Footer Trigger Point */}
       <div ref={footerTriggerRef} className="h-px" />
 
