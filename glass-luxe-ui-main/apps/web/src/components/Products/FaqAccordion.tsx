@@ -81,7 +81,7 @@ export function FaqAccordion({ items, className }: FaqAccordionProps) {
               variant="default"
               className={cn(
                 "overflow-hidden rounded-xl",
-                "border border-glass-border",
+                "border border-white/35",
                 "scroll-mt-24"
               )}
             >

@@ -107,15 +107,19 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                 align: "start",
                 direction: isRTL ? "rtl" : "ltr",
                 loop: false,
+                slidesToScroll: 1,
               }}
               setApi={setApi}
               className="w-full"
             >
-              <CarouselContent className="-mr-4 md:-mr-2">
+              <CarouselContent className={isRTL ? "-mr-4 md:-mr-2" : ""}>
                 {reviews.map((review, index) => (
                   <CarouselItem
                     key={review.id}
-                    className="basis-full sm:basis-1/2 lg:basis-1/3 pr-4 md:pr-2"
+                    className={cn(
+                      "basis-full sm:basis-1/2 lg:basis-1/3",
+                      isRTL ? "pr-4 md:pr-2" : "pl-4 md:pl-2"
+                    )}
                   >
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
@@ -126,11 +130,12 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                       }}
                       className="h-full flex flex-col"
                     >
-                      <SurfaceGlass
-                        variant="default"
+                      <div
                         className={cn(
                           "flex-1 p-5 md:p-3 rounded-xl border transition-colors duration-300",
-                          "border-border-glass hover:border-primary/30"
+                          "border-white/35 hover:border-primary/30",
+                          "bg-gradient-to-br from-white/5 via-white/10 to-white/5",
+                          "backdrop-blur-xl"
                         )}
                       >
                         {/* Screenshot Container */}
@@ -182,7 +187,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                         </p>
 
                         {/* Source Divider */}
-                        <div className="h-px bg-border-glass mb-3 md:mb-2" />
+                        <div className="h-px bg-white/35 mb-3 md:mb-2" />
 
                         {/* Source Label */}
                         <a
@@ -196,7 +201,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                             {review.source.label}
                           </span>
                         </a>
-                      </SurfaceGlass>
+                      </div>
                     </motion.div>
                   </CarouselItem>
                 ))}
@@ -205,13 +210,21 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
               {/* Navigation Buttons - Centered below carousel */}
               <div className="flex justify-center items-center gap-2 mt-6 md:mt-3">
                 <button
-                  onClick={() => api?.scrollPrev()}
-                  disabled={!canScrollPrev}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (api) {
+                      api.scrollPrev();
+                    }
+                  }}
+                  disabled={!canScrollPrev || !api}
                   className={cn(
                     "w-8 h-8 md:w-8 md:h-8 rounded-full",
-                    "glass border border-border-glass hover:bg-primary hover:text-primary-foreground",
+                    "glass border border-white/35 hover:bg-primary hover:text-primary-foreground",
                     "transition-colors duration-200 flex items-center justify-center",
-                    "disabled:opacity-35 disabled:cursor-not-allowed"
+                    "disabled:opacity-35 disabled:cursor-not-allowed",
+                    "cursor-pointer"
                   )}
                   aria-label="قبلی"
                 >
@@ -222,13 +235,21 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                   )}
                 </button>
                 <button
-                  onClick={() => api?.scrollNext()}
-                  disabled={!canScrollNext}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (api) {
+                      api.scrollNext();
+                    }
+                  }}
+                  disabled={!canScrollNext || !api}
                   className={cn(
                     "w-8 h-8 md:w-8 md:h-8 rounded-full",
-                    "glass border border-border-glass hover:bg-primary hover:text-primary-foreground",
+                    "glass border border-white/35 hover:bg-primary hover:text-primary-foreground",
                     "transition-colors duration-200 flex items-center justify-center",
-                    "disabled:opacity-35 disabled:cursor-not-allowed"
+                    "disabled:opacity-35 disabled:cursor-not-allowed",
+                    "cursor-pointer"
                   )}
                   aria-label="بعدی"
                 >
