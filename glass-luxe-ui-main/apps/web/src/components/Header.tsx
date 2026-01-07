@@ -102,9 +102,6 @@ export function Header({ onSearch, megaItems, active }: HeaderProps) {
             "glass-strong h-full transition-all duration-300 rounded-2xl",
             isScrolled && "backdrop-blur-[28px] rounded-none",
           )}
-          style={{
-            borderBottom: "1px solid hsl(var(--border-glass))",
-          }}
         >
           <div className="max-w-[1400px] mx-auto h-full px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-full gap-4 rtl:flex-row-reverse">
