@@ -15,6 +15,7 @@ import { Price } from "@/components/ui/price";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
+import { BonusGiftBox } from "./BonusGiftBox";
 import { useDirection } from "@/contexts/DirectionContext";
 import { usePromotions } from "@/contexts/promotion-context";
 import { cn } from "@/lib/utils";
@@ -241,45 +242,14 @@ export function ProductDetailHeroSection({
                 </div>
               )}
 
-              {/* Bonus Box */}
+              {/* Bonus Gift Box */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...springTransition, delay: 0.1 }}
-                className="mb-6 p-4 rounded-xl border"
-                style={{
-                  background: "linear-gradient(to left, rgba(34,197,94,0.08), transparent)",
-                  borderColor: "rgba(34,197,94,0.2)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(34,197,94,0.35)";
-                  e.currentTarget.style.background =
-                    "linear-gradient(to left, rgba(34,197,94,0.12), transparent)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(34,197,94,0.2)";
-                  e.currentTarget.style.background =
-                    "linear-gradient(to left, rgba(34,197,94,0.08), transparent)";
-                }}
+                className="mt-6"
               >
-                <div className="flex items-start gap-3 flex-row-reverse">
-                  <span className="text-xl sm:text-2xl">🎁</span>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1 flex-row-reverse">
-                      <Badge
-                        className="bg-[rgba(34,197,94,0.15)] border border-[rgba(34,197,94,0.25)] text-[#4ADE80] text-[10px] sm:text-[11px] font-semibold px-2 py-0.5"
-                      >
-                        هدیه رایگان
-                      </Badge>
-                      <h3 className="text-[13px] sm:text-sm font-semibold text-foreground/95">
-                        پشتیبانی رایگان ۶ ماهه
-                      </h3>
-                    </div>
-                    <p className="text-[11px] sm:text-xs text-muted-foreground">
-                      با خرید این محصول، ۶ ماه پشتیبانی رایگان دریافت می‌کنید
-                    </p>
-                  </div>
-                </div>
+                <BonusGiftBox />
               </motion.div>
 
               {/* Buy Button */}
@@ -288,7 +258,7 @@ export function ProductDetailHeroSection({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ ...springTransition, delay: 0.15 }}
-                  className="mb-6"
+                  className="mt-3 sm:mt-4 mb-6"
                 >
                   <Button
                     size="lg"
