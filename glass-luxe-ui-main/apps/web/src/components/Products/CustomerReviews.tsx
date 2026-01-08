@@ -39,16 +39,22 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
     if (!api) return;
 
     const onSelect = () => {
-      setCanScrollPrev(api.canScrollPrev());
-      setCanScrollNext(api.canScrollNext());
+      // With loop enabled, we can always scroll, but we still check for UX
+      setCanScrollPrev(true);
+      setCanScrollNext(true);
+    };
+
+    const onReInit = () => {
+      setCanScrollPrev(true);
+      setCanScrollNext(true);
     };
 
     onSelect();
-    api.on("reInit", onSelect);
+    api.on("reInit", onReInit);
     api.on("select", onSelect);
 
     return () => {
-      api.off("reInit", onSelect);
+      api.off("reInit", onReInit);
       api.off("select", onSelect);
     };
   }, [api]);
@@ -106,7 +112,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
               opts={{
                 align: "start",
                 direction: isRTL ? "rtl" : "ltr",
-                loop: false,
+                loop: true,
                 slidesToScroll: 1,
               }}
               setApi={setApi}
@@ -208,7 +214,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
               </CarouselContent>
 
               {/* Navigation Buttons - Centered below carousel */}
-              <div className="flex justify-center items-center gap-2 mt-6 md:mt-3">
+              <div className="flex justify-center items-center gap-2 mt-6 md:mt-3 relative z-20">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -218,14 +224,21 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                       api.scrollPrev();
                     }
                   }}
-                  disabled={!canScrollPrev || !api}
+                  disabled={!api}
                   className={cn(
                     "w-8 h-8 md:w-8 md:h-8 rounded-full",
-                    "glass border border-white/35 hover:bg-primary hover:text-primary-foreground",
-                    "transition-colors duration-200 flex items-center justify-center",
-                    "disabled:opacity-35 disabled:cursor-not-allowed",
-                    "cursor-pointer"
+                    "glass border border-white/35",
+                    "hover:bg-primary hover:text-primary-foreground hover:border-primary",
+                    "active:scale-95",
+                    "transition-all duration-200 flex items-center justify-center",
+                    "disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-inherit",
+                    "cursor-pointer z-20",
+                    "pointer-events-auto"
                   )}
+                  style={{
+                    pointerEvents: "auto",
+                    zIndex: 20,
+                  }}
                   aria-label="قبلی"
                 >
                   {isRTL ? (
@@ -243,14 +256,21 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                       api.scrollNext();
                     }
                   }}
-                  disabled={!canScrollNext || !api}
+                  disabled={!api}
                   className={cn(
                     "w-8 h-8 md:w-8 md:h-8 rounded-full",
-                    "glass border border-white/35 hover:bg-primary hover:text-primary-foreground",
-                    "transition-colors duration-200 flex items-center justify-center",
-                    "disabled:opacity-35 disabled:cursor-not-allowed",
-                    "cursor-pointer"
+                    "glass border border-white/35",
+                    "hover:bg-primary hover:text-primary-foreground hover:border-primary",
+                    "active:scale-95",
+                    "transition-all duration-200 flex items-center justify-center",
+                    "disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-inherit",
+                    "cursor-pointer z-20",
+                    "pointer-events-auto"
                   )}
+                  style={{
+                    pointerEvents: "auto",
+                    zIndex: 20,
+                  }}
                   aria-label="بعدی"
                 >
                   {isRTL ? (
