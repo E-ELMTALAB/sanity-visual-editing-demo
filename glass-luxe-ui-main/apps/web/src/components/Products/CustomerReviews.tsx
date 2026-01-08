@@ -38,26 +38,48 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   useEffect(() => {
     if (!api) return;
 
+    const updateScrollState = () => {
+      try {
+        setCanScrollPrev(api.canScrollPrev());
+        setCanScrollNext(api.canScrollNext());
+      } catch (error) {
+        // API might not be fully ready
+        console.warn("Carousel API not ready:", error);
+      }
+    };
+
     const onSelect = () => {
-      // With loop enabled, we can always scroll, but we still check for UX
-      setCanScrollPrev(true);
-      setCanScrollNext(true);
+      updateScrollState();
     };
 
     const onReInit = () => {
-      setCanScrollPrev(true);
-      setCanScrollNext(true);
+      updateScrollState();
     };
 
-    onSelect();
+    // Force reinit to ensure carousel is ready
+    try {
+      api.reInit();
+    } catch (error) {
+      // Ignore if reinit fails
+    }
+
+    // Initial state update with a small delay to ensure carousel is ready
+    const timeoutId = setTimeout(() => {
+      updateScrollState();
+    }, 100);
+
+    // Listen to carousel events
     api.on("reInit", onReInit);
     api.on("select", onSelect);
+    api.on("settle", onSelect);
 
     return () => {
+      clearTimeout(timeoutId);
       api.off("reInit", onReInit);
       api.off("select", onSelect);
+      api.off("settle", onSelect);
     };
-  }, [api]);
+  }, [api, reviews]);
 
   const openLightbox = useCallback((image: string) => {
     setLightboxImage(image);
@@ -66,6 +88,26 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   const closeLightbox = useCallback(() => {
     setLightboxImage(null);
   }, []);
+
+  const handleScrollPrev = useCallback(() => {
+    if (api && typeof api.scrollPrev === "function") {
+      try {
+        api.scrollPrev();
+      } catch (error) {
+        console.error("Error scrolling previous:", error);
+      }
+    }
+  }, [api]);
+
+  const handleScrollNext = useCallback(() => {
+    if (api && typeof api.scrollNext === "function") {
+      try {
+        api.scrollNext();
+      } catch (error) {
+        console.error("Error scrolling next:", error);
+      }
+    }
+  }, [api]);
 
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
@@ -109,16 +151,19 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
 
             {/* Carousel */}
             <Carousel
+              key={`carousel-${reviews.length}`}
               opts={{
                 align: "start",
                 direction: isRTL ? "rtl" : "ltr",
                 loop: true,
                 slidesToScroll: 1,
+                dragFree: false,
+                containScroll: "trimSnaps",
               }}
               setApi={setApi}
               className="w-full"
             >
-              <CarouselContent className={isRTL ? "-mr-4 md:-mr-2" : ""}>
+              <CarouselContent className={isRTL ? "-mr-4 md:-mr-2" : "-ml-4 md:-ml-2"}>
                 {reviews.map((review, index) => (
                   <CarouselItem
                     key={review.id}
@@ -220,9 +265,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (api) {
-                      api.scrollPrev();
-                    }
+                    handleScrollPrev();
                   }}
                   disabled={!api}
                   className={cn(
@@ -252,9 +295,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (api) {
-                      api.scrollNext();
-                    }
+                    handleScrollNext();
                   }}
                   disabled={!api}
                   className={cn(
