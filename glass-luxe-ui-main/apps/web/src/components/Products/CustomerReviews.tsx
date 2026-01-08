@@ -110,13 +110,29 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   }, [api]);
 
   const getPlatformIcon = (platform: string) => {
+    const iconSize = "w-[14px] h-[14px]";
     switch (platform) {
       case "telegram":
-        return <Send className="w-[14px] h-[14px]" style={{ color: "#38bdf8" }} />;
+        return (
+          <Send 
+            className={cn(iconSize, "transition-opacity duration-200 group-hover/source:opacity-100")} 
+            style={{ color: "#38BDF8", opacity: 0.6 }} 
+          />
+        );
       case "instagram":
-        return <Instagram className="w-[14px] h-[14px]" style={{ color: "#f472b6" }} />;
+        return (
+          <Instagram 
+            className={cn(iconSize, "transition-opacity duration-200 group-hover/source:opacity-100")} 
+            style={{ color: "#F472B6", opacity: 0.6 }} 
+          />
+        );
       case "whatsapp":
-        return <MessageCircle className="w-[14px] h-[14px]" style={{ color: "#4ade80" }} />;
+        return (
+          <MessageCircle 
+            className={cn(iconSize, "transition-opacity duration-200 group-hover/source:opacity-100")} 
+            style={{ color: "#4ADE80", opacity: 0.6 }} 
+          />
+        );
       default:
         return null;
     }
@@ -134,15 +150,15 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
-              backgroundImage: "linear-gradient(to right, hsl(var(--primary) / 0.05), transparent, hsl(var(--accent) / 0.05))",
+              backgroundImage: "linear-gradient(to bottom right, hsl(var(--primary) / 0.05), transparent, hsl(var(--accent) / 0.05))",
             }}
           />
 
           <div className="relative z-10">
             {/* Header */}
             <div className="mb-4 md:mb-3 text-center">
-              <h2 className="font-vazirmatn text-[18px] md:text-[20px] lg:text-[24px] font-bold leading-[1.2] text-foreground">
-                نظرات مشتریان
+              <h2 className="font-vazirmatn text-[18px] md:text-[20px] lg:text-[24px] font-bold leading-[1.3] text-foreground">
+                مورد اعتماد هزاران دانشجو
               </h2>
               <p className="font-vazirmatn text-[16px] md:text-[14px] font-normal leading-[1.5] text-muted-foreground hidden md:block mt-1">
                 تجربه واقعی مشتریان از محصولات ما
@@ -184,10 +200,13 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                       <div
                         className={cn(
                           "flex-1 p-5 md:p-3 rounded-xl border transition-colors duration-300",
-                          "border-white/35 hover:border-primary/30",
-                          "bg-gradient-to-br from-white/5 via-white/10 to-white/5",
-                          "backdrop-blur-xl"
+                          "hover:border-primary/30",
+                          "backdrop-blur-sm"
                         )}
+                        style={{
+                          borderColor: "hsl(var(--border-glass))",
+                          backgroundColor: "hsl(var(--surface-glass) / 0.5)",
+                        }}
                       >
                         {/* Screenshot Container */}
                         <div className="relative aspect-[4/3] rounded-lg mb-4 md:mb-2 overflow-hidden cursor-pointer group">
@@ -197,6 +216,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                                 src={review.screenshot}
                                 alt="Review screenshot"
                                 className="w-full h-full object-contain object-center"
+                                loading="lazy"
                                 onClick={() => openLightbox(review.screenshot!)}
                               />
                               {/* Glass gradient background */}
@@ -209,10 +229,10 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                               />
                               {/* Hover overlay */}
                               <div
-                                className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-opacity duration-200 flex items-center justify-center"
+                                className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-opacity duration-200 flex items-center justify-center cursor-pointer"
                                 onClick={() => openLightbox(review.screenshot!)}
                               >
-                                <ZoomIn className="w-8 h-8 md:w-5 md:h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                                <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                               </div>
                             </>
                           ) : (
@@ -228,7 +248,10 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                         <div className="mb-3 md:mb-2 flex justify-start">
                           <Quote
                             className="w-8 h-8 md:w-5 md:h-5"
-                            style={{ color: "hsl(var(--primary) / 0.4)", transform: "rotate(180deg)" }}
+                            style={{ 
+                              color: "hsl(var(--primary) / 0.4)", 
+                              transform: "rotate(180deg)" 
+                            }}
                           />
                         </div>
 
@@ -238,7 +261,10 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                         </p>
 
                         {/* Source Divider */}
-                        <div className="h-px bg-white/35 mb-3 md:mb-2" />
+                        <div 
+                          className="h-px border-t mb-3 md:mb-2" 
+                          style={{ borderColor: "hsl(var(--border-glass))" }}
+                        />
 
                         {/* Source Label */}
                         <a
@@ -259,7 +285,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
               </CarouselContent>
 
               {/* Navigation Buttons - Centered below carousel */}
-              <div className="flex justify-center items-center gap-2 mt-6 md:mt-3 relative z-20">
+              <div className="flex justify-center items-center gap-4 md:gap-2 mt-6 md:mt-3 relative z-20">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -269,25 +295,26 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                   }}
                   disabled={!api}
                   className={cn(
-                    "w-8 h-8 md:w-8 md:h-8 rounded-full",
-                    "glass border border-white/35",
-                    "hover:bg-primary hover:text-primary-foreground hover:border-primary",
+                    "w-10 h-10 md:w-8 md:h-8 rounded-full",
+                    "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
                     "active:scale-95",
                     "transition-all duration-200 flex items-center justify-center",
-                    "disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-inherit",
+                    "disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:hover:bg-transparent disabled:hover:text-inherit",
                     "cursor-pointer z-20",
                     "pointer-events-auto"
                   )}
                   style={{
                     pointerEvents: "auto",
                     zIndex: 20,
+                    backgroundColor: "hsl(var(--surface-glass))",
+                    borderColor: "hsl(var(--border-glass))",
                   }}
                   aria-label="قبلی"
                 >
                   {isRTL ? (
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-4 h-4 md:w-3 md:h-3" />
                   ) : (
-                    <ChevronLeft className="w-4 h-4" />
+                    <ChevronLeft className="w-4 h-4 md:w-3 md:h-3" />
                   )}
                 </button>
                 <button
@@ -299,25 +326,26 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                   }}
                   disabled={!api}
                   className={cn(
-                    "w-8 h-8 md:w-8 md:h-8 rounded-full",
-                    "glass border border-white/35",
-                    "hover:bg-primary hover:text-primary-foreground hover:border-primary",
+                    "w-10 h-10 md:w-8 md:h-8 rounded-full",
+                    "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
                     "active:scale-95",
                     "transition-all duration-200 flex items-center justify-center",
-                    "disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-inherit",
+                    "disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:hover:bg-transparent disabled:hover:text-inherit",
                     "cursor-pointer z-20",
                     "pointer-events-auto"
                   )}
                   style={{
                     pointerEvents: "auto",
                     zIndex: 20,
+                    backgroundColor: "hsl(var(--surface-glass))",
+                    borderColor: "hsl(var(--border-glass))",
                   }}
                   aria-label="بعدی"
                 >
                   {isRTL ? (
-                    <ChevronLeft className="w-4 h-4" />
+                    <ChevronLeft className="w-4 h-4 md:w-3 md:h-3" />
                   ) : (
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-4 h-4 md:w-3 md:h-3" />
                   )}
                 </button>
               </div>
@@ -333,10 +361,11 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             style={{
               backgroundColor: "rgba(0, 0, 0, 0.8)",
-              backdropFilter: "blur(8px)",
+              backdropFilter: "blur(4px)",
             }}
             onClick={closeLightbox}
           >
@@ -354,6 +383,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
               src={lightboxImage}
               alt="Review screenshot"
               className="max-w-full max-h-[90vh] object-contain rounded-lg"
