@@ -32,54 +32,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   const { isRTL } = useDirection();
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [api, setApi] = useState<CarouselApi>();
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
 
-  useEffect(() => {
-    if (!api) return;
-
-    const updateScrollState = () => {
-      try {
-        setCanScrollPrev(api.canScrollPrev());
-        setCanScrollNext(api.canScrollNext());
-      } catch (error) {
-        // API might not be fully ready
-        console.warn("Carousel API not ready:", error);
-      }
-    };
-
-    const onSelect = () => {
-      updateScrollState();
-    };
-
-    const onReInit = () => {
-      updateScrollState();
-    };
-
-    // Force reinit to ensure carousel is ready
-    try {
-      api.reInit();
-    } catch (error) {
-      // Ignore if reinit fails
-    }
-
-    // Initial state update with a small delay to ensure carousel is ready
-    const timeoutId = setTimeout(() => {
-      updateScrollState();
-    }, 100);
-
-    // Listen to carousel events
-    api.on("reInit", onReInit);
-    api.on("select", onSelect);
-    api.on("settle", onSelect);
-
-    return () => {
-      clearTimeout(timeoutId);
-      api.off("reInit", onReInit);
-      api.off("select", onSelect);
-      api.off("settle", onSelect);
-    };
-  }, [api, reviews]);
 
   const openLightbox = useCallback((image: string) => {
     setLightboxImage(image);
@@ -90,22 +43,22 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   }, []);
 
   const handleScrollPrev = useCallback(() => {
-    if (api && typeof api.scrollPrev === "function") {
-      try {
-        api.scrollPrev();
-      } catch (error) {
-        console.error("Error scrolling previous:", error);
-      }
+    if (!api) return;
+    try {
+      // In RTL, scrollPrev actually moves forward visually
+      api.scrollPrev();
+    } catch (error) {
+      console.error("Error scrolling previous:", error);
     }
   }, [api]);
 
   const handleScrollNext = useCallback(() => {
-    if (api && typeof api.scrollNext === "function") {
-      try {
-        api.scrollNext();
-      } catch (error) {
-        console.error("Error scrolling next:", error);
-      }
+    if (!api) return;
+    try {
+      // In RTL, scrollNext actually moves backward visually
+      api.scrollNext();
+    } catch (error) {
+      console.error("Error scrolling next:", error);
     }
   }, [api]);
 
@@ -167,7 +120,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
 
             {/* Carousel */}
             <Carousel
-              key={`carousel-${reviews.length}`}
+              key={`carousel-${reviews.length}-${isRTL}`}
               opts={{
                 align: "start",
                 direction: isRTL ? "rtl" : "ltr",
@@ -291,7 +244,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleScrollPrev();
+                    api?.scrollPrev();
                   }}
                   disabled={!api}
                   className={cn(
@@ -322,7 +275,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleScrollNext();
+                    api?.scrollNext();
                   }}
                   disabled={!api}
                   className={cn(
