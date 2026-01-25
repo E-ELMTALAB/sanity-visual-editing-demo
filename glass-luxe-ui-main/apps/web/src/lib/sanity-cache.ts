@@ -530,3 +530,10 @@ export async function getCachedData<T>(
 export function isCacheAvailable(): boolean {
   return shouldUseCache() && cacheModule !== null;
 }
+
+/**
+ * Explicitly initialize cache (called automatically on module import)
+ * Exported for manual initialization if needed
+ */
+export { initializeCache };
+

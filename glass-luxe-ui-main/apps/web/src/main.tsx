@@ -2,6 +2,15 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
+// Pre-initialize Sanity cache on app startup (production only)
+if (import.meta.env.PROD) {
+  import('./lib/sanity-cache').then(module => {
+    module.initializeCache?.();
+  }).catch(err => {
+    console.debug('[SANITY] Cache initialization optional, will use API:', err);
+  });
+}
+
 // Global error handler to catch browser extension errors that cause lag
 window.addEventListener('error', (event) => {
   // Suppress errors from browser extensions trying to access className.indexOf

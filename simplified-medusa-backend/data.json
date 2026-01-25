@@ -1,0 +1,2293 @@
+{
+  "products": [
+    {
+      "id": "prod_01K9DHKWF0C2TBAKHTJ6A77WN2",
+      "title": "ChatGPT",
+      "subtitle": null,
+      "description": null,
+      "handle": "chatgpt-plus",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/openai_category-01K9DHKW34CKWQ1T83N5YV194S.png",
+      "collection_id": "pcol_01KBFWGXHMR29YGS74R9BGYQ92",
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-06T21:36:58.342Z",
+      "updated_at": "2025-12-13T19:49:00.923Z",
+      "type": null,
+      "collection": {
+        "id": "pcol_01KBFWGXHMR29YGS74R9BGYQ92",
+        "title": "openai",
+        "handle": "openai",
+        "metadata": null,
+        "created_at": "2025-12-02T15:57:27.988Z",
+        "updated_at": "2025-12-02T15:57:27.988Z",
+        "deleted_at": null
+      },
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01K9DHKWF59CH56QDP3GPNZ4SG",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/openai_category-01K9DHKW34CKWQ1T83N5YV194S.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01K9DHKWF4WCD09YSMS4YWZBWB",
+          "title": "plus",
+          "values": [
+            {
+              "id": "optval_01K9DHKWF36N6SQ6Q318DPN8AB",
+              "value": "plus"
+            }
+          ]
+        },
+        {
+          "id": "opt_01KB0BA27Z2AC8KVW5BSJG3DZZ",
+          "title": "فعالسازی بر روی اکانت شخصی با پشتیبانی و ضمانت",
+          "values": [
+            {
+              "id": "optval_01KB0BA27ZG7MT3JAHN5X3GPD0",
+              "value": "فعالسازی بر روی اکانت شخصی با پشتیبانی و ضمانت"
+            }
+          ]
+        },
+        {
+          "id": "opt_01KB0BBP40F2D79PYF7F2VC4EM",
+          "title": "فعالسازی بر روی اکانت شخصی بدون ضمانت",
+          "values": [
+            {
+              "id": "optval_01KB0BBP3ZSDBZ46Y9GAM2WHKA",
+              "value": "فعالسازی بر روی اکانت شخصی بدون ضمانت"
+            }
+          ]
+        },
+        {
+          "id": "opt_01KAQYFGKBMZJE0J52YC14ZGZY",
+          "title": "پلن دانشجویی یکماهه اختصاصی ",
+          "values": [
+            {
+              "id": "optval_01KCCMH7NYA6028T3D5K7HFCCN",
+              "value": "پلن دانشجویی یکماهه اختصاصی"
+            }
+          ]
+        },
+        {
+          "id": "opt_01KB0BDM88AB4S6BQ20QV5SZ0S",
+          "title": " Go اختصاصی",
+          "values": [
+            {
+              "id": "optval_01KB0BDM87E1H9W7NWWHSTKTFY",
+              "value": "Go اختصاصی"
+            }
+          ]
+        },
+        {
+          "id": "opt_01KB0B888RWZJ93MHZ15ST0E3V",
+          "title": "اکانت پیش ساخته یکماهه پلاس اختصاصی ",
+          "values": [
+            {
+              "id": "optval_01KCCMZ2A9G8GT69GV1A7QJPN6",
+              "value": "اکانت پیش ساخته یکماهه پلاس اختصاصی"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KB0BE8M5B5JR91PMKM36NXK1",
+          "title": " Go اختصاصی",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01K9DHKWF0C2TBAKHTJ6A77WN2",
+          "created_at": "2025-11-26T15:10:18.758Z",
+          "updated_at": "2025-11-26T15:10:18.758Z",
+          "options": [
+            {
+              "option_id": "opt_01KB0BDM88AB4S6BQ20QV5SZ0S",
+              "value": "Go اختصاصی"
+            },
+            {
+              "option_id": "opt_01K9DHKWF4WCD09YSMS4YWZBWB",
+              "value": "plus"
+            },
+            {
+              "option_id": "opt_01KB0BA27Z2AC8KVW5BSJG3DZZ",
+              "value": "فعالسازی بر روی اکانت شخصی با پشتیبانی و ضمانت"
+            },
+            {
+              "option_id": "opt_01KB0BBP40F2D79PYF7F2VC4EM",
+              "value": "فعالسازی بر روی اکانت شخصی بدون ضمانت"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KB0BE8P3EQC7J2WK1ZG3TB17",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 23990000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KB0BE8P4J8SRF0DZ3D105E6R",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "23990000",
+                "precision": 20
+              },
+              "created_at": "2025-11-26T15:10:18.820Z",
+              "updated_at": "2025-12-19T10:33:13.004Z"
+            }
+          ]
+        },
+        {
+          "id": "variant_01KB0BCSS3RWYZ099SVFAZMX9E",
+          "title": "فعالسازی بر روی اکانت شخصی بدون ضمانت",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01K9DHKWF0C2TBAKHTJ6A77WN2",
+          "created_at": "2025-11-26T15:09:30.787Z",
+          "updated_at": "2025-11-26T15:09:30.787Z",
+          "options": [
+            {
+              "option_id": "opt_01K9DHKWF4WCD09YSMS4YWZBWB",
+              "value": "plus"
+            },
+            {
+              "option_id": "opt_01KB0BA27Z2AC8KVW5BSJG3DZZ",
+              "value": "فعالسازی بر روی اکانت شخصی با پشتیبانی و ضمانت"
+            },
+            {
+              "option_id": "opt_01KB0BBP40F2D79PYF7F2VC4EM",
+              "value": "فعالسازی بر روی اکانت شخصی بدون ضمانت"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KB0BCSTZJRKC3D05FS3BNVTR",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 22990000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KB0BCSTZAFWFV2KEDR3CVX87",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "22990000",
+                "precision": 20
+              },
+              "created_at": "2025-11-26T15:09:30.847Z",
+              "updated_at": "2025-12-30T18:14:26.935Z"
+            }
+          ]
+        },
+        {
+          "id": "variant_01KCCN2WRFMWB33DTV3RRM62N5",
+          "title": "اکانت پیش ساخته یکماهه پلاس اختصاصی",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01K9DHKWF0C2TBAKHTJ6A77WN2",
+          "created_at": "2025-12-13T20:05:26.927Z",
+          "updated_at": "2025-12-13T20:05:26.927Z",
+          "options": [
+            {
+              "option_id": "opt_01K9DHKWF4WCD09YSMS4YWZBWB",
+              "value": "plus"
+            },
+            {
+              "option_id": "opt_01KB0BA27Z2AC8KVW5BSJG3DZZ",
+              "value": "فعالسازی بر روی اکانت شخصی با پشتیبانی و ضمانت"
+            },
+            {
+              "option_id": "opt_01KB0BBP40F2D79PYF7F2VC4EM",
+              "value": "فعالسازی بر روی اکانت شخصی بدون ضمانت"
+            },
+            {
+              "option_id": "opt_01KAQYFGKBMZJE0J52YC14ZGZY",
+              "value": "پلن دانشجویی یکماهه اختصاصی"
+            },
+            {
+              "option_id": "opt_01KB0BDM88AB4S6BQ20QV5SZ0S",
+              "value": "Go اختصاصی"
+            },
+            {
+              "option_id": "opt_01KB0B888RWZJ93MHZ15ST0E3V",
+              "value": "اکانت پیش ساخته یکماهه پلاس اختصاصی"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KCCN2WTET06931BCKB06BA5A",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 19450000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KCCN2WTFNNRHS1AMXRF9B0TB",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "19450000",
+                "precision": 20
+              },
+              "created_at": "2025-12-13T20:05:26.991Z",
+              "updated_at": "2025-12-19T10:34:24.845Z"
+            }
+          ]
+        },
+        {
+          "id": "variant_01KAQYGE1XYV78W0KR4MN30549",
+          "title": "پلن یکماهه دانشجویی اختصاصی ",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01K9DHKWF0C2TBAKHTJ6A77WN2",
+          "created_at": "2025-11-23T08:50:22.909Z",
+          "updated_at": "2025-11-23T08:50:22.909Z",
+          "options": [
+            {
+              "option_id": "opt_01K9DHKWF4WCD09YSMS4YWZBWB",
+              "value": "plus"
+            },
+            {
+              "option_id": "opt_01KB0BA27Z2AC8KVW5BSJG3DZZ",
+              "value": "فعالسازی بر روی اکانت شخصی با پشتیبانی و ضمانت"
+            },
+            {
+              "option_id": "opt_01KB0BBP40F2D79PYF7F2VC4EM",
+              "value": "فعالسازی بر روی اکانت شخصی بدون ضمانت"
+            },
+            {
+              "option_id": "opt_01KB0BDM88AB4S6BQ20QV5SZ0S",
+              "value": "Go اختصاصی"
+            },
+            {
+              "option_id": "opt_01KAQYFGKBMZJE0J52YC14ZGZY",
+              "value": "پلن دانشجویی یکماهه اختصاصی"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAQYGE2YSGC3YTMCVVC4V7Z0",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 14790000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAQYGE2YDPYM8NYJ8E65M23C",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "14790000",
+                "precision": 20
+              },
+              "created_at": "2025-11-23T08:50:22.942Z",
+              "updated_at": "2025-12-19T10:34:50.797Z"
+            }
+          ]
+        },
+        {
+          "id": "variant_01KB0BAX7SARC964V0R06DYY9S",
+          "title": "فعالسازی بر روی اکانت شخصی با پشتیبانی و ضمانت",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01K9DHKWF0C2TBAKHTJ6A77WN2",
+          "created_at": "2025-11-26T15:08:28.794Z",
+          "updated_at": "2025-11-26T15:08:28.794Z",
+          "options": [
+            {
+              "option_id": "opt_01K9DHKWF4WCD09YSMS4YWZBWB",
+              "value": "plus"
+            },
+            {
+              "option_id": "opt_01KB0BA27Z2AC8KVW5BSJG3DZZ",
+              "value": "فعالسازی بر روی اکانت شخصی با پشتیبانی و ضمانت"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KB0BAX9VX9F5TYCEYN46GG14",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 32990000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KB0BAX9V2JCCPYB56F947ZQQ",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "32990000",
+                "precision": 20
+              },
+              "created_at": "2025-11-26T15:08:28.859Z",
+              "updated_at": "2025-12-19T10:32:29.102Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KAQX4BY8E2NRRET77A0AEZHR",
+      "title": "خرید اکانت cursor",
+      "subtitle": null,
+      "description": null,
+      "handle": "cursor-ai",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/7094043a-3501-4d8a-9c83-5c0077a51961-01KAQX4BFF3DBDN9EGS3F70ZTG.png",
+      "collection_id": null,
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-23T08:26:18.953Z",
+      "updated_at": "2025-12-13T10:43:31.850Z",
+      "type": null,
+      "collection": null,
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KAQX4BY9PN4WQSDMYXXHDS0C",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/7094043a-3501-4d8a-9c83-5c0077a51961-01KAQX4BFF3DBDN9EGS3F70ZTG.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KAQX4BY9D6QHNG7F1JDMVXXS",
+          "title": "Cursor Pro",
+          "values": [
+            {
+              "id": "optval_01KAQX4BY91WQMV39ZWCC6N38A",
+              "value": "pro"
+            }
+          ]
+        },
+        {
+          "id": "opt_01KCBN4W95SE5SQJSXA2FEP7CV",
+          "title": "Pro Plus",
+          "values": [
+            {
+              "id": "optval_01KCBN5AGPBCTKVMRZFXMKHKZA",
+              "value": "Pro Plus"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KAQX4C0TBXGZXJY6229048JZ",
+          "title": "Cursor Pro",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAQX4BY8E2NRRET77A0AEZHR",
+          "created_at": "2025-11-23T08:26:19.034Z",
+          "updated_at": "2025-11-23T08:26:19.034Z",
+          "options": [
+            {
+              "option_id": "opt_01KAQX4BY9D6QHNG7F1JDMVXXS",
+              "value": "pro"
+            },
+            {
+              "option_id": "opt_01KCBN4W95SE5SQJSXA2FEP7CV",
+              "value": "Pro Plus"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAQX4C31S4BQEWM1DASSFEMC",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 39970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAQX4C3167671FHJ0ZF9JHW8",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "39970000",
+                "precision": 20
+              },
+              "created_at": "2025-11-23T08:26:19.107Z",
+              "updated_at": "2025-12-19T10:35:19.774Z"
+            }
+          ]
+        },
+        {
+          "id": "variant_01KAQXCNGTZJT0RFQ2FTRXGQBK",
+          "title": "Cursor Pro Plus",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAQX4BY8E2NRRET77A0AEZHR",
+          "created_at": "2025-11-23T08:30:50.906Z",
+          "updated_at": "2025-11-23T08:30:50.906Z",
+          "options": [
+            {
+              "option_id": "opt_01KAQX4BY9D6QHNG7F1JDMVXXS",
+              "value": "pro"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAQXCNJHKJBJEJHMGAQNN4EH",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 98970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAQXCNJHZ097VYW23YH4RAX0",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "98970000",
+                "precision": 20
+              },
+              "created_at": "2025-11-23T08:30:50.962Z",
+              "updated_at": "2025-12-19T10:35:39.453Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KAY6EB6B80B2K86AV59602K8",
+      "title": "gemini",
+      "subtitle": null,
+      "description": null,
+      "handle": "google-ai-gemini",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/ChatGPT Image Nov 15, 2025, 09_37_06 PM-01KAY6EARHA14GXD11F7227C53.png",
+      "collection_id": "pcol_01KBFWGXHMR29YGS74R9BGYQ92",
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-25T19:04:29.645Z",
+      "updated_at": "2025-12-02T15:58:23.965Z",
+      "type": null,
+      "collection": {
+        "id": "pcol_01KBFWGXHMR29YGS74R9BGYQ92",
+        "title": "openai",
+        "handle": "openai",
+        "metadata": null,
+        "created_at": "2025-12-02T15:57:27.988Z",
+        "updated_at": "2025-12-02T15:57:27.988Z",
+        "deleted_at": null
+      },
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KAY6EB6D0A0EZBSGGQFZ1ABT",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/ChatGPT Image Nov 15, 2025, 09_37_06 PM-01KAY6EARHA14GXD11F7227C53.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KAY6EB6CX9YX277ZW205ED6C",
+          "title": "pro",
+          "values": [
+            {
+              "id": "optval_01KAY6EB6C6ENT2J7F1WXH0K2W",
+              "value": "pro"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KAY6EBAK4G9FHMVSDPCJ90YN",
+          "title": "pro",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAY6EB6B80B2K86AV59602K8",
+          "created_at": "2025-11-25T19:04:29.780Z",
+          "updated_at": "2025-11-25T19:04:29.780Z",
+          "options": [
+            {
+              "option_id": "opt_01KAY6EB6CX9YX277ZW205ED6C",
+              "value": "pro"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAY6EBCBCHKH9EAM6X9Z9YMH",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 35970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAY6EBCC5T19E1P4S1A4PDJC",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "35970000",
+                "precision": 20
+              },
+              "created_at": "2025-11-25T19:04:29.836Z",
+              "updated_at": "2025-12-26T13:24:43.964Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KAY6HJKX6FRRGST2H0GYB9YA",
+      "title": "github copilot",
+      "subtitle": null,
+      "description": null,
+      "handle": "github-copilot",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/8e365165-04d0-45de-8fbc-7f10ce8f9914-01KAY6HJ7745P8NMVHD6DMXSHV.png",
+      "collection_id": null,
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-25T19:06:15.551Z",
+      "updated_at": "2025-11-25T19:06:15.551Z",
+      "type": null,
+      "collection": null,
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KAY6HJKY0RGFW99EJ4G2KB1N",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/8e365165-04d0-45de-8fbc-7f10ce8f9914-01KAY6HJ7745P8NMVHD6DMXSHV.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KAY6HJKYXNNAGF18CBFWA684",
+          "title": "plus",
+          "values": [
+            {
+              "id": "optval_01KAY6HJKXAVCXESB41WMV94ZM",
+              "value": "plus"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KAY6HJPE6E1PNY2JQ9ZWJ78P",
+          "title": "plus",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAY6HJKX6FRRGST2H0GYB9YA",
+          "created_at": "2025-11-25T19:06:15.631Z",
+          "updated_at": "2025-11-25T19:06:15.631Z",
+          "options": [
+            {
+              "option_id": "opt_01KAY6HJKYXNNAGF18CBFWA684",
+              "value": "plus"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAY6HJR0DN0WXZY029564BHM",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 21970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAY6HJR139F17RF7372F3975",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "21970000",
+                "precision": 20
+              },
+              "created_at": "2025-11-25T19:06:15.681Z",
+              "updated_at": "2025-11-25T19:06:15.681Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KAY6KJC59PHHMYJRWF716AVF",
+      "title": "spotify",
+      "subtitle": null,
+      "description": null,
+      "handle": "spotify-premium",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/e715680a-6f00-4122-be92-26752a0e9a8b-01KAY6KHZ4P1TS6DDCYPC41Y0P.png",
+      "collection_id": null,
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-25T19:07:20.838Z",
+      "updated_at": "2025-11-25T19:07:20.838Z",
+      "type": null,
+      "collection": null,
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KAY6KJC67VZY2EK2KVNMSGM5",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/e715680a-6f00-4122-be92-26752a0e9a8b-01KAY6KHZ4P1TS6DDCYPC41Y0P.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KAY6KJC6P0KTZGQVW7H359GR",
+          "title": "family",
+          "values": [
+            {
+              "id": "optval_01KAY6KJC53BYPS30Y12HMXVX0",
+              "value": "family"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KAY6KJED7K2FZ2E91Y3HMD51",
+          "title": "family",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAY6KJC59PHHMYJRWF716AVF",
+          "created_at": "2025-11-25T19:07:20.910Z",
+          "updated_at": "2025-11-25T19:07:20.910Z",
+          "options": [
+            {
+              "option_id": "opt_01KAY6KJC6P0KTZGQVW7H359GR",
+              "value": "family"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAY6KJFRB3ZF8V221TWENJXE",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 6970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAY6KJFR6TJ9TNBZJD0NYXFZ",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "6970000",
+                "precision": 20
+              },
+              "created_at": "2025-11-25T19:07:20.953Z",
+              "updated_at": "2025-11-25T19:07:20.953Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KAY6VBMEJFES6E5631PMHQ70",
+      "title": "capcut",
+      "subtitle": null,
+      "description": null,
+      "handle": "capcut-pro",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/28b3b679-b99f-49e0-b389-550904d57b17-01KAY6VB584DVEKHKDYDQPSHJ0.png",
+      "collection_id": null,
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-25T19:11:36.080Z",
+      "updated_at": "2025-11-25T19:11:36.080Z",
+      "type": null,
+      "collection": null,
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KAY6VBMF8XEH18VP124ERBX3",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/28b3b679-b99f-49e0-b389-550904d57b17-01KAY6VB584DVEKHKDYDQPSHJ0.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KAY6VBMF8BQZ3XKAT863V3ZD",
+          "title": "pro",
+          "values": [
+            {
+              "id": "optval_01KAY6VBMFJ0GMH8QSKY5PVC58",
+              "value": "pro"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KAY6VBPBS9W3G01JMWCVNCGY",
+          "title": "pro",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAY6VBMEJFES6E5631PMHQ70",
+          "created_at": "2025-11-25T19:11:36.140Z",
+          "updated_at": "2025-11-25T19:11:36.140Z",
+          "options": [
+            {
+              "option_id": "opt_01KAY6VBMF8BQZ3XKAT863V3ZD",
+              "value": "pro"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAY6VBQS9QP35F9DBH7ETP2V",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 16970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAY6VBQTCF0RW69PF93A1N97",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "16970000",
+                "precision": 20
+              },
+              "created_at": "2025-11-25T19:11:36.186Z",
+              "updated_at": "2025-11-25T19:11:36.186Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KAY6WZ19CW2ZT6NTC55Z7J99",
+      "title": "doulingo",
+      "subtitle": null,
+      "description": null,
+      "handle": "doulingo-plus-max",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/de7bc91e-e75d-4680-bb98-ba62de5dc6e6-01KAY6WYNQC66897SSDPG7BQA2.png",
+      "collection_id": null,
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-25T19:12:28.714Z",
+      "updated_at": "2025-11-25T19:12:28.714Z",
+      "type": null,
+      "collection": null,
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KAY6WZ1ASEVK2T9HRH4P7CY6",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/de7bc91e-e75d-4680-bb98-ba62de5dc6e6-01KAY6WYNQC66897SSDPG7BQA2.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KAY6WZ1AEDGAR9BGSXAJVWMH",
+          "title": "plus",
+          "values": [
+            {
+              "id": "optval_01KAY6WZ197JCQX2NFQVQPFY7Y",
+              "value": "plus"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KAY6WZ3QF9STW8TG5DB10K17",
+          "title": "plus",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAY6WZ19CW2ZT6NTC55Z7J99",
+          "created_at": "2025-11-25T19:12:28.791Z",
+          "updated_at": "2025-11-25T19:12:28.791Z",
+          "options": [
+            {
+              "option_id": "opt_01KAY6WZ1AEDGAR9BGSXAJVWMH",
+              "value": "plus"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAY6WZ50AKQDM8N6ZCREXF0M",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 12970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAY6WZ50VPV5EJE30KE08CAT",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "12970000",
+                "precision": 20
+              },
+              "created_at": "2025-11-25T19:12:28.833Z",
+              "updated_at": "2025-11-25T19:12:28.833Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KAZNNRG59JD9952RV5X20NG3",
+      "title": "telegram premium",
+      "subtitle": null,
+      "description": null,
+      "handle": "telegram-premium",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/9146ed41-4fff-43f1-8aff-4984e18b0cf2-01KAZNNR3Y4N54PKQXGK79EBDC.png",
+      "collection_id": null,
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-26T08:49:55.718Z",
+      "updated_at": "2025-11-26T08:49:55.718Z",
+      "type": null,
+      "collection": null,
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KAZNNRG6MEYZ66PF7827R17F",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/9146ed41-4fff-43f1-8aff-4984e18b0cf2-01KAZNNR3Y4N54PKQXGK79EBDC.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KAZNNRG5M81PAAAH9T8XVSA1",
+          "title": "premium ",
+          "values": [
+            {
+              "id": "optval_01KAZNNRG5H5QT3X0PZDNBN6KP",
+              "value": "premium"
+            }
+          ]
+        },
+        {
+          "id": "opt_01KCCN9P3MSD0V772015JF5WX0",
+          "title": "primium 6m",
+          "values": [
+            {
+              "id": "optval_01KCCN9P3M6Q68D2MSWE3TFK3X",
+              "value": "premium 6m"
+            }
+          ]
+        },
+        {
+          "id": "opt_01KCCNA9C0KA89S26WNS6CDZ1C",
+          "title": "primium 12m",
+          "values": [
+            {
+              "id": "optval_01KCCNA9C018WV0TVBBT7QGYD9",
+              "value": "primium 12m"
+            }
+          ]
+        },
+        {
+          "id": "opt_01KCCNFMED8NWDDHKVYW9TABAK",
+          "title": "t",
+          "values": [
+            {
+              "id": "optval_01KCCNFMED2DGBRJHZTDM8ZMW9",
+              "value": "t"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KCCN80GEEEVMBN8YB5V9H9PX",
+          "title": "تلگرام پریمیوم سه ماهه",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAZNNRG59JD9952RV5X20NG3",
+          "created_at": "2025-12-13T20:08:14.606Z",
+          "updated_at": "2025-12-13T20:08:14.606Z",
+          "options": [
+            {
+              "option_id": "opt_01KAZNNRG5M81PAAAH9T8XVSA1",
+              "value": "premium"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KCCN80JFQ2VN99BCMEVFDW5Z",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 25500000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KCCN80JF7A14GK6DFRS7GWPW",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "25500000",
+                "precision": 20
+              },
+              "created_at": "2025-12-13T20:08:14.672Z",
+              "updated_at": "2025-12-19T10:36:26.433Z"
+            }
+          ]
+        },
+        {
+          "id": "variant_01KCCNC8GY4GF5FJKAJV67572Y",
+          "title": "تلگرام پریمیوم شش ماهه",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAZNNRG59JD9952RV5X20NG3",
+          "created_at": "2025-12-13T20:10:33.887Z",
+          "updated_at": "2025-12-13T20:10:33.887Z",
+          "options": [
+            {
+              "option_id": "opt_01KAZNNRG5M81PAAAH9T8XVSA1",
+              "value": "premium"
+            },
+            {
+              "option_id": "opt_01KCCN9P3MSD0V772015JF5WX0",
+              "value": "premium 6m"
+            },
+            {
+              "option_id": "opt_01KCCNA9C0KA89S26WNS6CDZ1C",
+              "value": "primium 12m"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KCCNC8KHVDE20VVQECG974TC",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 34590000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KCCNC8KHC6AFKNBPHXBAN1GF",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "34590000",
+                "precision": 20
+              },
+              "created_at": "2025-12-13T20:10:33.970Z",
+              "updated_at": "2025-12-19T10:36:40.191Z"
+            }
+          ]
+        },
+        {
+          "id": "variant_01KCCNGF2Q0VF7NXY8A0RY5Y0V",
+          "title": "تلگرام پریمیوم یکساله",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAZNNRG59JD9952RV5X20NG3",
+          "created_at": "2025-12-13T20:12:51.672Z",
+          "updated_at": "2025-12-13T20:12:51.672Z",
+          "options": [
+            {
+              "option_id": "opt_01KAZNNRG5M81PAAAH9T8XVSA1",
+              "value": "premium"
+            },
+            {
+              "option_id": "opt_01KCCN9P3MSD0V772015JF5WX0",
+              "value": "premium 6m"
+            },
+            {
+              "option_id": "opt_01KCCNA9C0KA89S26WNS6CDZ1C",
+              "value": "primium 12m"
+            },
+            {
+              "option_id": "opt_01KCCNFMED8NWDDHKVYW9TABAK",
+              "value": "t"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KCCNGF4GJMR7W2QEQQDD8T79",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 50990000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KCCNGF4G70YTDJW8Q5T3T6KE",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "50990000",
+                "precision": 20
+              },
+              "created_at": "2025-12-13T20:12:51.728Z",
+              "updated_at": "2025-12-19T10:36:53.463Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KAZP4XF021KRYYW774GVSV89",
+      "title": "kling ai",
+      "subtitle": null,
+      "description": null,
+      "handle": "kling-ai",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/d5dd2283-eb8a-43e4-8e7e-ce3fa7d8897a-01KAZP4X41QQRYHJYFP1DE3E2K.png",
+      "collection_id": null,
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-26T08:58:12.322Z",
+      "updated_at": "2025-11-26T08:58:12.322Z",
+      "type": null,
+      "collection": null,
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KAZP4XF1CDH995WSE5M4MBWN",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/d5dd2283-eb8a-43e4-8e7e-ce3fa7d8897a-01KAZP4X41QQRYHJYFP1DE3E2K.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KAZP4XF1RNBM2DVH4VRHZ99S",
+          "title": "premium ",
+          "values": [
+            {
+              "id": "optval_01KAZP4XF16DTQAFFJGJB4MQW2",
+              "value": "premium"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KAZP4XGW07XWCD89G6TN9RVV",
+          "title": "premium",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAZP4XF021KRYYW774GVSV89",
+          "created_at": "2025-11-26T08:58:12.381Z",
+          "updated_at": "2025-11-26T08:58:12.381Z",
+          "options": [
+            {
+              "option_id": "opt_01KAZP4XF1RNBM2DVH4VRHZ99S",
+              "value": "premium"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAZP4XJN9NTCS29WF3VFEPS8",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 18970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAZP4XJN3C2905H9C1R1BTTX",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "18970000",
+                "precision": 20
+              },
+              "created_at": "2025-11-26T08:58:12.437Z",
+              "updated_at": "2025-11-26T08:58:12.437Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KAZQX5KK98M3B4WDBFRXPJ0G",
+      "title": "midjourney",
+      "subtitle": null,
+      "description": null,
+      "handle": "midjourney-ai",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/0a961d11-b9dc-49df-9032-d54366e9969f-01KAZQX592NJP0K299N3E1T23N.png",
+      "collection_id": null,
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-26T09:28:55.669Z",
+      "updated_at": "2025-11-26T09:28:55.669Z",
+      "type": null,
+      "collection": null,
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KAZQX5KMN7V5FRJPQMSG9VKF",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/0a961d11-b9dc-49df-9032-d54366e9969f-01KAZQX592NJP0K299N3E1T23N.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KAZQX5KM0HAK5P2DW8F05VCH",
+          "title": "plus",
+          "values": [
+            {
+              "id": "optval_01KAZQX5KMQXFKZW17MCNNZ1P8",
+              "value": "plus"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KAZQX5N4460C0XBANWCRZ49M",
+          "title": "plus",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAZQX5KK98M3B4WDBFRXPJ0G",
+          "created_at": "2025-11-26T09:28:55.717Z",
+          "updated_at": "2025-11-26T09:28:55.717Z",
+          "options": [
+            {
+              "option_id": "opt_01KAZQX5KM0HAK5P2DW8F05VCH",
+              "value": "plus"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAZQX5PCEAX5C9V5SJT6AVXT",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 18970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAZQX5PDJ6DB33BBK7G852A1",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "18970000",
+                "precision": 20
+              },
+              "created_at": "2025-11-26T09:28:55.757Z",
+              "updated_at": "2025-11-26T09:28:55.757Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KAZR0V8769RGTJHPDDB8HPFB",
+      "title": "leonardo",
+      "subtitle": null,
+      "description": null,
+      "handle": "leonardo-ai",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/fda75fbc-8942-41f4-9db1-a78152be31d6-01KAZR0TXRPME8PT3B69ARDY9V.png",
+      "collection_id": null,
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-26T09:30:56.137Z",
+      "updated_at": "2025-11-26T09:30:56.137Z",
+      "type": null,
+      "collection": null,
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KAZR0V882RQSSZARXAK6BF6S",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/fda75fbc-8942-41f4-9db1-a78152be31d6-01KAZR0TXRPME8PT3B69ARDY9V.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KAZR0V88MK92YQE0YA5YP03R",
+          "title": "pro",
+          "values": [
+            {
+              "id": "optval_01KAZR0V88WNH3XMD0NTC5J011",
+              "value": "pro"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KAZR0V9XKV3KG9CC7WWC3810",
+          "title": "pro",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAZR0V8769RGTJHPDDB8HPFB",
+          "created_at": "2025-11-26T09:30:56.190Z",
+          "updated_at": "2025-11-26T09:30:56.190Z",
+          "options": [
+            {
+              "option_id": "opt_01KAZR0V88MK92YQE0YA5YP03R",
+              "value": "pro"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAZR0VB9KEGWXPT8SA9XFTS2",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 18970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAZR0VB94F4SE9KNKTVSMVHH",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "18970000",
+                "precision": 20
+              },
+              "created_at": "2025-11-26T09:30:56.233Z",
+              "updated_at": "2026-01-06T14:39:04.324Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KAZR7XNX5QZEEFPVAH8HPD5M",
+      "title": "runway",
+      "subtitle": null,
+      "description": null,
+      "handle": "runway-ai",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/7c55c81c-dab3-4089-9cc9-87aa6599937c-01KAZR7X9BECZ8WZJK0NB1BS5Q.png",
+      "collection_id": null,
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-26T09:34:47.999Z",
+      "updated_at": "2025-11-26T09:34:47.999Z",
+      "type": null,
+      "collection": null,
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KAZR7XNYVAXYWDNGSZWH79T8",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/7c55c81c-dab3-4089-9cc9-87aa6599937c-01KAZR7X9BECZ8WZJK0NB1BS5Q.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KAZR7XNYVRFGH78TR1C1V5VH",
+          "title": "pro",
+          "values": [
+            {
+              "id": "optval_01KAZR7XNYMXP056V1QEQTWDFS",
+              "value": "pro"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KAZR7XR16ZP22MMSFHADH84X",
+          "title": "pro",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAZR7XNX5QZEEFPVAH8HPD5M",
+          "created_at": "2025-11-26T09:34:48.065Z",
+          "updated_at": "2025-11-26T09:34:48.065Z",
+          "options": [
+            {
+              "option_id": "opt_01KAZR7XNYVRFGH78TR1C1V5VH",
+              "value": "pro"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAZR7XSDPBJ8XEQVFW1Z58J7",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 18970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAZR7XSEC6RB92952EST5KAM",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "18970000",
+                "precision": 20
+              },
+              "created_at": "2025-11-26T09:34:48.110Z",
+              "updated_at": "2025-11-26T09:34:48.110Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KAZRF7GQZQ0JNDT1C8F36YDM",
+      "title": "gamma",
+      "subtitle": null,
+      "description": null,
+      "handle": "gamma-account",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/87f44476-720a-4b82-aec2-4d72d30547d8-01KAZRF73Q7BW63TPW0M068YHY.png",
+      "collection_id": null,
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-26T09:38:47.448Z",
+      "updated_at": "2025-11-26T09:38:47.448Z",
+      "type": null,
+      "collection": null,
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KAZRF7GRKQW2N6K4TQ53HXR7",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/87f44476-720a-4b82-aec2-4d72d30547d8-01KAZRF73Q7BW63TPW0M068YHY.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KAZRF7GRA7GCZVA17FZW2WEB",
+          "title": "pro",
+          "values": [
+            {
+              "id": "optval_01KAZRF7GQ7ZDTF1Y495QRZTK5",
+              "value": "pro"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KAZRF7J3ECMZGFRP3T46S31X",
+          "title": "pro",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAZRF7GQZQ0JNDT1C8F36YDM",
+          "created_at": "2025-11-26T09:38:47.491Z",
+          "updated_at": "2025-11-26T09:38:47.491Z",
+          "options": [
+            {
+              "option_id": "opt_01KAZRF7GRA7GCZVA17FZW2WEB",
+              "value": "pro"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAZRF7K7DSYMQAM4171RV2RA",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 21970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAZRF7K7ZJK0HCRFV9MNSKCN",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "21970000",
+                "precision": 20
+              },
+              "created_at": "2025-11-26T09:38:47.527Z",
+              "updated_at": "2025-12-06T07:26:10.231Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KAZRJ0BQ3NPDT3P46ZXCPSZ6",
+      "title": "خرید اکانت Claude",
+      "subtitle": null,
+      "description": null,
+      "handle": "claude-pro",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/6da00faf-bfa9-40d6-979b-f25734a7f1b8-01KAZRJ00DVCFRAC81GWVVR09Z.png",
+      "collection_id": "pcol_01KBFWGXHMR29YGS74R9BGYQ92",
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-26T09:40:18.424Z",
+      "updated_at": "2025-12-13T19:52:41.866Z",
+      "type": null,
+      "collection": {
+        "id": "pcol_01KBFWGXHMR29YGS74R9BGYQ92",
+        "title": "openai",
+        "handle": "openai",
+        "metadata": null,
+        "created_at": "2025-12-02T15:57:27.988Z",
+        "updated_at": "2025-12-02T15:57:27.988Z",
+        "deleted_at": null
+      },
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KAZRJ0BRS3CKDQXKP1BW4SEY",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/6da00faf-bfa9-40d6-979b-f25734a7f1b8-01KAZRJ00DVCFRAC81GWVVR09Z.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KAZRJ0BQAF95415JY4BRZJW8",
+          "title": "pro",
+          "values": [
+            {
+              "id": "optval_01KAZRJ0BQ12SY522EWP57033M",
+              "value": "pro"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KAZRJ0D2QHYD6JHHV3P2BG6V",
+          "title": "Claude Pro",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAZRJ0BQ3NPDT3P46ZXCPSZ6",
+          "created_at": "2025-11-26T09:40:18.467Z",
+          "updated_at": "2025-11-26T09:40:18.467Z",
+          "options": [
+            {
+              "option_id": "opt_01KAZRJ0BQAF95415JY4BRZJW8",
+              "value": "pro"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAZRJ0DZQGK1PVBT77ETX5Y6",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 32970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAZRJ0DZHS9ERVA2TNG35XVW",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "32970000",
+                "precision": 20
+              },
+              "created_at": "2025-11-26T09:40:18.496Z",
+              "updated_at": "2025-12-14T06:21:55.684Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KAZRRS72JDHEDW5WF306XZ6X",
+      "title": "grok",
+      "subtitle": null,
+      "description": null,
+      "handle": "grok-shared",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/5bd87c87-58d2-4ba7-a5f9-d0dbbef30985-01KAZRRRSST5ZWCDMARDBXT2T0.png",
+      "collection_id": "pcol_01KBFWGXHMR29YGS74R9BGYQ92",
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-11-26T09:44:00.483Z",
+      "updated_at": "2025-12-22T19:12:12.025Z",
+      "type": null,
+      "collection": {
+        "id": "pcol_01KBFWGXHMR29YGS74R9BGYQ92",
+        "title": "openai",
+        "handle": "openai",
+        "metadata": null,
+        "created_at": "2025-12-02T15:57:27.988Z",
+        "updated_at": "2025-12-02T15:57:27.988Z",
+        "deleted_at": null
+      },
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KAZRRS73DPCWMKE5JJ3AYA3A",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/5bd87c87-58d2-4ba7-a5f9-d0dbbef30985-01KAZRRRSST5ZWCDMARDBXT2T0.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KAZRRS736H5G7MAX2KAMQSP0",
+          "title": "SuperGrok",
+          "values": [
+            {
+              "id": "optval_01KAZRRS73SFD4FYJ1VZ3MFMW0",
+              "value": "plus"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KAZRRS8VAMECXNWRYR1ZY6JX",
+          "title": "Super Grok",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KAZRRS72JDHEDW5WF306XZ6X",
+          "created_at": "2025-11-26T09:44:00.540Z",
+          "updated_at": "2025-11-26T09:44:00.540Z",
+          "options": [
+            {
+              "option_id": "opt_01KAZRRS736H5G7MAX2KAMQSP0",
+              "value": "plus"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KAZRRS9XMTTHZ0ECSV1FD8RY",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 30970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KAZRRS9XC900WPMK4RYDZQCG",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "30970000",
+                "precision": 20
+              },
+              "created_at": "2025-11-26T09:44:00.574Z",
+              "updated_at": "2025-12-19T10:37:26.753Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KBNMWKYSER6TBWSGYA6C02MD",
+      "title": "chatgpt pro",
+      "subtitle": null,
+      "description": null,
+      "handle": "chatgpt-pro",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/0a1de6f3-5cdb-41cf-98c8-406e072eacb0-01KBNMWE13FY48Y4DQKX5HEXAE.png",
+      "collection_id": null,
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-12-04T21:39:29.370Z",
+      "updated_at": "2025-12-04T21:39:29.370Z",
+      "type": null,
+      "collection": null,
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KBNMWKYTVVPQG8YKHTJM4JS4",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/0a1de6f3-5cdb-41cf-98c8-406e072eacb0-01KBNMWE13FY48Y4DQKX5HEXAE.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KBNMWKYTWSDZJBWZT5R8KZJ2",
+          "title": "pro",
+          "values": [
+            {
+              "id": "optval_01KBNMWKYSPC3SMCA5W7S67ARH",
+              "value": "pro"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KBNMWM0PG3C3C52TVRECY3VT",
+          "title": "pro",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KBNMWKYSER6TBWSGYA6C02MD",
+          "created_at": "2025-12-04T21:39:29.431Z",
+          "updated_at": "2025-12-04T21:39:29.431Z",
+          "options": [
+            {
+              "option_id": "opt_01KBNMWKYTWSDZJBWZT5R8KZJ2",
+              "value": "pro"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KBNMWM2JZE1Y8Y01AQ2QAC13",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 36970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KBNMWM2KSSP3CR5629B5S448",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "36970000",
+                "precision": 20
+              },
+              "created_at": "2025-12-04T21:39:29.491Z",
+              "updated_at": "2025-12-20T01:11:19.127Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KC6CM7N82ERXDJ8VG8GTP038",
+      "title": "gemini ultra",
+      "subtitle": null,
+      "description": null,
+      "handle": "gemini-ultra",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/ChatGPT Image Dec 11, 2025, 01_07_58 PM-01KC6CM76YNDNQ82R4M5QJV47Z.png",
+      "collection_id": null,
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-12-11T09:42:11.374Z",
+      "updated_at": "2025-12-11T09:42:11.374Z",
+      "type": null,
+      "collection": null,
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KC6CM7NB59XEXCH60TV5ZYW4",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/ChatGPT Image Dec 11, 2025, 01_07_58 PM-01KC6CM76YNDNQ82R4M5QJV47Z.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KC6CM7NAHM5N28A62CF48A8Q",
+          "title": "ultra",
+          "values": [
+            {
+              "id": "optval_01KC6CM7N9WXS4J42QV4JC2K86",
+              "value": "ultra"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KC6CM7QNZN30XT23Q36WDMA9",
+          "title": "ultra",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KC6CM7N82ERXDJ8VG8GTP038",
+          "created_at": "2025-12-11T09:42:11.445Z",
+          "updated_at": "2025-12-11T09:42:11.445Z",
+          "options": [
+            {
+              "option_id": "opt_01KC6CM7NAHM5N28A62CF48A8Q",
+              "value": "ultra"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KC6CM7SGVCNPAVZHDHT0CG0Y",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 300000000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KC6CM7SGV1FPTSR89TX9TV1C",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "300000000",
+                "precision": 20
+              },
+              "created_at": "2025-12-11T09:42:11.505Z",
+              "updated_at": "2025-12-11T09:42:11.505Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prod_01KD08T91N4JB8VZ2V7KDX617Y",
+      "title": "اکانت اشتراکی chatgpt plus",
+      "subtitle": null,
+      "description": null,
+      "handle": "chatgpt-plus-shared",
+      "status": "published",
+      "is_giftcard": false,
+      "discountable": true,
+      "thumbnail": "https://bucket-production-533c.up.railway.app/medusa-media/e54e095a-c65f-4a7f-ab53-99763c23d6b5-01KD08SZENM3W3SEEJ7QTZMYZ6.png",
+      "collection_id": null,
+      "type_id": null,
+      "weight": null,
+      "length": null,
+      "height": null,
+      "width": null,
+      "hs_code": null,
+      "origin_country": null,
+      "mid_code": null,
+      "material": null,
+      "created_at": "2025-12-21T10:55:50.327Z",
+      "updated_at": "2025-12-21T10:55:50.327Z",
+      "type": null,
+      "collection": null,
+      "tags": [],
+      "images": [
+        {
+          "id": "img_01KD08T91P0SSNSZZN8YN2M31F",
+          "url": "https://bucket-production-533c.up.railway.app/medusa-media/e54e095a-c65f-4a7f-ab53-99763c23d6b5-01KD08SZENM3W3SEEJ7QTZMYZ6.png",
+          "position": 0
+        }
+      ],
+      "options": [
+        {
+          "id": "opt_01KD08T91P86JK526MSJPNZC1C",
+          "title": "اشتراکی",
+          "values": [
+            {
+              "id": "optval_01KD08T91P260QW267K2YM6HMR",
+              "value": "اشتراکی"
+            }
+          ]
+        },
+        {
+          "id": "opt_01KDFJC5KYAZMVFNRE4DSRT9KZ",
+          "title": "اشتراکی ۶ نفره",
+          "values": [
+            {
+              "id": "optval_01KDFJD62GAMFC72KSW55E45ZC",
+              "value": "اشتراکی ۶ نفره"
+            }
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "id": "variant_01KDFJBWCBXAYD4PYPEW087KQH",
+          "title": "اشتراکی ۴ نفره",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KD08T91N4JB8VZ2V7KDX617Y",
+          "created_at": "2025-12-27T09:31:20.843Z",
+          "updated_at": "2025-12-27T09:31:20.843Z",
+          "options": [
+            {
+              "option_id": "opt_01KD08T91P86JK526MSJPNZC1C",
+              "value": "اشتراکی"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KDFJBWE2NXEHY80P06NAFD40",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 4970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KDFJBWE288PQAR9RQRZ54AQJ",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "4970000",
+                "precision": 20
+              },
+              "created_at": "2025-12-27T09:31:20.899Z",
+              "updated_at": "2025-12-27T09:33:05.248Z"
+            }
+          ]
+        },
+        {
+          "id": "variant_01KDXGJAGA5T9F0GX23M367C25",
+          "title": "اشتراکی ۶ نفره",
+          "sku": null,
+          "barcode": null,
+          "ean": null,
+          "upc": null,
+          "allow_backorder": false,
+          "manage_inventory": false,
+          "hs_code": null,
+          "origin_country": null,
+          "mid_code": null,
+          "material": null,
+          "weight": null,
+          "length": null,
+          "height": null,
+          "width": null,
+          "metadata": null,
+          "variant_rank": 0,
+          "product_id": "prod_01KD08T91N4JB8VZ2V7KDX617Y",
+          "created_at": "2026-01-01T19:29:16.810Z",
+          "updated_at": "2026-01-01T19:29:16.810Z",
+          "options": [
+            {
+              "option_id": "opt_01KD08T91P86JK526MSJPNZC1C",
+              "value": "اشتراکی"
+            },
+            {
+              "option_id": "opt_01KDFJC5KYAZMVFNRE4DSRT9KZ",
+              "value": "اشتراکی ۶ نفره"
+            }
+          ],
+          "prices": [
+            {
+              "id": "price_01KDXGJAJ4PJWVTRHN40N5N7B3",
+              "title": null,
+              "currency_code": "irr",
+              "amount": 2970000,
+              "min_quantity": null,
+              "max_quantity": null,
+              "price_set_id": "pset_01KDXGJAJ4KM0VJJ019G299HYB",
+              "price_list_id": null,
+              "raw_amount": {
+                "value": "2970000",
+                "precision": 20
+              },
+              "created_at": "2026-01-01T19:29:16.869Z",
+              "updated_at": "2026-01-01T19:30:30.757Z"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "promotions": []
+}

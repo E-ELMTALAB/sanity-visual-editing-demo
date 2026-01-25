@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "tsx scripts/fetch-homepage-data.ts",
-    "build": "vite build",
+    "build": "vite build && npm run postbuild",
+    "postbuild": "node scripts/copy-cache-to-dist.js",
     "build:dev": "vite build --mode development",
     "build:prod": "vite build --mode production",
     "lint": "eslint .",

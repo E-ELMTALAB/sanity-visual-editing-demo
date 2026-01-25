@@ -32,7 +32,7 @@ const __dirname = dirname(__filename);
 // PROXY CONFIGURATION - Hardcoded for Iran filtering bypass
 // ============================================================================
 const PROXY_ENABLED = true;
-const UNIFIED_PROXY_URL = 'https://jaeshproxy.elmtalabx.workers.dev';
+const UNIFIED_PROXY_URL = 'https://backend.sharifgpt.com';
 
 // ============================================================================
 // SANITY CONFIGURATION

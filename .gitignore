@@ -44,3 +44,7 @@ yarn-error.log*
 # Env files created by scripts for working locally
 .env
 studio/.env.development
+# Sanity cache files - generated at build time, not committed
+public/sanity-cache/*.json
+public/sanity-cache/*.ts
+!public/sanity-cache/.gitkeep
