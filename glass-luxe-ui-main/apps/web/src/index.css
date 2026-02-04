@@ -236,6 +236,22 @@
       box-shadow: 0 0 0 8px hsl(var(--primary) / 0);
     }
   }
+
+  /* Pulse animation for bonus bar emoji */
+  .animate-pulse-emoji {
+    animation: pulse-emoji 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-emoji {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.9;
+    }
+  }
   
   /* Performance: will-change hints for animated elements */
   .will-change-transform {

@@ -16,6 +16,7 @@ import { DeliveryProcessSection } from "@/components/Products/DeliveryProcessSec
 import { CartDrawer } from "@/components/FloatingDock/CartDrawer";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
+import { BonusBar } from "@/components/ui/bonus-bar";
 import { useDirection } from "@/contexts/DirectionContext";
 import { useCart } from "@/contexts/cart-context";
 import { useProductPromotion } from "@/contexts/promotion-context";
@@ -924,28 +925,21 @@ const ProductDetail = () => {
                     ))}
                   </div>
 
-                  {/* Quantity & Actions */}
+                  {/* Purchase Section */}
                   <div className="min-w-0" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 md:mt-[100px] flex-row-reverse justify-start mt-6" style={{ marginRight: 0 }}>
-                      <div className="flex items-center glass rounded-lg shrink-0">
-                        <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 sm:px-4 py-2 hover:bg-surface-glass transition-colors">
-                          -
-                        </button>
-                        <span className="px-4 sm:px-6 py-2 font-semibold">{quantity}</span>
-                        <button onClick={() => setQuantity(quantity + 1)} className="px-3 sm:px-4 py-2 hover:bg-surface-glass transition-colors">
-                          +
-                        </button>
-                      </div>
+                    {/* Bonus Bar - directly above Buy button */}
+                    <div className="mt-6" style={{ textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}>
+                      <BonusBar />
                     </div>
 
-                    {/* On mobile, only show buy button when variant is selected (if variants exist) */}
+                    {/* Buy Button */}
                     {(() => {
                       const hasVariants = (medusaVariants.length > 0 || (product?.variants?.length || 0) > 0);
                       const shouldShowOnMobile = !hasVariants || selectedVariant;
                       
                       return (
                         <div className={cn(
-                          "flex gap-2 sm:gap-3 min-w-0 mt-6",
+                          "flex gap-2 sm:gap-3 min-w-0 mt-3 sm:mt-4",
                           !shouldShowOnMobile && "hidden md:flex" // Hide on mobile if variants exist but none selected
                         )}>
                           <Button size="lg" onClick={handleBuyNow} className="flex-1 min-w-0 text-sm sm:text-base">
