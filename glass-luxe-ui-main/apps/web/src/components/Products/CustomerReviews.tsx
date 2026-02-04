@@ -114,7 +114,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                   <CarouselItem
                     key={review.id}
                     className={cn(
-                      "basis-full sm:basis-1/2 lg:basis-1/2 xl:basis-1/3",
+                      "basis-full sm:basis-1/2 lg:basis-1/2",
                       isRTL ? "pr-4 md:pr-2" : "pl-4 md:pl-2"
                     )}
                   >
