@@ -32,6 +32,8 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   const { isRTL } = useDirection();
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [api, setApi] = useState<CarouselApi>();
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
 
 
   const openLightbox = useCallback((image: string) => {
@@ -42,24 +44,31 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
     setLightboxImage(null);
   }, []);
 
-  const handleScrollPrev = useCallback(() => {
+  // Keep Embla scroll state (canScrollPrev/Next) in sync
+  useEffect(() => {
     if (!api) return;
-    try {
-      // In RTL, scrollPrev actually moves forward visually
-      api.scrollPrev();
-    } catch (error) {
-      console.error("Error scrolling previous:", error);
-    }
-  }, [api]);
 
-  const handleScrollNext = useCallback(() => {
-    if (!api) return;
-    try {
-      // In RTL, scrollNext actually moves backward visually
-      api.scrollNext();
-    } catch (error) {
-      console.error("Error scrolling next:", error);
-    }
+    const updateCanScroll = () => {
+      try {
+        setCanScrollPrev(api.canScrollPrev());
+        setCanScrollNext(api.canScrollNext());
+      } catch (error) {
+        console.error("Error updating carousel scroll state:", error);
+      }
+    };
+
+    updateCanScroll();
+    api.on("select", updateCanScroll);
+    api.on("reInit", updateCanScroll);
+
+    return () => {
+      try {
+        api.off("select", updateCanScroll);
+        api.off("reInit", updateCanScroll);
+      } catch {
+        // ignore cleanup errors
+      }
+    };
   }, [api]);
 
   const getPlatformIcon = (platform: string) => {
@@ -124,7 +133,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
               opts={{
                 align: "start",
                 direction: isRTL ? "rtl" : "ltr",
-                loop: true,
+                loop: false,
                 slidesToScroll: 1,
                 dragFree: false,
                 containScroll: "trimSnaps",
@@ -239,6 +248,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
 
               {/* Navigation Buttons - Centered below carousel */}
               <div className="flex justify-center items-center gap-4 md:gap-2 mt-6 md:mt-3 relative z-20">
+                {/* Previous button (visually right in RTL, scrolls to previous slide) */}
                 <button
                   type="button"
                   onClick={(e) => {
@@ -246,7 +256,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                     e.stopPropagation();
                     api?.scrollPrev();
                   }}
-                  disabled={!api}
+                  disabled={!api || !canScrollPrev}
                   className={cn(
                     "w-10 h-10 md:w-8 md:h-8 rounded-full",
                     "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
@@ -270,6 +280,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                     <ChevronLeft className="w-4 h-4 md:w-3 md:h-3" />
                   )}
                 </button>
+                {/* Next button (visually left in RTL, scrolls to next slide) */}
                 <button
                   type="button"
                   onClick={(e) => {
@@ -277,7 +288,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                     e.stopPropagation();
                     api?.scrollNext();
                   }}
-                  disabled={!api}
+                  disabled={!api || !canScrollNext}
                   className={cn(
                     "w-10 h-10 md:w-8 md:h-8 rounded-full",
                     "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
