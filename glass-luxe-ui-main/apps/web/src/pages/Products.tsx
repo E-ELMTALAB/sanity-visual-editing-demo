@@ -10,6 +10,7 @@ import { ProductCard } from "@/components/Products/ProductCard";
 import { FiltersSidebar } from "@/components/Products/FiltersSidebar";
 import { FaqAccordion } from "@/components/Products/FaqAccordion";
 import { CustomerReviews, type CustomerReview } from "@/components/Products/CustomerReviews";
+import { ProductsContentAccordion } from "@/components/Products/ProductsContentAccordion";
 import { FloatingDock } from "@/components/FloatingDock/FloatingDock";
 import { CartDrawer } from "@/components/FloatingDock/CartDrawer";
 import { ChatbotPanel } from "@/components/FloatingDock/ChatbotPanel";
@@ -438,6 +439,9 @@ export default function Products() {
                     },
                   ]}
                 />
+
+                {/* Products Content / Trust Accordion */}
+                <ProductsContentAccordion />
 
                 {/* Products Grid */}
                 <motion.div
