@@ -199,7 +199,7 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
       />
 
       {/* Content - Fixed dimensions to prevent CLS */}
-      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-36 md:pt-40 pb-16 lg:py-24">
+      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40 md:pt-48 lg:pt-52 pb-16 lg:py-24">
         <div className="flex items-center justify-center min-h-[70vh]">
           <div 
             className="text-white text-center flex flex-col justify-center items-center max-w-4xl w-full"
@@ -210,7 +210,7 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="inline-block rounded-full bg-white/10 backdrop-blur-md px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold w-fit border border-white/20 shadow-lg"
+              className="inline-block rounded-full bg-white/10 backdrop-blur-md px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold w-fit border border-white/20 shadow-lg mt-6 sm:mt-8 md:mt-10"
             >
               بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
             </motion.span>
