@@ -185,6 +185,11 @@
     border-radius: 1.75rem;
   }
   
+  /* Remove bottom border from header */
+  header .glass-strong {
+    border-bottom: none !important;
+  }
+  
   /* Focus styles */
   .focus-ring {
     @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
