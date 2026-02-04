@@ -129,65 +129,72 @@ export function PromoBanner({ className }: PromoBannerProps) {
           />
 
           {/* Content */}
-          <div className="relative z-10 flex w-full flex-col sm:flex-row items-center justify-between gap-5 px-6 sm:px-10 lg:px-12 py-6 sm:py-8 lg:py-10 text-right">
-            {/* Text + badge */}
-            <div className="flex-1 flex flex-col items-end">
-              {/* Heading with badge on the right */}
-              <div className="flex items-start gap-3 w-full justify-end">
-                <div className="flex-1 text-right">
-                  <h2 className="font-vazirmatn font-black text-[22px] sm:text-[26px] lg:text-[32px] leading-tight tracking-[-0.025em] text-white">
-                    تخفیف ویژه روی اکانت‌های پریمیوم ChatGPT
-                  </h2>
-                </div>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.2, duration: 0.4, ease: "easeOut" }}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(245,158,11,0.3)] flex-shrink-0"
+          <div className="relative z-10 flex w-full flex-col lg:flex-row items-start lg:items-center justify-between gap-6 lg:gap-8 px-6 sm:px-8 lg:px-12 py-6 sm:py-8 lg:py-10">
+            {/* Text + badge - Left side (RTL) */}
+            <div className="flex-1 flex flex-col items-start lg:items-end w-full lg:w-auto">
+              {/* Badge - Above title on mobile, inline on desktop */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.4, ease: "easeOut" }}
+                className="mb-3 lg:mb-4 flex-shrink-0 self-start lg:self-end"
+              >
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 px-3 sm:px-3.5 py-1 sm:py-1.5 backdrop-blur-sm"
                   style={{
                     backgroundImage:
-                      "linear-gradient(to right, rgba(245,158,11,0.2), rgba(249,115,22,0.2))",
+                      "linear-gradient(to left, rgba(245,158,11,0.25), rgba(249,115,22,0.25))",
                   }}
                 >
-                  <div className="flex items-center gap-[6px] px-3 py-1">
-                    <Sparkles className="w-[14px] h-[14px] text-amber-300" />
-                    <span className="font-vazirmatn text-[12px] font-bold tracking-[0.025em] text-amber-300">
-                      پیشنهاد محدود زمانی
-                    </span>
-                  </div>
-                </motion.div>
-              </div>
+                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 flex-shrink-0" />
+                  <span className="font-vazirmatn text-xs sm:text-sm font-bold text-amber-300 whitespace-nowrap">
+                    پیشنهاد محدود زمانی
+                  </span>
+                </div>
+              </motion.div>
 
-              <p className="mt-2 font-vazirmatn text-[15px] sm:text-[17px] font-medium text-white/70 max-w-xl text-right">
+              {/* Main Heading */}
+              <h2 className="font-vazirmatn font-black text-2xl sm:text-3xl lg:text-4xl leading-tight tracking-tight text-white mb-3 lg:mb-4 text-right w-full lg:w-auto">
+                تخفیف ویژه روی اکانت‌های پریمیوم ChatGPT
+              </h2>
+
+              {/* Subtitle */}
+              <p className="font-vazirmatn text-sm sm:text-base lg:text-lg font-normal text-white/75 leading-relaxed max-w-2xl text-right">
                 فقط تا پایان شمارش معکوس، می‌توانید اکانت‌های قانونی با تحویل آنی و پشتیبانی واقعی را
                 با قیمت ویژه تهیه کنید.
               </p>
             </div>
 
-            {/* CTA + countdown */}
-            <div className="flex flex-col items-end gap-5 min-w-[220px]">
+            {/* CTA + countdown - Right side */}
+            <div className="flex flex-col items-center lg:items-end gap-4 sm:gap-5 w-full lg:w-auto lg:min-w-[240px] flex-shrink-0">
+              {/* Countdown Timer - Premium Styled */}
               {endsAt && (
-                <CountdownTimer
-                  endsAt={endsAt}
-                  size="md"
-                  variant="glass"
-                  className="shadow-lg"
-                  onExpire={handleExpire}
-                />
+                <div className="w-full lg:w-auto flex flex-col items-center lg:items-end gap-2">
+                  <span className="text-white/80 text-xs sm:text-sm font-medium mb-1">
+                    زمان باقی‌مانده:
+                  </span>
+                  <div className="relative">
+                    <CountdownTimer
+                      endsAt={endsAt}
+                      size="lg"
+                      variant="glass"
+                      className="shadow-[0_8px_32px_rgba(0,0,0,0.3)] border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md"
+                      onExpire={handleExpire}
+                    />
+                  </div>
+                </div>
               )}
 
+              {/* CTA Button */}
               <motion.button
                 type="button"
                 onClick={handleButtonClick}
-                whileHover={{ scale: 1.03 }}
+                whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-white/20 px-5 sm:px-6 lg:px-7 py-2.5 shadow-[0_4px_24px_rgba(147,51,234,0.4)] text-[14px] sm:text-[16px] font-bold text-white cursor-pointer z-20"
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl border border-white/20 px-6 sm:px-7 lg:px-8 py-3 sm:py-3.5 shadow-[0_4px_24px_rgba(147,51,234,0.4)] text-sm sm:text-base font-bold text-white cursor-pointer w-full sm:w-auto min-w-[200px] sm:min-w-[240px] transition-all duration-300"
                 style={{
                   backgroundImage: "linear-gradient(90deg,#7C3AED,#EC4899,#7C3AED)",
                   backgroundSize: "200% 100%",
                   backgroundPosition: "0% 0%",
-                  transition: "background-position 0.3s ease-out, box-shadow 0.3s ease-out",
-                  pointerEvents: "auto",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundPosition = "100% 0";
@@ -198,14 +205,14 @@ export function PromoBanner({ className }: PromoBannerProps) {
                   e.currentTarget.style.boxShadow = "0 4px 24px rgba(147,51,234,0.4)";
                 }}
               >
-                <span>مشاهده پلن‌ها و قیمت‌ها</span>
+                <span className="font-vazirmatn">مشاهده پلن‌ها و قیمت‌ها</span>
                 <motion.span
                   initial={false}
                   whileHover={{ x: -4 }}
                   transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="flex items-center justify-center"
+                  className="flex items-center justify-center flex-shrink-0"
                 >
-                  <ArrowLeft className="w-[16px] h-[16px] sm:w-[20px] sm:h-[20px]" />
+                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                 </motion.span>
 
                 {/* Hover glow sweep */}
