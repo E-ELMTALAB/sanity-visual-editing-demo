@@ -808,13 +808,14 @@ const ProductDetail = () => {
                     <span className="text-foreground line-clamp-1 min-w-0">{product.titleFa || product.title}</span>
                   </nav>
 
-                  <div className="min-w-0" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-3 leading-tight break-words" style={{ textAlign: "right", marginRight: 0 }}>
+                  {/* Title Section */}
+                  <div className="min-w-0 mb-6" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4 leading-tight break-words" style={{ textAlign: "right", marginRight: 0 }}>
                       {product.titleFa || product.title}
                     </h1>
                     
                     {/* Rating Summary */}
-                    <a href="#reviews" className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm hover:text-primary transition-colors mb-3 flex-row-reverse" style={{ direction: "rtl" }}>
+                    <a href="#reviews" className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm hover:text-primary transition-colors flex-row-reverse" style={{ direction: "rtl" }}>
                       <div className="flex items-center gap-1 flex-row-reverse">
                         {[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-500 text-yellow-500" />)}
                       </div>
@@ -823,80 +824,99 @@ const ProductDetail = () => {
                         (۱۲۸ نظر)
                       </span>
                     </a>
-
-                    
                   </div>
 
-                  <div className="min-w-0" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
-                    {/* Promotion Badge */}
-                    {productPromotion && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="mb-2 sm:mb-3"
-                      >
-                        <Badge className="bg-red-500 text-white px-2.5 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-bold">
-                          {toPersianNumber(productPromotion.discountPercentage)}٪ تخفیف ویژه
-                        </Badge>
-                      </motion.div>
-                    )}
+                  {/* Pricing Box - Styled Container */}
+                  {(() => {
+                    const hasVariants = (medusaVariants.length > 0 || (product?.variants?.length || 0) > 0);
+                    const shouldShowOnMobile = !hasVariants || selectedVariant;
                     
-                    {/* On mobile, only show price when variant is selected (if variants exist) */}
-                    {(() => {
-                      const hasVariants = (medusaVariants.length > 0 || (product?.variants?.length || 0) > 0);
-                      const shouldShowOnMobile = !hasVariants || selectedVariant;
-                      
-                      return (
-                        <div className={cn(
-                          "overflow-x-auto",
-                          !shouldShowOnMobile && "hidden md:block" // Hide on mobile if variants exist but none selected
-                        )} style={{ textAlign: "right", marginRight: 0 }}>
-                          <Price
-                            current={productPromotion ? productPromotion.discountedPrice : currentPrice}
-                            old={productPromotion ? productPromotion.originalPrice : (shouldShowOriginalPrice ? originalPrice : undefined)}
-                            discountPercentage={productPromotion?.discountPercentage}
-                            className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary whitespace-nowrap"
-                            variant={productPromotion ? "promotional" : "default"}
-                          />
-                        </div>
-                      );
-                    })()}
+                    if (!shouldShowOnMobile) return null; // Hide on mobile if variants exist but none selected
                     
-                    {/* Countdown Timer for time-limited promotions */}
-                    {productPromotion?.endsAt && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-3"
-                      >
-                        <div className="text-sm text-muted-foreground mb-2">پایان تخفیف:</div>
-                        <CountdownTimer 
-                          endsAt={productPromotion.endsAt} 
-                          size="md" 
-                          variant="default"
-                        />
-                      </motion.div>
-                    )}
-                  </div>
-
-                  {/* Features */}
-                  <div className="mt-4" style={{ textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}>
-                    {(product.featuresFa || product.features).map((feature, idx) => (
-                      <div 
-                        key={idx} 
-                        className="flex items-start gap-2 text-sm mb-2.5 justify-end flex-row-reverse"
-                        style={{ direction: "rtl", textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}
-                      >
-                        <span className="text-foreground/80 leading-relaxed" style={{ marginRight: 0 }}>{feature}</span>
-                        <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                    const displayPrice = productPromotion ? productPromotion.discountedPrice : currentPrice;
+                    const displayOldPrice = productPromotion ? productPromotion.originalPrice : (shouldShowOriginalPrice ? originalPrice : undefined);
+                    const discountPercent = productPromotion?.discountPercentage;
+                    const hasDiscount = displayOldPrice && displayOldPrice > displayPrice;
+                    
+                    return (
+                      <div className="mt-4 mb-6" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
+                        <SurfaceGlass className="rounded-xl p-4 sm:p-5 border border-white/20">
+                          <div className="flex flex-col gap-3" dir="rtl">
+                            {/* Discount Badge - Top Right */}
+                            {discountPercent && discountPercent > 0 && (
+                              <div className="flex justify-end">
+                                <Badge className="bg-red-500 text-white px-3 py-1 text-xs sm:text-sm font-bold">
+                                  {toPersianNumber(discountPercent)}٪ تخفیف ویژه
+                                </Badge>
+                              </div>
+                            )}
+                            
+                            {/* Price Display */}
+                            <div className="flex flex-col gap-1.5">
+                              {/* Current Price - Large and Dominant */}
+                              <div className="flex items-baseline gap-2 flex-row-reverse">
+                                <span className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary">
+                                  {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(displayPrice)}
+                                </span>
+                                <span className="text-base sm:text-lg text-muted-foreground font-medium">
+                                  تومان
+                                </span>
+                              </div>
+                              
+                              {/* Old Price - Smaller with Strike-through */}
+                              {hasDiscount && displayOldPrice && (
+                                <div className="flex items-baseline gap-1.5 flex-row-reverse">
+                                  <span className="text-lg sm:text-xl text-muted-foreground line-through opacity-70">
+                                    {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(displayOldPrice)}
+                                  </span>
+                                  <span className="text-sm text-muted-foreground opacity-70 line-through">
+                                    تومان
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Countdown Timer for time-limited promotions */}
+                            {productPromotion?.endsAt && (
+                              <div className="mt-2 pt-3 border-t border-white/10">
+                                <div className="text-xs text-muted-foreground mb-2">پایان تخفیف:</div>
+                                <CountdownTimer 
+                                  endsAt={productPromotion.endsAt} 
+                                  size="sm" 
+                                  variant="default"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </SurfaceGlass>
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })()}
+
+                  {/* Features Box - Glass Container */}
+                  {(product.featuresFa || product.features).length > 0 && (
+                    <div className="mt-4 mb-6" style={{ textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}>
+                      <SurfaceGlass className="rounded-xl p-4 sm:p-5 border border-white/20">
+                        <div className="space-y-3" dir="rtl">
+                          {(product.featuresFa || product.features).map((feature, idx) => (
+                            <div 
+                              key={idx} 
+                              className="flex items-start gap-3 text-sm sm:text-base justify-end flex-row-reverse"
+                              style={{ direction: "rtl", textAlign: "right" }}
+                            >
+                              <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+                              <span className="text-foreground/90 leading-relaxed flex-1">{feature}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </SurfaceGlass>
+                    </div>
+                  )}
 
                   {/* Purchase Section */}
-                  <div className="min-w-0 mt-4" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
+                  <div className="min-w-0 mt-6" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
                     {/* Bonus Bar - directly above Buy button */}
-                    <div className="mt-6" style={{ textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}>
+                    <div className="mb-4" style={{ textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}>
                       <BonusBar />
                     </div>
 
@@ -907,7 +927,7 @@ const ProductDetail = () => {
                       
                       return (
                         <div className={cn(
-                          "flex gap-2 sm:gap-3 min-w-0 mt-3 sm:mt-4",
+                          "flex gap-2 sm:gap-3 min-w-0 mb-4",
                           !shouldShowOnMobile && "hidden md:flex" // Hide on mobile if variants exist but none selected
                         )}>
                           <Button size="lg" onClick={handleBuyNow} className="flex-1 min-w-0 text-sm sm:text-base font-semibold">
@@ -919,7 +939,7 @@ const ProductDetail = () => {
                     })()}
 
                     {/* Policy Microcopy */}
-                    <p className="text-sm sm:text-[15px] text-muted-foreground text-center break-words mt-6 mb-2 font-medium leading-relaxed">
+                    <p className="text-sm sm:text-[15px] text-muted-foreground text-center break-words mb-4 font-medium leading-relaxed">
                       تحویل فوری دیجیتال • پشتیبانی ۲۴ ساعته • ضمانت بازگشت وجه • دسترسی دائمی
                     </p>
                   </div>
