@@ -12,6 +12,7 @@ export function PageIntro({ title, subtitle, className }: PageIntroProps) {
 
   return (
     <div
+      dir={isRTL ? "rtl" : "ltr"}
       className={cn(
         "relative rounded-2xl py-10 md:py-14 px-6 md:px-10",
         "bg-background dark:bg-card",
@@ -25,8 +26,8 @@ export function PageIntro({ title, subtitle, className }: PageIntroProps) {
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
       
       <div className={cn(
-        "max-w-3xl mx-auto text-center md:text-start",
-        isRTL ? "md:mr-0 md:text-right" : "md:ml-0 md:text-left"
+        "max-w-3xl mx-auto",
+        isRTL ? "text-right md:mr-0" : "text-left md:ml-0"
       )}>
         <h1
           className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground mb-3 animate-fadeIn"
