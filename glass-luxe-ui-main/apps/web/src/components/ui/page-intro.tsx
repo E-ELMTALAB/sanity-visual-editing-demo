@@ -26,8 +26,8 @@ export function PageIntro({ title, subtitle, className }: PageIntroProps) {
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
       
       <div className={cn(
-        "max-w-3xl mx-auto",
-        isRTL ? "text-right md:mr-0" : "text-left md:ml-0"
+        "max-w-3xl",
+        isRTL ? "mr-0 ml-auto text-right" : "ml-0 mr-auto text-left"
       )}>
         <h1
           className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground mb-3 animate-fadeIn"

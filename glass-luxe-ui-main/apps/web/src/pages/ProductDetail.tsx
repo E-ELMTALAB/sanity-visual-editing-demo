@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, type CSSProperties } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
-import { ShoppingCart, Check, Truck, Shield, RefreshCw, Star, ChevronRight } from "lucide-react";
+import { ShoppingCart, Check, Truck, Shield, RefreshCw, ChevronRight } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer/Footer";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -814,16 +814,6 @@ const ProductDetail = () => {
                       {product.titleFa || product.title}
                     </h1>
                     
-                    {/* Rating Summary */}
-                    <a href="#reviews" className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm hover:text-primary transition-colors flex-row-reverse" style={{ direction: "rtl" }}>
-                      <div className="flex items-center gap-1 flex-row-reverse">
-                        {[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-500 text-yellow-500" />)}
-                      </div>
-                      <span className="font-semibold">۴.۹</span>
-                      <span className="text-muted-foreground text-[11px] sm:text-xs">
-                        (۱۲۸ نظر)
-                      </span>
-                    </a>
                   </div>
 
                   {/* Pricing Box - Styled Container */}
