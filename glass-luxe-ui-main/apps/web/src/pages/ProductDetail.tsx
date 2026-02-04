@@ -138,6 +138,7 @@ const ProductDetail = () => {
   const { addItem, setSingleItem, state: cartState } = useCart();
   const stickyRef = useRef<HTMLDivElement>(null);
   const [tocHeadings, setTocHeadings] = useState<Array<{ level: number; text: string; id: string }>>([]);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   
   // Get promotion info from context - use Medusa product ID if available
   const productIdForPromotion = medusaProductId || product?.id; // Prefer Medusa product ID
@@ -1135,8 +1136,40 @@ const ProductDetail = () => {
 
                 {/* Description Content */}
                 <div className={cn("max-w-none", (isRTL || forceRTL) && "text-right")} dir={(isRTL || forceRTL) ? "rtl" : "ltr"}>
-                  {/* Render Markdown Content */}
-                  <EnhancedMarkdownRenderer content={(isRTL || forceRTL) ? product.descriptionFa : product.description} />
+                  {/* Collapsible Description */}
+                  <div
+                    id="product-description"
+                    className={cn(
+                      "relative transition-[max-height] duration-300 ease-out",
+                      !isDescriptionExpanded && "max-h-[260px] md:max-h-[340px] overflow-hidden"
+                    )}
+                  >
+                    <EnhancedMarkdownRenderer content={(isRTL || forceRTL) ? product.descriptionFa : product.description} />
+
+                    {/* Bottom Gradient Fade when collapsed */}
+                    {!isDescriptionExpanded && (
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 md:h-20 bg-gradient-to-t from-background/95 via-background/75 to-transparent" />
+                    )}
+                  </div>
+
+                  {/* Read More / Collapse Toggle */}
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setIsDescriptionExpanded(prev => !prev)}
+                      className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-border/60 bg-surface-glass/40 hover:bg-surface-glass/70 text-xs sm:text-sm text-foreground/90 transition-colors"
+                      aria-expanded={isDescriptionExpanded}
+                      aria-controls="product-description"
+                    >
+                      <span>{isDescriptionExpanded ? "بستن توضیحات" : "مشاهده توضیحات کامل"}</span>
+                      <ChevronDown
+                        className={cn(
+                          "w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform",
+                          isDescriptionExpanded && "rotate-180"
+                        )}
+                      />
+                    </button>
+                  </div>
 
                   {/* FAQ Section */}
                   {faqs.length > 0 && (
@@ -1144,8 +1177,8 @@ const ProductDetail = () => {
                       <h2 className="text-2xl font-bold mb-6 text-white">
                         سوالات متداول
                       </h2>
-                    <FaqAccordion items={faqs} />
-                  </section>
+                      <FaqAccordion items={faqs} />
+                    </section>
                   )}
                 </div>
               </div>
