@@ -199,8 +199,8 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
       />
 
       {/* Content - Fixed dimensions to prevent CLS */}
-      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40 md:pt-48 lg:pt-52 pb-16 lg:py-24">
-        <div className="flex items-center justify-center min-h-[70vh]">
+      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 pb-16 lg:py-24">
+        <div className="flex items-center justify-center min-h-[60vh] sm:min-h-[65vh]">
           <div 
             className="text-white text-center flex flex-col justify-center items-center max-w-4xl w-full"
             style={{ minHeight: '300px' }} // Fixed height to prevent CLS
@@ -210,7 +210,7 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="inline-block rounded-full bg-white/10 backdrop-blur-md px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold w-fit border border-white/20 shadow-lg mt-6 sm:mt-8 md:mt-10"
+              className="inline-block rounded-full bg-white/10 backdrop-blur-md px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold w-fit border border-white/20 shadow-lg"
             >
               بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
             </motion.span>
@@ -220,7 +220,7 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-              className="mt-6 sm:mt-8 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.1] tracking-tight"
+              className="mt-4 sm:mt-5 md:mt-6 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.1] tracking-tight"
             >
               {HERO_TITLE}
             </motion.h1>
@@ -230,7 +230,7 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-              className="mt-5 sm:mt-6 max-w-2xl text-white/85 text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed font-normal"
+              className="mt-3 sm:mt-4 md:mt-5 max-w-2xl text-white/85 text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed font-normal"
             >
               {HERO_SUBTITLE}
             </motion.p>
@@ -240,7 +240,7 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: "easeOut", delay: 0.3 }}
-              className="mt-8 sm:mt-10"
+              className="mt-6 sm:mt-7 md:mt-8"
             >
               <button
                 onClick={() => navigate("/products")}
@@ -277,7 +277,7 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
-              className="mt-10 sm:mt-12 lg:mt-14"
+              className="mt-6 sm:mt-8 md:mt-10"
             >
               <TrustBadges />
             </motion.div>
