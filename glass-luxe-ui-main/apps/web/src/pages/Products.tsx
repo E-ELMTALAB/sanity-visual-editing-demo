@@ -440,9 +440,6 @@ export default function Products() {
                   ]}
                 />
 
-                {/* Products Content / Trust Accordion */}
-                <ProductsContentAccordion />
-
                 {/* Products Grid */}
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -554,6 +551,9 @@ export default function Products() {
                 {faqItems.length > 0 && (
                   <FaqAccordion items={faqItems} className="mt-16" />
                 )}
+
+                {/* Products Content / Trust Accordion (below product cards, above footer) */}
+                <ProductsContentAccordion />
               </div>
             </div>
           </div>
