@@ -1,4 +1,5 @@
 import { useState, lazy, Suspense, useEffect, useRef, useCallback, useMemo } from "react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import TrustBadges from "@/components/TrustBadges";
 import TestimonialsRow from "@/components/TestimonialsRow";
@@ -196,22 +197,88 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
       />
 
       {/* Content - Fixed dimensions to prevent CLS */}
-      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-28 pb-16 lg:py-24">
+      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-16 lg:py-24">
         <div className="flex items-center justify-center min-h-[70vh]">
           <div 
-            className="text-white text-center flex flex-col justify-center items-center max-w-3xl"
+            className="text-white text-center flex flex-col justify-center items-center max-w-4xl w-full"
             style={{ minHeight: '300px' }} // Fixed height to prevent CLS
           >
-            <span className="inline-block rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs md:text-sm w-fit border border-white/20">
-            بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
-            </span>
-            <h1 className="mt-4 text-7xl sm:text-8xl md:text-6xl lg:text-7xl font-black leading-tight">
+            {/* Badge/Kicker */}
+            <motion.span 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="inline-block rounded-full bg-white/10 backdrop-blur-md px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold w-fit border border-white/20 shadow-lg"
+            >
+              بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
+            </motion.span>
+
+            {/* Main Headline */}
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+              className="mt-6 sm:mt-8 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.1] tracking-tight"
+            >
               {HERO_TITLE}
-            </h1>
-            <p className="mt-4 max-w-xl text-white/90 text-xl md:text-lg lg:text-xl leading-relaxed whitespace-pre-line">
+            </motion.h1>
+
+            {/* Subtitle */}
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+              className="mt-5 sm:mt-6 max-w-2xl text-white/85 text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed font-normal"
+            >
               {HERO_SUBTITLE}
-            </p>
-            <TrustBadges />
+            </motion.p>
+
+            {/* CTA Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.3 }}
+              className="mt-8 sm:mt-10"
+            >
+              <button
+                onClick={() => navigate("/products")}
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl border border-white/20 px-8 sm:px-10 py-3.5 sm:py-4 shadow-[0_8px_32px_rgba(124,58,237,0.4)] text-base sm:text-lg font-bold text-white cursor-pointer transition-all duration-300 hover:shadow-[0_12px_40px_rgba(124,58,237,0.5)] hover:scale-105 active:scale-100"
+                style={{
+                  backgroundImage: "linear-gradient(90deg,#7C3AED,#EC4899,#7C3AED)",
+                  backgroundSize: "200% 100%",
+                  backgroundPosition: "0% 0%",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundPosition = "100% 0";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundPosition = "0% 0";
+                }}
+              >
+                <span className="font-vazirmatn relative z-10">مشاهده محصولات</span>
+                <span className="relative z-10">→</span>
+                {/* Hover glow sweep */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"
+                  style={{
+                    background:
+                      "linear-gradient(120deg, transparent, rgba(255,255,255,0.6), transparent)",
+                    mixBlendMode: "screen",
+                  }}
+                />
+              </button>
+            </motion.div>
+
+            {/* Trust Badges */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
+              className="mt-10 sm:mt-12 lg:mt-14"
+            >
+              <TrustBadges />
+            </motion.div>
           </div>
         </div>
       </div>
