@@ -99,7 +99,7 @@ export function Header({ onSearch, megaItems, active }: HeaderProps) {
       >
         <div
           className={cn(
-            "glass-strong h-full transition-all duration-300 rounded-2xl",
+            "glass-strong h-full transition-all duration-300 rounded-2xl border-b-0",
             isScrolled && "backdrop-blur-[28px] rounded-none",
           )}
         >

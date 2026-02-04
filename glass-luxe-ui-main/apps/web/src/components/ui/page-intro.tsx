@@ -22,9 +22,6 @@ export function PageIntro({ title, subtitle, className }: PageIntroProps) {
         className
       )}
     >
-      {/* Subtle top highlight */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-      
       <div className={cn(
         "max-w-3xl",
         isRTL ? "mr-0 ml-auto text-right" : "ml-0 mr-auto text-left"
