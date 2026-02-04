@@ -205,16 +205,6 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
             className="text-white text-center flex flex-col justify-center items-center max-w-4xl w-full"
             style={{ minHeight: '300px' }} // Fixed height to prevent CLS
           >
-            {/* Badge/Kicker */}
-            <motion.span 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="inline-block rounded-full bg-white/10 backdrop-blur-md px-4 py-1.5 sm:px-5 sm:py-2 text-xs sm:text-sm font-semibold w-fit border border-white/20 shadow-lg"
-            >
-              بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
-            </motion.span>
-
             {/* Main Headline */}
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
