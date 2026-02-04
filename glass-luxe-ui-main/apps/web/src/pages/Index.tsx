@@ -199,7 +199,7 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
       />
 
       {/* Content - Fixed dimensions to prevent CLS */}
-      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 pb-16 lg:py-24">
+      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 md:pt-32 pb-16 lg:py-24">
         <div className="flex items-center justify-center min-h-[60vh] sm:min-h-[65vh]">
           <div 
             className="text-white text-center flex flex-col justify-center items-center max-w-4xl w-full"
