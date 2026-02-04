@@ -826,7 +826,7 @@ const ProductDetail = () => {
                 >
                   {/* Breadcrumb */}
                   <nav
-                    className="mb-3 text-xs sm:text-sm text-muted-foreground flex items-center gap-2 flex-wrap min-w-0 flex-row-reverse justify-start"
+                    className="mb-2 text-[11px] sm:text-xs text-muted-foreground flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 flex-row-reverse justify-start"
                     style={{ direction: "rtl", marginRight: 0, paddingRight: 0 }}
                   >
                     <Link to="/" className="hover:text-foreground transition-colors whitespace-nowrap">
@@ -841,17 +841,17 @@ const ProductDetail = () => {
                   </nav>
 
                   <div className="min-w-0" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 break-words" style={{ textAlign: "right", marginRight: 0 }}>
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-3 leading-tight break-words" style={{ textAlign: "right", marginRight: 0 }}>
                       {product.titleFa || product.title}
                     </h1>
                     
                     {/* Rating Summary */}
-                    <a href="#reviews" className="inline-flex items-center gap-2 text-sm hover:text-primary transition-colors mb-2 flex-row-reverse" style={{ direction: "rtl" }}>
+                    <a href="#reviews" className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm hover:text-primary transition-colors mb-3 flex-row-reverse" style={{ direction: "rtl" }}>
                       <div className="flex items-center gap-1 flex-row-reverse">
-                        {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />)}
+                        {[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-500 text-yellow-500" />)}
                       </div>
                       <span className="font-semibold">۴.۹</span>
-                      <span className="text-muted-foreground">
+                      <span className="text-muted-foreground text-[11px] sm:text-xs">
                         (۱۲۸ نظر)
                       </span>
                     </a>
@@ -865,9 +865,9 @@ const ProductDetail = () => {
                       <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="mb-3"
+                        className="mb-2 sm:mb-3"
                       >
-                        <Badge className="bg-red-500 text-white px-3 py-1 text-sm font-bold">
+                        <Badge className="bg-red-500 text-white px-2.5 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-bold">
                           {toPersianNumber(productPromotion.discountPercentage)}٪ تخفیف ویژه
                         </Badge>
                       </motion.div>
@@ -887,7 +887,7 @@ const ProductDetail = () => {
                             current={productPromotion ? productPromotion.discountedPrice : currentPrice}
                             old={productPromotion ? productPromotion.originalPrice : (shouldShowOriginalPrice ? originalPrice : undefined)}
                             discountPercentage={productPromotion?.discountPercentage}
-                            className="text-xl sm:text-2xl whitespace-nowrap"
+                            className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary whitespace-nowrap"
                             variant={productPromotion ? "promotional" : "default"}
                           />
                         </div>
@@ -912,21 +912,21 @@ const ProductDetail = () => {
                   </div>
 
                   {/* Features */}
-                  <div style={{ textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}>
+                  <div className="mt-4" style={{ textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}>
                     {(product.featuresFa || product.features).map((feature, idx) => (
                       <div 
                         key={idx} 
-                        className="flex items-start gap-2 text-sm mb-2 justify-end flex-row-reverse"
+                        className="flex items-start gap-2 text-sm mb-2.5 justify-end flex-row-reverse"
                         style={{ direction: "rtl", textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}
                       >
-                        <span className="text-foreground/80" style={{ marginRight: 0 }}>{feature}</span>
+                        <span className="text-foreground/80 leading-relaxed" style={{ marginRight: 0 }}>{feature}</span>
                         <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
                       </div>
                     ))}
                   </div>
 
                   {/* Purchase Section */}
-                  <div className="min-w-0" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
+                  <div className="min-w-0 mt-4" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
                     {/* Bonus Bar - directly above Buy button */}
                     <div className="mt-6" style={{ textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}>
                       <BonusBar />
@@ -942,7 +942,7 @@ const ProductDetail = () => {
                           "flex gap-2 sm:gap-3 min-w-0 mt-3 sm:mt-4",
                           !shouldShowOnMobile && "hidden md:flex" // Hide on mobile if variants exist but none selected
                         )}>
-                          <Button size="lg" onClick={handleBuyNow} className="flex-1 min-w-0 text-sm sm:text-base">
+                          <Button size="lg" onClick={handleBuyNow} className="flex-1 min-w-0 text-sm sm:text-base font-semibold">
                             <ShoppingCart className="ml-1 h-4 w-4 shrink-0" />
                             <span className="truncate">خرید</span>
                           </Button>
@@ -951,13 +951,13 @@ const ProductDetail = () => {
                     })()}
 
                     {/* Policy Microcopy */}
-                    <p className="text-xs text-muted-foreground text-center break-words mt-6" style={{ textAlign: "right" }}>
+                    <p className="text-sm sm:text-[15px] text-muted-foreground text-center break-words mt-6 mb-2 font-medium leading-relaxed">
                       تحویل فوری دیجیتال • پشتیبانی ۲۴ ساعته • ضمانت بازگشت وجه • دسترسی دائمی
                     </p>
                   </div>
 
                   {/* Trust Badges */}
-                  <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-border-glass min-w-0">
+                  <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-5 sm:pt-7 border-t border-border-glass min-w-0">
                     <div className="flex flex-col items-center text-center gap-1 sm:gap-2 min-w-0">
                       <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
                       <span className="text-xs text-muted-foreground break-words">
