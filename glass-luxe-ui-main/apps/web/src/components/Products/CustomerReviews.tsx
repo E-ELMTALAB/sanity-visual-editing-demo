@@ -215,7 +215,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
               </CarouselContent>
 
               {/* Navigation Buttons - Centered below carousel */}
-              <div className="flex justify-center items-center gap-4 md:gap-2 mt-6 md:mt-3 relative z-20">
+              <div className="flex justify-center items-center gap-4 md:gap-2 mt-8 md:mt-6 relative z-20 pb-2">
                 {/* Previous button (visually right in RTL, scrolls to previous slide) */}
                 <CarouselPrevious
                   className={cn(
