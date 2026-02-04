@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, type CSSProperties } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
-import { ShoppingCart, Check, Truck, Shield, RefreshCw, Star, ChevronRight, ChevronDown } from "lucide-react";
+import { ShoppingCart, Check, Truck, Shield, RefreshCw, Star, ChevronRight } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer/Footer";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -28,7 +28,6 @@ import { productBySlugQuery, faqsByPageQuery } from "@/lib/sanity.queries";
 import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";
 import { fetchProductPrices, type MedusaVariant } from "@/lib/medusa-prices";
 import { toPersianNumber, calculateDiscountedPrice } from "@/lib/medusa-promotions";
-import EnhancedMarkdownRenderer from "@/components/EnhancedMarkdownRenderer";
 const springTransition = {
   type: "spring" as const,
   stiffness: 220,
@@ -95,26 +94,6 @@ interface FaqItem {
   a: string;
 }
 
-// Helper function to extract headings from markdown content
-const extractHeadingsFromMarkdown = (content: string): Array<{ level: number; text: string; id: string }> => {
-  if (!content) return [];
-  
-  const lines = content.split('\n');
-  const headings: Array<{ level: number; text: string; id: string }> = [];
-  let headingCounter = 0;
-  
-  lines.forEach(line => {
-    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
-    if (headingMatch) {
-      const level = headingMatch[1].length;
-      const text = headingMatch[2].trim();
-      const id = `heading-${headingCounter++}`;
-      headings.push({ level, text, id });
-    }
-  });
-  
-  return headings;
-};
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -125,8 +104,6 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
-  const [tocOpen, setTocOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("");
   const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -137,8 +114,6 @@ const ProductDetail = () => {
   const [relatedProductPrices, setRelatedProductPrices] = useState<Record<string, { variants: MedusaVariant[] }>>({});
   const { addItem, setSingleItem, state: cartState } = useCart();
   const stickyRef = useRef<HTMLDivElement>(null);
-  const [tocHeadings, setTocHeadings] = useState<Array<{ level: number; text: string; id: string }>>([]);
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   
   // Get promotion info from context - use Medusa product ID if available
   const productIdForPromotion = medusaProductId || product?.id; // Prefer Medusa product ID
@@ -173,15 +148,6 @@ const ProductDetail = () => {
   
   const priceForPromotion = getPriceForPromotion();
   const productPromotion = useProductPromotion(slug, productIdForPromotion, priceForPromotion);
-
-  // Extract headings from description when product loads
-  useEffect(() => {
-    if (product) {
-      const descriptionContent = (isRTL ? product.descriptionFa : product.description) || '';
-      const headings = extractHeadingsFromMarkdown(descriptionContent);
-      setTocHeadings(headings);
-    }
-  }, [product, isRTL]);
 
   useEffect(() => {
     const configValid = validateSanityConfig();
@@ -1063,139 +1029,6 @@ const ProductDetail = () => {
 
             {/* Delivery Process Section */}
             <DeliveryProcessSection />
-
-            {/* Description Section with TOC */}
-            <SurfaceGlass className="rounded-2xl p-6 md:p-8">
-              <div className="grid md:grid-cols-[280px_1fr] gap-8">
-                {/* TOC - Sticky on Desktop / Mobile - only when description expanded */}
-                {isDescriptionExpanded && (
-                  <div className="md:sticky md:top-24 md:self-start">
-                    {/* Mobile Collapsible TOC */}
-                    <div className="md:hidden">
-                      <button
-                        onClick={() => setTocOpen(!tocOpen)}
-                        className="w-full flex items-center justify-between p-4 glass rounded-lg hover:bg-surface-glass/50 transition-colors"
-                      >
-                        <span className="font-semibold">
-                          فهرست مطالب
-                        </span>
-                        <ChevronDown className={cn("w-5 h-5 transition-transform", tocOpen && "rotate-180")} />
-                      </button>
-                      {tocOpen && (
-                        <nav className="mt-3 space-y-1 p-4 glass rounded-lg" dir="rtl">
-                          {tocHeadings.length > 0 ? (
-                            tocHeadings.map((heading) => (
-                              <a 
-                                key={heading.id}
-                                href={`#${heading.id}`}
-                                className={cn(
-                                  "block text-sm hover:text-primary transition-colors text-right",
-                                  heading.level === 1 ? "font-bold" :
-                                  heading.level === 2 ? "font-semibold" :
-                                  heading.level === 3 ? "pr-4 text-xs" :
-                                  "pr-6 text-xs"
-                                )}
-                              >
-                                {heading.text}
-                              </a>
-                            ))
-                          ) : (
-                            <p className="text-sm text-muted-foreground text-right">
-                              هیچ سرفصلی یافت نشد
-                            </p>
-                          )}
-                        </nav>
-                      )}
-                    </div>
-
-                    {/* Desktop Sticky TOC */}
-                    <nav className="hidden md:block space-y-1 text-right" dir="rtl">
-                      <h3 className="font-bold text-lg mb-4 text-foreground">
-                        فهرست مطالب
-                      </h3>
-                      {tocHeadings.length > 0 ? (
-                        tocHeadings.map((heading) => (
-                          <a 
-                            key={heading.id}
-                            href={`#${heading.id}`}
-                            className={cn(
-                              "block text-sm py-2 rounded-lg transition-colors hover:bg-surface-glass/50 text-right",
-                              heading.level === 1 ? "pr-3 font-bold text-base" :
-                              heading.level === 2 ? "pr-3 font-semibold" :
-                              heading.level === 3 ? "pr-6 text-xs" :
-                              "pr-9 text-xs",
-                              activeSection === heading.id && "bg-surface-glass text-primary font-medium"
-                            )}
-                          >
-                            {heading.text}
-                          </a>
-                        ))
-                      ) : (
-                        <p className="text-sm text-muted-foreground text-right pr-3">
-                          هیچ سرفصلی یافت نشد
-                        </p>
-                      )}
-                    </nav>
-                  </div>
-                )}
-
-                {/* Description Content */}
-                <div className={cn("max-w-none", (isRTL || forceRTL) && "text-right")} dir={(isRTL || forceRTL) ? "rtl" : "ltr"}>
-                  {/* Collapsible Description */}
-                  <div
-                    id="product-description"
-                    className={cn(
-                      "relative transition-[max-height] duration-300 ease-out",
-                      isDescriptionExpanded
-                        ? "max-h-[4000px]"
-                        : "max-h-[260px] md:max-h-[320px] overflow-hidden"
-                    )}
-                  >
-                    <EnhancedMarkdownRenderer content={(isRTL || forceRTL) ? product.descriptionFa : product.description} />
-
-                    {/* Bottom Gradient Fade when collapsed */}
-                    {!isDescriptionExpanded && (
-                      <div
-                        className="pointer-events-none absolute inset-x-0 bottom-0 h-16 md:h-20"
-                        style={{
-                          backgroundImage:
-                            "linear-gradient(to top, hsl(var(--surface-glass)) 85%, transparent 100%)",
-                        }}
-                      />
-                    )}
-                  </div>
-
-                  {/* Read More / Collapse Toggle */}
-                  <div className="mt-4 flex justify-center">
-                    <button
-                      type="button"
-                      onClick={() => setIsDescriptionExpanded(prev => !prev)}
-                      className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-border/60 bg-surface-glass/40 hover:bg-surface-glass/70 text-xs sm:text-sm text-foreground/90 transition-colors"
-                      aria-expanded={isDescriptionExpanded}
-                      aria-controls="product-description"
-                    >
-                      <span>{isDescriptionExpanded ? "بستن توضیحات" : "مشاهده توضیحات کامل"}</span>
-                      <ChevronDown
-                        className={cn(
-                          "w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform",
-                          isDescriptionExpanded && "rotate-180"
-                        )}
-                      />
-                    </button>
-                  </div>
-
-                  {/* FAQ Section */}
-                  {faqs.length > 0 && (
-                    <section id="faq" className="scroll-mt-24 mt-12">
-                      <h2 className="text-2xl font-bold mb-6 text-white">
-                        سوالات متداول
-                      </h2>
-                      <FaqAccordion items={faqs} />
-                    </section>
-                  )}
-                </div>
-              </div>
-            </SurfaceGlass>
 
             {/* Related Products */}
             {relatedProducts.length > 0 && <section className="space-y-6">
