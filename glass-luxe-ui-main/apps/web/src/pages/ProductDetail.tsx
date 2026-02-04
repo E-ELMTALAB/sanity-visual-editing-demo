@@ -1067,72 +1067,77 @@ const ProductDetail = () => {
             {/* Description Section with TOC */}
             <SurfaceGlass className="rounded-2xl p-6 md:p-8">
               <div className="grid md:grid-cols-[280px_1fr] gap-8">
-                {/* TOC - Sticky on Desktop */}
-                <div className="md:sticky md:top-24 md:self-start">
-                  {/* Mobile Collapsible TOC */}
-                  <div className="md:hidden">
-                    <button onClick={() => setTocOpen(!tocOpen)} className="w-full flex items-center justify-between p-4 glass rounded-lg hover:bg-surface-glass/50 transition-colors">
-                      <span className="font-semibold">
-                        فهرست مطالب
-                      </span>
-                      <ChevronDown className={cn("w-5 h-5 transition-transform", tocOpen && "rotate-180")} />
-                    </button>
-                    {tocOpen && (
-                      <nav className="mt-3 space-y-1 p-4 glass rounded-lg" dir="rtl">
-                        {tocHeadings.length > 0 ? (
-                          tocHeadings.map((heading) => (
-                            <a 
-                              key={heading.id}
-                              href={`#${heading.id}`}
-                              className={cn(
-                                "block text-sm hover:text-primary transition-colors text-right",
-                                heading.level === 1 ? "font-bold" :
-                                heading.level === 2 ? "font-semibold" :
-                                heading.level === 3 ? "pr-4 text-xs" :
-                                "pr-6 text-xs"
-                              )}
-                            >
-                              {heading.text}
-                        </a>
-                          ))
-                        ) : (
-                          <p className="text-sm text-muted-foreground text-right">
-                            هیچ سرفصلی یافت نشد
-                          </p>
-                        )}
-                      </nav>
-                    )}
-                  </div>
-
-                  {/* Desktop Sticky TOC */}
-                  <nav className="hidden md:block space-y-1 text-right" dir="rtl">
-                    <h3 className="font-bold text-lg mb-4 text-foreground">
-                      فهرست مطالب
-                    </h3>
-                    {tocHeadings.length > 0 ? (
-                      tocHeadings.map((heading) => (
-                        <a 
-                          key={heading.id}
-                          href={`#${heading.id}`}
-                          className={cn(
-                            "block text-sm py-2 rounded-lg transition-colors hover:bg-surface-glass/50 text-right",
-                            heading.level === 1 ? "pr-3 font-bold text-base" :
-                            heading.level === 2 ? "pr-3 font-semibold" :
-                            heading.level === 3 ? "pr-6 text-xs" :
-                            "pr-9 text-xs",
-                            activeSection === heading.id && "bg-surface-glass text-primary font-medium"
+                {/* TOC - Sticky on Desktop / Mobile - only when description expanded */}
+                {isDescriptionExpanded && (
+                  <div className="md:sticky md:top-24 md:self-start">
+                    {/* Mobile Collapsible TOC */}
+                    <div className="md:hidden">
+                      <button
+                        onClick={() => setTocOpen(!tocOpen)}
+                        className="w-full flex items-center justify-between p-4 glass rounded-lg hover:bg-surface-glass/50 transition-colors"
+                      >
+                        <span className="font-semibold">
+                          فهرست مطالب
+                        </span>
+                        <ChevronDown className={cn("w-5 h-5 transition-transform", tocOpen && "rotate-180")} />
+                      </button>
+                      {tocOpen && (
+                        <nav className="mt-3 space-y-1 p-4 glass rounded-lg" dir="rtl">
+                          {tocHeadings.length > 0 ? (
+                            tocHeadings.map((heading) => (
+                              <a 
+                                key={heading.id}
+                                href={`#${heading.id}`}
+                                className={cn(
+                                  "block text-sm hover:text-primary transition-colors text-right",
+                                  heading.level === 1 ? "font-bold" :
+                                  heading.level === 2 ? "font-semibold" :
+                                  heading.level === 3 ? "pr-4 text-xs" :
+                                  "pr-6 text-xs"
+                                )}
+                              >
+                                {heading.text}
+                              </a>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground text-right">
+                              هیچ سرفصلی یافت نشد
+                            </p>
                           )}
-                        >
-                          {heading.text}
-                    </a>
-                      ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground text-right pr-3">
-                        هیچ سرفصلی یافت نشد
-                      </p>
-                    )}
-                  </nav>
-                </div>
+                        </nav>
+                      )}
+                    </div>
+
+                    {/* Desktop Sticky TOC */}
+                    <nav className="hidden md:block space-y-1 text-right" dir="rtl">
+                      <h3 className="font-bold text-lg mb-4 text-foreground">
+                        فهرست مطالب
+                      </h3>
+                      {tocHeadings.length > 0 ? (
+                        tocHeadings.map((heading) => (
+                          <a 
+                            key={heading.id}
+                            href={`#${heading.id}`}
+                            className={cn(
+                              "block text-sm py-2 rounded-lg transition-colors hover:bg-surface-glass/50 text-right",
+                              heading.level === 1 ? "pr-3 font-bold text-base" :
+                              heading.level === 2 ? "pr-3 font-semibold" :
+                              heading.level === 3 ? "pr-6 text-xs" :
+                              "pr-9 text-xs",
+                              activeSection === heading.id && "bg-surface-glass text-primary font-medium"
+                            )}
+                          >
+                            {heading.text}
+                          </a>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground text-right pr-3">
+                          هیچ سرفصلی یافت نشد
+                        </p>
+                      )}
+                    </nav>
+                  </div>
+                )}
 
                 {/* Description Content */}
                 <div className={cn("max-w-none", (isRTL || forceRTL) && "text-right")} dir={(isRTL || forceRTL) ? "rtl" : "ltr"}>
@@ -1141,14 +1146,22 @@ const ProductDetail = () => {
                     id="product-description"
                     className={cn(
                       "relative transition-[max-height] duration-300 ease-out",
-                      !isDescriptionExpanded && "max-h-[260px] md:max-h-[340px] overflow-hidden"
+                      isDescriptionExpanded
+                        ? "max-h-[4000px]"
+                        : "max-h-[260px] md:max-h-[320px] overflow-hidden"
                     )}
                   >
                     <EnhancedMarkdownRenderer content={(isRTL || forceRTL) ? product.descriptionFa : product.description} />
 
                     {/* Bottom Gradient Fade when collapsed */}
                     {!isDescriptionExpanded && (
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 md:h-20 bg-gradient-to-t from-background/95 via-background/75 to-transparent" />
+                      <div
+                        className="pointer-events-none absolute inset-x-0 bottom-0 h-16 md:h-20"
+                        style={{
+                          backgroundImage:
+                            "linear-gradient(to top, hsl(var(--surface-glass)) 85%, transparent 100%)",
+                        }}
+                      />
                     )}
                   </div>
 
