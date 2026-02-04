@@ -32,9 +32,6 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   const { isRTL } = useDirection();
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [api, setApi] = useState<CarouselApi>();
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
-
 
   const openLightbox = useCallback((image: string) => {
     setLightboxImage(image);
@@ -43,33 +40,6 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   const closeLightbox = useCallback(() => {
     setLightboxImage(null);
   }, []);
-
-  // Keep Embla scroll state (canScrollPrev/Next) in sync
-  useEffect(() => {
-    if (!api) return;
-
-    const updateCanScroll = () => {
-      try {
-        setCanScrollPrev(api.canScrollPrev());
-        setCanScrollNext(api.canScrollNext());
-      } catch (error) {
-        console.error("Error updating carousel scroll state:", error);
-      }
-    };
-
-    updateCanScroll();
-    api.on("select", updateCanScroll);
-    api.on("reInit", updateCanScroll);
-
-    return () => {
-      try {
-        api.off("select", updateCanScroll);
-        api.off("reInit", updateCanScroll);
-      } catch {
-        // ignore cleanup errors
-      }
-    };
-  }, [api]);
 
   const getPlatformIcon = (platform: string) => {
     const iconSize = "w-[14px] h-[14px]";
@@ -133,7 +103,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
               opts={{
                 align: "start",
                 direction: isRTL ? "rtl" : "ltr",
-                loop: false,
+                loop: true,
                 slidesToScroll: 1,
                 dragFree: false,
                 containScroll: "trimSnaps",
@@ -256,7 +226,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                     e.stopPropagation();
                     api?.scrollPrev();
                   }}
-                  disabled={!api || !canScrollPrev}
+                  disabled={!api}
                   className={cn(
                     "w-10 h-10 md:w-8 md:h-8 rounded-full",
                     "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
@@ -288,7 +258,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                     e.stopPropagation();
                     api?.scrollNext();
                   }}
-                  disabled={!api || !canScrollNext}
+                  disabled={!api}
                   className={cn(
                     "w-10 h-10 md:w-8 md:h-8 rounded-full",
                     "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
