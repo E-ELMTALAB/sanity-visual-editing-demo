@@ -1031,9 +1031,17 @@ const ProductDetail = () => {
             {/* Delivery Process Section */}
             <DeliveryProcessSection />
 
+            {/* Product Content Accordion */}
+            <ProductContentAccordion
+              description={product.description}
+              descriptionFa={product.descriptionFa}
+              faqs={faqItems}
+            />
+
             {/* Related Products */}
-            {relatedProducts.length > 0 && <section className="space-y-6">
-                <SectionHeader title="محصولات مرتبط" eyebrow="ممکن است دوست داشته باشید" />
+            <section className="space-y-6">
+              <SectionHeader title="محصولات مرتبط" eyebrow="ممکن است دوست داشته باشید" />
+              {relatedProducts.length > 0 ? (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
                   {relatedProducts.map(prod => (
                     <ProductCard 
@@ -1048,15 +1056,26 @@ const ProductDetail = () => {
                     />
                   ))}
                 </div>
-              </section>}
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>در حال حاضر محصول مرتبطی وجود ندارد.</p>
+                </div>
+              )}
+            </section>
 
             {/* Related Blog Posts */}
-            {relatedPosts.length > 0 && <section className="space-y-6">
-                <SectionHeader title="مقالات مرتبط" eyebrow="اطلاعات بیشتر بدانید" />
+            <section className="space-y-6">
+              <SectionHeader title="مقالات مرتبط" eyebrow="اطلاعات بیشتر بدانید" />
+              {relatedPosts.length > 0 ? (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
                   {relatedPosts.map(post => <BlogCard key={post._id} post={post} />)}
                 </div>
-              </section>}
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>در حال حاضر مقاله مرتبطی وجود ندارد.</p>
+                </div>
+              )}
+            </section>
           </div>
 
           {/* Mobile Sticky Bottom Bar - Only Final Price & Buy Button */}
@@ -1100,13 +1119,6 @@ const ProductDetail = () => {
             );
           })()}
         </main>
-
-        {/* Product Content Accordion - Above Footer */}
-        <ProductContentAccordion
-          description={product.description}
-          descriptionFa={product.descriptionFa}
-          faqs={faqItems}
-        />
 
         <Footer links={{
         products: "/products",
