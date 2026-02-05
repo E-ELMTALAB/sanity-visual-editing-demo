@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { useCart } from "@/contexts/cart-context";
 import { createMedusaCart, initiatePayment } from "@/lib/medusa-cart";
+import { PaymentSection } from "@/components/checkout/PaymentSection";
+import { PaymentGateway } from "@/components/checkout/SecurePaymentMethods";
 
 const contactSchema = z.object({
   email: z.string().email({ message: "ایمیل معتبر وارد کنید" }),
@@ -33,6 +35,8 @@ export default function Checkout() {
     fullName: "",
     phone: "",
   });
+  const [selectedGateway, setSelectedGateway] = useState<PaymentGateway>(null);
+  const [showGatewayValidation, setShowGatewayValidation] = useState(false);
 
   const subtotal = cartState.total;
   const discount = 0;
@@ -61,6 +65,7 @@ export default function Checkout() {
     console.log('[CHECKOUT] ========== CHECKOUT PROCESS STARTED ==========');
     console.log('[CHECKOUT] Cart items count:', cartState.items.length);
     console.log('[CHECKOUT] Contact data:', contactData);
+    console.log('[CHECKOUT] Selected gateway:', selectedGateway);
 
     // Validate contact data
     try {
@@ -70,6 +75,13 @@ export default function Checkout() {
         toast.error(error.errors[0].message);
         return;
     }
+    }
+
+    // Validate gateway selection
+    if (!selectedGateway) {
+      setShowGatewayValidation(true);
+      toast.error("لطفاً روش پرداخت را انتخاب کنید");
+      return;
     }
 
     if (cartState.items.length === 0) {
@@ -169,10 +181,10 @@ export default function Checkout() {
                   <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm bg-primary text-primary-foreground">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
-                  <h2 className="text-2xl font-bold">اطلاعات تماس و پرداخت</h2>
+                  <h2 className="text-2xl font-bold">اطلاعات تماس</h2>
                 </div>
 
-                <form onSubmit={handlePaymentSubmit} className="space-y-4">
+                <div className="space-y-4" dir="rtl">
                   <div className="space-y-2">
                     <Label htmlFor="email">ایمیل</Label>
                     <Input
@@ -218,29 +230,20 @@ export default function Checkout() {
                       required
                     />
                   </div>
-
-                  {/* Payment Button */}
-                    <Button
-                    type="submit"
-                      className="w-full mt-6"
-                    size="lg"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        در حال پردازش...
-                      </>
-                    ) : (
-                      "پرداخت"
-                    )}
-                    </Button>
-
-                  <p className="text-xs text-muted-foreground text-center mt-3">
-                    پس از کلیک روی دکمه پرداخت، به درگاه امن زرین‌پال هدایت می‌شوید
-                  </p>
-                </form>
+                </div>
               </SurfaceGlass>
+
+              {/* Payment Section */}
+              <PaymentSection
+                selectedGateway={selectedGateway}
+                onSelectGateway={(gateway) => {
+                  setSelectedGateway(gateway);
+                  setShowGatewayValidation(false);
+                }}
+                onSubmit={handlePaymentSubmit}
+                isLoading={isLoading}
+                showGatewayValidation={showGatewayValidation}
+              />
             </div>
 
             {/* Order Summary */}
