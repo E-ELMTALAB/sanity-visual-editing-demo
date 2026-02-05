@@ -110,21 +110,21 @@ const paymentGateways = [
     name: "زرین‌پال",
     nameEn: "Zarinpal",
     description: "پرداخت امن و معتبر",
-    logo: "/logos/zarinpal-logo.png",
+    logo: "/logos/zarinpal-logo.svg",
   },
   {
     id: "mellat" as const,
     name: "بانک ملت",
     nameEn: "Mellat Bank",
     description: "پرداخت سریع و مطمئن",
-    logo: "/logos/mellat-bank-logo.png",
+    logo: "/logos/mellat-bank-logo.svg",
   },
   {
     id: "saman" as const,
     name: "بانک سامان",
     nameEn: "Saman Bank",
     description: "درگاه رسمی و امن",
-    logo: "/logos/saman-bank-logo.png",
+    logo: "/logos/saman-bank-logo.svg",
   },
 ];
 
