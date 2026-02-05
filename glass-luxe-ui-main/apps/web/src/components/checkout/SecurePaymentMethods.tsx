@@ -60,13 +60,13 @@ function PaymentGatewayCard({ gateway, isSelected, onSelect, showValidation }: P
       dir="rtl"
     >
       {/* Gateway Logo - Right side (RTL) */}
-      <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden relative">
+      <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden relative p-0.5">
         {!logoError ? (
           <img
             src={gateway.logo}
             alt={gateway.nameEn}
-            className="w-full h-full object-contain scale-110"
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            className="w-full h-full object-cover"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={() => setLogoError(true)}
             loading="lazy"
           />
