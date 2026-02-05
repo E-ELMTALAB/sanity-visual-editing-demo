@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { CreditCard, ShieldCheck } from "lucide-react";
+import { Check, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type PaymentGateway = "zarinpal" | "idpay" | null;
+export type PaymentGateway = "zarinpal" | "saman" | "mellat" | null;
 
 interface SecurePaymentMethodsProps {
   selectedGateway: PaymentGateway;
@@ -10,20 +10,102 @@ interface SecurePaymentMethodsProps {
   showValidation?: boolean;
 }
 
+interface PaymentGatewayCardProps {
+  gateway: {
+    id: PaymentGateway;
+    name: string;
+    nameEn: string;
+    description: string;
+    logo: string;
+  };
+  isSelected: boolean;
+  onSelect: () => void;
+  showValidation: boolean;
+}
+
+function PaymentGatewayCard({ gateway, isSelected, onSelect, showValidation }: PaymentGatewayCardProps) {
+  const [logoError, setLogoError] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        "w-full p-4 rounded-xl border-2 transition-all duration-200",
+        "flex items-center gap-4 text-right relative overflow-hidden",
+        "glass border-white/20 hover:border-primary/40",
+        "hover:bg-white/5 active:scale-[0.98]",
+        isSelected && [
+          "border-primary/80 bg-primary/10",
+          "shadow-lg shadow-primary/20",
+          "ring-2 ring-primary/30 ring-offset-2 ring-offset-transparent",
+        ],
+        showValidation && !isSelected && "border-destructive/50"
+      )}
+      aria-pressed={isSelected}
+    >
+      {/* Gateway Logo */}
+      <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden relative">
+        {!logoError ? (
+          <img
+            src={gateway.logo}
+            alt={gateway.nameEn}
+            className="w-full h-full object-contain p-2"
+            onError={() => setLogoError(true)}
+          />
+        ) : (
+          <CreditCard className="w-8 h-8 text-muted-foreground" />
+        )}
+      </div>
+
+      {/* Gateway Info */}
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold text-base text-foreground mb-1">
+          {gateway.name}
+        </div>
+        <div className="text-xs text-muted-foreground">
+          {gateway.description}
+        </div>
+      </div>
+
+      {/* Checkmark Indicator */}
+      <div
+        className={cn(
+          "flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+          isSelected
+            ? "border-primary bg-primary"
+            : "border-white/30 bg-transparent"
+        )}
+      >
+        {isSelected && (
+          <Check className="w-4 h-4 text-white animate-in fade-in zoom-in-50 duration-200" />
+        )}
+      </div>
+    </button>
+  );
+}
+
 const paymentGateways = [
   {
     id: "zarinpal" as const,
     name: "زرین‌پال",
     nameEn: "Zarinpal",
-    description: "پرداخت امن و سریع",
-    icon: ShieldCheck,
+    description: "پرداخت امن و معتبر",
+    logo: "https://www.zarinpal.com/static/images/logo.svg",
   },
   {
-    id: "idpay" as const,
-    name: "آی‌دی پی",
-    nameEn: "IDPay",
-    description: "درگاه پرداخت معتبر",
-    icon: CreditCard,
+    id: "saman" as const,
+    name: "بانک سامان",
+    nameEn: "Saman Bank",
+    description: "درگاه رسمی و امن",
+    logo: "https://www.sb24.com/Content/images/logo.png",
+  },
+  {
+    id: "mellat" as const,
+    name: "بانک ملت",
+    nameEn: "Mellat Bank",
+    description: "پرداخت سریع و مطمئن",
+    logo: "https://www.bankmellat.ir/Content/images/logo.png",
   },
 ];
 
@@ -34,48 +116,15 @@ export function SecurePaymentMethods({
 }: SecurePaymentMethodsProps) {
   return (
     <div className="space-y-3" dir="rtl">
-      {paymentGateways.map((gateway) => {
-        const Icon = gateway.icon;
-        const isSelected = selectedGateway === gateway.id;
-
-        return (
-          <button
-            key={gateway.id}
-            type="button"
-            onClick={() => onSelectGateway(gateway.id)}
-            className={cn(
-              "w-full p-4 rounded-lg border transition-all duration-200 text-right",
-              "flex items-center gap-4",
-              "glass border-white/20 hover:border-primary/40",
-              isSelected && "border-primary/60 bg-primary/5",
-              showValidation && !selectedGateway && "border-destructive/50"
-            )}
-            aria-pressed={isSelected}
-          >
-            <div
-              className={cn(
-                "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
-                isSelected
-                  ? "border-primary bg-primary"
-                  : "border-white/40 bg-transparent"
-              )}
-            >
-              {isSelected && (
-                <div className="w-2.5 h-2.5 rounded-full bg-white" />
-              )}
-            </div>
-            <Icon className="w-6 h-6 text-primary flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-sm text-foreground">
-                {gateway.name}
-              </div>
-              <div className="text-xs text-muted-foreground mt-0.5">
-                {gateway.description}
-              </div>
-            </div>
-          </button>
-        );
-      })}
+      {paymentGateways.map((gateway) => (
+        <PaymentGatewayCard
+          key={gateway.id}
+          gateway={gateway}
+          isSelected={selectedGateway === gateway.id}
+          onSelect={() => onSelectGateway(gateway.id)}
+          showValidation={showValidation}
+        />
+      ))}
 
       {showValidation && !selectedGateway && (
         <p className="text-xs text-destructive text-center mt-2">
