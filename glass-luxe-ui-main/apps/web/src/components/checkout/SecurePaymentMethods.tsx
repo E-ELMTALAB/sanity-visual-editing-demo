@@ -65,7 +65,7 @@ function PaymentGatewayCard({ gateway, isSelected, onSelect, showValidation }: P
           <img
             src={gateway.logo}
             alt={gateway.nameEn}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain scale-110"
             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             onError={() => setLogoError(true)}
             loading="lazy"
