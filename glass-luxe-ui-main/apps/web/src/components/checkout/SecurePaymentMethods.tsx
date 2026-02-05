@@ -26,13 +26,27 @@ interface PaymentGatewayCardProps {
 function PaymentGatewayCard({ gateway, isSelected, onSelect, showValidation }: PaymentGatewayCardProps) {
   const [logoError, setLogoError] = useState(false);
 
+  // Get initials for fallback
+  const getInitials = (id: PaymentGateway) => {
+    switch (id) {
+      case "zarinpal":
+        return "ZP";
+      case "saman":
+        return "SB";
+      case "mellat":
+        return "MB";
+      default:
+        return "";
+    }
+  };
+
   return (
     <button
       type="button"
       onClick={onSelect}
       className={cn(
         "w-full p-4 rounded-xl border-2 transition-all duration-200",
-        "flex items-center gap-4 text-right relative overflow-hidden",
+        "flex flex-col items-center gap-3 text-center relative overflow-hidden",
         "glass border-white/20 hover:border-primary/40",
         "hover:bg-white/5 active:scale-[0.98]",
         isSelected && [
@@ -43,8 +57,9 @@ function PaymentGatewayCard({ gateway, isSelected, onSelect, showValidation }: P
         showValidation && !isSelected && "border-destructive/50"
       )}
       aria-pressed={isSelected}
+      dir="rtl"
     >
-      {/* Gateway Logo */}
+      {/* Gateway Logo - Right side (RTL) */}
       <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden relative">
         {!logoError ? (
           <img
@@ -54,12 +69,14 @@ function PaymentGatewayCard({ gateway, isSelected, onSelect, showValidation }: P
             onError={() => setLogoError(true)}
           />
         ) : (
-          <CreditCard className="w-8 h-8 text-muted-foreground" />
+          <span className="text-sm font-bold text-foreground">
+            {getInitials(gateway.id)}
+          </span>
         )}
       </div>
 
       {/* Gateway Info */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 w-full">
         <div className="font-semibold text-base text-foreground mb-1">
           {gateway.name}
         </div>
@@ -71,7 +88,7 @@ function PaymentGatewayCard({ gateway, isSelected, onSelect, showValidation }: P
       {/* Checkmark Indicator */}
       <div
         className={cn(
-          "flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+          "absolute top-2 left-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
           isSelected
             ? "border-primary bg-primary"
             : "border-white/30 bg-transparent"
@@ -115,19 +132,22 @@ export function SecurePaymentMethods({
   showValidation = false,
 }: SecurePaymentMethodsProps) {
   return (
-    <div className="space-y-3" dir="rtl">
-      {paymentGateways.map((gateway) => (
-        <PaymentGatewayCard
-          key={gateway.id}
-          gateway={gateway}
-          isSelected={selectedGateway === gateway.id}
-          onSelect={() => onSelectGateway(gateway.id)}
-          showValidation={showValidation}
-        />
-      ))}
+    <div dir="rtl">
+      {/* Grid Layout: 1 column on mobile, 3 columns on desktop/tablet */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {paymentGateways.map((gateway) => (
+          <PaymentGatewayCard
+            key={gateway.id}
+            gateway={gateway}
+            isSelected={selectedGateway === gateway.id}
+            onSelect={() => onSelectGateway(gateway.id)}
+            showValidation={showValidation}
+          />
+        ))}
+      </div>
 
       {showValidation && !selectedGateway && (
-        <p className="text-xs text-destructive text-center mt-2">
+        <p className="text-xs text-destructive text-center mt-3">
           لطفاً روش پرداخت را انتخاب کنید
         </p>
       )}

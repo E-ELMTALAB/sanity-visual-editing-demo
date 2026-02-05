@@ -173,81 +173,8 @@ export default function Checkout() {
       <main className="flex-1 pt-32 pb-10">
         <div className="max-w-[1100px] mx-auto px-4 md:px-6 lg:px-8">
           <div className="flex flex-col gap-6 lg:flex-row-reverse lg:gap-8 lg:items-start">
-            {/* Contact & Payment Form */}
-            <div className="flex-1 space-y-6">
-              {/* Contact Information */}
-              <SurfaceGlass className="p-6 md:p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm bg-primary text-primary-foreground">
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                  <h2 className="text-2xl font-bold">اطلاعات تماس</h2>
-                </div>
-
-                <div className="space-y-4" dir="rtl">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">ایمیل</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="example@email.com"
-                      value={contactData.email}
-                      onChange={(e) =>
-                        setContactData({ ...contactData, email: e.target.value })
-                      }
-                      className="glass border-white/20"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">نام و نام خانوادگی</Label>
-                    <Input
-                      id="fullName"
-                      type="text"
-                      placeholder="نام کامل خود را وارد کنید"
-                      value={contactData.fullName}
-                      onChange={(e) =>
-                        setContactData({ ...contactData, fullName: e.target.value })
-                      }
-                      className="glass border-white/20"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">شماره موبایل</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="09123456789"
-                      value={contactData.phone}
-                      onChange={(e) =>
-                        setContactData({ ...contactData, phone: e.target.value })
-                      }
-                      className="glass border-white/20"
-                      dir="ltr"
-                      required
-                    />
-                  </div>
-                </div>
-              </SurfaceGlass>
-
-              {/* Payment Section */}
-              <PaymentSection
-                selectedGateway={selectedGateway}
-                onSelectGateway={(gateway) => {
-                  setSelectedGateway(gateway);
-                  setShowGatewayValidation(false);
-                }}
-                onSubmit={handlePaymentSubmit}
-                isLoading={isLoading}
-                showGatewayValidation={showGatewayValidation}
-              />
-            </div>
-
-            {/* Order Summary */}
-            <div className="lg:w-[360px] lg:shrink-0 lg:sticky lg:top-6 h-fit space-y-4">
+            {/* Order Summary - First on mobile, right side on desktop */}
+            <div className="lg:w-[360px] lg:shrink-0 lg:sticky lg:top-6 h-fit space-y-4 order-1 lg:order-2">
               <SurfaceGlass className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold">خلاصه سفارش</h3>
@@ -326,6 +253,79 @@ export default function Checkout() {
                   </div>
                 </div>
               </SurfaceGlass>
+            </div>
+
+            {/* Contact & Payment Form - Second on mobile, left side on desktop */}
+            <div className="flex-1 space-y-6 order-2 lg:order-1">
+              {/* Contact Information */}
+              <SurfaceGlass className="p-6 md:p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm bg-primary text-primary-foreground">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-2xl font-bold">اطلاعات تماس</h2>
+                </div>
+
+                <div className="space-y-4" dir="rtl">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">ایمیل</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="example@email.com"
+                      value={contactData.email}
+                      onChange={(e) =>
+                        setContactData({ ...contactData, email: e.target.value })
+                      }
+                      className="glass border-white/20"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">نام و نام خانوادگی</Label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      placeholder="نام کامل خود را وارد کنید"
+                      value={contactData.fullName}
+                      onChange={(e) =>
+                        setContactData({ ...contactData, fullName: e.target.value })
+                      }
+                      className="glass border-white/20"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">شماره موبایل</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="09123456789"
+                      value={contactData.phone}
+                      onChange={(e) =>
+                        setContactData({ ...contactData, phone: e.target.value })
+                      }
+                      className="glass border-white/20"
+                      dir="ltr"
+                      required
+                    />
+                  </div>
+                </div>
+              </SurfaceGlass>
+
+              {/* Payment Section */}
+              <PaymentSection
+                selectedGateway={selectedGateway}
+                onSelectGateway={(gateway) => {
+                  setSelectedGateway(gateway);
+                  setShowGatewayValidation(false);
+                }}
+                onSubmit={handlePaymentSubmit}
+                isLoading={isLoading}
+                showGatewayValidation={showGatewayValidation}
+              />
             </div>
           </div>
         </div>
