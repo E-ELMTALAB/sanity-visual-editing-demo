@@ -103,27 +103,34 @@ function PaymentGatewayCard({ gateway, isSelected, onSelect, showValidation }: P
   );
 }
 
+// Placeholder logo images - Replace with actual gateway logos when available
+// SVG data URIs for placeholder logos matching original dimensions
+const placeholderLogo = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23e5e7eb' rx='8'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' font-family='Arial' font-size='12' fill='%239ca3af'%3ELOGO%3C/text%3E%3C/svg%3E";
+
 const paymentGateways = [
   {
     id: "zarinpal" as const,
     name: "زرین‌پال",
     nameEn: "Zarinpal",
     description: "پرداخت امن و معتبر",
-    logo: "/logos/zarinpal-logo.png",
+    // TODO: Replace placeholder with actual Zarinpal logo
+    logo: placeholderLogo,
   },
   {
     id: "saman" as const,
     name: "بانک سامان",
     nameEn: "Saman Bank",
     description: "درگاه رسمی و امن",
-    logo: "/logos/saman-bank-logo.png",
+    // TODO: Replace placeholder with actual Saman Bank logo
+    logo: placeholderLogo,
   },
   {
     id: "mellat" as const,
     name: "بانک ملت",
     nameEn: "Mellat Bank",
     description: "پرداخت سریع و مطمئن",
-    logo: "/logos/mellat-bank-logo.png",
+    // TODO: Replace placeholder with actual Mellat Bank logo
+    logo: placeholderLogo,
   },
 ];
 
@@ -152,6 +159,15 @@ export function SecurePaymentMethods({
           لطفاً روش پرداخت را انتخاب کنید
         </p>
       )}
+
+      {/* Informational text block below payment gateway cards */}
+      <div className="mt-6 pt-4 border-t border-white/10">
+        <p className="text-xs text-muted-foreground text-center leading-relaxed">
+          All payments are processed through secure and official banking gateways.
+          <br />
+          Your card information is not stored and is sent directly to the bank gateway.
+        </p>
+      </div>
     </div>
   );
 }
