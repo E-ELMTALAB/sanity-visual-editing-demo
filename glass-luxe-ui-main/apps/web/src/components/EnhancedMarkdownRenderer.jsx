@@ -241,7 +241,7 @@ const EnhancedMarkdownRenderer = ({ content }) => {
               <HeadingTag
                 key={index}
                 id={block.id}
-                className={`${block.className} scroll-mt-20`}
+                className={`${block.className} scroll-mt-[100px]`}
               >
                 {renderInlineMarkdown(block.text)}
               </HeadingTag>
