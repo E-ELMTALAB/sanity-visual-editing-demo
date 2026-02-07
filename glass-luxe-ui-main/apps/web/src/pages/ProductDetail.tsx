@@ -11,9 +11,8 @@ import { BlogCard, type BlogPost as BlogCardPost } from "@/components/Blog/BlogC
 import { Price } from "@/components/ui/price";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FaqAccordion } from "@/components/Products/FaqAccordion";
 import { DeliveryProcessSection } from "@/components/Products/DeliveryProcessSection";
-import { ProductContentAccordion } from "@/components/Products/ProductContentAccordion";
+import { ProductDescription } from "@/components/Products/ProductDescription";
 import { CartDrawer } from "@/components/FloatingDock/CartDrawer";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
@@ -1043,11 +1042,10 @@ const ProductDetail = () => {
             {/* Delivery Process Section */}
             <DeliveryProcessSection />
 
-            {/* Product Content Accordion */}
-            <ProductContentAccordion
+            {/* Product Description */}
+            <ProductDescription
               description={product.description}
               descriptionFa={product.descriptionFa}
-              faqs={faqItems}
             />
 
             {/* Related Products */}
