@@ -11,7 +11,7 @@ import { FiltersSidebar } from "@/components/Products/FiltersSidebar";
 import { FaqAccordion } from "@/components/Products/FaqAccordion";
 import { CustomerReviews, type CustomerReview } from "@/components/Products/CustomerReviews";
 import { ProductsContentAccordion } from "@/components/Products/ProductsContentAccordion";
-import { FloatingDock } from "@/components/FloatingDock/FloatingDock";
+// FloatingDock moved to global App.tsx - appears on all pages
 import { CartDrawer } from "@/components/FloatingDock/CartDrawer";
 import { ChatbotPanel } from "@/components/FloatingDock/ChatbotPanel";
 import { SupportPanel } from "@/components/FloatingDock/SupportPanel";
@@ -574,12 +574,7 @@ export default function Products() {
           ]}
         />
 
-        <FloatingDock
-          onOpenChat={() => setChatOpen(true)}
-          onOpenSupport={() => setSupportOpen(true)}
-          onOpenCart={() => setCartOpen(true)}
-          cartItemCount={cartState.itemCount}
-        />
+        {/* FloatingDock moved to global App.tsx - appears on all pages */}
 
         <CartDrawer
           open={cartOpen}

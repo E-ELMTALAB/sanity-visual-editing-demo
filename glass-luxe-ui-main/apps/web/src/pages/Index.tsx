@@ -31,7 +31,7 @@ import { getImageUrl } from "@/lib/sanity.image";
 
 // Lazy load heavy components - don't load until needed
 const Footer = lazy(() => import("@/components/Footer/Footer").then((m) => ({ default: m.Footer })));
-const FloatingDock = lazy(() => import("@/components/FloatingDock/FloatingDock").then((m) => ({ default: m.FloatingDock })));
+// FloatingDock moved to global App.tsx - appears on all pages
 const CartDrawer = lazy(() => import("@/components/FloatingDock/CartDrawer").then((m) => ({ default: m.CartDrawer })));
 const ChatbotPanel = lazy(() => import("@/components/FloatingDock/ChatbotPanel").then((m) => ({ default: m.ChatbotPanel })));
 const SupportPanel = lazy(() => import("@/components/FloatingDock/SupportPanel").then((m) => ({ default: m.SupportPanel })));
@@ -938,14 +938,7 @@ const Index = () => {
       )}
 
       {/* Floating UI - Lazy loaded */}
-      <Suspense fallback={null}>
-        <FloatingDock
-          onOpenChat={() => setChatOpen(true)}
-          onOpenSupport={() => setSupportOpen(true)}
-          onOpenCart={() => setCartOpen(true)}
-          cartItemCount={cartState.itemCount}
-        />
-      </Suspense>
+      {/* FloatingDock moved to global App.tsx - appears on all pages */}
 
       {/* <Suspense fallback={null}>
       <ChatbotPanel open={chatOpen} onClose={() => setChatOpen(false)} />

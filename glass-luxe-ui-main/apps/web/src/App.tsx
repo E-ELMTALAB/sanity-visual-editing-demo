@@ -6,12 +6,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { DirectionProvider } from "@/contexts/DirectionContext";
-import { CartProvider } from "@/contexts/cart-context";
+import { CartProvider, useCart } from "@/contexts/cart-context";
 import { PromotionProvider } from "@/contexts/promotion-context";
 import { ScrollToTop } from "./components/ScrollToTop";
 
 // Visual Editing - only loaded when in preview mode
 const AppVisualEditing = lazy(() => import("./components/visual-editing/VisualEditing"));
+
+// Global Customer Support Widget - lazy loaded
+const FloatingDock = lazy(() => import("./components/FloatingDock/FloatingDock").then((m) => ({ default: m.FloatingDock })));
 
 const Index = lazy(() => import("./pages/Index"));
 const Products = lazy(() => import("./pages/Products"));
@@ -65,6 +68,23 @@ const RouteFallback = () => (
     در حال بارگذاری...
   </div>
 );
+
+// Global Customer Support Widget - appears on all pages
+// Must be inside CartProvider to access cart state
+const GlobalCustomerSupport = () => {
+  const { state: cartState } = useCart();
+  
+  return (
+    <Suspense fallback={null}>
+      <FloatingDock
+        onOpenChat={() => {}}
+        onOpenSupport={() => {}}
+        onOpenCart={() => {}}
+        cartItemCount={cartState.itemCount}
+      />
+    </Suspense>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -124,6 +144,8 @@ const App = () => (
               </Routes>
             </Suspense>
           </BrowserRouter>
+          {/* Global Customer Support Widget - appears on all pages */}
+          <GlobalCustomerSupport />
           {/* Visual Editing - only loads in preview mode */}
           <AppVisualEditing />
         </TooltipProvider>
