@@ -236,12 +236,12 @@ export function ProductDetailHeroSection({
                       className="flex items-center gap-3 text-sm group"
                       style={{ direction: "rtl" }}
                     >
-                      <span className="text-foreground/90 leading-relaxed flex-1 transition-colors group-hover:text-foreground">
-                        {feature}
-                      </span>
                       <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center transition-all group-hover:bg-green-500/15 group-hover:border-green-500/30">
                         <Check className="w-3.5 h-3.5 text-green-400" strokeWidth={2.5} />
                       </div>
+                      <span className="text-foreground/90 leading-relaxed flex-1 transition-colors group-hover:text-foreground">
+                        {feature}
+                      </span>
                     </div>
                   ))}
                 </div>
