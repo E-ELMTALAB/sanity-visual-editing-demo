@@ -31,12 +31,12 @@ interface ProductDescriptionProps {
   className?: string;
 }
 
-// Generate heading ID from text (must match EnhancedMarkdownRenderer)
+// Generate heading ID from text (must match EnhancedMarkdownRenderer exactly)
 const generateHeadingId = (text: string, existingIds: Set<string> = new Set()): string => {
-  let cleanText = text
-    .replace(/\*\*|__|\*|_|`|\[|\]|\(|\)/g, '')
-    .trim();
+  // Remove markdown formatting first (same as EnhancedMarkdownRenderer)
+  let cleanText = text.replace(/\*\*|__|\*|_|`/g, '').trim();
   
+  // Slugify (same logic as EnhancedMarkdownRenderer)
   let baseId = cleanText
     .toLowerCase()
     .replace(/[^\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFFa-zA-Z0-9\s-]/g, '')
@@ -44,7 +44,7 @@ const generateHeadingId = (text: string, existingIds: Set<string> = new Set()): 
     .replace(/-+/g, '-')
     .trim();
   
-  // Ensure uniqueness
+  // Ensure uniqueness (same logic as EnhancedMarkdownRenderer)
   let uniqueId = baseId;
   let counter = 1;
   while (existingIds.has(uniqueId)) {
@@ -131,9 +131,35 @@ export function ProductDescription({
   // Smooth scroll to heading
   const scrollToHeading = (id: string) => {
     setTimeout(() => {
+      // Try to find the heading element
       const element = document.getElementById(id);
-      if (element) {
-        const headerOffset = 100;
+      
+      if (!element) {
+        console.warn(`Heading with ID "${id}" not found`);
+        return;
+      }
+      
+      // Check if description is in a scrollable container
+      const descriptionContainer = descriptionRef.current;
+      const isScrollableContainer = descriptionContainer && 
+        (descriptionContainer.scrollHeight > descriptionContainer.clientHeight ||
+         getComputedStyle(descriptionContainer).overflowY === 'auto' ||
+         getComputedStyle(descriptionContainer).overflowY === 'scroll');
+      
+      const headerOffset = 100; // Match scroll-mt-[100px]
+      
+      if (isScrollableContainer && descriptionContainer) {
+        // Scroll within the description container
+        const containerRect = descriptionContainer.getBoundingClientRect();
+        const elementRect = element.getBoundingClientRect();
+        const relativeTop = elementRect.top - containerRect.top + descriptionContainer.scrollTop;
+        
+        descriptionContainer.scrollTo({
+          top: Math.max(0, relativeTop - headerOffset),
+          behavior: 'smooth'
+        });
+      } else {
+        // Scroll the whole page
         const elementPosition = element.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
         
@@ -141,13 +167,39 @@ export function ProductDescription({
           top: Math.max(0, offsetPosition),
           behavior: 'smooth'
         });
-        
-        if (window.innerWidth < 1024) {
-          setIsMobileTocOpen(false);
-        }
       }
-    }, 50);
+      
+      // Close mobile TOC after clicking
+      if (window.innerWidth < 1024) {
+        setIsMobileTocOpen(false);
+      }
+    }, 100); // Slight delay to ensure DOM is ready
   };
+  
+  // Verify TOC IDs match rendered headings after content loads
+  useEffect(() => {
+    if (descriptionRef.current && descriptionContent && hasToc) {
+      const timer = setTimeout(() => {
+        const renderedHeadings = descriptionRef.current?.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        const renderedIds = renderedHeadings ? Array.from(renderedHeadings).map(h => h.id).filter(Boolean) : [];
+        const tocIds = allHeadings.map(h => h.id);
+        
+        // Check for mismatches
+        const missingIds = tocIds.filter(id => !renderedIds.includes(id));
+        if (missingIds.length > 0) {
+          console.warn('TOC IDs not found in rendered headings:', missingIds);
+        }
+        
+        // Log for debugging
+        if (renderedIds.length > 0) {
+          console.log('Rendered heading IDs:', renderedIds);
+          console.log('TOC heading IDs:', tocIds);
+        }
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [descriptionContent, hasToc, allHeadings]);
   
   const fallbackDescription = "توضیحات کامل محصول در حال حاضر در دسترس نیست. برای اطلاعات بیشتر با پشتیبانی تماس بگیرید.";
   

@@ -95,7 +95,7 @@ const EnhancedMarkdownRenderer = ({ content }) => {
   let inTable = false;
   let tableRows = [];
   let tableHeaders = [];
-  let headingCounter = 0;
+  const existingIds = new Set<string>();
 
   const flushList = () => {
     if (currentList.length > 0) {
@@ -169,14 +169,31 @@ const EnhancedMarkdownRenderer = ({ content }) => {
     if (headingMatch) {
       flushList();
       const level = headingMatch[1].length;
-      const text = headingMatch[2].trim();
-      const id = `heading-${headingCounter++}`;
+      let text = headingMatch[2].trim();
+      // Remove markdown formatting from text for ID generation
+      const cleanText = text.replace(/\*\*|__|\*|_|`/g, '').trim();
+      // Generate ID from text (slugify)
+      let baseId = cleanText
+        .toLowerCase()
+        .replace(/[^\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFFa-zA-Z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+      
+      // Ensure uniqueness
+      let uniqueId = baseId;
+      let counter = 1;
+      while (existingIds.has(uniqueId)) {
+        uniqueId = `${baseId}-${counter}`;
+        counter++;
+      }
+      existingIds.add(uniqueId);
       
       blocks.push({ 
         type: 'heading', 
         level, 
         text, 
-        id,
+        id: uniqueId,
         className: level === 1 ? 'text-3xl font-bold text-white mb-6 mt-8' :
                    level === 2 ? 'text-2xl font-bold text-white mb-4 mt-6' :
                    level === 3 ? 'text-xl font-semibold text-white mb-3 mt-5' :
