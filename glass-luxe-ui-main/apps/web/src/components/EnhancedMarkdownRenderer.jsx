@@ -95,7 +95,7 @@ const EnhancedMarkdownRenderer = ({ content }) => {
   let inTable = false;
   let tableRows = [];
   let tableHeaders = [];
-  const existingIds = new Set<string>();
+  const existingIds = new Set();
 
   const flushList = () => {
     if (currentList.length > 0) {
