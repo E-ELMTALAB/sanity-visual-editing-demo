@@ -144,27 +144,45 @@ export function FloatingDock({
           isRTL ? "left-4 sm:left-6" : "right-4 sm:right-6"
         )}
       >
-        {/* Nudge Label - Left side of button */}
+        {/* Nudge Label - Positioned above button, more visible */}
         <AnimatePresence>
           {showNudge && !isChatOpen && (
             <motion.div
-              initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
               transition={springTransition}
               className={cn(
-                "absolute top-1/2 -translate-y-1/2",
-                "px-4 py-2 rounded-full",
-                "bg-background/95 backdrop-blur-[16px]",
-                "border border-primary/20",
-                "shadow-lg shadow-black/10",
-                "font-vazirmatn text-[13px] font-medium leading-[1.4] text-foreground",
+                "absolute bottom-full mb-3",
+                // Center horizontally relative to button
+                "left-1/2 -translate-x-1/2",
+                // Ensure it doesn't get cut off on mobile (with padding from screen edges)
+                "max-w-[calc(100vw-3rem)] sm:max-w-none",
+                "px-4 py-2.5 rounded-xl",
+                // High-contrast, brand-tinted background (light with primary tint)
+                "bg-gradient-to-br from-primary/25 via-primary/20 to-primary/15",
+                "backdrop-blur-[20px]",
+                "border border-primary/40",
+                "shadow-xl shadow-primary/25",
+                "font-vazirmatn text-sm font-semibold leading-[1.4]",
+                // High contrast text color - use primary color for better visibility
+                "text-primary",
                 "whitespace-nowrap",
-                // Adjust for larger button on mobile
-                isRTL ? "left-[60px] sm:left-[76px]" : "right-[60px] sm:right-[76px]"
+                // Ensure visibility and prevent overlap
+                "z-[10000]"
               )}
             >
               {nudgeText}
+              {/* Small arrow pointing down to widget */}
+              <div
+                className={cn(
+                  "absolute top-full left-1/2 -translate-x-1/2 -mt-[1px]",
+                  "w-0 h-0",
+                  "border-l-[6px] border-r-[6px] border-t-[6px]",
+                  "border-l-transparent border-r-transparent",
+                  "border-t-primary/25"
+                )}
+              />
             </motion.div>
           )}
         </AnimatePresence>
