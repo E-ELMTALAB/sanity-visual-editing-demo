@@ -842,9 +842,9 @@ const ProductDetail = () => {
                             )}
                             
                             {/* Price Display */}
-                            <div className="flex flex-col gap-1.5">
+                            <div className="flex flex-col gap-1.5" dir="rtl">
                               {/* Current Price - Large and Dominant */}
-                              <div className="flex items-baseline gap-2 flex-row-reverse">
+                              <div className="flex items-baseline gap-2" style={{ direction: "rtl" }}>
                                 <span className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary">
                                   {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(displayPrice)}
                                 </span>
@@ -855,7 +855,7 @@ const ProductDetail = () => {
                               
                               {/* Old Price - Smaller with Strike-through */}
                               {hasDiscount && displayOldPrice && (
-                                <div className="flex items-baseline gap-1.5 flex-row-reverse">
+                                <div className="flex items-baseline gap-1.5" style={{ direction: "rtl" }}>
                                   <span className="text-lg sm:text-xl text-muted-foreground line-through opacity-70">
                                     {new Intl.NumberFormat(isRTL ? "fa-IR" : "en-US").format(displayOldPrice)}
                                   </span>
@@ -891,11 +891,11 @@ const ProductDetail = () => {
                           {(product.featuresFa || product.features).map((feature, idx) => (
                             <div 
                               key={idx} 
-                              className="flex items-start gap-3 text-sm sm:text-base justify-end flex-row-reverse"
+                              className="flex items-start gap-3 text-sm sm:text-base justify-end"
                               style={{ direction: "rtl", textAlign: "right" }}
                             >
-                              <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
                               <span className="text-foreground/90 leading-relaxed flex-1">{feature}</span>
+                              <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
                             </div>
                           ))}
                         </div>
@@ -1132,7 +1132,7 @@ const ProductDetail = () => {
 
         <Footer links={{
         products: "/products",
-        magazine: "/magazine",
+        magazine: "/blog",
         courses: "/courses",
         pricing: "/pricing",
         support: "/support"

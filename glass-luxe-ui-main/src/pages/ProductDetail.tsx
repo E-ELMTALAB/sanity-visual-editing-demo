@@ -827,11 +827,11 @@ const ProductDetail = () => {
                   </div>
 
                   {/* Features */}
-                  <div style={{ textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}>
+                  <div style={{ textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }} dir="rtl">
                     {(product.featuresFa || product.features).map((feature, idx) => (
                       <div 
                         key={idx} 
-                        className="flex items-start gap-2 text-sm mb-2 justify-end flex-row-reverse"
+                        className="flex items-start gap-2 text-sm mb-2 justify-end"
                         style={{ direction: "rtl", textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}
                       >
                         <span className="text-foreground/80" style={{ marginRight: 0 }}>{feature}</span>
@@ -1142,7 +1142,7 @@ const ProductDetail = () => {
 
         <Footer links={{
         products: "/products",
-        magazine: "/magazine",
+        magazine: "/blog",
         courses: "/courses",
         pricing: "/pricing",
         support: "/support"

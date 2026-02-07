@@ -229,11 +229,12 @@ export function ProductDetailHeroSection({
 
               {/* Features List */}
               {features.length > 0 && (
-                <div className="mb-6 space-y-2">
+                <div className="mb-6 space-y-2" dir="rtl">
                   {features.map((feature, idx) => (
                     <div
                       key={idx}
-                      className="flex items-start gap-2 text-sm justify-end flex-row-reverse"
+                      className="flex items-start gap-2 text-sm justify-end"
+                      style={{ direction: "rtl" }}
                     >
                       <span className="text-foreground/80">{feature}</span>
                       <Check className="w-4 h-4 text-[#22C55E] shrink-0 mt-0.5" />

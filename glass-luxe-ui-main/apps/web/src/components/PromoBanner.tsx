@@ -169,9 +169,6 @@ export function PromoBanner({ className }: PromoBannerProps) {
               {/* Countdown Timer - Premium Styled */}
               {endsAt && (
                 <div className="w-full lg:w-auto flex flex-col items-center lg:items-end gap-2">
-                  <span className="text-white/80 text-xs sm:text-sm font-medium mb-1">
-                    زمان باقی‌مانده:
-                  </span>
                   <div className="relative">
                     <CountdownTimer
                       endsAt={endsAt}

@@ -520,7 +520,7 @@ export default function RefundPolicy() {
         <Footer
           links={{
             products: "/products",
-            magazine: "/magazine",
+            magazine: "/blog",
             courses: "/courses",
             pricing: "/pricing",
             support: "/support",

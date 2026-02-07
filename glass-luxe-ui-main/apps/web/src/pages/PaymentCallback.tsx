@@ -224,7 +224,7 @@ export default function PaymentCallback() {
               </div>
             </div>
           </main>
-          <Footer links={{ products: "/products", magazine: "/magazine", courses: "/courses", pricing: "/pricing", support: "/support" }} socials={[]} />
+          <Footer links={{ products: "/products", magazine: "/blog", courses: "/courses", pricing: "/pricing", support: "/support" }} socials={[]} />
         </div>
       </>
     );
