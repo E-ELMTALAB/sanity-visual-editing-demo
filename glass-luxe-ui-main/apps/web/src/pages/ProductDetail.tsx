@@ -883,23 +883,25 @@ const ProductDetail = () => {
                     );
                   })()}
 
-                  {/* Features Box - Glass Container */}
+                  {/* Features List - Modern Minimal Design */}
                   {(product.featuresFa || product.features).length > 0 && (
-                    <div className="mt-4 mb-6" style={{ textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}>
-                      <SurfaceGlass className="rounded-xl p-4 sm:p-5 border border-white/20">
-                        <div className="space-y-3" dir="rtl">
-                          {(product.featuresFa || product.features).map((feature, idx) => (
-                            <div 
-                              key={idx} 
-                              className="flex items-start gap-3 text-sm sm:text-base justify-end"
-                              style={{ direction: "rtl", textAlign: "right" }}
-                            >
-                              <span className="text-foreground/90 leading-relaxed flex-1">{feature}</span>
-                              <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+                    <div className="mt-6 mb-6" dir="rtl" style={{ textAlign: "right" }}>
+                      <div className="space-y-3.5">
+                        {(product.featuresFa || product.features).map((feature, idx) => (
+                          <div 
+                            key={idx} 
+                            className="flex items-center gap-3 text-sm sm:text-base group"
+                            style={{ direction: "rtl" }}
+                          >
+                            <span className="text-foreground/90 leading-relaxed flex-1 transition-colors group-hover:text-foreground">
+                              {feature}
+                            </span>
+                            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center transition-all group-hover:bg-green-500/15 group-hover:border-green-500/30">
+                              <Check className="w-3.5 h-3.5 text-green-400" strokeWidth={2.5} />
                             </div>
-                          ))}
-                        </div>
-                      </SurfaceGlass>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 
