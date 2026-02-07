@@ -76,7 +76,7 @@ export function Footer({ links, socials }: FooterProps) {
               پلتفرم پیشرو در ارائه خدمات دیجیتال، محصولات هوش مصنوعی و دوره‌های آموزشی تخصصی
             </p>
 
-            {/* Trust Badge Placeholder */}
+            {/* E-Namad Trust Badge */}
             <div className="mt-6">
               <p className="font-vazirmatn text-xs font-normal leading-[1.4] text-muted-foreground mb-2">
                 نشان اعتماد الکترونیکی
@@ -84,13 +84,17 @@ export function Footer({ links, socials }: FooterProps) {
               <div 
                 className={cn(
                   "w-32 h-32 rounded-lg",
-                  "bg-muted/20 border-2 border-dashed border-muted-foreground/30",
-                  "flex items-center justify-center"
+                  "bg-background/50 border border-white/10",
+                  "flex items-center justify-center",
+                  "overflow-hidden"
                 )}
               >
-                <span className="font-vazirmatn text-xs text-muted-foreground text-center px-2">
-                  نشان اعتماد
-                </span>
+                <img
+                  src="/logos/image.png"
+                  alt="نشان اعتماد الکترونیکی"
+                  className="w-full h-full object-contain"
+                  loading="lazy"
+                />
               </div>
             </div>
           </div>
