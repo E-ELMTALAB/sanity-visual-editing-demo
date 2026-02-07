@@ -160,7 +160,8 @@ export function FloatingDock({
                 "shadow-lg shadow-black/10",
                 "font-vazirmatn text-[13px] font-medium leading-[1.4] text-foreground",
                 "whitespace-nowrap",
-                isRTL ? "left-[68px] sm:left-[76px]" : "right-[68px] sm:right-[76px]"
+                // Adjust for larger button on mobile
+                isRTL ? "left-[60px] sm:left-[76px]" : "right-[60px] sm:right-[76px]"
               )}
             >
               {nudgeText}
@@ -180,22 +181,28 @@ export function FloatingDock({
             }
           }}
           className={cn(
-            "relative w-12 h-12 sm:w-14 sm:h-14 rounded-full",
+            // Mobile: 56px (w-14 h-14) for better touch target, Desktop: 60px
+            // Ensure minimum size across all breakpoints
+            "relative w-14 h-14 md:w-[60px] md:h-[60px] rounded-full",
+            "min-w-[56px] min-h-[56px] md:min-w-[60px] md:min-h-[60px]",
             "bg-gradient-to-br from-primary to-primary/80",
             "border border-primary/30",
             "shadow-2xl shadow-primary/25",
             "flex items-center justify-center",
-            "transition-all duration-200"
+            "transition-all duration-200",
+            // Ensure adequate touch target (at least 44px, we're using 56px+)
+            "touch-manipulation"
           )}
         >
           <motion.div
             animate={{ rotate: isChatOpen ? 180 : 0 }}
             transition={springTransition}
+            className="flex items-center justify-center"
           >
             {isChatOpen ? (
-              <X className="w-6 h-6 sm:w-7 sm:h-7 text-primary-foreground" />
+              <X className="w-7 h-7 md:w-8 md:h-8 text-primary-foreground" />
             ) : (
-              <MessageSquare className="w-6 h-6 sm:w-7 sm:h-7 text-primary-foreground" />
+              <MessageSquare className="w-7 h-7 md:w-8 md:h-8 text-primary-foreground" />
             )}
           </motion.div>
 
@@ -230,8 +237,11 @@ export function FloatingDock({
               className={cn(
                 "fixed z-[10002]",
                 "inset-0 sm:inset-auto",
-                "sm:bottom-[88px] sm:right-4 sm:top-auto",
-                "sm:w-[360px] sm:h-[540px]",
+                // Adjust bottom position for larger button (56px mobile, 60px desktop)
+                "sm:bottom-[96px] md:bottom-[100px] sm:right-4 sm:top-auto",
+                // Ensure consistent panel sizes across breakpoints
+                "sm:w-[360px] sm:min-w-[360px] md:w-[380px] md:min-w-[380px]",
+                "sm:h-[540px] sm:min-h-[480px] md:h-[560px] md:min-h-[500px]",
                 "sm:rounded-2xl",
                 "bg-gradient-to-br from-background/98 via-background/95 to-background/90",
                 "border border-primary/15",
