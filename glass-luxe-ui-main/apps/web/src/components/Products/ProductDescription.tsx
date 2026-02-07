@@ -209,17 +209,85 @@ export function ProductDescription({
       className={cn("py-12 md:py-16", className)}
     >
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-        {/* Unified Container: Description + TOC */}
+        {/* Unified Container: TOC + Description */}
         <SurfaceGlass className="rounded-2xl overflow-hidden">
           <div className={cn(
             "flex flex-col lg:flex-row",
+            // Desktop: TOC on RIGHT, Description on LEFT (RTL: reverse for RTL)
             isRTL ? "lg:flex-row-reverse" : "lg:flex-row"
           )}>
-            {/* Description Content - Left (RTL: Right) */}
-            <div className="flex-1 min-w-0">
+            {/* Mobile: TOC Section (ABOVE description) */}
+            {hasToc && (
+              <div className="lg:hidden border-b border-white/10 pb-6 mb-6">
+                <button
+                  type="button"
+                  onClick={() => setIsMobileTocOpen(!isMobileTocOpen)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setIsMobileTocOpen(!isMobileTocOpen);
+                    }
+                  }}
+                  className={cn(
+                    "w-full flex items-center justify-between gap-3",
+                    "px-4 py-3 rounded-lg",
+                    "bg-muted/30 hover:bg-muted/40",
+                    "border border-white/10",
+                    "transition-colors duration-200",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary focus-visible:ring-offset-2",
+                    isRTL ? "flex-row" : "flex-row-reverse"
+                  )}
+                  aria-expanded={isMobileTocOpen}
+                  aria-controls="mobile-toc-content"
+                >
+                  <div className="flex items-center gap-3" style={{ direction: isRTL ? "rtl" : "ltr" }}>
+                    <List className={cn(
+                      "h-5 w-5 text-primary flex-shrink-0",
+                      isRTL && "rotate-180"
+                    )} />
+                    <span className="text-base font-semibold font-vazirmatn text-foreground">
+                      فهرست مطالب
+                    </span>
+                  </div>
+                  <ChevronDown
+                    className={cn(
+                      "h-5 w-5 text-muted-foreground transition-transform duration-300 flex-shrink-0",
+                      isMobileTocOpen && "rotate-180 text-primary"
+                    )}
+                  />
+                </button>
+                
+                <AnimatePresence initial={false}>
+                  {isMobileTocOpen && (
+                    <motion.div
+                      id="mobile-toc-content"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={springTransition}
+                      className="overflow-hidden"
+                      role="region"
+                    >
+                      <div className="pt-4 px-4">
+                        <TocContent
+                          displayTitle={displayTitle}
+                          h2Groups={h2Groups}
+                          scrollToHeading={scrollToHeading}
+                          isRTL={isRTL}
+                          onClose={() => setIsMobileTocOpen(false)}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+            
+            {/* Description Content - LEFT column (RTL: RIGHT) */}
+            <div className="flex-1 min-w-0 order-2 lg:order-1">
               <div
                 ref={descriptionRef}
-                className="p-6 md:p-8 prose prose-invert prose-sm md:prose-base max-w-none text-right [&_h1]:scroll-mt-[100px] [&_h2]:scroll-mt-[100px] [&_h3]:scroll-mt-[100px] [&_h4]:scroll-mt-[100px] [&_h5]:scroll-mt-[100px] [&_h6]:scroll-mt-[100px]"
+                className="p-6 md:p-8 prose prose-invert prose-sm md:prose-base max-w-none text-right [&_h1]:scroll-mt-[100px] [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mb-6 [&_h1]:mt-8 [&_h1]:leading-tight [&_h2]:scroll-mt-[100px] [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mb-4 [&_h2]:mt-6 [&_h2]:leading-tight [&_h3]:scroll-mt-[100px] [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mb-3 [&_h3]:mt-5 [&_h3]:leading-snug [&_h4]:scroll-mt-[100px] [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:mb-2 [&_h4]:mt-4 [&_h4]:leading-snug [&_h5]:scroll-mt-[100px] [&_h5]:text-base [&_h5]:font-medium [&_h5]:mb-2 [&_h5]:mt-3 [&_h6]:scroll-mt-[100px] [&_h6]:text-sm [&_h6]:font-medium [&_h6]:mb-2 [&_h6]:mt-3 [&_p]:mb-4 [&_p]:leading-relaxed [&_ul]:mb-4 [&_ul]:pr-6 [&_ol]:mb-4 [&_ol]:pr-6 [&_li]:mb-2 [&_li]:leading-relaxed"
                 dir="rtl"
               >
                 {descriptionContent ? (
@@ -230,79 +298,12 @@ export function ProductDescription({
                   </p>
                 )}
               </div>
-              
-              {/* Mobile: Inline TOC Section */}
-              {hasToc && (
-                <div className="lg:hidden border-t border-white/10 mt-6 pt-6">
-                  <button
-                    type="button"
-                    onClick={() => setIsMobileTocOpen(!isMobileTocOpen)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setIsMobileTocOpen(!isMobileTocOpen);
-                      }
-                    }}
-                    className={cn(
-                      "w-full flex items-center justify-between gap-3",
-                      "px-4 py-3 rounded-lg",
-                      "bg-muted/30 hover:bg-muted/40",
-                      "border border-white/10",
-                      "transition-colors duration-200",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary focus-visible:ring-offset-2",
-                      isRTL ? "flex-row" : "flex-row-reverse"
-                    )}
-                    aria-expanded={isMobileTocOpen}
-                    aria-controls="mobile-toc-content"
-                  >
-                    <div className="flex items-center gap-3" style={{ direction: isRTL ? "rtl" : "ltr" }}>
-                      <List className={cn(
-                        "h-5 w-5 text-primary flex-shrink-0",
-                        isRTL && "rotate-180"
-                      )} />
-                      <span className="text-base font-semibold font-vazirmatn text-foreground">
-                        فهرست مطالب
-                      </span>
-                    </div>
-                    <ChevronDown
-                      className={cn(
-                        "h-5 w-5 text-muted-foreground transition-transform duration-300 flex-shrink-0",
-                        isMobileTocOpen && "rotate-180 text-primary"
-                      )}
-                    />
-                  </button>
-                  
-                  <AnimatePresence initial={false}>
-                    {isMobileTocOpen && (
-                      <motion.div
-                        id="mobile-toc-content"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={springTransition}
-                        className="overflow-hidden"
-                        role="region"
-                      >
-                        <div className="pt-4 px-4 pb-2">
-                          <TocContent
-                            displayTitle={displayTitle}
-                            h2Groups={h2Groups}
-                            scrollToHeading={scrollToHeading}
-                            isRTL={isRTL}
-                            onClose={() => setIsMobileTocOpen(false)}
-                          />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
             </div>
             
-            {/* Desktop: TOC Sidebar - Right (RTL: Left) */}
+            {/* Desktop: TOC Sidebar - RIGHT column (RTL: LEFT) */}
             {hasToc && (
               <div className={cn(
-                "hidden lg:block w-80 flex-shrink-0",
+                "hidden lg:block w-80 flex-shrink-0 order-1 lg:order-2",
                 isRTL ? "border-r border-white/10" : "border-l border-white/10"
               )}>
                 <div
@@ -355,13 +356,13 @@ function TocContent({
       )}
       
       {/* TOC Items */}
-      <div className="space-y-1">
+      <div className="space-y-2">
         {h2Groups.map((group) => {
           const groupId = group.h2.id;
           const hasChildren = group.children.length > 0;
           
           return (
-            <div key={groupId} className="space-y-1">
+            <div key={groupId} className="space-y-1.5">
               {/* H2 Item */}
               <a
                 href={`#${groupId}`}
@@ -371,10 +372,11 @@ function TocContent({
                   onClose?.();
                 }}
                 className={cn(
-                  "block px-3 py-2 rounded-lg text-sm md:text-base",
-                  "font-vazirmatn font-semibold",
+                  "block px-3 py-2.5 rounded-lg",
+                  "text-sm md:text-base font-vazirmatn font-semibold",
                   "text-foreground hover:text-primary hover:bg-white/5",
                   "transition-colors duration-150",
+                  "leading-relaxed",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 )}
               >
@@ -383,7 +385,7 @@ function TocContent({
               
               {/* Nested H3/H4 Children */}
               {hasChildren && (
-                <ul className="pr-4 space-y-0.5" dir="rtl">
+                <ul className="pr-4 space-y-1" dir="rtl">
                   {group.children.map((child, idx) => (
                     <li key={idx}>
                       <a
@@ -394,10 +396,11 @@ function TocContent({
                           onClose?.();
                         }}
                         className={cn(
-                          "block px-3 py-1.5 rounded-md text-sm",
-                          "font-vazirmatn font-normal",
+                          "block px-3 py-1.5 rounded-md",
+                          "text-sm font-vazirmatn font-normal",
                           "text-muted-foreground hover:text-foreground hover:bg-white/5",
                           "transition-colors duration-150",
+                          "leading-relaxed",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         )}
                         style={{ paddingRight: `${(child.level - 3) * 0.75}rem` }}
