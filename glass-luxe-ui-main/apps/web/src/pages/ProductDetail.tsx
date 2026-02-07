@@ -1046,6 +1046,8 @@ const ProductDetail = () => {
             <ProductDescription
               description={product.description}
               descriptionFa={product.descriptionFa}
+              productTitle={product.title}
+              productTitleFa={product.titleFa}
             />
 
             {/* Related Products */}
