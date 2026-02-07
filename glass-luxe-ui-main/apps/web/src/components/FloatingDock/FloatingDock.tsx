@@ -63,9 +63,16 @@ export function FloatingDock({
 
   // Typewriter effect for nudge
   useEffect(() => {
-    if (!showNudge) return;
+    if (!showNudge) {
+      // Reset text when nudge is hidden
+      setNudgeText("");
+      return;
+    }
 
+    // Reset text when nudge is shown
+    setNudgeText("");
     let currentIndex = 0;
+    
     const typeInterval = setInterval(() => {
       if (currentIndex < NUDGE_TEXT.length) {
         setNudgeText(NUDGE_TEXT.slice(0, currentIndex + 1));
@@ -81,7 +88,10 @@ export function FloatingDock({
 
     return () => {
       clearInterval(typeInterval);
-      if (nudgeTimeoutRef.current) clearTimeout(nudgeTimeoutRef.current);
+      if (nudgeTimeoutRef.current) {
+        clearTimeout(nudgeTimeoutRef.current);
+        nudgeTimeoutRef.current = undefined;
+      }
     };
   }, [showNudge]);
 
@@ -153,7 +163,7 @@ export function FloatingDock({
               exit={{ opacity: 0, y: 10 }}
               transition={springTransition}
               className={cn(
-                "absolute bottom-full mb-3",
+                "absolute bottom-full mb-1.5",
                 // Position on the LEFT side of the button (expanding inward toward center)
                 // In LTR: widget is on right, bubble expands left (inward)
                 // In RTL: widget is on left, bubble expands right (inward)
