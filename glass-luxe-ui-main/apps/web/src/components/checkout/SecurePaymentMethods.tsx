@@ -60,16 +60,20 @@ function PaymentGatewayCard({ gateway, isSelected, onSelect, showValidation, dis
         "w-full p-4 rounded-xl border-2 transition-all duration-200",
         "flex flex-col items-center gap-3 text-center relative overflow-hidden",
         "glass border-white/20",
-        // Disabled state styles
+        // Disabled state styles - stronger to ensure they're clearly disabled
         disabled && [
-          "opacity-50 cursor-not-allowed",
+          "opacity-40 cursor-not-allowed",
+          "pointer-events-none",
           "hover:border-white/20 hover:bg-transparent",
+          "hover:opacity-40",
           "active:scale-100",
+          "select-none",
         ],
         // Active state styles (only when not disabled)
         !disabled && [
           "hover:border-primary/40",
           "hover:bg-white/5 active:scale-[0.98]",
+          "cursor-pointer",
         ],
         isSelected && !disabled && [
           "border-primary/80 bg-primary/10",
@@ -81,6 +85,7 @@ function PaymentGatewayCard({ gateway, isSelected, onSelect, showValidation, dis
       aria-pressed={isSelected && !disabled}
       aria-disabled={disabled}
       dir="rtl"
+      style={disabled ? { pointerEvents: 'none' } : undefined}
     >
       {/* Gateway Logo - Right side (RTL) */}
       <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden relative p-0.5">
@@ -102,27 +107,44 @@ function PaymentGatewayCard({ gateway, isSelected, onSelect, showValidation, dis
 
       {/* Gateway Info */}
       <div className="flex-1 min-w-0 w-full">
-        <div className="font-semibold text-base text-foreground mb-1">
+        <div className={cn(
+          "font-semibold text-base mb-1",
+          disabled ? "text-muted-foreground" : "text-foreground"
+        )}>
           {gateway.name}
         </div>
-        <div className="text-xs text-muted-foreground">
+        <div className={cn(
+          "text-xs",
+          disabled ? "text-muted-foreground/70" : "text-muted-foreground"
+        )}>
           {gateway.description}
         </div>
       </div>
 
-      {/* Checkmark Indicator */}
-      <div
-        className={cn(
-          "absolute top-2 left-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
-          isSelected
-            ? "border-primary bg-primary"
-            : "border-white/30 bg-transparent"
-        )}
-      >
-        {isSelected && (
-          <Check className="w-4 h-4 text-white animate-in fade-in zoom-in-50 duration-200" />
-        )}
-      </div>
+      {/* Disabled Overlay */}
+      {disabled && (
+        <div className="absolute inset-0 bg-background/20 backdrop-blur-[2px] rounded-xl flex items-center justify-center pointer-events-none">
+          <span className="text-xs font-medium text-muted-foreground/80">
+            غیرفعال
+          </span>
+        </div>
+      )}
+
+      {/* Checkmark Indicator - only show if selected and not disabled */}
+      {!disabled && (
+        <div
+          className={cn(
+            "absolute top-2 left-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+            isSelected
+              ? "border-primary bg-primary"
+              : "border-white/30 bg-transparent"
+          )}
+        >
+          {isSelected && (
+            <Check className="w-4 h-4 text-white animate-in fade-in zoom-in-50 duration-200" />
+          )}
+        </div>
+      )}
     </button>
   );
 }
