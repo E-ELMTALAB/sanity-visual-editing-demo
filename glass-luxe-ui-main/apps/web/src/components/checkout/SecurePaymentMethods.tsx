@@ -21,9 +21,14 @@ interface PaymentGatewayCardProps {
   isSelected: boolean;
   onSelect: () => void;
   showValidation: boolean;
+  disabled?: boolean;
 }
 
-function PaymentGatewayCard({ gateway, isSelected, onSelect, showValidation }: PaymentGatewayCardProps) {
+// Feature flag: Temporarily disable Bank Mellat and Bank Saman
+// Set to false to re-enable them
+const DISABLED_GATEWAYS: PaymentGateway[] = ["mellat", "saman"];
+
+function PaymentGatewayCard({ gateway, isSelected, onSelect, showValidation, disabled = false }: PaymentGatewayCardProps) {
   const [logoError, setLogoError] = useState(false);
 
   // Get initials for fallback
@@ -40,23 +45,41 @@ function PaymentGatewayCard({ gateway, isSelected, onSelect, showValidation }: P
     }
   };
 
+  const handleClick = () => {
+    if (!disabled) {
+      onSelect();
+    }
+  };
+
   return (
     <button
       type="button"
-      onClick={onSelect}
+      onClick={handleClick}
+      disabled={disabled}
       className={cn(
         "w-full p-4 rounded-xl border-2 transition-all duration-200",
         "flex flex-col items-center gap-3 text-center relative overflow-hidden",
-        "glass border-white/20 hover:border-primary/40",
-        "hover:bg-white/5 active:scale-[0.98]",
-        isSelected && [
+        "glass border-white/20",
+        // Disabled state styles
+        disabled && [
+          "opacity-50 cursor-not-allowed",
+          "hover:border-white/20 hover:bg-transparent",
+          "active:scale-100",
+        ],
+        // Active state styles (only when not disabled)
+        !disabled && [
+          "hover:border-primary/40",
+          "hover:bg-white/5 active:scale-[0.98]",
+        ],
+        isSelected && !disabled && [
           "border-primary/80 bg-primary/10",
           "shadow-lg shadow-primary/20",
           "ring-2 ring-primary/30 ring-offset-2 ring-offset-transparent",
         ],
-        showValidation && !isSelected && "border-destructive/50"
+        showValidation && !isSelected && !disabled && "border-destructive/50"
       )}
-      aria-pressed={isSelected}
+      aria-pressed={isSelected && !disabled}
+      aria-disabled={disabled}
       dir="rtl"
     >
       {/* Gateway Logo - Right side (RTL) */}
@@ -137,15 +160,26 @@ export function SecurePaymentMethods({
     <div dir="rtl">
       {/* Grid Layout: 1 column on mobile, 3 columns on desktop/tablet */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {paymentGateways.map((gateway) => (
-          <PaymentGatewayCard
-            key={gateway.id}
-            gateway={gateway}
-            isSelected={selectedGateway === gateway.id}
-            onSelect={() => onSelectGateway(gateway.id)}
-            showValidation={showValidation}
-          />
-        ))}
+        {paymentGateways.map((gateway) => {
+          const isDisabled = DISABLED_GATEWAYS.includes(gateway.id);
+          // Don't show as selected if it's disabled
+          const isSelected = !isDisabled && selectedGateway === gateway.id;
+          return (
+            <PaymentGatewayCard
+              key={gateway.id}
+              gateway={gateway}
+              isSelected={isSelected}
+              onSelect={() => {
+                // Prevent selection of disabled gateways
+                if (!isDisabled) {
+                  onSelectGateway(gateway.id);
+                }
+              }}
+              showValidation={showValidation}
+              disabled={isDisabled}
+            />
+          );
+        })}
       </div>
 
       {showValidation && !selectedGateway && (
