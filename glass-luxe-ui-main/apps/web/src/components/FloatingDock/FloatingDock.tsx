@@ -144,7 +144,7 @@ export function FloatingDock({
           isRTL ? "left-4 sm:left-6" : "right-4 sm:right-6"
         )}
       >
-        {/* Nudge Label - Positioned above button, more visible */}
+        {/* Nudge Label - Positioned above button, on the LEFT side (expanding inward) */}
         <AnimatePresence>
           {showNudge && !isChatOpen && (
             <motion.div
@@ -154,10 +154,12 @@ export function FloatingDock({
               transition={springTransition}
               className={cn(
                 "absolute bottom-full mb-3",
-                // Center horizontally relative to button
-                "left-1/2 -translate-x-1/2",
-                // Ensure it doesn't get cut off on mobile (with padding from screen edges)
-                "max-w-[calc(100vw-3rem)] sm:max-w-none",
+                // Position on the LEFT side of the button (expanding inward toward center)
+                // In LTR: widget is on right, bubble expands left (inward)
+                // In RTL: widget is on left, bubble expands right (inward)
+                isRTL ? "left-full ml-2" : "right-full mr-2",
+                // Ensure it doesn't get cut off on mobile (with safe margins from screen edge)
+                "max-w-[calc(100vw-6rem)] sm:max-w-[280px]",
                 "px-4 py-2.5 rounded-xl",
                 // High-contrast, brand-tinted background (light with primary tint)
                 "bg-gradient-to-br from-primary/25 via-primary/20 to-primary/15",
@@ -173,10 +175,12 @@ export function FloatingDock({
               )}
             >
               {nudgeText}
-              {/* Small arrow pointing down to widget */}
+              {/* Small arrow pointing down to widget - positioned on the side closest to button */}
               <div
                 className={cn(
-                  "absolute top-full left-1/2 -translate-x-1/2 -mt-[1px]",
+                  "absolute top-full -mt-[1px]",
+                  // Arrow on the side closest to the widget button
+                  isRTL ? "right-4" : "left-4",
                   "w-0 h-0",
                   "border-l-[6px] border-r-[6px] border-t-[6px]",
                   "border-l-transparent border-r-transparent",
