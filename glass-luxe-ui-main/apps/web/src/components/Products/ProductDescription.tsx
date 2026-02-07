@@ -209,94 +209,12 @@ export function ProductDescription({
       className={cn("py-12 md:py-16", className)}
     >
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-        {/* Mobile: Floating TOC Button */}
-        {hasToc && (
-          <div className="lg:hidden mb-6">
-            <button
-              type="button"
-              onClick={() => setIsMobileTocOpen(!isMobileTocOpen)}
-              className={cn(
-                "fixed bottom-20 z-40",
-                isRTL ? "left-6" : "right-6",
-                "w-14 h-14 rounded-full",
-                "bg-gradient-to-br from-primary to-primary/80",
-                "border border-primary/30 shadow-2xl shadow-primary/25",
-                "flex items-center justify-center",
-                "transition-all duration-200 hover:scale-105 active:scale-95"
-              )}
-              aria-label="فهرست مطالب"
-            >
-              <List className="w-6 h-6 text-primary-foreground" />
-            </button>
-            
-            {/* Mobile TOC Panel */}
-            <AnimatePresence>
-              {isMobileTocOpen && (
-                <>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={() => setIsMobileTocOpen(false)}
-                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-                  />
-                  <motion.div
-                    initial={{ x: isRTL ? -320 : 320, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: isRTL ? -320 : 320, opacity: 0 }}
-                    transition={springTransition}
-                    className={cn(
-                      "fixed top-0 bottom-0 z-50 w-80",
-                      isRTL ? "left-0 border-r" : "right-0 border-l",
-                      "bg-background/98 backdrop-blur-[32px] border-white/10 shadow-2xl"
-                    )}
-                  >
-                    <div className="h-full overflow-y-auto p-6">
-                      <TocContent
-                        displayTitle={displayTitle}
-                        h2Groups={h2Groups}
-                        scrollToHeading={scrollToHeading}
-                        isRTL={isRTL}
-                        onClose={() => setIsMobileTocOpen(false)}
-                      />
-                    </div>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
-        )}
-        
-        {/* Unified Container: TOC + Description */}
+        {/* Unified Container: Description + TOC */}
         <SurfaceGlass className="rounded-2xl overflow-hidden">
           <div className={cn(
             "flex flex-col lg:flex-row",
             isRTL ? "lg:flex-row-reverse" : "lg:flex-row"
           )}>
-            {/* TOC Sidebar - Right (RTL: Left) */}
-            {hasToc && (
-              <div className={cn(
-                "w-full lg:w-80 flex-shrink-0",
-                "border-b lg:border-b-0",
-                isRTL ? "lg:border-r border-white/10" : "lg:border-l border-white/10",
-                "bg-muted/5 lg:bg-transparent"
-              )}>
-                <div
-                  className="lg:sticky lg:top-28 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto"
-                  style={{ scrollbarWidth: 'thin' }}
-                >
-                  <div className="p-6">
-                    <TocContent
-                      displayTitle={displayTitle}
-                      h2Groups={h2Groups}
-                      scrollToHeading={scrollToHeading}
-                      isRTL={isRTL}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-            
             {/* Description Content - Left (RTL: Right) */}
             <div className="flex-1 min-w-0">
               <div
@@ -312,7 +230,96 @@ export function ProductDescription({
                   </p>
                 )}
               </div>
+              
+              {/* Mobile: Inline TOC Section */}
+              {hasToc && (
+                <div className="lg:hidden border-t border-white/10 mt-6 pt-6">
+                  <button
+                    type="button"
+                    onClick={() => setIsMobileTocOpen(!isMobileTocOpen)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setIsMobileTocOpen(!isMobileTocOpen);
+                      }
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-between gap-3",
+                      "px-4 py-3 rounded-lg",
+                      "bg-muted/30 hover:bg-muted/40",
+                      "border border-white/10",
+                      "transition-colors duration-200",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary focus-visible:ring-offset-2",
+                      isRTL ? "flex-row" : "flex-row-reverse"
+                    )}
+                    aria-expanded={isMobileTocOpen}
+                    aria-controls="mobile-toc-content"
+                  >
+                    <div className="flex items-center gap-3" style={{ direction: isRTL ? "rtl" : "ltr" }}>
+                      <List className={cn(
+                        "h-5 w-5 text-primary flex-shrink-0",
+                        isRTL && "rotate-180"
+                      )} />
+                      <span className="text-base font-semibold font-vazirmatn text-foreground">
+                        فهرست مطالب
+                      </span>
+                    </div>
+                    <ChevronDown
+                      className={cn(
+                        "h-5 w-5 text-muted-foreground transition-transform duration-300 flex-shrink-0",
+                        isMobileTocOpen && "rotate-180 text-primary"
+                      )}
+                    />
+                  </button>
+                  
+                  <AnimatePresence initial={false}>
+                    {isMobileTocOpen && (
+                      <motion.div
+                        id="mobile-toc-content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={springTransition}
+                        className="overflow-hidden"
+                        role="region"
+                      >
+                        <div className="pt-4 px-4 pb-2">
+                          <TocContent
+                            displayTitle={displayTitle}
+                            h2Groups={h2Groups}
+                            scrollToHeading={scrollToHeading}
+                            isRTL={isRTL}
+                            onClose={() => setIsMobileTocOpen(false)}
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
             </div>
+            
+            {/* Desktop: TOC Sidebar - Right (RTL: Left) */}
+            {hasToc && (
+              <div className={cn(
+                "hidden lg:block w-80 flex-shrink-0",
+                isRTL ? "border-r border-white/10" : "border-l border-white/10"
+              )}>
+                <div
+                  className="sticky top-28 max-h-[calc(100vh-7rem)] overflow-y-auto"
+                  style={{ scrollbarWidth: 'thin' }}
+                >
+                  <div className="p-6">
+                    <TocContent
+                      displayTitle={displayTitle}
+                      h2Groups={h2Groups}
+                      scrollToHeading={scrollToHeading}
+                      isRTL={isRTL}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </SurfaceGlass>
       </div>
