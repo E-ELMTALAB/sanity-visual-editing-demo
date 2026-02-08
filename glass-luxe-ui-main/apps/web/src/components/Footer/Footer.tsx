@@ -53,8 +53,15 @@ export function Footer({ links, socials }: FooterProps) {
     { label: "سیاست بازگشت وجه", href: "/refund" },
   ];
 
-  // Google Maps URL for the address
-  const mapUrl = "https://www.google.com/maps/search/?api=1&query=35.7219,51.3347"; // Tehran coordinates - update with actual address
+  // Company address (Sharif Technology Tower, Torshate, Tehran)
+  // Address: تهران، آزادی، خیابان اکبری، بلوار شهید صالحی (محله طرشت)، برج فناوری شریف طبقه 2 پلاک 3
+  const companyAddress = "تهران، آزادی، خیابان اکبری، بلوار شهید صالحی، محله طرشت، برج فناوری شریف";
+  const LAT = 35.7036; // Approximate latitude for Sharif Technology Tower area
+  const LNG = 51.3515; // Approximate longitude for Sharif Technology Tower area
+  
+  // Map URLs - using encoded address for Google Maps, coordinates for Neshan
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(companyAddress)}`;
+  const neshanUrl = `https://neshan.org/maps?lat=${LAT}&lng=${LNG}&zoom=16`;
 
   return (
     <footer 
@@ -77,8 +84,8 @@ export function Footer({ links, socials }: FooterProps) {
             </p>
 
             {/* E-Namad Trust Badge */}
-            <div className="mt-6">
-              <p className="font-vazirmatn text-xs font-normal leading-[1.4] text-muted-foreground mb-2">
+            <div className="mt-6 flex flex-col items-end">
+              <p className="font-vazirmatn text-xs font-normal leading-[1.4] text-muted-foreground mb-2 text-right w-32">
                 نشان اعتماد الکترونیکی
               </p>
               <div 
@@ -164,10 +171,11 @@ export function Footer({ links, socials }: FooterProps) {
               </div>
             </div>
 
-            {/* Mini-map Placeholder - Directly under Contact Information */}
-            <div className="mt-6">
+            {/* Interactive Map - Directly under Contact Information */}
+            <div className="mt-6 space-y-3">
+              {/* Clickable Map Area */}
               <a
-                href={mapUrl}
+                href={googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
@@ -177,9 +185,10 @@ export function Footer({ links, socials }: FooterProps) {
                   "bg-gradient-to-br from-muted/40 to-muted/20",
                   "hover:from-muted/50 hover:to-muted/30",
                   "border border-border/30",
-                  "shadow-sm",
+                  "shadow-sm hover:shadow-md",
                   "text-muted-foreground hover:text-foreground",
                   "transition-all duration-150 ease-in-out",
+                  "cursor-pointer",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 )}
               >
@@ -188,6 +197,46 @@ export function Footer({ links, socials }: FooterProps) {
                   مشاهده روی نقشه
                 </span>
               </a>
+
+              {/* Map Action Buttons */}
+              <div className="flex flex-col gap-2">
+                <a
+                  href={googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    "w-full px-4 py-2 rounded-lg",
+                    "bg-muted/50 hover:bg-muted",
+                    "border border-border/30",
+                    "text-sm font-vazirmatn font-medium",
+                    "text-foreground hover:text-primary",
+                    "transition-all duration-150 ease-in-out",
+                    "flex items-center justify-center gap-2",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  )}
+                >
+                  <MapPin className="h-4 w-4" />
+                  <span>باز کردن در Google Maps</span>
+                </a>
+                <a
+                  href={neshanUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    "w-full px-4 py-2 rounded-lg",
+                    "bg-muted/50 hover:bg-muted",
+                    "border border-border/30",
+                    "text-sm font-vazirmatn font-medium",
+                    "text-foreground hover:text-primary",
+                    "transition-all duration-150 ease-in-out",
+                    "flex items-center justify-center gap-2",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  )}
+                >
+                  <MapPin className="h-4 w-4" />
+                  <span>باز کردن در نشان</span>
+                </a>
+              </div>
             </div>
           </div>
         </div>
