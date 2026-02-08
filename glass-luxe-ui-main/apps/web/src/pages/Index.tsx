@@ -165,8 +165,8 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
       dir="rtl"
       className="relative min-h-[90vh] sm:min-h-[95vh] w-full overflow-hidden"
     >
-      {/* Enhanced Base Gradient Background */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0a0e1f] via-[#0f152f] to-[#0a0e1f]" />
+      {/* Base Gradient Background - Original Colors */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
       
       {/* Deferred hero image overlays when ready */}
       {heroImage?.src && (
@@ -183,60 +183,57 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
             fetchPriority="high"
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
-            style={{ filter: 'brightness(0.75) contrast(1.1)' }}
+            style={{ filter: 'brightness(0.85)' }}
           />
         </picture>
       )}
       
-      {/* Enhanced Gradient Overlays with Depth */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#1E67C6]/40 via-transparent to-[#8B5CF6]/40" />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#0a0e1f]/90 via-transparent to-transparent" />
+      {/* Original Gradient Overlays */}
+      <div className="absolute inset-0 -z-10 mix-blend-soft-light opacity-85 md:opacity-60 bg-gradient-to-br from-[#1E67C6]/60 via-transparent to-[#8B5CF6]/60" />
       <div 
         className="absolute inset-0 -z-10"
-        style={{ 
-          background: "radial-gradient(ellipse 120% 80% at 50% 30%, rgba(124, 58, 237, 0.15) 0%, rgba(30, 103, 198, 0.1) 40%, transparent 70%)" 
-        }} 
+        style={{ background: "radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%)" }} 
       />
       
-      {/* Subtle Glow Effects */}
+      {/* Subtle Glow Effects - Original Purple/Blue Balance */}
       <div 
-        className="absolute top-1/4 left-1/4 -z-10 w-96 h-96 rounded-full blur-[120px] opacity-30"
+        className="absolute top-1/4 left-1/4 -z-10 w-96 h-96 rounded-full blur-[120px] opacity-20"
         style={{ 
-          background: "radial-gradient(circle, rgba(124, 58, 237, 0.4) 0%, transparent 70%)" 
+          background: "radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%)" 
         }}
       />
       <div 
-        className="absolute bottom-1/4 right-1/4 -z-10 w-96 h-96 rounded-full blur-[120px] opacity-20"
+        className="absolute bottom-1/4 right-1/4 -z-10 w-96 h-96 rounded-full blur-[120px] opacity-15"
         style={{ 
-          background: "radial-gradient(circle, rgba(30, 103, 198, 0.4) 0%, transparent 70%)" 
+          background: "radial-gradient(circle, rgba(30, 103, 198, 0.25) 0%, transparent 70%)" 
         }}
       />
       
-      {/* Abstract Shapes / Visual Accents */}
+      {/* Abstract Shapes / Visual Accents - Original Colors */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         {/* Large floating orb */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 0.15, scale: 1 }}
+          animate={{ opacity: 0.12, scale: 1 }}
           transition={{ duration: 2, ease: "easeOut", delay: 0.5 }}
           className="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(124, 58, 237, 0.3) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%)" }}
         />
         {/* Medium floating orb */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 0.1, scale: 1 }}
+          animate={{ opacity: 0.08, scale: 1 }}
           transition={{ duration: 2, ease: "easeOut", delay: 0.7 }}
           className="absolute bottom-32 right-20 w-96 h-96 rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(30, 103, 198, 0.25) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, rgba(30, 103, 198, 0.2) 0%, transparent 70%)" }}
         />
         {/* Small accent orb */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.08 }}
+          animate={{ opacity: 0.06 }}
           transition={{ duration: 2, ease: "easeOut", delay: 0.9 }}
           className="absolute top-1/2 left-1/3 w-48 h-48 rounded-full blur-2xl"
-          style={{ background: "radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)" }}
         />
       </div>
 
@@ -249,7 +246,7 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
             <div 
               className="absolute inset-0 rounded-3xl opacity-20 blur-xl"
               style={{
-                background: "linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(30, 103, 198, 0.1) 100%)"
+                background: "linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(30, 103, 198, 0.1) 100%)"
               }}
             />
             
@@ -278,7 +275,7 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
-                  textShadow: "0 0 40px rgba(124, 58, 237, 0.3)"
+                  textShadow: "0 0 40px rgba(139, 92, 246, 0.3)"
                 }}
               >
                 {HERO_TITLE}
@@ -315,16 +312,16 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
                   onClick={() => navigate("/products")}
                   className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-white cursor-pointer transition-all duration-300"
                   style={{
-                    background: "linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(30, 103, 198, 0.2) 100%)",
+                    background: "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(30, 103, 198, 0.2) 100%)",
                     backdropFilter: "blur(10px)",
-                    boxShadow: "0 8px 32px rgba(124, 58, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                    boxShadow: "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.boxShadow = "0 12px 40px rgba(124, 58, 237, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)";
+                    e.currentTarget.style.boxShadow = "0 12px 40px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)";
                     e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.boxShadow = "0 8px 32px rgba(124, 58, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
+                    e.currentTarget.style.boxShadow = "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
                     e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
                   }}
                 >
@@ -350,7 +347,7 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
       <div 
         className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
         style={{
-          background: "linear-gradient(to top, rgba(10, 14, 31, 1) 0%, rgba(10, 14, 31, 0.8) 50%, transparent 100%)"
+          background: "linear-gradient(to top, rgba(11, 16, 36, 1) 0%, rgba(11, 16, 36, 0.8) 50%, transparent 100%)"
         }}
       />
     </section>
