@@ -163,7 +163,7 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
   return (
     <section 
       dir="rtl"
-      className="relative min-h-[92vh] w-full overflow-hidden bg-transparent"
+      className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden bg-transparent"
       style={{
         maskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
         WebkitMaskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
@@ -198,76 +198,38 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
         style={{ background: "radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%)" }} 
       />
 
-      {/* Content - Fixed dimensions to prevent CLS */}
-      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 md:pt-32 pb-16 lg:py-24">
-        <div className="flex items-center justify-center min-h-[60vh] sm:min-h-[65vh]">
+      {/* Content - Redesigned with proper spacing and balanced typography */}
+      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40 md:pt-48 pb-16 lg:pb-24">
+        <div className="flex items-center justify-center min-h-[50vh] sm:min-h-[55vh]">
           <div 
-            className="text-white text-center flex flex-col justify-center items-center max-w-4xl w-full"
-            style={{ minHeight: '300px' }} // Fixed height to prevent CLS
+            className="text-white text-center flex flex-col justify-center items-center max-w-3xl w-full space-y-6"
           >
-            {/* Main Headline */}
+            {/* Main Headline - Reduced size, better hierarchy */}
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-              className="mt-4 sm:mt-5 md:mt-6 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.1] tracking-tight"
+              transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight"
             >
               {HERO_TITLE}
             </motion.h1>
 
-            {/* Subtitle */}
+            {/* Subtitle - Better spacing and readability */}
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-              className="mt-3 sm:mt-4 md:mt-5 max-w-2xl text-white/85 text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed font-normal"
+              transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
+              className="max-w-2xl text-white/90 text-base sm:text-lg md:text-xl leading-relaxed font-normal px-4"
             >
               {HERO_SUBTITLE}
             </motion.p>
 
-            {/* CTA Button */}
+            {/* Value Props / Trust Badges - Moved up, cleaner presentation */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut", delay: 0.3 }}
-              className="mt-6 sm:mt-7 md:mt-8"
-            >
-              <button
-                onClick={() => navigate("/products")}
-                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl border border-white/20 px-8 sm:px-10 py-3.5 sm:py-4 shadow-[0_8px_32px_rgba(124,58,237,0.4)] text-base sm:text-lg font-bold text-white cursor-pointer transition-all duration-300 hover:shadow-[0_12px_40px_rgba(124,58,237,0.5)] hover:scale-105 active:scale-100"
-                style={{
-                  backgroundImage: "linear-gradient(90deg,#7C3AED,#EC4899,#7C3AED)",
-                  backgroundSize: "200% 100%",
-                  backgroundPosition: "0% 0%",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundPosition = "100% 0";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundPosition = "0% 0";
-                }}
-              >
-                <span className="font-vazirmatn relative z-10">مشاهده محصولات</span>
-                <span className="relative z-10">→</span>
-                {/* Hover glow sweep */}
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"
-                  style={{
-                    background:
-                      "linear-gradient(120deg, transparent, rgba(255,255,255,0.6), transparent)",
-                    mixBlendMode: "screen",
-                  }}
-                />
-              </button>
-            </motion.div>
-
-            {/* Trust Badges */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
-              className="mt-6 sm:mt-8 md:mt-10"
+              transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
+              className="mt-4 sm:mt-6"
             >
               <TrustBadges />
             </motion.div>

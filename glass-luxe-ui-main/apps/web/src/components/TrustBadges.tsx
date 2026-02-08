@@ -31,8 +31,8 @@ export default function TrustBadges() {
           {/* Glass Container with Icon */}
           <div className="relative">
             {/* Glass effect container */}
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl glass border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300 backdrop-blur-md">
-              <div className="text-white/95 group-hover:text-white transition-colors w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8">
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl glass border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:shadow-xl group-hover:brightness-110 transition-all duration-200 backdrop-blur-md">
+              <div className="text-white/95 group-hover:text-white transition-colors duration-200 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8">
                 {badge.icon}
               </div>
             </div>
