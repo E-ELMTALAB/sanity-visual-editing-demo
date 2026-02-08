@@ -163,14 +163,11 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
   return (
     <section 
       dir="rtl"
-      className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden bg-transparent"
-      style={{
-        maskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
-        WebkitMaskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
-      }}
+      className="relative min-h-[90vh] sm:min-h-[95vh] w-full overflow-hidden"
     >
-      {/* Static background placeholder - gradient only (counts as LCP, extremely cheap) */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
+      {/* Enhanced Base Gradient Background */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0a0e1f] via-[#0f152f] to-[#0a0e1f]" />
+      
       {/* Deferred hero image overlays when ready */}
       {heroImage?.src && (
         <picture className="absolute inset-0 h-full w-full -z-10">
@@ -186,56 +183,176 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
             fetchPriority="high"
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
-            style={{ filter: 'brightness(0.85)' }}
+            style={{ filter: 'brightness(0.75) contrast(1.1)' }}
           />
         </picture>
       )}
       
-      {/* Overlay */}
-      <div className="absolute inset-0 -z-10 mix-blend-soft-light opacity-85 md:opacity-60 bg-gradient-to-br from-[#1E67C6]/60 via-transparent to-[#8B5CF6]/60" />
+      {/* Enhanced Gradient Overlays with Depth */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#1E67C6]/40 via-transparent to-[#8B5CF6]/40" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#0a0e1f]/90 via-transparent to-transparent" />
       <div 
         className="absolute inset-0 -z-10"
-        style={{ background: "radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%)" }} 
+        style={{ 
+          background: "radial-gradient(ellipse 120% 80% at 50% 30%, rgba(124, 58, 237, 0.15) 0%, rgba(30, 103, 198, 0.1) 40%, transparent 70%)" 
+        }} 
       />
+      
+      {/* Subtle Glow Effects */}
+      <div 
+        className="absolute top-1/4 left-1/4 -z-10 w-96 h-96 rounded-full blur-[120px] opacity-30"
+        style={{ 
+          background: "radial-gradient(circle, rgba(124, 58, 237, 0.4) 0%, transparent 70%)" 
+        }}
+      />
+      <div 
+        className="absolute bottom-1/4 right-1/4 -z-10 w-96 h-96 rounded-full blur-[120px] opacity-20"
+        style={{ 
+          background: "radial-gradient(circle, rgba(30, 103, 198, 0.4) 0%, transparent 70%)" 
+        }}
+      />
+      
+      {/* Abstract Shapes / Visual Accents */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        {/* Large floating orb */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.15, scale: 1 }}
+          transition={{ duration: 2, ease: "easeOut", delay: 0.5 }}
+          className="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, rgba(124, 58, 237, 0.3) 0%, transparent 70%)" }}
+        />
+        {/* Medium floating orb */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.1, scale: 1 }}
+          transition={{ duration: 2, ease: "easeOut", delay: 0.7 }}
+          className="absolute bottom-32 right-20 w-96 h-96 rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, rgba(30, 103, 198, 0.25) 0%, transparent 70%)" }}
+        />
+        {/* Small accent orb */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.08 }}
+          transition={{ duration: 2, ease: "easeOut", delay: 0.9 }}
+          className="absolute top-1/2 left-1/3 w-48 h-48 rounded-full blur-2xl"
+          style={{ background: "radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%)" }}
+        />
+      </div>
 
-      {/* Content - Redesigned with proper spacing and balanced typography */}
-      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40 md:pt-48 pb-16 lg:pb-24">
-        <div className="flex items-center justify-center min-h-[50vh] sm:min-h-[55vh]">
-          <div 
-            className="text-white text-center flex flex-col justify-center items-center max-w-3xl w-full space-y-6"
-          >
-            {/* Main Headline - Reduced size, better hierarchy */}
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight"
-            >
-              {HERO_TITLE}
-            </motion.h1>
+      {/* Content - Modern Layered Layout */}
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-36 sm:pt-44 md:pt-52 pb-20 lg:pb-28">
+        <div className="flex items-center justify-center min-h-[60vh] sm:min-h-[65vh]">
+          {/* Main Content Container with Glass Effect */}
+          <div className="relative w-full max-w-5xl">
+            {/* Glass Surface Background for Content */}
+            <div 
+              className="absolute inset-0 rounded-3xl opacity-20 blur-xl"
+              style={{
+                background: "linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(30, 103, 198, 0.1) 100%)"
+              }}
+            />
+            
+            <div className="relative text-white text-center flex flex-col justify-center items-center space-y-8 px-6 sm:px-8">
+              {/* Badge / Tag above headline */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm"
+              >
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="font-vazirmatn text-xs sm:text-sm font-medium text-white/90">
+                  پلتفرم پیشرو در هوش مصنوعی
+                </span>
+              </motion.div>
 
-            {/* Subtitle - Better spacing and readability */}
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
-              className="max-w-2xl text-white/90 text-base sm:text-lg md:text-xl leading-relaxed font-normal px-4"
-            >
-              {HERO_SUBTITLE}
-            </motion.p>
+              {/* Main Headline - Enhanced with gradient text */}
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight"
+                style={{
+                  background: "linear-gradient(135deg, #ffffff 0%, #e0e7ff 50%, #c7d2fe 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  textShadow: "0 0 40px rgba(124, 58, 237, 0.3)"
+                }}
+              >
+                {HERO_TITLE}
+              </motion.h1>
 
-            {/* Value Props / Trust Badges - Moved up, cleaner presentation */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
-              className="mt-4 sm:mt-6"
-            >
-              <TrustBadges />
-            </motion.div>
+              {/* Subtitle - Enhanced readability */}
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: "easeOut", delay: 0.3 }}
+                className="max-w-3xl text-white/85 text-lg sm:text-xl md:text-2xl leading-relaxed font-normal px-4"
+              >
+                {HERO_SUBTITLE}
+              </motion.p>
+
+              {/* Value Props / Trust Badges - Enhanced presentation */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: "easeOut", delay: 0.4 }}
+                className="mt-6 sm:mt-8"
+              >
+                <TrustBadges />
+              </motion.div>
+
+              {/* Optional CTA Button - Subtle and Premium */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: "easeOut", delay: 0.5 }}
+                className="mt-8 sm:mt-10"
+              >
+                <button
+                  onClick={() => navigate("/products")}
+                  className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-white cursor-pointer transition-all duration-300"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(30, 103, 198, 0.2) 100%)",
+                    backdropFilter: "blur(10px)",
+                    boxShadow: "0 8px 32px rgba(124, 58, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = "0 12px 40px rgba(124, 58, 237, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)";
+                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = "0 8px 32px rgba(124, 58, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
+                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
+                  }}
+                >
+                  <span className="font-vazirmatn relative z-10">مشاهده محصولات</span>
+                  <span className="relative z-10">→</span>
+                  {/* Subtle shine effect on hover */}
+                  <span 
+                    aria-hidden="true" 
+                    className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                    style={{ 
+                      background: "linear-gradient(120deg, transparent, rgba(255,255,255,0.1), transparent)",
+                      mixBlendMode: "screen"
+                    }} 
+                  />
+                </button>
+              </motion.div>
+            </div>
           </div>
         </div>
       </div>
+      
+      {/* Bottom fade mask */}
+      <div 
+        className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
+        style={{
+          background: "linear-gradient(to top, rgba(10, 14, 31, 1) 0%, rgba(10, 14, 31, 0.8) 50%, transparent 100%)"
+        }}
+      />
     </section>
   );
 }

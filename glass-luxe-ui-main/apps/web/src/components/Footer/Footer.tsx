@@ -82,6 +82,28 @@ export function Footer({ links, socials }: FooterProps) {
             <p className="font-vazirmatn text-sm font-normal leading-relaxed text-muted-foreground max-w-[448px] mb-6">
               پلتفرم پیشرو در ارائه خدمات دیجیتال، محصولات هوش مصنوعی و دوره‌های آموزشی تخصصی
             </p>
+
+            {/* E-Namad Trust Badge */}
+            <div className="mt-6 flex flex-col items-end">
+              <p className="font-vazirmatn text-xs font-normal leading-[1.4] text-muted-foreground mb-2 text-right w-32">
+                نشان اعتماد الکترونیکی
+              </p>
+              <div 
+                className={cn(
+                  "w-32 h-32 rounded-lg",
+                  "bg-background/50 border border-white/10",
+                  "flex items-center justify-center",
+                  "overflow-hidden"
+                )}
+              >
+                <img
+                  src="/logos/image.png"
+                  alt="نشان اعتماد الکترونیکی"
+                  className="w-full h-full object-contain"
+                  loading="lazy"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Quick Links - 1 column on desktop */}
@@ -225,34 +247,9 @@ export function Footer({ links, socials }: FooterProps) {
           "border-t border-border/20",
           "flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
         )}>
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
-            <p className="font-vazirmatn text-sm font-normal leading-[1.4] text-muted-foreground">
-              © {currentYear} شریف جی‌پی‌تی. تمامی حقوق محفوظ است.
-            </p>
-            
-            {/* E-Namad Trust Badge - Last position in footer */}
-            <div className="flex flex-col items-end md:items-center">
-              <p className="font-vazirmatn text-xs font-normal leading-[1.4] text-muted-foreground mb-2 text-right md:text-center">
-                نشان اعتماد الکترونیکی
-              </p>
-              <div 
-                className={cn(
-                  "w-24 h-24 md:w-28 md:h-28 rounded-lg",
-                  "bg-background/50 border border-white/10",
-                  "flex items-center justify-center",
-                  "overflow-hidden"
-                )}
-              >
-                <img
-                  src="/logos/image.png"
-                  alt="نشان اعتماد الکترونیکی"
-                  className="w-full h-full object-contain"
-                  loading="lazy"
-                />
-              </div>
-            </div>
-          </div>
-          
+          <p className="font-vazirmatn text-sm font-normal leading-[1.4] text-muted-foreground">
+            © {currentYear} شریف جی‌پی‌تی. تمامی حقوق محفوظ است.
+          </p>
           <div className="flex flex-wrap items-center gap-6">
             {legalLinks.map((link) => (
               <a
