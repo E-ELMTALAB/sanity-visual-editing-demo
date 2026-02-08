@@ -83,7 +83,7 @@ export function Footer({ links, socials }: FooterProps) {
               پلتفرم پیشرو در ارائه خدمات دیجیتال، محصولات هوش مصنوعی و دوره‌های آموزشی تخصصی
             </p>
             {/* E-Namad Trust Badge - Below description text, right-aligned */}
-            <div className="mt-4 flex flex-col items-end">
+            <div className="mt-4 flex flex-col items-end mr-[300px]">
               <p className="font-vazirmatn text-xs font-normal leading-[1.4] text-muted-foreground mb-2 text-right">
                 نشان اعتماد الکترونیکی
               </p>
