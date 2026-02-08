@@ -74,20 +74,20 @@ export function Footer({ links, socials }: FooterProps) {
     >
       <div className="container mx-auto max-w-7xl">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand Section - 2 columns on desktop */}
+          {/* Brand Section - 2 columns on desktop (RIGHT-MOST column in RTL) */}
           <div className="col-span-1 md:col-span-2">
             <h3 className="font-vazirmatn text-xl font-bold leading-[1.4] text-foreground mb-3">
               شریف جی‌پی‌تی
             </h3>
             
-            {/* E-Namad Trust Badge - Right-aligned, directly under brand title */}
-            <div className="mb-4 flex flex-col items-end">
+            {/* E-Namad Trust Badge - Directly under brand title, right-aligned */}
+            <div className="mt-3 sm:mt-4 flex flex-col items-end">
               <p className="font-vazirmatn text-xs font-normal leading-[1.4] text-muted-foreground mb-2 text-right">
                 نشان اعتماد الکترونیکی
               </p>
               <div 
                 className={cn(
-                  "w-32 h-32 rounded-lg",
+                  "w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-lg",
                   "bg-background/50 border border-white/10",
                   "flex items-center justify-center",
                   "overflow-hidden"
@@ -102,7 +102,7 @@ export function Footer({ links, socials }: FooterProps) {
               </div>
             </div>
 
-            <p className="font-vazirmatn text-sm font-normal leading-relaxed text-muted-foreground max-w-[448px] mb-6">
+            <p className="font-vazirmatn text-sm font-normal leading-relaxed text-muted-foreground max-w-[448px] mt-6 mb-6">
               پلتفرم پیشرو در ارائه خدمات دیجیتال، محصولات هوش مصنوعی و دوره‌های آموزشی تخصصی
             </p>
           </div>
