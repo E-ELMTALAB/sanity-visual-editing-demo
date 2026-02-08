@@ -75,15 +75,15 @@ export function Footer({ links, socials }: FooterProps) {
       <div className="container mx-auto max-w-7xl">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section - RIGHT column (col-span-1 md:col-span-2) - Contains "شریف جی‌پی‌تی" heading */}
-          <div className="col-span-1 md:col-span-2 flex flex-col">
-            <h3 className="font-vazirmatn text-xl font-bold leading-[1.4] text-foreground mb-3">
+          <div className="col-span-1 md:col-span-2">
+            <h3 className="font-vazirmatn text-xl font-bold leading-[1.4] text-foreground mb-3 text-right">
               شریف جی‌پی‌تی
             </h3>
-            <p className="font-vazirmatn text-sm font-normal leading-relaxed text-muted-foreground max-w-[448px] mb-6">
+            <p className="font-vazirmatn text-sm font-normal leading-relaxed text-muted-foreground max-w-[448px] mb-6 text-right">
               پلتفرم پیشرو در ارائه خدمات دیجیتال، محصولات هوش مصنوعی و دوره‌های آموزشی تخصصی
             </p>
             {/* E-Namad Trust Badge - Below description text, aligned to right edge */}
-            <div className="mt-4 flex flex-col items-end self-end">
+            <div className="mt-4 flex flex-col items-end w-fit ml-auto">
               <p className="font-vazirmatn text-xs font-normal leading-[1.4] text-muted-foreground mb-2 text-right">
                 نشان اعتماد الکترونیکی
               </p>
