@@ -79,8 +79,11 @@ export function Footer({ links, socials }: FooterProps) {
             <h3 className="font-vazirmatn text-xl font-bold leading-[1.4] text-foreground mb-3">
               شریف جی‌پی‌تی
             </h3>
-            {/* E-Namad Trust Badge - JSX directly after heading, inside same container */}
-            <div className="mt-3 sm:mt-4 flex flex-col items-end">
+            <p className="font-vazirmatn text-sm font-normal leading-relaxed text-muted-foreground max-w-[448px] mb-6">
+              پلتفرم پیشرو در ارائه خدمات دیجیتال، محصولات هوش مصنوعی و دوره‌های آموزشی تخصصی
+            </p>
+            {/* E-Namad Trust Badge - Below description text, right-aligned */}
+            <div className="mt-4 flex flex-col items-end">
               <p className="font-vazirmatn text-xs font-normal leading-[1.4] text-muted-foreground mb-2 text-right">
                 نشان اعتماد الکترونیکی
               </p>
@@ -100,9 +103,6 @@ export function Footer({ links, socials }: FooterProps) {
                 />
               </div>
             </div>
-            <p className="font-vazirmatn text-sm font-normal leading-relaxed text-muted-foreground max-w-[448px] mt-6 mb-6">
-              پلتفرم پیشرو در ارائه خدمات دیجیتال، محصولات هوش مصنوعی و دوره‌های آموزشی تخصصی
-            </p>
           </div>
 
           {/* Quick Links - 1 column on desktop */}
