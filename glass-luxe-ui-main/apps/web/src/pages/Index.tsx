@@ -350,7 +350,7 @@ const Index = () => {
   const [medusaPrices, setMedusaPrices] = useState<Record<string, ProductPrices>>({});
   const [dataLoaded, setDataLoaded] = useState(false);
 
-  // Load Sanity data off the critical path (idle)
+  // Load Sanity data off the critical path (deferred until after initial paint)
   useEffect(() => {
     const loadSanityData = async () => {
       try {
@@ -507,14 +507,11 @@ const Index = () => {
       }
       };
 
-    const schedule = () => {
-      loadSanityData();
-    };
-
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(schedule, { timeout: 1500 });
+    // Use requestIdleCallback for better performance, fallback to setTimeout
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      requestIdleCallback(loadSanityData, { timeout: 2000 });
     } else {
-      setTimeout(schedule, 0);
+      setTimeout(loadSanityData, 100);
     }
   }, []);
 

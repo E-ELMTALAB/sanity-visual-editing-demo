@@ -9,8 +9,8 @@
   src: url("../font/Vazirmatn-VariableFont_wght.woff2") format("woff2");
   font-weight: 100 900;
   font-style: normal;
-  /* Use 'optional' to prevent CLS - font won't cause layout shift */
-  font-display: optional;
+  /* Use 'swap' for better performance - shows text immediately with fallback, then swaps when font loads */
+  font-display: swap;
 }
 
 /* Fallback font metrics to minimize CLS */

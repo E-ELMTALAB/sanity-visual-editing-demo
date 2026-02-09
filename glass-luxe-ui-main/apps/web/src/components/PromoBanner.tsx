@@ -56,9 +56,10 @@ export function PromoBanner({ className }: PromoBannerProps) {
 
   const showBanner = !!endsAt;
 
+  // Optimize image URL with better compression and format
   const backgroundImageUrl = useMemo(
     () =>
-      "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1600&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1600&q=75&auto=format&fit=crop&format=webp",
     []
   );
 
