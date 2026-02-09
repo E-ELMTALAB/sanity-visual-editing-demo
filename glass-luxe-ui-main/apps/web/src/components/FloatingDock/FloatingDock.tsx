@@ -167,7 +167,8 @@ export function FloatingDock({
                 // Position on the LEFT side of the button (expanding inward toward center)
                 // In LTR: widget is on right, bubble expands left (inward)
                 // In RTL: widget is on left, bubble expands right (inward)
-                isRTL ? "left-full ml-2" : "right-full mr-2",
+                // Slightly tighter on mobile so the bubble feels more connected to the widget
+                isRTL ? "left-full ml-1.5 sm:ml-2" : "right-full mr-1.5 sm:mr-2",
                 // Ensure it doesn't get cut off on mobile (with safe margins from screen edge)
                 "max-w-[calc(100vw-6rem)] sm:max-w-[280px]",
                 "px-4 py-2.5 rounded-xl",
