@@ -163,8 +163,9 @@ export function FloatingDock({
               exit={{ opacity: 0, y: 10 }}
               transition={springTransition}
               className={cn(
-                // Slightly reduce the vertical gap so the bubble feels more attached to the widget
-                "absolute bottom-full mb-1",
+                // Bring the bubble closer vertically to the widget
+                // Mobile: almost touching, Desktop: a tiny bit more breathing room
+                "absolute bottom-full mb-0.5 sm:mb-1",
                 // Position on the LEFT side of the button (expanding inward toward center)
                 // In LTR: widget is on right, bubble expands left (inward)
                 // In RTL: widget is on left, bubble expands right (inward)
