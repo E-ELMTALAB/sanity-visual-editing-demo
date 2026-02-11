@@ -72,7 +72,7 @@ export function FloatingDock({
     // Reset text when nudge is shown
     setNudgeText("");
     let currentIndex = 0;
-    
+
     const typeInterval = setInterval(() => {
       if (currentIndex < NUDGE_TEXT.length) {
         setNudgeText(NUDGE_TEXT.slice(0, currentIndex + 1));
