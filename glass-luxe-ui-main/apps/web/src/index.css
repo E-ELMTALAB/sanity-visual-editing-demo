@@ -349,4 +349,11 @@
       transform: translateX(0);
     }
   }
+
+  /* Product Detail: keep floating support widget above sticky buy bar on mobile */
+  @media (max-width: 768px) {
+    body.page-product-detail [data-floating-dock-root] {
+      bottom: calc(96px + env(safe-area-inset-bottom, 0px) + 12px);
+    }
+  }
 }

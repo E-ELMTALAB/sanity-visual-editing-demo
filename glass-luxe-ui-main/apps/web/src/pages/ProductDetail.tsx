@@ -150,6 +150,14 @@ const ProductDetail = () => {
   const priceForPromotion = getPriceForPromotion();
   const productPromotion = useProductPromotion(slug, productIdForPromotion, priceForPromotion);
 
+  // Mark body as product-detail page so we can scope mobile CSS (for floating support widget, etc.)
+  useEffect(() => {
+    document.body.classList.add("page-product-detail");
+    return () => {
+      document.body.classList.remove("page-product-detail");
+    };
+  }, []);
+
   useEffect(() => {
     const configValid = validateSanityConfig();
     if (!slug) {
