@@ -1,8 +1,8 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Quote, ZoomIn, Send, Instagram, MessageCircle, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from "@/components/ui/carousel";
 import { useDirection } from "@/contexts/DirectionContext";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +31,7 @@ const springTransition = {
 export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   const { isRTL } = useDirection();
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [api, setApi] = useState<CarouselApi>();
 
   const openLightbox = useCallback((image: string) => {
     setLightboxImage(image);
@@ -39,6 +40,54 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   const closeLightbox = useCallback(() => {
     setLightboxImage(null);
   }, []);
+
+  // Reinitialize carousel on resize and after mount to fix mobile navigation issues
+  useEffect(() => {
+    if (!api || !reviews.length) return;
+
+    let resizeTimer: NodeJS.Timeout;
+
+    // Reinitialize after mount to ensure proper width calculations
+    // Use requestAnimationFrame to ensure DOM is fully rendered
+    const initCarousel = () => {
+      requestAnimationFrame(() => {
+        try {
+          // Reinit to recalculate slide widths and positions
+          api.reInit();
+        } catch (error) {
+          console.warn('[CustomerReviews] Carousel reinit error:', error);
+        }
+      });
+    };
+
+    // Initial reinit after mount
+    const initTimer = setTimeout(initCarousel, 150);
+
+    // Also reinit after a short delay to catch any late renders
+    const delayedInit = setTimeout(initCarousel, 300);
+
+    const handleResize = () => {
+      // Debounce resize events
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        requestAnimationFrame(() => {
+          try {
+            api.reInit();
+          } catch (error) {
+            console.warn('[CustomerReviews] Carousel resize reinit error:', error);
+          }
+        });
+      }, 150);
+    };
+
+    window.addEventListener('resize', handleResize, { passive: true });
+    return () => {
+      clearTimeout(initTimer);
+      clearTimeout(delayedInit);
+      clearTimeout(resizeTimer);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [api, reviews.length]);
 
   const getPlatformIcon = (platform: string) => {
     const iconSize = "w-[14px] h-[14px]";
@@ -99,6 +148,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
             {/* Carousel */}
             <Carousel
               key={`carousel-${reviews.length}-${isRTL}`}
+              setApi={setApi}
               opts={{
                 align: "start",
                 direction: isRTL ? "rtl" : "ltr",
@@ -106,16 +156,29 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                 slidesToScroll: 1,
                 dragFree: false,
                 containScroll: "trimSnaps",
+                // Ensure proper slide calculations on mobile
+                watchDrag: true,
               }}
               className="w-full"
             >
               <CarouselContent className={isRTL ? "-mr-4 md:-mr-2" : "-ml-4 md:-ml-2"}>
-                {reviews.map((review, index) => (
+                {reviews.map((review, index) => {
+                  // Ensure review exists before rendering
+                  if (!review || !review.id) {
+                    console.warn('[CustomerReviews] Invalid review at index:', index);
+                    return null;
+                  }
+                  
+                  return (
                   <CarouselItem
                     key={review.id}
                     className={cn(
+                      // Mobile: full width (1 slide), Desktop: half width (2 slides)
                       "basis-full sm:basis-1/2 lg:basis-1/2",
-                      isRTL ? "pr-4 md:pr-2" : "pl-4 md:pl-2"
+                      // Ensure proper spacing that matches CarouselContent negative margin
+                      isRTL ? "pr-4 md:pr-2" : "pl-4 md:pl-2",
+                      // Ensure slides don't shrink and maintain proper width
+                      "min-w-0 shrink-0"
                     )}
                   >
                     <motion.div
@@ -211,7 +274,8 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                       </div>
                     </motion.div>
                   </CarouselItem>
-                ))}
+                  );
+                })}
               </CarouselContent>
 
               {/* Navigation Buttons - Centered below carousel */}
