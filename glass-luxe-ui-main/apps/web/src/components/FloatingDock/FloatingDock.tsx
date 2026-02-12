@@ -148,7 +148,6 @@ export function FloatingDock({
     <>
       {/* Main FAB Button Container */}
       <div
-        data-floating-dock-root
         className={cn(
           "fixed z-[9999]",
           "bottom-4 sm:bottom-6",
