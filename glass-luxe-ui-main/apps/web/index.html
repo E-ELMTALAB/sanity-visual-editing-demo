@@ -10,9 +10,6 @@
     <link rel="preconnect" href="https://backend.sharifgpt.com" crossorigin />
     <!-- Preload critical font -->
     <link rel="preload" href="/font/Vazirmatn-VariableFont_wght.woff2" as="font" type="font/woff2" crossorigin />
-    <!-- Preconnects for critical origins -->
-    <link rel="preconnect" href="https://cdn.sanity.io" crossorigin />
-    <link rel="preconnect" href="https://backend.sharifgpt.com" crossorigin />
     
     
     <!-- Favicon -->
@@ -25,8 +22,8 @@
       html,body{margin:0;padding:0;height:100%}
       body{font-family:"Vazirmatn",Tahoma,system-ui,sans-serif;background:#060914;color:rgba(255,255,255,.92);-webkit-font-smoothing:antialiased}
       #root{min-height:100vh}
-      /* Use font-display:optional to prevent CLS */
-      @font-face{font-family:"Vazirmatn";src:url("/font/Vazirmatn-VariableFont_wght.woff2") format("woff2");font-weight:100 900;font-display:optional}
+      /* Use font-display:swap for better performance - shows text immediately with fallback */
+      @font-face{font-family:"Vazirmatn";src:url("/font/Vazirmatn-VariableFont_wght.woff2") format("woff2");font-weight:100 900;font-display:swap}
       /* Hero placeholder for instant LCP */
       .hero-placeholder{min-height:92vh;background:#060914}
     </style>
@@ -48,13 +45,28 @@
       });
     </script>
     
-    <!-- Google Tag Manager -->
+    <!-- Google Tag Manager - Deferred to avoid blocking initial render -->
     <script>
-      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-      })(window,document,'script','dataLayer','GTM-PW97M4XV');
+      // Defer GTM until after page load to improve LCP
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          setTimeout(function() {
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.defer=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PW97M4XV');
+          }, 2000);
+        });
+      } else {
+        setTimeout(function() {
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.defer=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-PW97M4XV');
+        }, 2000);
+      }
     </script>
     <!-- End Google Tag Manager -->
 

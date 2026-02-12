@@ -2,10 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
-import { Clock, Share2, Facebook, Twitter, Linkedin, Link2, ChevronLeft, ArrowRight, ArrowLeft, ChevronDown } from "lucide-react";
+import { Clock, Facebook, Twitter, Linkedin, Link2, ChevronLeft, User } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer/Footer";
-import { Button } from "@/components/ui/button";
 import { BlogCard } from "@/components/Blog/BlogCard";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { toast } from "sonner";
@@ -42,12 +41,21 @@ interface ArticleDetail {
   readTime?: number;
   tags?: string[];
   body?: any[];
-  bodyMarkdown?: string; // Markdown content for blog posts
+  bodyMarkdown?: string;
   excerpt?: string;
   seo?: SeoMeta;
 }
 
-// Helper function to extract headings from markdown content (same as ProductDetail)
+interface BlogPost {
+  slug: string;
+  title: string;
+  cover: string;
+  excerpt?: string;
+  publishedAt?: string;
+  readTime?: number;
+}
+
+// Extract headings from markdown
 const extractHeadingsFromMarkdown = (content: string): Array<{ level: number; text: string; id: string }> => {
   if (!content) return [];
 
@@ -68,29 +76,40 @@ const extractHeadingsFromMarkdown = (content: string): Array<{ level: number; te
   return headings;
 };
 
+// PortableText components with spec styling
 const portableTextComponents = {
   block: {
     normal: ({ children }: { children: React.ReactNode }) => (
-      <p className="text-base leading-8 text-muted-foreground">{children}</p>
+      <p className="font-vazirmatn text-lg font-normal leading-[1.9] text-muted-foreground mb-6">{children}</p>
     ),
-    h2: ({ children }: { children: React.ReactNode }) => (
-      <h2 className="text-2xl font-semibold text-foreground mt-10 mb-4">{children}</h2>
-    ),
-    h3: ({ children }: { children: React.ReactNode }) => (
-      <h3 className="text-xl font-semibold text-foreground mt-8 mb-3">{children}</h3>
-    ),
+    h2: ({ children }: { children: React.ReactNode }) => {
+      const id = `heading-${children?.toString().toLowerCase().replace(/\s+/g, '-')}`;
+      return (
+        <h2 id={id} className="font-vazirmatn text-[28px] font-extrabold leading-[1.3] text-foreground mt-12 mb-6 scroll-mt-24">
+          {children}
+        </h2>
+      );
+    },
+    h3: ({ children }: { children: React.ReactNode }) => {
+      const id = `heading-${children?.toString().toLowerCase().replace(/\s+/g, '-')}`;
+      return (
+        <h3 id={id} className="font-vazirmatn text-[22px] font-bold leading-[1.35] text-foreground mt-8 mb-4 scroll-mt-24">
+          {children}
+        </h3>
+      );
+    },
     blockquote: ({ children }: { children: React.ReactNode }) => (
-      <blockquote className="border-r-4 border-primary/40 pr-4 py-2 my-6 italic text-foreground/80">
+      <blockquote className="font-vazirmatn border-r-4 border-primary pr-6 py-4 my-8 rounded-xl bg-primary/10 italic text-foreground">
         {children}
       </blockquote>
     ),
   },
   list: {
     bullet: ({ children }: { children: React.ReactNode }) => (
-      <ul className="list-disc pr-5 space-y-2 text-muted-foreground">{children}</ul>
+      <ul className="font-vazirmatn list-disc pr-5 space-y-2 text-lg text-muted-foreground leading-[1.7] mb-6">{children}</ul>
     ),
     number: ({ children }: { children: React.ReactNode }) => (
-      <ol className="list-decimal pr-5 space-y-2 text-muted-foreground">{children}</ol>
+      <ol className="font-vazirmatn list-decimal pr-5 space-y-2 text-lg text-muted-foreground leading-[1.7] mb-6">{children}</ol>
     ),
   },
   marks: {
@@ -99,7 +118,7 @@ const portableTextComponents = {
         href={value?.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-primary underline underline-offset-4"
+        className="font-vazirmatn text-primary underline underline-offset-2 hover:no-underline"
       >
         {children}
       </a>
@@ -107,46 +126,34 @@ const portableTextComponents = {
   },
   types: {
     image: ({ value }: { value: any }) => {
-      const imageUrl = value?.asset?.url
-      const alt = value?.alt || ''
+      const imageUrl = value?.asset?.url;
+      const alt = value?.alt || '';
       return imageUrl ? (
         <img
           src={imageUrl}
           alt={alt}
-          className="rounded-2xl my-6 ring-1 ring-white/10 w-full object-cover"
+          className="rounded-2xl my-8 ring-1 ring-white/10 w-full object-cover"
           loading="lazy"
         />
-      ) : null
+      ) : null;
     },
   },
-}
-const springTransition = {
-  type: "spring" as const,
-  stiffness: 220,
-  damping: 28,
 };
 
 export default function BlogPost() {
-  const {
-    slug
-  } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const { isRTL } = useDirection();
   const [readingProgress, setReadingProgress] = useState(0);
   const [activeHeading, setActiveHeading] = useState("");
-  const [tocOpen, setTocOpen] = useState(false);
-  const [headings, setHeadings] = useState<{
-    id: string;
-    text: string;
-    level: number;
-  }[]>([]);
-  const [tocHeadings, setTocHeadings] = useState<Array<{ level: number; text: string; id: string }>>([]);
+  const [headings, setHeadings] = useState<Array<{ level: number; text: string; id: string }>>([]);
   const [article, setArticle] = useState<ArticleDetail | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const articleRef = useRef<HTMLDivElement>(null);
 
+  // Fetch article
   useEffect(() => {
     const isConfigValid = validateSanityConfig();
     if (!isConfigValid || !slug) {
@@ -197,61 +204,55 @@ export default function BlogPost() {
     };
   }, [slug]);
 
-  // Extract headings from content (enhanced version for both markdown and PortableText)
+  // Extract headings from content (from DOM after render)
   useEffect(() => {
-    if (article?.bodyMarkdown) {
-      // For markdown content: extract directly from markdown
-      const headings = extractHeadingsFromMarkdown(article.bodyMarkdown);
-      setTocHeadings(headings);
-      setHeadings(headings.map(h => ({ id: h.id, text: h.text, level: h.level })));
-    } else if (article?.body) {
-      // For PortableText content: wait for render then extract from DOM
-      const updateHeadings = () => {
-        if (!articleRef.current) return;
-
-        // Find all h1, h2, h3, h4, h5, h6 elements within the article
-        const headingElements = articleRef.current.querySelectorAll("h1, h2, h3, h4, h5, h6");
-
-        const extractedHeadings = Array.from(headingElements).map((heading, index) => {
-          // Generate unique ID if not present
-          if (!heading.id) {
-            heading.id = `heading-${index}`;
-          }
-          return {
-            id: heading.id,
-            text: heading.textContent?.trim() || "",
-            level: parseInt(heading.tagName[1]) // h1=1, h2=2, etc.
-          };
-        }).filter(h => h.text); // Remove empty headings
-
-        setHeadings(extractedHeadings);
-        setTocHeadings(extractedHeadings.map(h => ({
-          level: h.level,
-          text: h.text,
-          id: h.id
-        })));
-      };
-
-      // Use a small delay to ensure PortableText has rendered
-      const timeout = setTimeout(updateHeadings, 100);
-      return () => clearTimeout(timeout);
-    } else {
-      // No content available
+    if (!article) {
       setHeadings([]);
-      setTocHeadings([]);
+      return;
     }
+
+    const updateHeadings = () => {
+      if (!articleRef.current) return;
+
+      const headingElements = articleRef.current.querySelectorAll("h2, h3");
+      const extractedHeadings = Array.from(headingElements).map((heading, index) => {
+        // Use existing ID or generate one
+        if (!heading.id) {
+          const text = heading.textContent?.trim() || "";
+          const id = text
+            .toLowerCase()
+            .replace(/[^\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFFa-zA-Z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim() || `heading-${index}`;
+          heading.id = id;
+        }
+        return {
+          id: heading.id,
+          text: heading.textContent?.trim() || "",
+          level: parseInt(heading.tagName[1]),
+        };
+      }).filter(h => h.text);
+
+      setHeadings(extractedHeadings);
+    };
+
+    // Wait for content to render
+    const timeout = setTimeout(updateHeadings, 200);
+    return () => clearTimeout(timeout);
   }, [article]);
 
-  // Reading progress tracking
+  // Reading progress and scroll spy
   useEffect(() => {
     const handleScroll = () => {
       if (!articleRef.current) return;
+      
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       const scrollTop = window.scrollY;
       const trackLength = documentHeight - windowHeight;
-      const progress = scrollTop / trackLength * 100;
-      setReadingProgress(Math.min(progress, 100));
+      const progress = Math.min((scrollTop / trackLength) * 100, 100);
+      setReadingProgress(progress);
 
       // Update active heading
       const headingElements = articleRef.current.querySelectorAll("h2, h3");
@@ -264,9 +265,12 @@ export default function BlogPost() {
       });
       setActiveHeading(currentHeading);
     };
-    window.addEventListener("scroll", handleScroll);
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Initial call
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [article]);
+
   const scrollToHeading = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -274,23 +278,23 @@ export default function BlogPost() {
       const top = element.offsetTop - offset;
       window.scrollTo({
         top,
-        behavior: "smooth"
+        behavior: "smooth",
       });
     }
   };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("fa-IR", {
       year: "numeric",
       month: "long",
-      day: "numeric"
+      day: "numeric",
     });
   };
+
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareTitle = article?.title || "";
-  const prevPost = relatedPosts[0];
-  const nextPost = relatedPosts[1];
-  const remainingRelatedPosts = relatedPosts.slice(2);
+
   const handleShare = (platform: string) => {
     let url = "";
     switch (platform) {
@@ -312,56 +316,87 @@ export default function BlogPost() {
       window.open(url, "_blank", "width=600,height=400");
     }
   };
+
   const structuredData = article
     ? {
-    "@context": "https://schema.org",
-    "@type": "Article",
+        "@context": "https://schema.org",
+        "@type": "Article",
         headline: article.title,
         image: article.cover,
         datePublished: article.publishedAt,
         dateModified: article.publishedAt,
-    author: {
-      "@type": "Person",
+        author: {
+          "@type": "Person",
           name: article.author?.name || "SharifGPT",
           image: article.author?.avatar,
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "SharifGPT",
-      logo: {
-        "@type": "ImageObject",
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "SharifGPT",
+          logo: {
+            "@type": "ImageObject",
             url: "https://sharifgpt.ai/logo.png",
           },
-    },
+        },
         description: article.excerpt || article.title,
       }
     : null;
+
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">در حال بارگذاری...</div>
+        <div className="animate-pulse text-muted-foreground font-vazirmatn">در حال بارگذاری...</div>
       </div>
     );
   }
 
-  if (!article) {
+  // 404 state
+  if (!article || fetchError) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-muted-foreground">{fetchError ?? "مقاله یافت نشد"}</div>
+      <div dir="rtl" className="min-h-screen flex flex-col">
+        <Header onSearch={() => {}} active="blog" />
+        <main className="flex-1 flex items-center justify-center pt-[84px] px-4">
+          <div className="text-center max-w-md">
+            <h1 className="font-vazirmatn text-2xl font-bold text-foreground mb-4">
+              مقاله یافت نشد
+            </h1>
+            <p className="font-vazirmatn text-muted-foreground mb-6">
+              {fetchError || "مقاله مورد نظر وجود ندارد."}
+            </p>
+            <SurfaceGlass className="inline-block">
+              <Link
+                to="/blog"
+                className="font-vazirmatn px-6 py-3 rounded-lg hover:bg-surface-glass/50 transition-colors block"
+              >
+                بازگشت به مقالات
+              </Link>
+            </SurfaceGlass>
+          </div>
+        </main>
+        <Footer
+          links={{
+            products: "/products",
+            magazine: "/blog",
+            courses: "/courses",
+            pricing: "/pricing",
+            support: "/support",
+          }}
+          socials={[]}
+        />
       </div>
     );
   }
 
-  return <>
+  return (
+    <>
       <Helmet>
         <title>
-          {article?.seo?.metaTitle || (article ? `${article.title} - مجله SharifGPT` : "مجله SharifGPT")}
+          {article?.seo?.metaTitle || `${article.title} - مجله SharifGPT`}
         </title>
         <meta
           name="description"
-          content={
-            article?.seo?.metaDescription || article?.excerpt || "مقاله‌ای از مجله SharifGPT"
-          }
+          content={article?.seo?.metaDescription || article?.excerpt || "مقاله‌ای از مجله SharifGPT"}
         />
         <link
           rel="canonical"
@@ -369,16 +404,31 @@ export default function BlogPost() {
         />
         {article?.seo?.robotsMeta && <meta name="robots" content={article.seo.robotsMeta} />}
         <meta property="og:type" content="article" />
-        <meta property="og:title" content={article?.seo?.openGraphTitle || article?.seo?.metaTitle || article?.title || "SharifGPT"} />
-        <meta property="og:description" content={article?.seo?.openGraphDescription || article?.seo?.metaDescription || article?.excerpt || "مقاله‌ای از مجله SharifGPT"} />
-        <meta property="og:url" content={article?.seo?.canonicalUrl || `${window.location.origin}/blog/${slug}`} />
-        { (article?.seo?.openGraphImage || article?.cover) && (
+        <meta
+          property="og:title"
+          content={article?.seo?.openGraphTitle || article?.seo?.metaTitle || article?.title || "SharifGPT"}
+        />
+        <meta
+          property="og:description"
+          content={article?.seo?.openGraphDescription || article?.seo?.metaDescription || article?.excerpt || "مقاله‌ای از مجله SharifGPT"}
+        />
+        <meta
+          property="og:url"
+          content={article?.seo?.canonicalUrl || `${window.location.origin}/blog/${slug}`}
+        />
+        {(article?.seo?.openGraphImage || article?.cover) && (
           <meta property="og:image" content={article?.seo?.openGraphImage || article?.cover} />
         )}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={article?.seo?.openGraphTitle || article?.seo?.metaTitle || article?.title || "SharifGPT"} />
-        <meta name="twitter:description" content={article?.seo?.openGraphDescription || article?.seo?.metaDescription || article?.excerpt || "مقاله‌ای از مجله SharifGPT"} />
-        { (article?.seo?.openGraphImage || article?.cover) && (
+        <meta
+          name="twitter:title"
+          content={article?.seo?.openGraphTitle || article?.seo?.metaTitle || article?.title || "SharifGPT"}
+        />
+        <meta
+          name="twitter:description"
+          content={article?.seo?.openGraphDescription || article?.seo?.metaDescription || article?.excerpt || "مقاله‌ای از مجله SharifGPT"}
+        />
+        {(article?.seo?.openGraphImage || article?.cover) && (
           <meta name="twitter:image" content={article?.seo?.openGraphImage || article?.cover} />
         )}
         {article?.publishedAt && (
@@ -391,7 +441,7 @@ export default function BlogPost() {
           <meta key={tag} property="article:tag" content={tag} />
         ))}
         {structuredData && (
-        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+          <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
         )}
         {article?.seo?.structuredData && (
           <script type="application/ld+json">{article.seo.structuredData}</script>
@@ -399,218 +449,210 @@ export default function BlogPost() {
       </Helmet>
 
       {/* Reading Progress Bar */}
-      <motion.div className="fixed top-0 left-0 h-1 bg-gradient-to-r from-primary to-secondary z-50" style={{
-      width: `${readingProgress}%`
-    }} />
+      <div
+        className="fixed top-0 left-0 h-1 z-50 transition-all duration-150"
+        style={{
+          width: `${readingProgress}%`,
+          background: "linear-gradient(to right, hsl(var(--primary)), hsl(217 91% 60%))",
+        }}
+      />
 
-      <div className="min-h-screen flex flex-col">
+      <div dir="rtl" className="min-h-screen flex flex-col">
         <Header onSearch={() => {}} active="blog" />
 
-        <main className="flex-1 py-16">
-          <div className="max-w-[1600px] px-4 md:px-6 lg:px-8 mx-auto my-[75px]">
-            <div className="flex justify-center gap-12 lg:gap-16 xl:gap-20">
-              {/* Main Content */}
-              <article className="w-full max-w-[820px]">
-                {/* Breadcrumb */}
-                <nav className="mb-8 flex items-center gap-2 text-sm text-muted-foreground">
-                  <Link to="/" className="hover:text-foreground transition-colors">
-                    خانه
-                  </Link>
-                  <ChevronLeft className="w-4 h-4" />
-                  <Link to="/blog" className="hover:text-foreground transition-colors">
-                    مقالات
-                  </Link>
-                  <ChevronLeft className="w-4 h-4" />
-                  <span className="text-foreground">{article?.title}</span>
-                </nav>
+        <main className="flex-1 pt-[84px]">
+          {/* Page Container */}
+          <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8">
+            {/* Breadcrumb */}
+            <nav className="mb-6 flex items-center gap-2 font-vazirmatn text-sm font-normal leading-[1.4]">
+              <Link
+                to="/"
+                className="text-muted-foreground hover:text-foreground transition-colors max-w-[200px] md:max-w-[400px] truncate"
+              >
+                خانه
+              </Link>
+              <ChevronLeft
+                className={cn("w-4 h-4 text-muted-foreground", isRTL && "rotate-180")}
+              />
+              <Link
+                to="/blog"
+                className="text-muted-foreground hover:text-foreground transition-colors max-w-[200px] md:max-w-[400px] truncate"
+              >
+                مقالات
+              </Link>
+              <ChevronLeft
+                className={cn("w-4 h-4 text-muted-foreground", isRTL && "rotate-180")}
+              />
+              <span className="text-foreground max-w-[200px] md:max-w-[400px] truncate">
+                {article.title}
+              </span>
+            </nav>
 
+            {/* Two-Column Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 lg:gap-12">
+              {/* Main Article Column */}
+              <article>
                 {/* Cover Image */}
-                <motion.div initial={{
-                opacity: 0,
-                y: 20
-              }} animate={{
-                opacity: 1,
-                y: 0
-              }} className="mb-8">
-                  {article?.cover && (
+                {article.cover && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="relative mb-8 rounded-3xl overflow-hidden ring-1 ring-white/12"
+                  >
                     <img
                       src={article.cover}
                       alt={article.title}
+                      className="w-full aspect-[2/1] object-cover"
                       loading="lazy"
-                      className="w-full aspect-[2/1] object-cover rounded-3xl ring-1 ring-white/12"
                     />
-                  )}
-                </motion.div>
+                    {/* Overlay gradient */}
+                    <div
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        background:
+                          "linear-gradient(to top, rgba(0,0,0,0.4), transparent, rgba(0,0,0,0.2))",
+                      }}
+                    />
+                  </motion.div>
+                )}
 
                 {/* Title */}
-                <h1 className="text-4xl md:text-5xl font-black mb-6">
-                  {article?.title}
+                <h1 className="font-vazirmatn text-[30px] md:text-[36px] lg:text-[48px] font-black leading-[1.2] text-foreground mb-6">
+                  {article.title}
                 </h1>
 
-                {/* Meta Row */}
-                <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-8 border-b border-white/10">
-                  <div className="flex items-center gap-4">
-                    {article?.author?.avatar && (
-                      <img
-                        src={article.author.avatar}
-                        alt={article.author?.name || ""}
-                        loading="lazy"
-                        className="w-12 h-12 rounded-full ring-2 ring-white/20"
-                      />
-                    )}
-                    <div>
-                      <p className="font-semibold">{article?.author?.name}</p>
-                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                        {article?.publishedAt && <span>{formatDate(article.publishedAt)}</span>}
-                        <span>•</span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          {article?.readTime ?? 0} دقیقه
-                        </span>
-                      </div>
+                {/* Author Row */}
+                <div className="flex items-center gap-3 mb-4">
+                  {article.author?.avatar ? (
+                    <img
+                      src={article.author.avatar}
+                      alt={article.author?.name || ""}
+                      className="w-10 h-10 rounded-full ring-1 ring-white/20 bg-white/10 object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full ring-1 ring-white/20 bg-white/10 flex items-center justify-center">
+                      <User className="w-5 h-5 text-muted-foreground" />
                     </div>
-                  </div>
-
-                  {/* Share Buttons */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground ml-2">اشتراک:</span>
-                    <button onClick={() => handleShare("twitter")} className="p-2 glass rounded-lg hover:bg-surface-glass transition-colors" aria-label="Share on Twitter">
-                      <Twitter className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleShare("facebook")} className="p-2 glass rounded-lg hover:bg-surface-glass transition-colors" aria-label="Share on Facebook">
-                      <Facebook className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleShare("linkedin")} className="p-2 glass rounded-lg hover:bg-surface-glass transition-colors" aria-label="Share on LinkedIn">
-                      <Linkedin className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleShare("copy")} className="p-2 glass rounded-lg hover:bg-surface-glass transition-colors" aria-label="Copy link">
-                      <Link2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {(article?.tags ?? []).map(tag => <span key={tag} className="glass border border-white/20 rounded-full px-4 py-1.5 text-sm">
-                      {tag}
-                    </span>)}
-                </div>
-
-                {/* Mobile TOC - positioned right above article content */}
-                <div className="lg:hidden mb-6">
-                  <button
-                    onClick={() => setTocOpen(!tocOpen)}
-                    className="w-full flex items-center justify-between p-4 glass rounded-lg hover:bg-surface-glass/50 transition-colors"
-                  >
-                    <span className="font-semibold">فهرست مطالب</span>
-                    <ChevronDown className={cn("w-5 h-5 transition-transform", tocOpen && "rotate-180")} />
-                  </button>
-                  {tocOpen && (
-                    <nav className="mt-3 space-y-1 p-4 glass rounded-lg" dir="rtl">
-                      {tocHeadings.length > 0 ? (
-                        tocHeadings.map((heading) => (
-                          <button
-                            key={heading.id}
-                            onClick={() => {
-                              scrollToHeading(heading.id);
-                              setTocOpen(false);
-                            }}
-                            className={cn(
-                              "block w-full text-right py-2 rounded-lg transition-colors text-sm",
-                              heading.level === 1 ? "pr-3 font-bold text-base" :
-                              heading.level === 2 ? "pr-3 font-semibold" :
-                              heading.level === 3 ? "pr-6 text-xs" :
-                              "pr-9 text-xs",
-                              activeHeading === heading.id ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"
-                            )}
-                          >
-                            {heading.text}
-                          </button>
-                        ))
-                      ) : (
-                        <p className="text-sm text-muted-foreground text-right">
-                          فهرست مطالب در دسترس نیست
-                        </p>
-                      )}
-                    </nav>
                   )}
+                  <span className="font-vazirmatn text-base font-medium leading-[1.4] text-foreground">
+                    {article.author?.name || "SharifGPT"}
+                  </span>
                 </div>
+
+                {/* Meta Row */}
+                <div className="flex items-center gap-4 mb-6 font-vazirmatn text-sm font-normal leading-[1.4] text-muted-foreground">
+                  {article.publishedAt && (
+                    <>
+                      <span>{formatDate(article.publishedAt)}</span>
+                      <span className="text-white/30">•</span>
+                    </>
+                  )}
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-4 h-4" />
+                    {article.readTime ?? 0} دقیقه
+                  </span>
+                </div>
+
+                {/* Share Row */}
+                <div className="flex items-center gap-3 pb-8 mb-8 border-b border-white/10">
+                  <span className="font-vazirmatn text-sm font-normal leading-[1.4] text-muted-foreground">
+                    اشتراک:
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => handleShare("twitter")}
+                      className="w-9 h-9 rounded-full glass border border-white/20 hover:bg-white/10 transition-all flex items-center justify-center"
+                      aria-label="Share on Twitter"
+                    >
+                      <Twitter className="w-4 h-4 text-foreground" />
+                    </button>
+                    <button
+                      onClick={() => handleShare("facebook")}
+                      className="w-9 h-9 rounded-full glass border border-white/20 hover:bg-white/10 transition-all flex items-center justify-center"
+                      aria-label="Share on Facebook"
+                    >
+                      <Facebook className="w-4 h-4 text-foreground" />
+                    </button>
+                    <button
+                      onClick={() => handleShare("linkedin")}
+                      className="w-9 h-9 rounded-full glass border border-white/20 hover:bg-white/10 transition-all flex items-center justify-center"
+                      aria-label="Share on LinkedIn"
+                    >
+                      <Linkedin className="w-4 h-4 text-foreground" />
+                    </button>
+                    <button
+                      onClick={() => handleShare("copy")}
+                      className="w-9 h-9 rounded-full glass border border-white/20 hover:bg-white/10 transition-all flex items-center justify-center"
+                      aria-label="Copy link"
+                    >
+                      <Link2 className="w-4 h-4 text-foreground" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tags Row */}
+                {article.tags && article.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-8">
+                    {article.tags.map(tag => (
+                      <span
+                        key={tag}
+                        className="font-vazirmatn text-sm font-normal leading-[1.4] text-foreground px-4 py-1.5 rounded-full glass border border-white/20"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 {/* Article Body */}
-                <div ref={articleRef} className="prose prose-invert prose-lg max-w-none" dir="rtl">
-                  {article?.bodyMarkdown && article.bodyMarkdown.trim() ? (
-                    // Use EnhancedMarkdownRenderer for markdown content
+                <div
+                  ref={articleRef}
+                  className="prose prose-lg max-w-none font-vazirmatn"
+                  dir="rtl"
+                >
+                  {article.bodyMarkdown && article.bodyMarkdown.trim() ? (
                     <EnhancedMarkdownRenderer content={article.bodyMarkdown} />
-                  ) : article?.body && Array.isArray(article.body) && article.body.length > 0 ? (
-                    // Fallback to PortableText for Sanity rich text
+                  ) : article.body && Array.isArray(article.body) && article.body.length > 0 ? (
                     <PortableText value={article.body} components={portableTextComponents} />
                   ) : (
-                    <p className="text-muted-foreground text-center py-8">
+                    <p className="font-vazirmatn text-muted-foreground text-center py-8">
                       محتوای این مقاله در دسترس نیست.
                     </p>
                   )}
                 </div>
-
-                {(prevPost || nextPost) && (
-                <div className="grid md:grid-cols-2 gap-4 mt-12 pt-12 border-t border-white/10">
-                    {prevPost && (
-                      <Link
-                        to={`/blog/${prevPost.slug}`}
-                        className="glass border border-white/20 rounded-xl p-6 hover:border-primary/40 transition-all group"
-                      >
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                      <ArrowRight className="w-4 h-4" />
-                      <span>مقاله قبلی</span>
-                    </div>
-                        <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">
-                          {prevPost.title}
-                    </h3>
-                  </Link>
-                    )}
-
-                    {nextPost && (
-                      <Link
-                        to={`/blog/${nextPost.slug}`}
-                        className="glass border border-white/20 rounded-xl p-6 hover:border-primary/40 transition-all group text-left"
-                      >
-                    <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground mb-2">
-                      <span>مقاله بعدی</span>
-                      <ArrowLeft className="w-4 h-4" />
-                    </div>
-                        <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">
-                          {nextPost.title}
-                    </h3>
-                  </Link>
-                    )}
-                </div>
-                )}
               </article>
 
-              {/* Sidebar - Table of Contents (same style as ProductDetail) */}
-              <aside className="hidden lg:block w-[280px] xl:w-[320px] shrink-0">
+              {/* Sidebar - Table of Contents */}
+              <aside className="hidden lg:block">
                 <div className="sticky top-24">
-                  <SurfaceGlass className="p-6">
-                    <h3 className="font-bold text-lg mb-4 text-foreground">فهرست مطالب</h3>
+                  <SurfaceGlass className="p-6 rounded-2xl border border-white/20">
+                    <h3 className="font-vazirmatn text-lg font-bold leading-[1.4] text-foreground mb-4">
+                      فهرست مطالب
+                    </h3>
                     <nav className="space-y-1" dir="rtl">
-                      {tocHeadings.length > 0 ? (
-                        tocHeadings.map((heading) => (
+                      {headings.length > 0 ? (
+                        headings.map((heading) => (
                           <button
                             key={heading.id}
                             onClick={() => scrollToHeading(heading.id)}
                             className={cn(
-                              "block w-full text-right py-2 rounded-lg transition-colors",
-                              heading.level === 1 ? "pr-3 font-bold text-base" :
-                              heading.level === 2 ? "pr-3 font-semibold" :
-                              heading.level === 3 ? "pr-6 text-xs" :
-                              "pr-9 text-xs",
-                              activeHeading === heading.id ? "bg-surface-glass text-primary font-medium" : "text-muted-foreground hover:bg-surface-glass/50 hover:text-foreground"
+                              "block w-full text-right py-2 px-3 rounded-lg transition-colors font-vazirmatn text-sm leading-[1.4]",
+                              heading.level === 1
+                                ? "font-bold"
+                                : heading.level === 2
+                                ? "pr-3"
+                                : "pr-6 text-xs",
+                              activeHeading === heading.id
+                                ? "bg-primary/20 text-primary font-semibold"
+                                : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                             )}
                           >
                             {heading.text}
                           </button>
                         ))
                       ) : (
-                        <p className="text-sm text-muted-foreground text-right pr-3">
+                        <p className="font-vazirmatn text-sm text-muted-foreground text-right">
                           فهرست مطالب در دسترس نیست
                         </p>
                       )}
@@ -621,36 +663,44 @@ export default function BlogPost() {
             </div>
 
             {/* Related Posts */}
-            {remainingRelatedPosts.length > 0 && (
-            <section className="mt-16 w-full max-w-[820px] mx-auto">
-              <h2 className="text-3xl font-bold mb-8">مقالات مرتبط</h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {remainingRelatedPosts.map(post => (
+            {relatedPosts.length > 0 && (
+              <section className="mt-16 pt-12 border-t border-white/10">
+                <h2 className="font-vazirmatn text-2xl md:text-[30px] font-bold leading-[1.3] text-foreground mb-8">
+                  مقالات مرتبط
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {relatedPosts.map(post => (
                     <BlogCard key={post.slug} post={post} />
                   ))}
-              </div>
-            </section>
+                </div>
+              </section>
             )}
           </div>
         </main>
 
-        <Footer links={{
-        products: "/products",
-        magazine: "/magazine",
-        courses: "/courses",
-        pricing: "/pricing",
-        support: "/support"
-      }} socials={[]} />
+        <Footer
+          links={{
+            products: "/products",
+            magazine: "/blog",
+            courses: "/courses",
+            pricing: "/pricing",
+            support: "/support",
+          }}
+          socials={[]}
+        />
       </div>
 
+      {/* Prose Styles */}
       <style>{`
         .prose {
-          color: hsl(var(--foreground));
+          color: hsl(var(--muted-foreground));
         }
 
         .prose h2 {
-          font-size: 1.875rem;
+          font-family: 'Vazirmatn', sans-serif;
+          font-size: 28px;
           font-weight: 800;
+          line-height: 1.3;
           margin-top: 3rem;
           margin-bottom: 1.5rem;
           color: hsl(var(--foreground));
@@ -658,8 +708,10 @@ export default function BlogPost() {
         }
 
         .prose h3 {
-          font-size: 1.5rem;
+          font-family: 'Vazirmatn', sans-serif;
+          font-size: 22px;
           font-weight: 700;
+          line-height: 1.35;
           margin-top: 2rem;
           margin-bottom: 1rem;
           color: hsl(var(--foreground));
@@ -667,14 +719,22 @@ export default function BlogPost() {
         }
 
         .prose p {
+          font-family: 'Vazirmatn', sans-serif;
+          font-size: 18px;
+          font-weight: 400;
+          line-height: 1.9;
           margin-bottom: 1.5rem;
-          line-height: 1.875;
           color: hsl(var(--muted-foreground));
         }
 
-        .prose ul, .prose ol {
+        .prose ul,
+        .prose ol {
+          font-family: 'Vazirmatn', sans-serif;
+          font-size: 18px;
+          font-weight: 400;
+          line-height: 1.7;
           margin-bottom: 1.5rem;
-          padding-right: 1.5rem;
+          padding-right: 1.25rem;
         }
 
         .prose li {
@@ -683,11 +743,14 @@ export default function BlogPost() {
         }
 
         .prose blockquote {
+          font-family: 'Vazirmatn', sans-serif;
           border-right: 4px solid hsl(var(--primary));
-          padding: 1rem 1.5rem;
+          padding-right: 1.5rem;
+          padding-top: 1rem;
+          padding-bottom: 1rem;
           margin: 2rem 0;
           background: hsl(var(--primary) / 0.1);
-          border-radius: 0.75rem;
+          border-radius: 12px;
           font-style: italic;
         }
 
@@ -697,13 +760,13 @@ export default function BlogPost() {
         }
 
         .prose pre {
+          font-family: 'Courier New', monospace;
           background: hsl(var(--surface-glass));
           border: 1px solid hsl(var(--border-glass));
-          border-radius: 1rem;
+          border-radius: 16px;
           padding: 1.5rem;
           margin: 2rem 0;
           overflow-x: auto;
-          backdrop-filter: blur(12px);
         }
 
         .prose code {
@@ -713,28 +776,6 @@ export default function BlogPost() {
         }
 
         .prose pre code {
-          color: hsl(var(--foreground));
-        }
-
-        .prose .callout {
-          padding: 1.25rem;
-          margin: 2rem 0;
-          border-radius: 1rem;
-          border: 1px solid;
-          backdrop-filter: blur(12px);
-        }
-
-        .prose .callout-info {
-          background: hsl(var(--primary) / 0.1);
-          border-color: hsl(var(--primary) / 0.3);
-        }
-
-        .prose .callout-warning {
-          background: hsl(45 100% 50% / 0.1);
-          border-color: hsl(45 100% 50% / 0.3);
-        }
-
-        .prose .callout strong {
           color: hsl(var(--foreground));
         }
 
@@ -748,5 +789,6 @@ export default function BlogPost() {
           text-decoration: none;
         }
       `}</style>
-    </>;
+    </>
+  );
 }

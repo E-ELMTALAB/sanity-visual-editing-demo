@@ -510,7 +510,7 @@ export default function About() {
         <Footer 
           links={{
             products: "/products",
-            magazine: "/magazine",
+            magazine: "/blog",
             courses: "/courses",
             pricing: "/pricing",
             support: "/support"

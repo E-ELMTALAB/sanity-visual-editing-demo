@@ -9,7 +9,9 @@ import { PageIntro } from "@/components/ui/page-intro";
 import { ProductCard } from "@/components/Products/ProductCard";
 import { FiltersSidebar } from "@/components/Products/FiltersSidebar";
 import { FaqAccordion } from "@/components/Products/FaqAccordion";
-import { FloatingDock } from "@/components/FloatingDock/FloatingDock";
+import { CustomerReviews, type CustomerReview } from "@/components/Products/CustomerReviews";
+import { ProductsContentAccordion } from "@/components/Products/ProductsContentAccordion";
+// FloatingDock moved to global App.tsx - appears on all pages
 import { CartDrawer } from "@/components/FloatingDock/CartDrawer";
 import { ChatbotPanel } from "@/components/FloatingDock/ChatbotPanel";
 import { SupportPanel } from "@/components/FloatingDock/SupportPanel";
@@ -403,6 +405,41 @@ export default function Products() {
                   ))}
                 </motion.div>
 
+                {/* Customer Reviews */}
+                <CustomerReviews
+                  reviews={[
+                    {
+                      id: "1",
+                      text: "محصولات عالی و با کیفیت. تحویل سریع و پشتیبانی عالی داشتند. حتماً دوباره خرید می‌کنم.",
+                      screenshot: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80",
+                      source: {
+                        platform: "telegram",
+                        label: "کانال تلگرام",
+                        url: "https://t.me/sharifgpt",
+                      },
+                    },
+                    {
+                      id: "2",
+                      text: "راضی هستم از خرید. قیمت‌ها مناسب و محصولات با کیفیت هستند.",
+                      screenshot: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=800&q=80",
+                      source: {
+                        platform: "instagram",
+                        label: "صفحه اینستاگرام",
+                        url: "https://instagram.com/sharifgpt",
+                      },
+                    },
+                    {
+                      id: "3",
+                      text: "خدمات عالی و سریع. پیشنهاد می‌کنم به همه دوستان.",
+                      source: {
+                        platform: "whatsapp",
+                        label: "واتساپ",
+                        url: "https://wa.me/1234567890",
+                      },
+                    },
+                  ]}
+                />
+
                 {/* Products Grid */}
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -514,6 +551,9 @@ export default function Products() {
                 {faqItems.length > 0 && (
                   <FaqAccordion items={faqItems} className="mt-16" />
                 )}
+
+                {/* Products Content / Trust Accordion (below product cards, above footer) */}
+                <ProductsContentAccordion />
               </div>
             </div>
           </div>
@@ -522,7 +562,7 @@ export default function Products() {
         <Footer
           links={{
             products: "/products",
-            magazine: "/magazine",
+            magazine: "/blog",
             courses: "/courses",
             pricing: "/pricing",
             support: "/support",
@@ -534,12 +574,7 @@ export default function Products() {
           ]}
         />
 
-        <FloatingDock
-          onOpenChat={() => setChatOpen(true)}
-          onOpenSupport={() => setSupportOpen(true)}
-          onOpenCart={() => setCartOpen(true)}
-          cartItemCount={cartState.itemCount}
-        />
+        {/* FloatingDock moved to global App.tsx - appears on all pages */}
 
         <CartDrawer
           open={cartOpen}

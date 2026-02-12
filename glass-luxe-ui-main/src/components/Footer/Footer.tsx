@@ -43,8 +43,6 @@ export function Footer({ links, socials }: FooterProps) {
   const quickLinks: FooterLink[] = [
     { label: "محصولات", href: links.products },
     { label: "مجله", href: links.magazine },
-    { label: "دوره‌ها", href: links.courses },
-    { label: "قیمت‌گذاری", href: links.pricing },
     { label: "پشتیبانی", href: links.support },
   ];
 

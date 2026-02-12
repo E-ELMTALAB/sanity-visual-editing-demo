@@ -30,18 +30,18 @@ const sizeClasses = {
     icon: 'w-4 h-4',
   },
   lg: {
-    container: 'gap-3 px-4 py-3',
-    digit: 'text-lg font-bold min-w-[36px]',
-    label: 'text-xs',
-    separator: 'text-lg',
-    icon: 'w-5 h-5',
+    container: 'gap-3 px-5 py-4',
+    digit: 'text-xl sm:text-2xl font-extrabold min-w-[40px] sm:min-w-[44px]',
+    label: 'text-xs sm:text-sm',
+    separator: 'text-xl sm:text-2xl',
+    icon: 'w-5 h-5 sm:w-6 sm:h-6',
   },
 };
 
 const variantClasses = {
   default: 'bg-red-500/20 border-red-500/40 text-red-400',
   urgent: 'bg-red-600/30 border-red-500/60 text-red-300 animate-pulse',
-  glass: 'glass border-red-500/30 text-red-400',
+  glass: 'glass border-white/20 text-white/90 bg-gradient-to-br from-white/10 to-white/5',
 };
 
 export function CountdownTimer({
@@ -94,12 +94,20 @@ export function CountdownTimer({
         key={value}
         initial={{ opacity: 0, y: -5 }}
         animate={{ opacity: 1, y: 0 }}
-        className={cn(sizes.digit, "tabular-nums text-center")}
+        className={cn(
+          sizes.digit, 
+          "tabular-nums text-center font-bold",
+          finalVariant === 'glass' ? "text-white font-extrabold" : ""
+        )}
       >
         {toPersianNumber(value).padStart(2, '۰')}
       </motion.span>
       {showLabels && (
-        <span className={cn(sizes.label, "text-white/60 font-medium")}>
+        <span className={cn(
+          sizes.label, 
+          "font-medium",
+          finalVariant === 'glass' ? "text-white/70" : "text-white/60"
+        )}>
           {label}
         </span>
       )}
@@ -107,7 +115,11 @@ export function CountdownTimer({
   );
 
   const Separator = () => (
-    <span className={cn(sizes.separator, "text-white/40 font-bold self-start mt-0.5")}>
+    <span className={cn(
+      sizes.separator, 
+      "font-bold self-start mt-0.5",
+      finalVariant === 'glass' ? "text-white/50" : "text-white/40"
+    )}>
       :
     </span>
   );
@@ -127,7 +139,11 @@ export function CountdownTimer({
         dir="ltr"
       >
         {showIcon && (
-          <Clock className={cn(sizes.icon, "mr-1.5 animate-pulse")} />
+          <Clock className={cn(
+            sizes.icon, 
+            "mr-1.5 animate-pulse",
+            finalVariant === 'glass' ? "text-white/80" : ""
+          )} />
         )}
         
         <div className="flex items-center gap-1">
