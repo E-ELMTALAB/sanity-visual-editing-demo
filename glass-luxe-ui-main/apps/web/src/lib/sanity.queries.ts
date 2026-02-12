@@ -545,6 +545,21 @@ export const pageBySlugQuery = `
     _id,
     title,
     overview,
+    testimonials[]->{
+      _id,
+      title,
+      personName,
+      role,
+      platform,
+      reviewText,
+      screenshot{
+        ...,
+        asset->
+      },
+      link,
+      order,
+      isActive
+    },
     body[]{
       ...,
       asset->
