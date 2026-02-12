@@ -397,6 +397,21 @@ export const productBySlugQuery = `
       name,
       price
     },
+    testimonials[]->{
+      _id,
+      title,
+      personName,
+      role,
+      platform,
+      reviewText,
+      screenshot{
+        ...,
+        asset->
+      },
+      link,
+      order,
+      isActive
+    },
     relatedProducts[]->{
       _id,
       name,
