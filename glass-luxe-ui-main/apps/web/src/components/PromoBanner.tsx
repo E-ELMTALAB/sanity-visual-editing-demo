@@ -4,21 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { Sparkles, ArrowLeft } from "lucide-react";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { cn } from "@/lib/utils";
-import { getImageUrl } from "@/lib/sanity.image";
-
-interface PromoBannerData {
-  title?: string;
-  subtitle?: string;
-  description?: string;
-  buttonText?: string;
-  buttonLink?: string;
-  backgroundImage?: any;
-  altText?: string;
-}
 
 interface PromoBannerProps {
   className?: string;
-  data?: PromoBannerData | null;
 }
 
 const EXPIRY_KEY = "promo-banner-expiry-v1";
@@ -47,7 +35,7 @@ function getOrInitExpiry(): string {
   return expiry;
 }
 
-export function PromoBanner({ className, data }: PromoBannerProps) {
+export function PromoBanner({ className }: PromoBannerProps) {
   const navigate = useNavigate();
   const [endsAt, setEndsAt] = useState<string | null>(null);
 
@@ -63,34 +51,17 @@ export function PromoBanner({ className, data }: PromoBannerProps) {
   };
 
   const handleButtonClick = () => {
-    if (data?.buttonLink) {
-      // If it's a full URL, open in new tab, otherwise navigate
-      if (data.buttonLink.startsWith('http')) {
-        window.open(data.buttonLink, '_blank', 'noopener,noreferrer');
-      } else {
-        navigate(data.buttonLink);
-      }
-    } else {
-      navigate("/products");
-    }
+    navigate("/products");
   };
 
   const showBanner = !!endsAt;
 
-  // Fallback values
-  const title = data?.title || "تخفیف ویژه روی اکانت‌های پریمیوم ChatGPT";
-  const subtitle = data?.subtitle || "";
-  const description = data?.description || "فقط تا پایان شمارش معکوس، می‌توانید اکانت‌های قانونی با تحویل آنی و پشتیبانی واقعی را با قیمت ویژه تهیه کنید.";
-  const buttonText = data?.buttonText || "مشاهده پلن‌ها و قیمت‌ها";
-  const defaultImageUrl = "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1600&q=75&auto=format&fit=crop&format=webp";
-
   // Optimize image URL with better compression and format
-  const backgroundImageUrl = useMemo(() => {
-    if (data?.backgroundImage) {
-      return getImageUrl(data.backgroundImage, 1600, undefined, 75) || defaultImageUrl;
-    }
-    return defaultImageUrl;
-  }, [data?.backgroundImage]);
+  const backgroundImageUrl = useMemo(
+    () =>
+      "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1600&q=75&auto=format&fit=crop&format=webp",
+    []
+  );
 
   if (!showBanner) return null;
 
@@ -184,19 +155,13 @@ export function PromoBanner({ className, data }: PromoBannerProps) {
 
               {/* Main Heading */}
               <h2 className="font-vazirmatn font-black text-2xl sm:text-3xl lg:text-4xl leading-tight tracking-tight text-white mb-3 lg:mb-4 text-right w-full lg:w-auto">
-                {title}
+                تخفیف ویژه روی اکانت‌های پریمیوم ChatGPT
               </h2>
 
-              {/* Subtitle - only show if provided */}
-              {subtitle && (
-                <p className="font-vazirmatn text-base sm:text-lg lg:text-xl font-semibold text-white/90 leading-relaxed max-w-2xl text-right mb-3">
-                  {subtitle}
-                </p>
-              )}
-
-              {/* Description */}
+              {/* Subtitle */}
               <p className="font-vazirmatn text-sm sm:text-base lg:text-lg font-normal text-white/75 leading-relaxed max-w-2xl text-right">
-                {description}
+                فقط تا پایان شمارش معکوس، می‌توانید اکانت‌های قانونی با تحویل آنی و پشتیبانی واقعی را
+                با قیمت ویژه تهیه کنید.
               </p>
             </div>
 
@@ -238,7 +203,7 @@ export function PromoBanner({ className, data }: PromoBannerProps) {
                   e.currentTarget.style.boxShadow = "0 4px 24px rgba(147,51,234,0.4)";
                 }}
               >
-                <span className="font-vazirmatn">{buttonText}</span>
+                <span className="font-vazirmatn">مشاهده پلن‌ها و قیمت‌ها</span>
                 <motion.span
                   initial={false}
                   whileHover={{ x: -4 }}

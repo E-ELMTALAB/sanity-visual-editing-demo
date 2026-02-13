@@ -23,6 +23,8 @@ import {
   postBySlugQuery,
   allCollectionsQuery,
   collectionBySlugQuery,
+  promoBannerQuery,
+  testimonialsQuery,
 } from '../src/lib/sanity.queries';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -629,6 +631,35 @@ async function fetchHomepageData() {
       console.warn(`${collectionErrorCount} collections failed to fetch`);
     }
 
+    // Fetch promo banner
+    console.log('\nFetching promo banner...');
+    const promoBanner = await fetchFromSanity(client, promoBannerQuery);
+    console.log("Fetched promoBanner:", promoBanner?._id || 'null');
+    if (promoBanner) {
+      console.log(`   - Title: ${(promoBanner as any).title || 'N/A'}`);
+      console.log(`   - isActive: ${(promoBanner as any).isActive || 'N/A'}`);
+    } else {
+      console.warn('   No active promo banner found');
+    }
+    await saveToCache('promo-banner.json', promoBanner);
+
+    // Fetch testimonials
+    console.log('\nFetching testimonials...');
+    const testimonials = await fetchFromSanity(client, testimonialsQuery);
+    console.log(`Fetched testimonials count: ${(testimonials as any[])?.length || 0}`);
+    if (Array.isArray(testimonials) && testimonials.length > 0) {
+      const sample = testimonials.slice(0, 3).map((t: any) => ({
+        _id: t?._id,
+        name: t?.name,
+        subtitle: t?.subtitle,
+        active: t?.active,
+      }));
+      console.log('   - Sample testimonials:', sample);
+    } else {
+      console.warn('   No active testimonials found');
+    }
+    await saveToCache('testimonials.json', testimonials);
+
     // Save metadata
     const metadata = {
       fetchedAt: new Date().toISOString(),
@@ -674,6 +705,10 @@ export const allCollectionsListCache = ${JSON.stringify(allCollectionsList, null
 
 export const collectionsCache = ${JSON.stringify(collectionsMap, null, 2)} as const;
 
+export const promoBannerCache = ${JSON.stringify(promoBanner, null, 2)} as const;
+
+export const testimonialsCache = ${JSON.stringify(testimonials, null, 2)} as const;
+
 export const cacheMetadata = ${JSON.stringify(metadata, null, 2)} as const;
 `;
     await writeFile(join(CACHE_DIR, 'index.ts'), indexContent, 'utf-8');
@@ -694,6 +729,8 @@ export const cacheMetadata = ${JSON.stringify(metadata, null, 2)} as const;
     console.log(`   - Posts (detail pages): ${Object.keys(postsMap).length}`);
     console.log(`   - All Collections (listing): ${(allCollectionsList as any[])?.length || 0}`);
     console.log(`   - Collections (detail pages): ${Object.keys(collectionsMap).length}`);
+    console.log(`   - Promo Banner: ${promoBanner ? 'YES' : 'NO'}`);
+    console.log(`   - Testimonials: ${(testimonials as any[])?.length || 0}`);
     console.log(`\nCache location: ${CACHE_DIR}`);
   } catch (error) {
     console.error('\nError fetching homepage data:', error);

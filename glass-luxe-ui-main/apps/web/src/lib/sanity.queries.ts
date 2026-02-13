@@ -397,21 +397,6 @@ export const productBySlugQuery = `
       name,
       price
     },
-    testimonials[]->{
-      _id,
-      title,
-      personName,
-      role,
-      platform,
-      reviewText,
-      screenshot{
-        ...,
-        asset->
-      },
-      link,
-      order,
-      isActive
-    },
     relatedProducts[]->{
       _id,
       name,
@@ -560,21 +545,6 @@ export const pageBySlugQuery = `
     _id,
     title,
     overview,
-    testimonials[]->{
-      _id,
-      title,
-      personName,
-      role,
-      platform,
-      reviewText,
-      screenshot{
-        ...,
-        asset->
-      },
-      link,
-      order,
-      isActive
-    },
     body[]{
       ...,
       asset->
@@ -645,8 +615,11 @@ export const allFaqsQuery = `
   }
 `
 
+// Query for promo banner (active banner)
 export const promoBannerQuery = `
-  *[_type == "promoBanner" && isActive == true] | order(order asc) [0]{
+  *[_type == "promoBanner" && isActive == true] | order(order asc, _updatedAt desc)[0]{
+    _id,
+    _type,
     title,
     subtitle,
     description,
@@ -656,7 +629,24 @@ export const promoBannerQuery = `
       ...,
       asset->
     },
-    "altText": backgroundImage.alt
+    order,
+    isActive,
+    _updatedAt
+  }
+`
+
+// Query for active testimonials
+export const testimonialsQuery = `
+  *[_type == "testimonial" && active == true] | order(order asc, _updatedAt desc){
+    _id,
+    _type,
+    name,
+    subtitle,
+    quote,
+    socials,
+    order,
+    active,
+    _updatedAt
   }
 `
 

@@ -110,19 +110,6 @@ export default defineType({
       group: 'relations'
     }),
     defineField({
-      name: 'testimonials',
-      title: 'Testimonials',
-      type: 'array',
-      of: [
-        {
-          type: 'reference',
-          to: [{ type: 'testimonial' }]
-        }
-      ],
-      options: { sortable: true },
-      group: 'relations'
-    }),
-    defineField({
       name: 'faqs',
       title: 'Product FAQs',
       type: 'array',

@@ -11,7 +11,7 @@ import { FiltersSidebar } from "@/components/Products/FiltersSidebar";
 import { FaqAccordion } from "@/components/Products/FaqAccordion";
 import { CustomerReviews, type CustomerReview } from "@/components/Products/CustomerReviews";
 import { ProductsContentAccordion } from "@/components/Products/ProductsContentAccordion";
-// FloatingDock moved to global App.tsx - appears on all pages
+import { FloatingDock } from "@/components/FloatingDock/FloatingDock";
 import { CartDrawer } from "@/components/FloatingDock/CartDrawer";
 import { ChatbotPanel } from "@/components/FloatingDock/ChatbotPanel";
 import { SupportPanel } from "@/components/FloatingDock/SupportPanel";
@@ -80,7 +80,6 @@ export default function Products() {
   });
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
-  const [reviews, setReviews] = useState<CustomerReview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [productPrices, setProductPrices] = useState<Record<string, ProductPrices>>({});
@@ -101,7 +100,7 @@ export default function Products() {
     async function loadProductsPage() {
       try {
         setIsLoading(true);
-        const [productsResult, faqsResult, pageResult] = await Promise.all([
+        const [productsResult, faqsResult, seoResult] = await Promise.all([
           fetchFromSanity<any[]>(allProductsQuery),
           // TEMPORARILY DISABLED: Fetch FAQs from Sanity to prevent build errors
           // fetchFromSanity<any[]>(faqsByPageQuery, { page: "products" }),
@@ -123,8 +122,8 @@ export default function Products() {
         setFaqItems(transformedFaqs);
         setFetchError(null);
 
-        if (pageResult?.seo) {
-          const seo = pageResult.seo;
+        if (seoResult?.seo) {
+          const seo = seoResult.seo;
           setPageSeo({
             metaTitle: seo.metaTitle || "فروشگاه محصولات دیجیتال | SharifGPT",
             metaDescription: seo.metaDescription || "فروشگاه محصولات دیجیتال SharifGPT - دوره‌های آموزشی، کتاب‌های الکترونیکی، ابزارها و قالب‌های آماده در حوزه هوش مصنوعی و برنامه‌نویسی",
@@ -135,31 +134,6 @@ export default function Products() {
             openGraphImage: seo.openGraphImage ? getImageUrl(seo.openGraphImage, 1200) : undefined,
             structuredData: seo.structuredData || "",
           });
-        }
-
-        if (Array.isArray(pageResult?.testimonials)) {
-          const mappedReviews: CustomerReview[] = pageResult.testimonials
-            .filter((t: any) => t && t.isActive !== false && t.reviewText)
-            .sort((a: any, b: any) => {
-              const ao = typeof a.order === "number" ? a.order : 0;
-              const bo = typeof b.order === "number" ? b.order : 0;
-              return ao - bo;
-            })
-            .map((t: any) => ({
-              id: t._id || t._key || t.title || t.personName || "",
-              text: t.reviewText,
-              screenshot: t.screenshot ? getImageUrl(t.screenshot, 800) : undefined,
-              source: {
-                platform: (t.platform || "telegram") as "telegram" | "instagram" | "whatsapp",
-                label: t.personName || t.title || "مشتری",
-                url: t.link || "#",
-              },
-            }))
-            .filter((r: CustomerReview) => !!r.id && !!r.text);
-
-          setReviews(mappedReviews);
-        } else {
-          setReviews([]);
         }
       } catch (error) {
         console.error("[PRODUCTS] Failed to fetch Sanity data", error);
@@ -432,9 +406,39 @@ export default function Products() {
                 </motion.div>
 
                 {/* Customer Reviews */}
-                {reviews.length > 0 && (
-                  <CustomerReviews reviews={reviews} />
-                )}
+                <CustomerReviews
+                  reviews={[
+                    {
+                      id: "1",
+                      text: "محصولات عالی و با کیفیت. تحویل سریع و پشتیبانی عالی داشتند. حتماً دوباره خرید می‌کنم.",
+                      screenshot: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80",
+                      source: {
+                        platform: "telegram",
+                        label: "کانال تلگرام",
+                        url: "https://t.me/sharifgpt",
+                      },
+                    },
+                    {
+                      id: "2",
+                      text: "راضی هستم از خرید. قیمت‌ها مناسب و محصولات با کیفیت هستند.",
+                      screenshot: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=800&q=80",
+                      source: {
+                        platform: "instagram",
+                        label: "صفحه اینستاگرام",
+                        url: "https://instagram.com/sharifgpt",
+                      },
+                    },
+                    {
+                      id: "3",
+                      text: "خدمات عالی و سریع. پیشنهاد می‌کنم به همه دوستان.",
+                      source: {
+                        platform: "whatsapp",
+                        label: "واتساپ",
+                        url: "https://wa.me/1234567890",
+                      },
+                    },
+                  ]}
+                />
 
                 {/* Products Grid */}
                 <motion.div
@@ -570,7 +574,12 @@ export default function Products() {
           ]}
         />
 
-        {/* FloatingDock moved to global App.tsx - appears on all pages */}
+        <FloatingDock
+          onOpenChat={() => setChatOpen(true)}
+          onOpenSupport={() => setSupportOpen(true)}
+          onOpenCart={() => setCartOpen(true)}
+          cartItemCount={cartState.itemCount}
+        />
 
         <CartDrawer
           open={cartOpen}

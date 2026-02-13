@@ -98,25 +98,6 @@ export default defineType({
       group: 'relations'
     }),
     defineField({
-      name: 'testimonials',
-      title: 'Testimonials',
-      type: 'array',
-      of: [
-        {
-          type: 'reference',
-          to: [{ type: 'testimonial' }],
-          options: {
-            disableNew: false,
-          },
-        },
-      ],
-      options: {
-        sortable: true,
-      },
-      description: 'Attach existing testimonials that should appear with this product.',
-      group: 'relations',
-    }),
-    defineField({
       name: 'relatedBlogs',
       title: 'Related Blog Posts',
       type: 'array',
