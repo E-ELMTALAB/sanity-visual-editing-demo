@@ -24,7 +24,8 @@ import {
   featuredCoursesQuery, 
   featuredPostsQuery, 
   productsByCategoryQuery, 
-  faqsByPageQuery 
+  faqsByPageQuery,
+  promoBannerQuery
 } from "@/lib/sanity.queries";
 import * as transformers from "@/lib/sanity.transformers";
 import { getImageUrl } from "@/lib/sanity.image";
@@ -349,6 +350,7 @@ const Index = () => {
   const [sanityData, setSanityData] = useState<SanityData | null>(null);
   const [medusaPrices, setMedusaPrices] = useState<Record<string, ProductPrices>>({});
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [promoBannerData, setPromoBannerData] = useState<any>(null);
 
   // Load Sanity data off the critical path (deferred until after initial paint)
   useEffect(() => {
@@ -372,7 +374,7 @@ const Index = () => {
         console.log('[HOMEPAGE] 🔄 Starting data fetch...');
         console.log('[HOMEPAGE] Category map:', categoryMap);
 
-        const [homeData, featuredProductsData, featuredCoursesData, featuredPostsData, tabbedProductGroups, faqsData] = 
+        const [homeData, featuredProductsData, featuredCoursesData, featuredPostsData, tabbedProductGroups, faqsData, promoBannerResult] = 
           await Promise.all([
             fetchFromSanity<any>(homePageQuery),
             fetchFromSanity<any[]>(featuredProductsQuery),
@@ -403,6 +405,10 @@ const Index = () => {
             fetchFromSanity<any[]>(faqsByPageQuery, { page: 'home' }).catch((err) => {
               console.warn('[HOMEPAGE] Failed to fetch FAQs:', err);
               return [];
+            }),
+            fetchFromSanity<any>(promoBannerQuery).catch((err) => {
+              console.warn('[HOMEPAGE] Failed to fetch promo banner:', err);
+              return null;
             }),
           ]);
         
@@ -499,6 +505,7 @@ const Index = () => {
           faqs,
           seo: homeData?.seo || undefined,
         });
+        setPromoBannerData(promoBannerResult);
         setDataLoaded(true);
         setShowDynamicContent(true);
       } catch (error) {
@@ -772,7 +779,7 @@ const Index = () => {
       />
 
       {/* Promo Banner - limited-time hero offer */}
-      <PromoBanner />
+      <PromoBanner data={promoBannerData} />
 
       {/* Site-wide Promotion Banner - from Medusa */}
       {siteWidePromotion && (

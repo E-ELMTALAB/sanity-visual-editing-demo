@@ -645,3 +645,18 @@ export const allFaqsQuery = `
   }
 `
 
+export const promoBannerQuery = `
+  *[_type == "promoBanner" && isActive == true] | order(order asc) [0]{
+    title,
+    subtitle,
+    description,
+    buttonText,
+    buttonLink,
+    backgroundImage{
+      ...,
+      asset->
+    },
+    "altText": backgroundImage.alt
+  }
+`
+

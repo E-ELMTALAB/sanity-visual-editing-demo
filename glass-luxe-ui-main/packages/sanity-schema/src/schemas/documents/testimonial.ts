@@ -69,7 +69,7 @@ export default defineType({
       description: 'Use for manual sorting',
     }),
     defineField({
-      name: 'isActive',
+      name: 'active',
       title: 'Active',
       type: 'boolean',
       initialValue: true,

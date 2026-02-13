@@ -99,7 +99,7 @@ export default defineType({
     }),
     defineField({
       name: 'testimonials',
-      title: 'Customer Reviews',
+      title: 'Testimonials',
       type: 'array',
       of: [
         {
