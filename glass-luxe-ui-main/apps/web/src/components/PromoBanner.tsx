@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Sparkles, ArrowLeft } from "lucide-react";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { cn } from "@/lib/utils";
+import { getPromoBannerContent } from "@/lib/sanityContent";
 
 interface PromoBannerProps {
   className?: string;
@@ -39,6 +40,9 @@ export function PromoBanner({ className }: PromoBannerProps) {
   const navigate = useNavigate();
   const [endsAt, setEndsAt] = useState<string | null>(null);
 
+  // Get content from Sanity cache (with safe fallbacks)
+  const bannerContent = useMemo(() => getPromoBannerContent(), []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -51,10 +55,11 @@ export function PromoBanner({ className }: PromoBannerProps) {
   };
 
   const handleButtonClick = () => {
-    navigate("/products");
+    navigate(bannerContent.buttonLink);
   };
 
-  const showBanner = !!endsAt;
+  // Hide banner if not active or no expiry time
+  const showBanner = bannerContent.isActive && !!endsAt;
 
   // Optimize image URL with better compression and format
   const backgroundImageUrl = useMemo(
@@ -155,13 +160,12 @@ export function PromoBanner({ className }: PromoBannerProps) {
 
               {/* Main Heading */}
               <h2 className="font-vazirmatn font-black text-2xl sm:text-3xl lg:text-4xl leading-tight tracking-tight text-white mb-3 lg:mb-4 text-right w-full lg:w-auto">
-                تخفیف ویژه روی اکانت‌های پریمیوم ChatGPT
+                {bannerContent.title}
               </h2>
 
               {/* Subtitle */}
               <p className="font-vazirmatn text-sm sm:text-base lg:text-lg font-normal text-white/75 leading-relaxed max-w-2xl text-right">
-                فقط تا پایان شمارش معکوس، می‌توانید اکانت‌های قانونی با تحویل آنی و پشتیبانی واقعی را
-                با قیمت ویژه تهیه کنید.
+                {bannerContent.description || bannerContent.subtitle}
               </p>
             </div>
 
@@ -203,7 +207,7 @@ export function PromoBanner({ className }: PromoBannerProps) {
                   e.currentTarget.style.boxShadow = "0 4px 24px rgba(147,51,234,0.4)";
                 }}
               >
-                <span className="font-vazirmatn">مشاهده پلن‌ها و قیمت‌ها</span>
+                <span className="font-vazirmatn">{bannerContent.buttonText}</span>
                 <motion.span
                   initial={false}
                   whileHover={{ x: -4 }}
