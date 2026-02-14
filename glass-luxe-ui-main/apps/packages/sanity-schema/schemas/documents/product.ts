@@ -36,17 +36,17 @@ export default defineType({
       description: 'Concise Persian summary used for marketing copy or product listings.',
       group: 'content',
     }),
-    
+
     defineField({ name: 'category', title: 'Category', type: 'string', group: 'content' }),
-    defineField({ 
-      name: 'collectionType', 
-      title: 'Collection Type', 
+    defineField({
+      name: 'collectionType',
+      title: 'Collection Type',
       type: 'string',
       description: 'Collection key this product belongs to (e.g., "chatbot-ai", "ai-tools"). Leave empty if not part of a collection.',
       group: 'content'
     }),
-    
-    
+
+
     defineField({
       name: 'features',
       title: 'Features',
@@ -55,35 +55,35 @@ export default defineType({
       group: 'content'
     }),
     defineField({ name: 'badges', title: 'Badges', type: 'array', of: [{ type: 'string' }], group: 'content' }),
-    
-    
+
+
     defineField({ name: 'rating', title: 'Rating (0-5)', type: 'number', group: 'content' }),
     defineField({ name: 'reviewCount', title: 'Review Count', type: 'number', group: 'content' }),
-    
+
     // NOTE: Product options are now managed as variants in Medusa
-    defineField({ 
-      name: 'options', 
-      title: 'Purchase Options (Legacy)', 
-      type: 'array', 
-      of: [{ type: productOption.name }], 
+    defineField({
+      name: 'options',
+      title: 'Purchase Options (Legacy)',
+      type: 'array',
+      of: [{ type: productOption.name }],
       group: 'content',
       description: '⚠️ Product options are now managed as variants in Medusa. This field is for backward compatibility only.',
       hidden: true,
     }),
-    
+
     // Media Fields
-    defineField({ 
-      name: 'image', 
-      title: 'Featured Image', 
-      type: 'image', 
+    defineField({
+      name: 'image',
+      title: 'Featured Image',
+      type: 'image',
       options: { hotspot: true },
       fields: [
         defineField({ name: 'alt', type: 'string', title: 'Alt Text', description: 'Important for SEO and accessibility' }),
         defineField({ name: 'caption', type: 'string', title: 'Caption' }),
       ],
-      group: 'media' 
+      group: 'media'
     }),
-    
+
     // Relations
     defineField({
       name: 'relatedProducts',
@@ -107,6 +107,15 @@ export default defineType({
         options: { disableNew: true }
       }],
       description: 'Select related blog posts to display on this product page',
+      group: 'relations'
+    }),
+    defineField({
+      name: 'testimonials',
+      title: 'Customer Reviews',
+      type: 'array',
+      of: [{ type: 'reference', to: [{ type: 'testimonial' }] }],
+      options: { disableNew: true },
+      description: 'Select customer testimonials to display on this product page',
       group: 'relations'
     }),
     defineField({
@@ -206,17 +215,17 @@ export default defineType({
           description: 'SEO description (recommended: 150-160 characters)',
           validation: (Rule) => Rule.max(160).warning('Should be under 160 characters for optimal display')
         }),
-        defineField({ 
-          name: 'canonicalUrl', 
-          type: 'url', 
+        defineField({
+          name: 'canonicalUrl',
+          type: 'url',
           title: 'Canonical URL',
-          description: 'The canonical URL for this product (leave empty to use default)' 
+          description: 'The canonical URL for this product (leave empty to use default)'
         }),
-        defineField({ 
-          name: 'robotsMeta', 
-          type: 'string', 
-          title: 'Meta Robots', 
-          options: { 
+        defineField({
+          name: 'robotsMeta',
+          type: 'string',
+          title: 'Meta Robots',
+          options: {
             list: [
               { title: 'index, follow (default)', value: 'index,follow' },
               { title: 'noindex, nofollow', value: 'noindex,nofollow' },
@@ -257,12 +266,12 @@ export default defineType({
         }),
       ],
     }),
-    
+
     // Tags for taxonomy
-    defineField({ 
-      name: 'tags', 
-      title: 'Tags', 
-      type: 'array', 
+    defineField({
+      name: 'tags',
+      title: 'Tags',
+      type: 'array',
       of: [{ type: 'string' }],
       description: 'Tags for better categorization and SEO',
       group: 'seo'
