@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "tsx scripts/fetch-homepage-data.ts",
-    "build": "tsx scripts/fetch-homepage-data.ts && vite build",
-    "build:dev": "tsx scripts/fetch-homepage-data.ts && vite build --mode development",
-    "build:prod": "tsx scripts/fetch-homepage-data.ts && vite build --mode production",
+    "build": "vite build",
+    "build:dev": "vite build --mode development",
+    "build:prod": "vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
