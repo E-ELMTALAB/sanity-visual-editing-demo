@@ -84,6 +84,23 @@ export default defineType({
       group: 'media' 
     }),
     
+    // Customer Reviews (Testimonials)
+    defineField({
+      name: 'testimonials',
+      title: 'Testimonials',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{ type: 'testimonial' }],
+          options: { disableNew: true },
+        },
+      ],
+      description: 'Select testimonials to display on this product page',
+      group: 'relations',
+    }),
+
+    
     // Relations
     defineField({
       name: 'relatedProducts',

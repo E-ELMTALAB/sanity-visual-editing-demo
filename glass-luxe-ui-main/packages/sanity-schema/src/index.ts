@@ -6,6 +6,7 @@ import page from './schemas/documents/page'
 import post from './schemas/documents/post'
 import product from './schemas/documents/product'
 import project from './schemas/documents/project'
+import testimonial from './schemas/documents/testimonial'
 
 // Objects
 import duration from './schemas/objects/duration'
@@ -20,6 +21,8 @@ import socialMediaProduct from './schemas/objects/socialMediaProduct'
 import educationalProduct from './schemas/objects/educationalProduct'
 import bestsellingCourse from './schemas/objects/bestsellingCourse'
 import topBannerSlide from './schemas/objects/topBannerSlide'
+
+
 
 // Singletons
 import home from './schemas/singletons/home'
@@ -38,6 +41,7 @@ export const schemaTypes = [
   course,
   instructor,
   collection,
+  testimonial
   // Objects
   productOption,
   milestone,
