@@ -41,7 +41,7 @@ export const schemaTypes = [
   course,
   instructor,
   collection,
-  testimonial
+  testimonial,
   // Objects
   productOption,
   milestone,
