@@ -635,18 +635,21 @@ export const promoBannerQuery = `
   }
 `
 
-// Query for active testimonials
+
+// Query for active testimonials (schema-compatible)
 export const testimonialsQuery = `
-  *[_type == "testimonial" && active == true] | order(order asc, _updatedAt desc){
+  *[_type == "testimonial"] | order(_updatedAt desc){
     _id,
     _type,
-    name,
-    subtitle,
+    "name": author,
+    "subtitle": role,
     quote,
-    socials,
-    order,
-    active,
+    avatar{
+      ...,
+      asset->
+    },
     _updatedAt
   }
 `
+
 

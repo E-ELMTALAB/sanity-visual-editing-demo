@@ -11,4 +11,13 @@ export default defineType({
     defineField({name: 'quote', title: 'Quote', type: 'text'}),
     defineField({name: 'avatar', title: 'Avatar', type: 'image'}),
   ],
+  
+  preview: {
+    select: {
+      title: 'author',
+      subtitle: 'role',
+      media: 'avatar',
+    },
+  },
+  
 })
