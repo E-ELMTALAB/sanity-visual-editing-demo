@@ -11,6 +11,10 @@
     <!-- Preload critical font -->
     <link rel="preload" href="/font/Vazirmatn-VariableFont_wght.woff2" as="font" type="font/woff2" crossorigin />
     
+    <!-- Preload hero image (fallback) - ensures LCP image is discoverable in initial document -->
+    <!-- This will be replaced with Sanity hero image URL at build time if available -->
+    <link rel="preload" href="/assets/hero-ai-cubes.png" as="image" fetchpriority="high" data-hero-preload="true" />
+    
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon.png" />

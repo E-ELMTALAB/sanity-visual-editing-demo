@@ -298,6 +298,102 @@ async function updateIndexHtmlWithSeo(seo: any) {
   }
 }
 
+/**
+ * Update hero image preload link in index.html
+ * This ensures the LCP image is discoverable in the initial document
+ */
+async function updateHeroImagePreload(heroSlides: any[]) {
+  const indexPath = join(__dirname, '../index.html');
+  
+  try {
+    // Read current index.html
+    let html = await readFile(indexPath, 'utf-8');
+    
+    if (!Array.isArray(heroSlides) || heroSlides.length === 0) {
+      console.warn('No hero slides found, keeping fallback preload link');
+      return;
+    }
+
+    const firstSlide = heroSlides[0];
+    if (!firstSlide?.image?.asset) {
+      console.warn('Hero slide has no image asset, keeping fallback preload link');
+      return;
+    }
+
+    // Build hero image URL using same logic as transformHeroSlide
+    const imageBuilder = imageUrlBuilder({ projectId, dataset });
+    const heroImageUrl = imageBuilder
+      .image(firstSlide.image)
+      .width(1200)
+      .fit('max')
+      .auto('format')
+      .quality(60)
+      .url();
+
+    if (!heroImageUrl) {
+      console.warn('Failed to build hero image URL, keeping fallback preload link');
+      return;
+    }
+
+    // Apply proxy transformation if enabled
+    const finalHeroImageUrl = PROXY_ENABLED 
+      ? heroImageUrl.replace('https://cdn.sanity.io', `${UNIFIED_PROXY_URL}/cdn`)
+      : heroImageUrl;
+
+    // Build responsive srcset (same widths as transformHeroSlide: 640, 960, 1200)
+    const widths = [640, 960, 1200];
+    const srcSetParts = widths.map((width) => {
+      const url = imageBuilder
+        .image(firstSlide.image)
+        .width(width)
+        .fit('max')
+        .auto('format')
+        .quality(60)
+        .url();
+      const proxiedUrl = PROXY_ENABLED 
+        ? url.replace('https://cdn.sanity.io', `${UNIFIED_PROXY_URL}/cdn`)
+        : url;
+      return `${proxiedUrl} ${width}w`;
+    });
+    const srcSet = srcSetParts.join(', ');
+
+    // Escape HTML entities in URLs
+    const escapeHtml = (text: string): string => {
+      if (!text) return '';
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    };
+
+    const escapedHeroUrl = escapeHtml(finalHeroImageUrl);
+    const escapedSrcSet = escapeHtml(srcSet);
+
+    // Update or add hero image preload link
+    const preloadPattern = /<link\s+rel=["']preload["'][^>]*data-hero-preload=["']true["'][^>]*>/i;
+    const newPreloadLink = `<link rel="preload" href="${escapedHeroUrl}" as="image" fetchpriority="high" imagesrcset="${escapedSrcSet}" imagesizes="100vw" data-hero-preload="true" />`;
+
+    if (preloadPattern.test(html)) {
+      // Update existing preload link
+      html = html.replace(preloadPattern, newPreloadLink);
+      console.log('   ✅ Updated hero image preload link with Sanity image');
+    } else {
+      // Add new preload link before closing </head>
+      html = html.replace('</head>', `    ${newPreloadLink}\n  </head>`);
+      console.log('   ✅ Added hero image preload link with Sanity image');
+    }
+
+    await writeFile(indexPath, html, 'utf-8');
+    console.log('   Hero image preload link updated in index.html');
+  } catch (error) {
+    console.error('Failed to update hero image preload link:', error);
+    // Don't throw - allow build to continue even if preload update fails
+    console.warn('Build will continue, but hero image preload was not updated');
+  }
+}
+
 async function fetchHomepageData() {
   if (!projectId || projectId === 'placeholder') {
     console.warn('Sanity project ID not configured. Skipping data fetch.');
@@ -392,6 +488,16 @@ async function fetchHomepageData() {
       console.warn('\nNo SEO data found in homepage data from Sanity');
       console.warn('   index.html will NOT be updated - meta tags will remain as hardcoded values');
       console.warn('   Please ensure SEO fields are set in Sanity Studio -> Home -> SEO tab');
+    }
+
+    // Update hero image preload link in index.html (BEFORE build)
+    // This ensures LCP image is discoverable in initial document
+    if (Array.isArray((homeData as any)?.heroSlides) && (homeData as any).heroSlides.length > 0) {
+      console.log('\nUpdating hero image preload link in index.html...');
+      await updateHeroImagePreload((homeData as any).heroSlides);
+    } else {
+      console.warn('\nNo hero slides found in homepage data');
+      console.warn('   Hero image preload will use fallback image from index.html');
     }
 
     console.log('\nFetching featured products...');
