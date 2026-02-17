@@ -1,3 +1,23 @@
+// Hero-only query for critical LCP image - fetched immediately
+export const heroSlideQuery = `
+  *[_type == "home"][0]{
+    _id,
+    _type,
+    // Hero Section only
+    heroSlides[]{
+      _key,
+      title,
+      subtitle,
+      buttonText,
+      buttonHref,
+      image{
+        ...,
+        asset->
+      }
+    }
+  }
+`
+
 // Home singleton query - Main homepage content
 export const homePageQuery = `
   *[_type == "home"][0]{

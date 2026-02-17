@@ -19,6 +19,7 @@ import { PromoBanner } from "@/components/PromoBanner";
 import { fetchFromSanity } from "@/lib/sanity.client.unified";
 import { validateSanityConfig } from "@/lib/sanity.config";
 import { 
+  heroSlideQuery,
   homePageQuery, 
   featuredProductsQuery, 
   featuredCoursesQuery, 
@@ -345,12 +346,68 @@ const Index = () => {
   const [showFooter, setShowFooter] = useState(false);
   const [showDynamicContent, setShowDynamicContent] = useState(false);
   
+  // Hero slide state - loaded immediately for LCP
+  const [heroSlide, setHeroSlide] = useState<{ image: string; imageSrcSet?: string } | null>(null);
+  
   // Sanity data state - starts empty, loads after paint
   const [sanityData, setSanityData] = useState<SanityData | null>(null);
   const [medusaPrices, setMedusaPrices] = useState<Record<string, ProductPrices>>({});
   const [dataLoaded, setDataLoaded] = useState(false);
 
-  // Load Sanity data off the critical path (deferred until after initial paint)
+  // Load hero slide immediately (critical for LCP) - no requestIdleCallback
+  useEffect(() => {
+    const loadHeroSlide = async () => {
+      try {
+        const isConfigValid = validateSanityConfig();
+        if (!isConfigValid) {
+          console.warn('[HOMEPAGE] Sanity not configured, skipping hero fetch');
+          return;
+        }
+
+        console.log('[HOMEPAGE] 🚀 Fetching hero slide immediately...');
+        const heroData = await fetchFromSanity<any>(heroSlideQuery);
+        
+        if (heroData?.heroSlides?.length) {
+          const transformed = transformers.transformHeroSlide(heroData.heroSlides[0]);
+          setHeroSlide(transformed);
+          console.log('[HOMEPAGE] ✅ Hero slide loaded:', transformed.image ? 'with image' : 'no image');
+        } else {
+          console.warn('[HOMEPAGE] No hero slide data found');
+        }
+      } catch (error) {
+        console.error("[HOMEPAGE] Failed to fetch hero slide:", error);
+      }
+    };
+
+    // Fetch hero immediately - no delay
+    loadHeroSlide();
+  }, []);
+
+  // Preload hero image when available
+  useEffect(() => {
+    if (!heroSlide?.image) return;
+
+    // Check if preload link already exists
+    const existingPreload = document.querySelector('link[rel="preload"][as="image"][data-hero-preload]');
+    if (existingPreload) return;
+
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = heroSlide.image;
+    link.setAttribute('fetchpriority', 'high');
+    link.setAttribute('data-hero-preload', 'true');
+    
+    if (heroSlide.imageSrcSet) {
+      link.setAttribute('imagesrcset', heroSlide.imageSrcSet);
+      link.setAttribute('imagesizes', '100vw');
+    }
+    
+    document.head.appendChild(link);
+    console.log('[HOMEPAGE] ✅ Preload link added for hero image');
+  }, [heroSlide?.image, heroSlide?.imageSrcSet]);
+
+  // Load remaining Sanity data off the critical path (deferred until after initial paint)
   useEffect(() => {
     const loadSanityData = async () => {
       try {
@@ -409,9 +466,15 @@ const Index = () => {
         console.log('[HOMEPAGE] 📊 Raw tabbedProductGroups:', tabbedProductGroups);
 
         // Transform data
-        const heroSlide = homeData?.heroSlides?.length 
+        // Note: heroSlide is already loaded separately, but we keep it here for consistency
+        const heroSlideFromHome = homeData?.heroSlides?.length 
           ? transformers.transformHeroSlide(homeData.heroSlides[0]) 
           : null;
+        
+        // Update hero slide if not already set (fallback in case immediate fetch failed)
+        if (!heroSlide && heroSlideFromHome) {
+          setHeroSlide(heroSlideFromHome);
+        }
 
         const sanitizedBestSellers = homeData?.bestSellerProducts?.filter((item: any) => item?._id) ?? [];
         const bestSellerProducts = sanitizedBestSellers.length
@@ -485,7 +548,7 @@ const Index = () => {
           : [];
 
         setSanityData({
-          heroSlide,
+          heroSlide: heroSlideFromHome || heroSlide,
           bestSellerProducts,
           editorialBanners,
           specialOfferProducts,
@@ -765,8 +828,8 @@ const Index = () => {
       {/* Hero Section - single instance; gradient is LCP, image swaps in lazily */}
       <HeroSection
         heroImage={
-          showDynamicContent && sanityData?.heroSlide?.image
-            ? { src: sanityData.heroSlide.image, srcSet: sanityData.heroSlide.imageSrcSet }
+          heroSlide?.image
+            ? { src: heroSlide.image, srcSet: heroSlide.imageSrcSet }
             : null
         }
       />
