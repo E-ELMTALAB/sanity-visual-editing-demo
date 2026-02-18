@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense, useEffect, useRef, useCallback, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import TrustBadges from "@/components/TrustBadges";
 import TestimonialsRow from "@/components/TestimonialsRow";
@@ -160,6 +160,7 @@ type HeroImage = { src: string; srcSet?: string };
 // Single hero component: starts with lightweight gradient; optionally overlays deferred image
 function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
   const navigate = useNavigate();
+  const prefersReducedMotion = useReducedMotion();
   
   return (
     <section 
@@ -205,85 +206,112 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
           <div 
             className="text-white text-center flex flex-col justify-center items-center max-w-3xl w-full space-y-6"
           >
-            {/* Badge / Tag above headline */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/5"
-            >
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span className="font-vazirmatn text-xs sm:text-sm font-medium text-white/90">
-                پلتفرم پیشرو در هوش مصنوعی
-              </span>
-            </motion.div>
-
-            {/* Main Headline - Reduced size, better hierarchy */}
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight"
-            >
-              {HERO_TITLE}
-            </motion.h1>
-
-            {/* Subtitle - Better spacing and readability */}
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
-              className="max-w-2xl text-white/90 text-base sm:text-lg md:text-xl leading-relaxed font-normal px-4"
-            >
-              {HERO_SUBTITLE}
-            </motion.p>
-
-            {/* Value Props / Trust Badges - Moved up, cleaner presentation */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
-              className="mt-4 sm:mt-6"
-            >
-              <TrustBadges />
-            </motion.div>
-
-            {/* Optional CTA Button - Subtle and Premium */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut", delay: 0.4 }}
-              className="mt-6 sm:mt-8"
-            >
-              <button
-                onClick={() => navigate("/products")}
-                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-white cursor-pointer transition-all duration-300"
-                style={{
-                  background: "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(30, 103, 198, 0.2) 100%)",
-                  boxShadow: "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = "0 12px 40px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)";
-                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
-                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
-                }}
+            {/* Badge / Tag above headline - minimal animation for small element only */}
+            {prefersReducedMotion ? (
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/5">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="font-vazirmatn text-xs sm:text-sm font-medium text-white/90">
+                  پلتفرم پیشرو در هوش مصنوعی
+                </span>
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.1, ease: "easeOut" }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/5"
               >
-                <span className="font-vazirmatn relative z-10">مشاهده محصولات</span>
-                <span className="relative z-10">→</span>
-                {/* Subtle shine effect on hover */}
-                <span 
-                  aria-hidden="true" 
-                  className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                  style={{ 
-                    background: "linear-gradient(120deg, transparent, rgba(255,255,255,0.1), transparent)",
-                    mixBlendMode: "screen"
-                  }} 
-                />
-              </button>
-            </motion.div>
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="font-vazirmatn text-xs sm:text-sm font-medium text-white/90">
+                  پلتفرم پیشرو در هوش مصنوعی
+                </span>
+              </motion.div>
+            )}
+
+            {/* Main Headline - NO animation, renders immediately visible */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
+              {HERO_TITLE}
+            </h1>
+
+            {/* Subtitle - NO animation, renders immediately visible */}
+            <p className="max-w-2xl text-white/90 text-base sm:text-lg md:text-xl leading-relaxed font-normal px-4">
+              {HERO_SUBTITLE}
+            </p>
+
+            {/* Value Props / Trust Badges - NO animation, renders immediately visible */}
+            <div className="mt-4 sm:mt-6">
+              <TrustBadges />
+            </div>
+
+            {/* Optional CTA Button - minimal animation for small element only */}
+            {prefersReducedMotion ? (
+              <div className="mt-6 sm:mt-8">
+                <button
+                  onClick={() => navigate("/products")}
+                  className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-white cursor-pointer transition-all duration-300"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(30, 103, 198, 0.2) 100%)",
+                    boxShadow: "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = "0 12px 40px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)";
+                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
+                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
+                  }}
+                >
+                  <span className="font-vazirmatn relative z-10">مشاهده محصولات</span>
+                  <span className="relative z-10">→</span>
+                  {/* Subtle shine effect on hover */}
+                  <span 
+                    aria-hidden="true" 
+                    className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                    style={{ 
+                      background: "linear-gradient(120deg, transparent, rgba(255,255,255,0.1), transparent)",
+                      mixBlendMode: "screen"
+                    }} 
+                  />
+                </button>
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.1, ease: "easeOut" }}
+                className="mt-6 sm:mt-8"
+              >
+                <button
+                  onClick={() => navigate("/products")}
+                  className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-white cursor-pointer transition-all duration-300"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(30, 103, 198, 0.2) 100%)",
+                    boxShadow: "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = "0 12px 40px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)";
+                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
+                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
+                  }}
+                >
+                  <span className="font-vazirmatn relative z-10">مشاهده محصولات</span>
+                  <span className="relative z-10">→</span>
+                  {/* Subtle shine effect on hover */}
+                  <span 
+                    aria-hidden="true" 
+                    className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                    style={{ 
+                      background: "linear-gradient(120deg, transparent, rgba(255,255,255,0.1), transparent)",
+                      mixBlendMode: "screen"
+                    }} 
+                  />
+                </button>
+              </motion.div>
+            )}
           </div>
         </div>
       </div>
