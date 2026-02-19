@@ -18,14 +18,14 @@ import { PromoBanner } from "@/components/PromoBanner";
 // Import Sanity modules statically (lazy-loading caused initialization issues)
 import { fetchFromSanity } from "@/lib/sanity.client.unified";
 import { validateSanityConfig } from "@/lib/sanity.config";
-import { 
+import {
   heroSlideQuery,
-  homePageQuery, 
-  featuredProductsQuery, 
-  featuredCoursesQuery, 
-  featuredPostsQuery, 
-  productsByCategoryQuery, 
-  faqsByPageQuery 
+  homePageQuery,
+  featuredProductsQuery,
+  featuredCoursesQuery,
+  featuredPostsQuery,
+  productsByCategoryQuery,
+  faqsByPageQuery
 } from "@/lib/sanity.queries";
 import * as transformers from "@/lib/sanity.transformers";
 import { getImageUrl } from "@/lib/sanity.image";
@@ -161,9 +161,19 @@ type HeroImage = { src: string; srcSet?: string };
 function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
   const navigate = useNavigate();
   const prefersReducedMotion = useReducedMotion();
-  
+
+  // If the static HTML hero shell was rendered for LCP, ensure it is removed once
+  // the React hero has mounted so there is no duplicate content.
+  useEffect(() => {
+    if (import.meta.env.VITE_PRELOAD_HERO !== "true") return;
+    const el = document.getElementById("preload-hero");
+    if (el && el.parentNode) {
+      el.parentNode.removeChild(el);
+    }
+  }, []);
+
   return (
-    <section 
+    <section
       dir="rtl"
       className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden bg-transparent"
       style={{
@@ -192,18 +202,18 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
           />
         </picture>
       )}
-      
+
       {/* Overlay */}
       <div className="absolute inset-0 -z-10 mix-blend-soft-light opacity-85 md:opacity-60 bg-gradient-to-br from-[#1E67C6]/60 via-transparent to-[#8B5CF6]/60" />
-      <div 
+      <div
         className="absolute inset-0 -z-10"
-        style={{ background: "radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%)" }} 
+        style={{ background: "radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%)" }}
       />
 
       {/* Content - Redesigned with proper spacing and balanced typography */}
       <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-36 sm:pt-44 md:pt-52 pb-16 lg:pb-24">
         <div className="flex items-center justify-center min-h-[50vh] sm:min-h-[55vh]">
-          <div 
+          <div
             className="text-white text-center flex flex-col justify-center items-center max-w-3xl w-full space-y-6"
           >
             {/* Badge / Tag above headline - minimal animation for small element only */}
@@ -265,13 +275,13 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
                   <span className="font-vazirmatn relative z-10">مشاهده محصولات</span>
                   <span className="relative z-10">→</span>
                   {/* Subtle shine effect on hover */}
-                  <span 
-                    aria-hidden="true" 
+                  <span
+                    aria-hidden="true"
                     className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                    style={{ 
+                    style={{
                       background: "linear-gradient(120deg, transparent, rgba(255,255,255,0.1), transparent)",
                       mixBlendMode: "screen"
-                    }} 
+                    }}
                   />
                 </button>
               </div>
@@ -301,13 +311,13 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
                   <span className="font-vazirmatn relative z-10">مشاهده محصولات</span>
                   <span className="relative z-10">→</span>
                   {/* Subtle shine effect on hover */}
-                  <span 
-                    aria-hidden="true" 
+                  <span
+                    aria-hidden="true"
                     className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                    style={{ 
+                    style={{
                       background: "linear-gradient(120deg, transparent, rgba(255,255,255,0.1), transparent)",
                       mixBlendMode: "screen"
-                    }} 
+                    }}
                   />
                 </button>
               </motion.div>
@@ -366,17 +376,17 @@ const Index = () => {
   const footerTriggerRef = useRef<HTMLDivElement>(null);
   // Promotions from Medusa
   const siteWidePromotion = useSiteWidePromotion();
-  
+
   // UI state
   const [chatOpen, setChatOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [showFooter, setShowFooter] = useState(false);
   const [showDynamicContent, setShowDynamicContent] = useState(false);
-  
+
   // Hero slide state - loaded immediately for LCP
   const [heroSlide, setHeroSlide] = useState<{ image: string; imageSrcSet?: string } | null>(null);
-  
+
   // Sanity data state - starts empty, loads after paint
   const [sanityData, setSanityData] = useState<SanityData | null>(null);
   const [medusaPrices, setMedusaPrices] = useState<Record<string, ProductPrices>>({});
@@ -394,7 +404,7 @@ const Index = () => {
 
         console.log('[HOMEPAGE] 🚀 Fetching hero slide immediately...');
         const heroData = await fetchFromSanity<any>(heroSlideQuery);
-        
+
         if (heroData?.heroSlides?.length) {
           const transformed = transformers.transformHeroSlide(heroData.heroSlides[0]);
           setHeroSlide(transformed);
@@ -425,12 +435,12 @@ const Index = () => {
     link.href = heroSlide.image;
     link.setAttribute('fetchpriority', 'high');
     link.setAttribute('data-hero-preload', 'true');
-    
+
     if (heroSlide.imageSrcSet) {
       link.setAttribute('imagesrcset', heroSlide.imageSrcSet);
       link.setAttribute('imagesizes', '100vw');
     }
-    
+
     document.head.appendChild(link);
     console.log('[HOMEPAGE] ✅ Preload link added for hero image');
   }, [heroSlide?.image, heroSlide?.imageSrcSet]);
@@ -457,7 +467,7 @@ const Index = () => {
         console.log('[HOMEPAGE] 🔄 Starting data fetch...');
         console.log('[HOMEPAGE] Category map:', categoryMap);
 
-        const [homeData, featuredProductsData, featuredCoursesData, featuredPostsData, tabbedProductGroups, faqsData] = 
+        const [homeData, featuredProductsData, featuredCoursesData, featuredPostsData, tabbedProductGroups, faqsData] =
           await Promise.all([
             fetchFromSanity<any>(homePageQuery),
             fetchFromSanity<any[]>(featuredProductsQuery),
@@ -490,15 +500,15 @@ const Index = () => {
               return [];
             }),
           ]);
-        
+
         console.log('[HOMEPAGE] 📊 Raw tabbedProductGroups:', tabbedProductGroups);
 
         // Transform data
         // Note: heroSlide is already loaded separately, but we keep it here for consistency
-        const heroSlideFromHome = homeData?.heroSlides?.length 
-          ? transformers.transformHeroSlide(homeData.heroSlides[0]) 
+        const heroSlideFromHome = homeData?.heroSlides?.length
+          ? transformers.transformHeroSlide(homeData.heroSlides[0])
           : null;
-        
+
         // Update hero slide if not already set (fallback in case immediate fetch failed)
         if (!heroSlide && heroSlideFromHome) {
           setHeroSlide(heroSlideFromHome);
@@ -533,10 +543,10 @@ const Index = () => {
             ? featuredCoursesData.map((c: any, i: number) => transformers.transformCourse(c, i))
             : [];
 
-        const blogPostsSource = homeData?.magazinePosts?.length 
-          ? homeData.magazinePosts 
-          : homeData?.featuredBlogs?.length 
-            ? homeData.featuredBlogs 
+        const blogPostsSource = homeData?.magazinePosts?.length
+          ? homeData.magazinePosts
+          : homeData?.featuredBlogs?.length
+            ? homeData.featuredBlogs
             : featuredPostsData;
         const magazinePosts = blogPostsSource?.length
           ? blogPostsSource.map((p: any, i: number) => transformers.transformBlogPost(p, i))
@@ -545,7 +555,7 @@ const Index = () => {
         let tabbedProducts = tabbedProductGroups?.flat() ?? [];
         console.log('[HOMEPAGE] 📊 Final flattened tabbedProducts:', tabbedProducts);
         console.log('[HOMEPAGE] 📊 tabbedProducts count:', tabbedProducts.length);
-        
+
         // Fallback: If no products found by category, use featured products and distribute across categories
         if (tabbedProducts.length === 0 && featuredProductsData?.length > 0) {
           console.log('[HOMEPAGE] ⚠️ No category products found, using fallback with featured products');
@@ -557,12 +567,12 @@ const Index = () => {
           });
           console.log('[HOMEPAGE] 📊 Fallback tabbedProducts:', tabbedProducts);
         }
-        
+
         if (tabbedProducts.length > 0) {
           console.log('[HOMEPAGE] 📊 Sample tabbed product:', tabbedProducts[0]);
           console.log('[HOMEPAGE] 📊 Categories in tabbedProducts:', [...new Set(tabbedProducts.map((p: any) => p.category))]);
         }
-        
+
         const collectionsBanner = homeData?.collectionsBanner
           ? transformers.transformCollectionsBanner(homeData.collectionsBanner)
           : null;
@@ -596,7 +606,7 @@ const Index = () => {
         console.error("[HOMEPAGE] Failed to fetch Sanity data:", error);
         setDataLoaded(true);
       }
-      };
+    };
 
     // Use requestIdleCallback for better performance, fallback to setTimeout
     if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
@@ -611,7 +621,7 @@ const Index = () => {
     if (!sanityData?.seo) return;
 
     const seo = sanityData.seo;
-    
+
     // Update document title
     if (seo.metaTitle) {
       document.title = seo.metaTitle;
@@ -675,7 +685,7 @@ const Index = () => {
     // Update Open Graph image
     if (seo.openGraphImage?.asset) {
       const ogImageUrl = getImageUrl(seo.openGraphImage, 1200);
-      
+
       let ogImage = document.querySelector('meta[property="og:image"]');
       if (!ogImage) {
         ogImage = document.createElement('meta');
@@ -889,11 +899,11 @@ const Index = () => {
 
           {/* Special Offers */}
           {sanityData.specialOfferProducts.length > 0 && (
-            <SpecialOffers 
-              products={sanityData.specialOfferProducts} 
+            <SpecialOffers
+              products={sanityData.specialOfferProducts}
               productPrices={medusaPrices}
               onAdd={handleAddToCart}
-              onViewAll={() => {}}
+              onViewAll={() => { }}
               className="mx-[10px]"
             />
           )}
@@ -921,15 +931,15 @@ const Index = () => {
               }))}
               productPrices={medusaPrices}
               onAdd={handleAddToCart}
-              onViewAll={() => {}}
+              onViewAll={() => { }}
               className="mx-[10px]"
             />
           )}
 
           {/* Collections Banner */}
           {sanityData.collectionsBanner && (
-            <CollectionsBanner 
-              onClick={handleCollectionsBanner} 
+            <CollectionsBanner
+              onClick={handleCollectionsBanner}
               className="mx-[10px]"
               title={sanityData.collectionsBanner.title}
               subtitle={sanityData.collectionsBanner.subtitle}
@@ -944,7 +954,7 @@ const Index = () => {
             <EduProductsSlider
               items={sanityData.eduProducts}
               onAdd={handleAddToCart}
-              onViewAll={() => {}}
+              onViewAll={() => { }}
               rtl={isRTL}
             />
           )}
@@ -953,8 +963,8 @@ const Index = () => {
           {sanityData.magazinePosts.length > 0 && (
             <BlogsCarousel
               posts={sanityData.magazinePosts}
-              onRead={() => {}}
-              onViewAll={() => {}}
+              onRead={() => { }}
+              onViewAll={() => { }}
               className="mx-[10px]"
             />
           )}
@@ -987,29 +997,29 @@ const Index = () => {
 
       {/* FAQ Section - Always show below SeoContentCard */}
       <Suspense fallback={<SectionPlaceholder />}>
-        <FaqAccordion 
+        <FaqAccordion
           items={
             (dataLoaded && sanityData?.faqs && sanityData.faqs.length > 0)
               ? sanityData.faqs
               : [
-                  {
-                    q: "چگونه می‌توانم محصولات را خریداری کنم؟",
-                    a: "شما می‌توانید با مراجعه به صفحه محصولات، محصول مورد نظر خود را انتخاب کرده و به سبد خرید اضافه کنید. پس از تکمیل اطلاعات، پرداخت را انجام دهید."
-                  },
-                  {
-                    q: "روش‌های پرداخت چیست؟",
-                    a: "ما از روش‌های مختلف پرداخت مانند کارت‌های بانکی، پرداخت آنلاین و سایر روش‌های امن پشتیبانی می‌کنیم."
-                  },
-                  {
-                    q: "آیا محصولات ضمانت دارند؟",
-                    a: "بله، تمام محصولات ما دارای ضمانت کیفیت هستند. در صورت بروز هرگونه مشکل، می‌توانید با پشتیبانی تماس بگیرید."
-                  },
-                  {
-                    q: "چگونه می‌توانم با پشتیبانی تماس بگیرم؟",
-                    a: "شما می‌توانید از طریق صفحه تماس با ما، ایمیل یا چت آنلاین با تیم پشتیبانی در ارتباط باشید."
-                  }
-                ]
-          } 
+                {
+                  q: "چگونه می‌توانم محصولات را خریداری کنم؟",
+                  a: "شما می‌توانید با مراجعه به صفحه محصولات، محصول مورد نظر خود را انتخاب کرده و به سبد خرید اضافه کنید. پس از تکمیل اطلاعات، پرداخت را انجام دهید."
+                },
+                {
+                  q: "روش‌های پرداخت چیست؟",
+                  a: "ما از روش‌های مختلف پرداخت مانند کارت‌های بانکی، پرداخت آنلاین و سایر روش‌های امن پشتیبانی می‌کنیم."
+                },
+                {
+                  q: "آیا محصولات ضمانت دارند؟",
+                  a: "بله، تمام محصولات ما دارای ضمانت کیفیت هستند. در صورت بروز هرگونه مشکل، می‌توانید با پشتیبانی تماس بگیرید."
+                },
+                {
+                  q: "چگونه می‌توانم با پشتیبانی تماس بگیرم؟",
+                  a: "شما می‌توانید از طریق صفحه تماس با ما، ایمیل یا چت آنلاین با تیم پشتیبانی در ارتباط باشید."
+                }
+              ]
+          }
         />
       </Suspense>
 
@@ -1045,7 +1055,7 @@ const Index = () => {
       </Suspense> */}
 
       <Suspense fallback={null}>
-      <SupportPanel open={supportOpen} onClose={() => setSupportOpen(false)} />
+        <SupportPanel open={supportOpen} onClose={() => setSupportOpen(false)} />
       </Suspense>
 
       <Suspense fallback={null}>

@@ -30,6 +30,149 @@
       @font-face{font-family:"Vazirmatn";src:url("/font/Vazirmatn-VariableFont_wght.woff2") format("woff2");font-weight:100 900;font-display:swap}
       /* Hero placeholder for instant LCP */
       .hero-placeholder{min-height:92vh;background:#060914}
+
+      /* Static preloaded hero shell (LCP experiment) */
+      #preload-hero {
+        position: relative;
+        min-height: 90vh;
+        width: 100%;
+        overflow: hidden;
+        background: radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%), 
+                    linear-gradient(to bottom right, #0b1024, #0f152f, #0c1028);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 7rem 1.5rem 4rem;
+        box-sizing: border-box;
+        z-index: 0;
+      }
+
+      #preload-hero-inner {
+        max-width: 72rem;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      #preload-hero-bg {
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        overflow: hidden;
+      }
+
+      #preload-hero-bg img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 20% 50%;
+        display: block;
+      }
+
+      #preload-hero-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background:
+          radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%),
+          linear-gradient(to bottom right, rgba(30,103,198,0.6), transparent, rgba(139,92,246,0.6));
+        mix-blend-mode: soft-light;
+        opacity: 0.9;
+      }
+
+      #preload-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 0.9rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.2);
+        background: rgba(17,24,39,0.35);
+        font-size: 0.75rem;
+        line-height: 1.4;
+        margin-bottom: 1.25rem;
+      }
+
+      #preload-hero-badge-dot {
+        width: 0.4rem;
+        height: 0.4rem;
+        border-radius: 999px;
+        background: rgb(59,130,246);
+      }
+
+      #preload-hero-title {
+        font-size: clamp(2rem, 4vw, 3.5rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        margin: 0 0 1rem;
+      }
+
+      #preload-hero-subtitle {
+        max-width: 40rem;
+        margin: 0 auto 1.75rem;
+        font-size: clamp(0.95rem, 2.2vw, 1.2rem);
+        line-height: 1.7;
+        color: rgba(255,255,255,0.9);
+      }
+
+      #preload-hero-cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem 2.5rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(255,255,255,0.2);
+        background: linear-gradient(135deg, rgba(139,92,246,0.2) 0%, rgba(30,103,198,0.2) 100%);
+        box-shadow: 0 8px 32px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
+        color: #fff;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        text-decoration: none;
+        position: relative;
+        overflow: hidden;
+      }
+
+      #preload-hero-cta-label {
+        position: relative;
+        z-index: 1;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      #preload-hero-cta-arrow {
+        position: relative;
+        z-index: 1;
+      }
+
+      #preload-hero-cta-shine {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, transparent, rgba(255,255,255,0.12), transparent);
+        opacity: 0;
+        transition: opacity 0.6s ease-out;
+        pointer-events: none;
+        mix-blend-mode: screen;
+      }
+
+      #preload-hero-cta:hover #preload-hero-cta-shine {
+        opacity: 1;
+      }
+
+      @media (max-width: 640px) {
+        #preload-hero {
+          padding-top: 6rem;
+          padding-bottom: 3.5rem;
+        }
+      }
+
+      /* When React app is mounted, fade out the static hero so it doesn't block interaction */
+      .app-mounted #preload-hero {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 200ms ease-out;
+      }
     </style>
 
     <!-- Preload runtime-injected styles as soon as they appear to reduce render-blocking -->
@@ -89,6 +232,48 @@
   </head>
 
   <body>
+    <!-- Static hero shell for LCP experiment (renders before React mounts). Vite env flag controls visibility. -->
+    <div id="preload-hero">
+      <div id="preload-hero-bg">
+        <img
+          src="/assets/hero-ai-cubes.png"
+          alt="Hero background"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+        />
+      </div>
+      <div id="preload-hero-overlay"></div>
+      <div id="preload-hero-inner">
+        <div id="preload-hero-badge">
+          <span id="preload-hero-badge-dot"></span>
+          <span>پلتفرم پیشرو در هوش مصنوعی</span>
+        </div>
+        <h1 id="preload-hero-title">خرید اکانت ChatGPT</h1>
+        <p id="preload-hero-subtitle">
+          اکانت‌های قانونی ChatGPT با تحویل آنی، اتصال پایدار و پشتیبانی واقعی برای تجربه‌ای بدون دغدغه.
+        </p>
+        <a id="preload-hero-cta" href="/products">
+          <span id="preload-hero-cta-label">مشاهده محصولات</span>
+          <span id="preload-hero-cta-arrow">→</span>
+          <span id="preload-hero-cta-shine" aria-hidden="true"></span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Feature flag: remove static hero early if VITE_PRELOAD_HERO is not enabled -->
+    <script>
+      (function () {
+        var enabled = "%VITE_PRELOAD_HERO%" === "true";
+        if (!enabled) {
+          var el = document.getElementById("preload-hero");
+          if (el && el.parentNode) {
+            el.parentNode.removeChild(el);
+          }
+        }
+      })();
+    </script>
+
     <!-- Google Tag Manager (noscript) -->
     <noscript>
       <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PW97M4XV"
