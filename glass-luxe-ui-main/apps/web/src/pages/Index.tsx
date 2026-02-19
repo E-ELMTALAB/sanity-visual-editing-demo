@@ -160,7 +160,6 @@ type HeroImage = { src: string; srcSet?: string };
 // Single hero component: starts with lightweight gradient; optionally overlays deferred image
 function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
   const navigate = useNavigate();
-  const prefersReducedMotion = useReducedMotion();
 
   // If the static HTML hero shell was rendered for LCP, ensure it is removed once
   // the React hero has mounted so there is no duplicate content.
@@ -198,13 +197,15 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
             fetchPriority="high"
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
-            style={{ filter: 'brightness(0.85)' }}
           />
         </picture>
       )}
 
-      {/* Overlay */}
-      <div className="absolute inset-0 -z-10 mix-blend-soft-light opacity-85 md:opacity-60 bg-gradient-to-br from-[#1E67C6]/60 via-transparent to-[#8B5CF6]/60" />
+      {/* Simple dimming overlay - replaces expensive filter: brightness() */}
+      <div className="absolute inset-0 -z-10 bg-black/15 pointer-events-none" />
+
+      {/* Color gradient overlay - removed mix-blend-soft-light for performance */}
+      <div className="absolute inset-0 -z-10 opacity-85 md:opacity-60 bg-gradient-to-br from-[#1E67C6]/60 via-transparent to-[#8B5CF6]/60" />
       <div
         className="absolute inset-0 -z-10"
         style={{ background: "radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%)" }}
@@ -216,27 +217,13 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
           <div
             className="text-white text-center flex flex-col justify-center items-center max-w-3xl w-full space-y-6"
           >
-            {/* Badge / Tag above headline - minimal animation for small element only */}
-            {prefersReducedMotion ? (
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/5">
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="font-vazirmatn text-xs sm:text-sm font-medium text-white/90">
-                  پلتفرم پیشرو در هوش مصنوعی
-                </span>
-              </div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.1, ease: "easeOut" }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/5"
-              >
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="font-vazirmatn text-xs sm:text-sm font-medium text-white/90">
-                  پلتفرم پیشرو در هوش مصنوعی
-                </span>
-              </motion.div>
-            )}
+            {/* Badge / Tag above headline - static render for LCP (no animation on initial load) */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/5">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span className="font-vazirmatn text-xs sm:text-sm font-medium text-white/90">
+                پلتفرم پیشرو در هوش مصنوعی
+              </span>
+            </div>
 
             {/* Main Headline - NO animation, renders immediately visible */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
@@ -253,75 +240,36 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
               <TrustBadges />
             </div>
 
-            {/* Optional CTA Button - minimal animation for small element only */}
-            {prefersReducedMotion ? (
-              <div className="mt-6 sm:mt-8">
-                <button
-                  onClick={() => navigate("/products")}
-                  className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-white cursor-pointer transition-all duration-300"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(30, 103, 198, 0.2) 100%)",
-                    boxShadow: "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.boxShadow = "0 12px 40px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)";
-                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.boxShadow = "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
-                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
-                  }}
-                >
-                  <span className="font-vazirmatn relative z-10">مشاهده محصولات</span>
-                  <span className="relative z-10">→</span>
-                  {/* Subtle shine effect on hover */}
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                    style={{
-                      background: "linear-gradient(120deg, transparent, rgba(255,255,255,0.1), transparent)",
-                      mixBlendMode: "screen"
-                    }}
-                  />
-                </button>
-              </div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.1, ease: "easeOut" }}
-                className="mt-6 sm:mt-8"
+            {/* Optional CTA Button - static render for LCP (no animation on initial load) */}
+            <div className="mt-6 sm:mt-8">
+              <button
+                onClick={() => navigate("/products")}
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-white cursor-pointer transition-all duration-300"
+                style={{
+                  background: "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(30, 103, 198, 0.2) 100%)",
+                  boxShadow: "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 12px 40px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)";
+                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
+                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
+                }}
               >
-                <button
-                  onClick={() => navigate("/products")}
-                  className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-white cursor-pointer transition-all duration-300"
+                <span className="font-vazirmatn relative z-10">مشاهده محصولات</span>
+                <span className="relative z-10">→</span>
+                {/* Subtle shine effect on hover - removed mix-blend-mode for performance */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
                   style={{
-                    background: "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(30, 103, 198, 0.2) 100%)",
-                    boxShadow: "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                    background: "linear-gradient(120deg, transparent, rgba(255,255,255,0.1), transparent)"
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.boxShadow = "0 12px 40px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)";
-                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.boxShadow = "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
-                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
-                  }}
-                >
-                  <span className="font-vazirmatn relative z-10">مشاهده محصولات</span>
-                  <span className="relative z-10">→</span>
-                  {/* Subtle shine effect on hover */}
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                    style={{
-                      background: "linear-gradient(120deg, transparent, rgba(255,255,255,0.1), transparent)",
-                      mixBlendMode: "screen"
-                    }}
-                  />
-                </button>
-              </motion.div>
-            )}
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>
