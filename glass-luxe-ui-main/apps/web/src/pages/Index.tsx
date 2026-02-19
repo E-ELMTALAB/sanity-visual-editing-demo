@@ -174,32 +174,31 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
   return (
     <section
       dir="rtl"
-      className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden bg-transparent"
+      className="relative min-h-[85vh] sm:min-h-[90vh] w-full bg-transparent"
       style={{
-        maskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
-        WebkitMaskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
+        contain: 'none',
       }}
     >
       {/* Static background placeholder - gradient only (counts as LCP, extremely cheap) */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
-      {/* Deferred hero image overlays when ready */}
-      {heroImage?.src && (
-        <picture className="absolute inset-0 h-full w-full -z-10">
-          {heroImage.srcSet && (
-            <source srcSet={heroImage.srcSet} sizes="100vw" />
-          )}
-          <img
-            src={heroImage.src}
-            srcSet={heroImage.srcSet}
-            sizes={heroImage.srcSet ? "100vw" : undefined}
-            alt="Hero background"
-            loading="eager"
-            fetchPriority="high"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
-          />
-        </picture>
-      )}
+      {/* Hero image - always rendered for LCP (not conditional) */}
+      <picture className="absolute inset-0 h-full w-full -z-10">
+        {heroImage?.srcSet && (
+          <source srcSet={heroImage.srcSet} sizes="100vw" />
+        )}
+        <img
+          src={heroImage?.src || ''}
+          srcSet={heroImage?.srcSet}
+          sizes={heroImage?.srcSet ? "100vw" : undefined}
+          alt="Hero background"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          width="1920"
+          height="1080"
+          className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
+        />
+      </picture>
 
       {/* Simple dimming overlay - replaces expensive filter: brightness() */}
       <div className="absolute inset-0 -z-10 bg-black/15 pointer-events-none" />
@@ -217,9 +216,9 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
           <div
             className="text-white text-center flex flex-col justify-center items-center max-w-3xl w-full space-y-6"
           >
-            {/* Badge / Tag above headline - static render for LCP (no animation on initial load) */}
+            {/* Badge / Tag above headline - 100% static for LCP (no animations) */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/5">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-primary" />
               <span className="font-vazirmatn text-xs sm:text-sm font-medium text-white/90">
                 پلتفرم پیشرو در هوش مصنوعی
               </span>
@@ -240,11 +239,11 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
               <TrustBadges />
             </div>
 
-            {/* Optional CTA Button - static render for LCP (no animation on initial load) */}
+            {/* Optional CTA Button - 100% static for LCP (hover effects only, no transitions on mount) */}
             <div className="mt-6 sm:mt-8">
               <button
                 onClick={() => navigate("/products")}
-                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-white cursor-pointer transition-all duration-300"
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-white cursor-pointer"
                 style={{
                   background: "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(30, 103, 198, 0.2) 100%)",
                   boxShadow: "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
@@ -260,10 +259,10 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
               >
                 <span className="font-vazirmatn relative z-10">مشاهده محصولات</span>
                 <span className="relative z-10">→</span>
-                {/* Subtle shine effect on hover - removed mix-blend-mode for performance */}
+                {/* Subtle shine effect on hover only - no transition on mount */}
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                  className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100"
                   style={{
                     background: "linear-gradient(120deg, transparent, rgba(255,255,255,0.1), transparent)"
                   }}
