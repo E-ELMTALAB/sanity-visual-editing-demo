@@ -122,7 +122,7 @@ export function Header({ onSearch, megaItems, active }: HeaderProps) {
                   className="w-10 h-10 rounded-full"
                   width="40"
                   height="40"
-                  loading="eager"
+                  loading="lazy"
                   decoding="async"
                 />
                 <span className="text-xl font-bold text-foreground">SharifGPT</span>

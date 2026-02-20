@@ -16,35 +16,74 @@ import { QuickSummaryTrustBar } from "@/components/QuickSummaryTrustBar";
 import { SeoContentCard } from "@/components/SeoContentCard";
 import { PromoBanner } from "@/components/PromoBanner";
 
-// Lazy PromoBanner that loads after first paint to prevent LCP swap
+// Lazy PromoBanner that loads after LCP window (5s or user interaction)
 const LazyPromoBanner = () => {
   const [shouldRender, setShouldRender] = useState(false);
 
   useEffect(() => {
-    // Load after first paint using requestIdleCallback or setTimeout
     const loadBanner = () => setShouldRender(true);
+    let hasInteracted = false;
 
-    if (typeof window !== 'undefined') {
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(loadBanner, { timeout: 2000 });
-      } else {
-        setTimeout(loadBanner, 2000);
-      }
-    } else {
+    const onInteraction = () => {
+      if (hasInteracted) return;
+      hasInteracted = true;
       loadBanner();
-    }
+      window.removeEventListener('scroll', onInteraction);
+      window.removeEventListener('pointerdown', onInteraction);
+      window.removeEventListener('keydown', onInteraction);
+    };
+
+    // Load on user interaction (scroll, click, keydown)
+    window.addEventListener('scroll', onInteraction, { passive: true, once: true });
+    window.addEventListener('pointerdown', onInteraction, { passive: true, once: true });
+    window.addEventListener('keydown', onInteraction, { once: true });
+
+    // Fallback: load after 5 seconds (after LCP window)
+    setTimeout(loadBanner, 5000);
   }, []);
 
-  // Placeholder to reserve space and prevent LCP element swap
   if (!shouldRender) {
-    return (
-      <div className="py-8 sm:py-10 lg:py-12 px-6 sm:px-6 lg:px-[100px]" style={{ minHeight: '400px' }} aria-hidden="true">
-        <div className="max-w-[1400px] mx-auto h-[400px] sm:h-[480px] md:h-[480px] lg:h-[448px]" />
-      </div>
-    );
+    return null; // No placeholder to avoid layout shift
   }
 
   return <PromoBanner />;
+};
+
+// Deferred TrustBadges - loads after LCP to prevent swap
+const DeferredTrustBadges = () => {
+  const [shouldRender, setShouldRender] = useState(false);
+
+  useEffect(() => {
+    const loadBadges = () => setShouldRender(true);
+    let hasInteracted = false;
+
+    const onInteraction = () => {
+      if (hasInteracted) return;
+      hasInteracted = true;
+      loadBadges();
+      window.removeEventListener('scroll', onInteraction);
+      window.removeEventListener('pointerdown', onInteraction);
+      window.removeEventListener('keydown', onInteraction);
+    };
+
+    // Load on user interaction
+    window.addEventListener('scroll', onInteraction, { passive: true, once: true });
+    window.addEventListener('pointerdown', onInteraction, { passive: true, once: true });
+    window.addEventListener('keydown', onInteraction, { once: true });
+
+    // Fallback: load after 5 seconds
+    setTimeout(loadBadges, 5000);
+  }, []);
+
+  if (!shouldRender) {
+    return null;
+  }
+
+  return (
+    <div className="mt-4 sm:mt-6">
+      <TrustBadges />
+    </div>
+  );
 };
 // Import Sanity modules statically (lazy-loading caused initialization issues)
 import { fetchFromSanity } from "@/lib/sanity.client.unified";
@@ -188,8 +227,8 @@ interface SanityData {
 
 type HeroImage = { src: string; srcSet?: string };
 
-// Single hero component: starts with lightweight gradient; optionally overlays deferred image
-function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
+// Hero component: lightweight gradient background only, no image
+function HeroSection() {
   const navigate = useNavigate();
 
   // Ensure prehero is removed if it still exists (fallback cleanup)
@@ -217,45 +256,10 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
   return (
     <section
       dir="rtl"
-      className="relative min-h-[85vh] sm:min-h-[90vh] w-full bg-transparent"
-      style={{
-        contain: 'none',
-      }}
+      className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden"
     >
-      {/* Static background placeholder - gradient only (counts as LCP, extremely cheap) */}
+      {/* Lightweight CSS gradient background - no image, no overlays */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
-      {/* Hero image - always rendered for LCP (not conditional) */}
-      {/* EXPERIMENT B: No image, gradient only */}
-      {import.meta.env.VITE_EXPERIMENT !== 'B' && import.meta.env.VITE_EXPERIMENT !== 'b' && (
-        <picture className="absolute inset-0 h-full w-full -z-10">
-          {heroImage?.srcSet && (
-            <source srcSet={heroImage.srcSet} sizes="100vw" />
-          )}
-          <img
-            data-lcp-hero="true"
-            src={heroImage?.src || '/assets/hero-ai-cubes.png'}
-            srcSet={heroImage?.srcSet}
-            sizes={heroImage?.srcSet ? "100vw" : undefined}
-            alt="Hero background"
-            loading="eager"
-            fetchPriority="high"
-            decoding="async"
-            width="1920"
-            height="1080"
-            className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
-          />
-        </picture>
-      )}
-
-      {/* Simple dimming overlay - replaces expensive filter: brightness() - no layout impact */}
-      <div className="absolute inset-0 -z-10 bg-black/20 pointer-events-none" aria-hidden="true" />
-
-      {/* Color gradient overlay - removed mix-blend-soft-light for performance */}
-      <div className="absolute inset-0 -z-10 opacity-85 md:opacity-60 bg-gradient-to-br from-[#1E67C6]/60 via-transparent to-[#8B5CF6]/60" />
-      <div
-        className="absolute inset-0 -z-10"
-        style={{ background: "radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%)" }}
-      />
 
       {/* Content - Redesigned with proper spacing and balanced typography */}
       <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-36 sm:pt-44 md:pt-52 pb-16 lg:pb-24">
@@ -281,13 +285,8 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
               {HERO_SUBTITLE}
             </p>
 
-            {/* Value Props / Trust Badges - NO animation, renders immediately visible */}
-            {/* EXPERIMENT B: Remove TrustBadges */}
-            {import.meta.env.VITE_EXPERIMENT !== 'B' && import.meta.env.VITE_EXPERIMENT !== 'b' && (
-              <div className="mt-4 sm:mt-6">
-                <TrustBadges />
-              </div>
-            )}
+            {/* Value Props / Trust Badges - Deferred until after LCP to prevent swap */}
+            <DeferredTrustBadges />
 
             {/* Optional CTA Button - 100% static for LCP (hover effects only, no transitions on mount) */}
             <div className="mt-6 sm:mt-8">
@@ -1018,21 +1017,11 @@ const Index = () => {
       {/* Header - lightweight, loads immediately */}
       <Header onSearch={handleSearch} megaItems={megaItems} />
 
-      {/* Hero Section - single instance; gradient is LCP, image swaps in lazily */}
-      <HeroSection
-        heroImage={
-          heroSlide?.image
-            ? { src: heroSlide.image, srcSet: heroSlide.imageSrcSet }
-            : null
-        }
-      />
+      {/* Hero Section - gradient background only, no image */}
+      <HeroSection />
 
-      {/* Promo Banner - limited-time hero offer */}
-      {/* Placeholder reserves space to prevent LCP element swap */}
-      {/* EXPERIMENT B: Remove PromoBanner */}
-      {import.meta.env.VITE_EXPERIMENT !== 'B' && import.meta.env.VITE_EXPERIMENT !== 'b' && (
-        <LazyPromoBanner />
-      )}
+      {/* Promo Banner - deferred until after LCP (5s or user interaction) */}
+      <LazyPromoBanner />
 
       {/* Site-wide Promotion Banner - from Medusa */}
       {siteWidePromotion && (
