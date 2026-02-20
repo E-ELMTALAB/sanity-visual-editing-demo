@@ -193,10 +193,18 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
   const navigate = useNavigate();
 
   // Ensure prehero is removed if it still exists (fallback cleanup)
+  // EXPERIMENT C: Don't remove prehero immediately - let main.tsx handle it
   useEffect(() => {
+    const experiment = import.meta.env.VITE_EXPERIMENT || 'baseline';
+
+    if (experiment === 'C' || experiment === 'c') {
+      // Don't remove prehero in Experiment C - let main.tsx handle it after 5s
+      console.log('[EXPERIMENT C] React hero mounted, prehero will be removed by main.tsx after 5s or interaction');
+      return;
+    }
+
     const prehero = document.getElementById("prehero");
     if (prehero && prehero.parentNode) {
-      // Debug: Log if prehero still exists when React hero mounts
       if (import.meta.env.DEV || import.meta.env.VITE_DEBUG_LCP === 'true') {
         console.log('[LCP Debug] React hero mounted, removing prehero (fallback):', {
           timestamp: performance.now()
@@ -217,23 +225,27 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
       {/* Static background placeholder - gradient only (counts as LCP, extremely cheap) */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
       {/* Hero image - always rendered for LCP (not conditional) */}
-      <picture className="absolute inset-0 h-full w-full -z-10">
-        {heroImage?.srcSet && (
-          <source srcSet={heroImage.srcSet} sizes="100vw" />
-        )}
-        <img
-          src={heroImage?.src || ''}
-          srcSet={heroImage?.srcSet}
-          sizes={heroImage?.srcSet ? "100vw" : undefined}
-          alt="Hero background"
-          loading="eager"
-          fetchPriority="high"
-          decoding="async"
-          width="1920"
-          height="1080"
-          className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
-        />
-      </picture>
+      {/* EXPERIMENT B: No image, gradient only */}
+      {import.meta.env.VITE_EXPERIMENT !== 'B' && import.meta.env.VITE_EXPERIMENT !== 'b' && (
+        <picture className="absolute inset-0 h-full w-full -z-10">
+          {heroImage?.srcSet && (
+            <source srcSet={heroImage.srcSet} sizes="100vw" />
+          )}
+          <img
+            data-lcp-hero="true"
+            src={heroImage?.src || '/assets/hero-ai-cubes.png'}
+            srcSet={heroImage?.srcSet}
+            sizes={heroImage?.srcSet ? "100vw" : undefined}
+            alt="Hero background"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            width="1920"
+            height="1080"
+            className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
+          />
+        </picture>
+      )}
 
       {/* Simple dimming overlay - replaces expensive filter: brightness() - no layout impact */}
       <div className="absolute inset-0 -z-10 bg-black/20 pointer-events-none" aria-hidden="true" />
@@ -270,9 +282,12 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
             </p>
 
             {/* Value Props / Trust Badges - NO animation, renders immediately visible */}
-            <div className="mt-4 sm:mt-6">
-              <TrustBadges />
-            </div>
+            {/* EXPERIMENT B: Remove TrustBadges */}
+            {import.meta.env.VITE_EXPERIMENT !== 'B' && import.meta.env.VITE_EXPERIMENT !== 'b' && (
+              <div className="mt-4 sm:mt-6">
+                <TrustBadges />
+              </div>
+            )}
 
             {/* Optional CTA Button - 100% static for LCP (hover effects only, no transitions on mount) */}
             <div className="mt-6 sm:mt-8">
@@ -376,7 +391,33 @@ const Index = () => {
 
   // Load hero slide immediately (critical for LCP) - no requestIdleCallback
   useEffect(() => {
+    const experiment = import.meta.env.VITE_EXPERIMENT || 'baseline';
+    console.log('[EXPERIMENT] Mode:', experiment);
+
+    // EXPERIMENT A: Static hero (no Sanity fetch)
+    if (experiment === 'A' || experiment === 'a') {
+      console.log('[EXPERIMENT A] Using static hero (no Sanity fetch)');
+      const heroSrcSetTime = performance.now();
+      setHeroSlide({
+        image: '/assets/hero-ai-cubes.png', // Static fallback
+        imageSrcSet: undefined,
+      });
+      console.log('[LCP INSTRUMENT] heroSlide state SET (heroSrcSetTime):', heroSrcSetTime, 'ms', 'Image URL: /assets/hero-ai-cubes.png');
+      return;
+    }
+
+    // EXPERIMENT B: Gradient only (no hero image)
+    if (experiment === 'B' || experiment === 'b') {
+      console.log('[EXPERIMENT B] Gradient only (no hero image)');
+      setHeroSlide(null); // No image
+      return;
+    }
+
+    // BASELINE or EXPERIMENT C: Normal Sanity fetch
     const loadHeroSlide = async () => {
+      const sanityStart = performance.now();
+      console.log('[LCP INSTRUMENT] Sanity fetch START:', sanityStart, 'ms');
+
       try {
         const isConfigValid = validateSanityConfig();
         if (!isConfigValid) {
@@ -387,10 +428,14 @@ const Index = () => {
         console.log('[HOMEPAGE] 🚀 Fetching hero slide immediately...');
         const heroData = await fetchFromSanity<any>(heroSlideQuery);
 
+        const sanityEnd = performance.now();
+        console.log('[LCP INSTRUMENT] Sanity fetch END:', sanityEnd, 'ms', 'Duration:', (sanityEnd - sanityStart).toFixed(2), 'ms');
+
         if (heroData?.heroSlides?.length) {
           const transformed = transformers.transformHeroSlide(heroData.heroSlides[0]);
+          const heroSrcSetTime = performance.now();
           setHeroSlide(transformed);
-          console.log('[HOMEPAGE] ✅ Hero slide loaded:', transformed.image ? 'with image' : 'no image');
+          console.log('[LCP INSTRUMENT] heroSlide state SET (heroSrcSetTime):', heroSrcSetTime, 'ms', 'Image URL:', transformed.image || 'none');
         } else {
           console.warn('[HOMEPAGE] No hero slide data found');
         }
@@ -849,41 +894,113 @@ const Index = () => {
     }
   }, []);
 
-  // LCP Debug Instrumentation - logs LCP element for performance analysis
+  // LCP Instrumentation - comprehensive timing and visibility tracking
   useEffect(() => {
     if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return;
 
-    // Only enable in dev mode or when VITE_DEBUG_LCP is set
-    const isDebugMode = import.meta.env.DEV || import.meta.env.VITE_DEBUG_LCP === 'true';
-    if (!isDebugMode) return;
+    const reactMountTime = performance.now();
+    console.log('[LCP INSTRUMENT] React mounted at:', reactMountTime, 'ms');
 
-    // Log when React hero mounts
-    console.log('[LCP Debug] React hero mounted:', {
-      timestamp: performance.now(),
-      preheroStillExists: !!document.getElementById("prehero"),
-    });
+    const metrics = {
+      reactMountTime,
+      heroSrcSetTime: null as number | null,
+      heroInDOMTime: null as number | null,
+      heroVisibleTime: null as number | null,
+      heroLoadTime: null as number | null,
+      lcpTime: null as number | null,
+      lcpElement: null as Element | null,
+      lcpUrl: null as string | null,
+    };
 
+    // Track hero image src assignment and visibility
+    const checkHeroImage = () => {
+      const heroImg = document.querySelector('img[data-lcp-hero]') as HTMLImageElement | null;
+
+      if (heroImg) {
+        const currentSrc = heroImg.src || heroImg.getAttribute('src') || '';
+
+        // Track when src is set
+        if (currentSrc && currentSrc !== '' && !metrics.heroSrcSetTime) {
+          metrics.heroSrcSetTime = performance.now();
+          console.log('[LCP INSTRUMENT] Hero img src SET:', metrics.heroSrcSetTime, 'ms', 'src:', currentSrc);
+        }
+
+        // Track when in DOM
+        if (!metrics.heroInDOMTime) {
+          metrics.heroInDOMTime = performance.now();
+          console.log('[LCP INSTRUMENT] Hero img in DOM:', metrics.heroInDOMTime, 'ms');
+        }
+
+        // Track visibility using getBoundingClientRect + computedStyle
+        if (!metrics.heroVisibleTime) {
+          const rect = heroImg.getBoundingClientRect();
+          const style = window.getComputedStyle(heroImg);
+          const isVisible =
+            rect.width > 0 &&
+            rect.height > 0 &&
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            style.opacity !== '0' &&
+            rect.top < window.innerHeight &&
+            rect.bottom > 0;
+
+          if (isVisible) {
+            metrics.heroVisibleTime = performance.now();
+            console.log('[LCP INSTRUMENT] Hero img VISIBLE:', metrics.heroVisibleTime, 'ms', 'rect:', { width: rect.width, height: rect.height, top: rect.top });
+          }
+        }
+
+        // Track when image finishes loading
+        if (heroImg.complete && !metrics.heroLoadTime) {
+          metrics.heroLoadTime = performance.now();
+          console.log('[LCP INSTRUMENT] Hero img LOADED (complete):', metrics.heroLoadTime, 'ms');
+        } else if (!heroImg.complete && !metrics.heroLoadTime) {
+          heroImg.addEventListener('load', () => {
+            metrics.heroLoadTime = performance.now();
+            console.log('[LCP INSTRUMENT] Hero img LOADED (event):', metrics.heroLoadTime, 'ms');
+          }, { once: true });
+        }
+      }
+
+      // Keep checking until we have all metrics or timeout
+      if (!metrics.heroLoadTime || !metrics.heroVisibleTime) {
+        requestAnimationFrame(checkHeroImage);
+      }
+    };
+
+    // Start checking after a short delay to allow React to render
+    setTimeout(() => checkHeroImage(), 50);
+
+    // Track LCP via PerformanceObserver
     try {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           const lcpEntry = entry as any;
-          const element = lcpEntry.element;
-          const isPrehero = element?.id === 'prehero-img' || element?.closest?.('#prehero');
-          const isReactHero = element?.closest?.('section[dir="rtl"]') && !isPrehero;
+          metrics.lcpTime = lcpEntry.startTime;
+          metrics.lcpElement = lcpEntry.element;
+          metrics.lcpUrl = lcpEntry.url;
 
-          console.log('[LCP Debug] LCP Entry:', {
-            startTime: lcpEntry.startTime,
-            size: lcpEntry.size,
-            url: lcpEntry.url,
-            element: element,
-            elementTag: element?.tagName,
-            elementId: element?.id,
-            elementClass: element?.className,
-            isPrehero: isPrehero,
-            isReactHero: isReactHero,
-            renderTime: lcpEntry.renderTime || lcpEntry.startTime - lcpEntry.renderTime,
-            loadTime: lcpEntry.loadTime || lcpEntry.startTime - lcpEntry.loadTime,
-            timestamp: performance.now(),
+          // Create short selector for LCP element
+          let selector = '';
+          if (lcpEntry.element) {
+            const el = lcpEntry.element as Element;
+            if (el.id) selector = `#${el.id}`;
+            else if (el.className) selector = `.${el.className.split(' ')[0]}`;
+            else selector = el.tagName.toLowerCase();
+          }
+
+          console.log('[LCP INSTRUMENT] LCP EVENT:', {
+            lcpTime: metrics.lcpTime.toFixed(2),
+            lcpElement: lcpEntry.element?.tagName,
+            lcpSelector: selector,
+            lcpUrl: metrics.lcpUrl,
+            lcpSize: lcpEntry.size,
+            timeFromReactMount: (metrics.lcpTime - metrics.reactMountTime).toFixed(2),
+            timeFromHeroVisible: metrics.heroVisibleTime ? (metrics.lcpTime - metrics.heroVisibleTime).toFixed(2) : 'N/A',
+            heroSrcSetTime: metrics.heroSrcSetTime ? metrics.heroSrcSetTime.toFixed(2) : 'N/A',
+            heroInDOMTime: metrics.heroInDOMTime ? metrics.heroInDOMTime.toFixed(2) : 'N/A',
+            heroVisibleTime: metrics.heroVisibleTime ? metrics.heroVisibleTime.toFixed(2) : 'N/A',
+            heroLoadTime: metrics.heroLoadTime ? metrics.heroLoadTime.toFixed(2) : 'N/A',
           });
         }
       });
@@ -892,7 +1009,7 @@ const Index = () => {
 
       return () => observer.disconnect();
     } catch (error) {
-      console.warn('[LCP Debug] PerformanceObserver not supported:', error);
+      console.warn('[LCP INSTRUMENT] PerformanceObserver not supported:', error);
     }
   }, []);
 
@@ -912,7 +1029,10 @@ const Index = () => {
 
       {/* Promo Banner - limited-time hero offer */}
       {/* Placeholder reserves space to prevent LCP element swap */}
-      <LazyPromoBanner />
+      {/* EXPERIMENT B: Remove PromoBanner */}
+      {import.meta.env.VITE_EXPERIMENT !== 'B' && import.meta.env.VITE_EXPERIMENT !== 'b' && (
+        <LazyPromoBanner />
+      )}
 
       {/* Site-wide Promotion Banner - from Medusa */}
       {siteWidePromotion && (

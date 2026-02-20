@@ -58,19 +58,48 @@ if (rootEl) {
 
   createRoot(rootEl).render(<App />);
 
-  // Remove prehero ASAP after React mounts to hand off to React hero
-  // This ensures LCP is captured from static HTML, then seamlessly transitions to React
-  window.requestAnimationFrame(() => {
-    const prehero = document.getElementById("prehero");
-    if (prehero) {
-      // Debug: Log removal timing
-      if (import.meta.env.DEV || import.meta.env.VITE_DEBUG_LCP === 'true') {
-        console.log('[LCP Debug] Removing prehero after React mount:', {
-          timestamp: performance.now(),
-          timeSinceMount: performance.now()
-        });
+  // EXPERIMENT C: Keep prehero visible for 5+ seconds to ensure LCP is captured from it
+  // Only remove after user interaction or after 5s+ to prevent LCP swap
+  const experiment = import.meta.env.VITE_EXPERIMENT || 'baseline';
+  
+  if (experiment === 'C' || experiment === 'c') {
+    console.log('[EXPERIMENT C] Keeping prehero visible for 5+ seconds');
+    
+    const removePrehero = () => {
+      const prehero = document.getElementById("prehero");
+      if (prehero) {
+        console.log('[EXPERIMENT C] Removing prehero at:', performance.now(), 'ms');
+        prehero.remove();
       }
-      prehero.remove();
-    }
-  });
+    };
+    
+    // Remove on user interaction (scroll, click, keydown)
+    const onInteraction = () => {
+      removePrehero();
+      window.removeEventListener('scroll', onInteraction);
+      window.removeEventListener('pointerdown', onInteraction);
+      window.removeEventListener('keydown', onInteraction);
+    };
+    
+    window.addEventListener('scroll', onInteraction, { passive: true, once: true });
+    window.addEventListener('pointerdown', onInteraction, { passive: true, once: true });
+    window.addEventListener('keydown', onInteraction, { once: true });
+    
+    // Fallback: remove after 5 seconds
+    setTimeout(removePrehero, 5000);
+  } else {
+    // BASELINE/OTHER EXPERIMENTS: Remove prehero ASAP after React mounts
+    window.requestAnimationFrame(() => {
+      const prehero = document.getElementById("prehero");
+      if (prehero) {
+        if (import.meta.env.DEV || import.meta.env.VITE_DEBUG_LCP === 'true') {
+          console.log('[LCP Debug] Removing prehero after React mount:', {
+            timestamp: performance.now(),
+            timeSinceMount: performance.now()
+          });
+        }
+        prehero.remove();
+      }
+    });
+  }
 }
