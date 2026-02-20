@@ -192,13 +192,17 @@ type HeroImage = { src: string; srcSet?: string };
 function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
   const navigate = useNavigate();
 
-  // If the static HTML hero shell was rendered for LCP, ensure it is removed once
-  // the React hero has mounted so there is no duplicate content.
+  // Ensure prehero is removed if it still exists (fallback cleanup)
   useEffect(() => {
-    if (import.meta.env.VITE_PRELOAD_HERO !== "true") return;
-    const el = document.getElementById("preload-hero");
-    if (el && el.parentNode) {
-      el.parentNode.removeChild(el);
+    const prehero = document.getElementById("prehero");
+    if (prehero && prehero.parentNode) {
+      // Debug: Log if prehero still exists when React hero mounts
+      if (import.meta.env.DEV || import.meta.env.VITE_DEBUG_LCP === 'true') {
+        console.log('[LCP Debug] React hero mounted, removing prehero (fallback):', {
+          timestamp: performance.now()
+        });
+      }
+      prehero.remove();
     }
   }, []);
 
@@ -853,20 +857,33 @@ const Index = () => {
     const isDebugMode = import.meta.env.DEV || import.meta.env.VITE_DEBUG_LCP === 'true';
     if (!isDebugMode) return;
 
+    // Log when React hero mounts
+    console.log('[LCP Debug] React hero mounted:', {
+      timestamp: performance.now(),
+      preheroStillExists: !!document.getElementById("prehero"),
+    });
+
     try {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           const lcpEntry = entry as any;
-          console.log('[LCP Debug]', {
+          const element = lcpEntry.element;
+          const isPrehero = element?.id === 'prehero-img' || element?.closest?.('#prehero');
+          const isReactHero = element?.closest?.('section[dir="rtl"]') && !isPrehero;
+
+          console.log('[LCP Debug] LCP Entry:', {
             startTime: lcpEntry.startTime,
             size: lcpEntry.size,
             url: lcpEntry.url,
-            element: lcpEntry.element,
-            elementTag: lcpEntry.element?.tagName,
-            elementId: lcpEntry.element?.id,
-            elementClass: lcpEntry.element?.className,
+            element: element,
+            elementTag: element?.tagName,
+            elementId: element?.id,
+            elementClass: element?.className,
+            isPrehero: isPrehero,
+            isReactHero: isReactHero,
             renderTime: lcpEntry.renderTime || lcpEntry.startTime - lcpEntry.renderTime,
             loadTime: lcpEntry.loadTime || lcpEntry.startTime - lcpEntry.loadTime,
+            timestamp: performance.now(),
           });
         }
       });

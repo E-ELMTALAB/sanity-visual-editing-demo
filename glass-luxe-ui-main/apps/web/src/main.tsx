@@ -44,11 +44,33 @@ Element.prototype.getAttribute = function(name: string) {
 const rootEl = document.getElementById("root");
 
 if (rootEl) {
+  // Debug: Log when prehero is present (dev-only)
+  if (import.meta.env.DEV || import.meta.env.VITE_DEBUG_LCP === 'true') {
+    const prehero = document.getElementById("prehero");
+    if (prehero) {
+      console.log('[LCP Debug] Prehero present at mount time:', {
+        element: prehero,
+        img: document.getElementById("prehero-img"),
+        timestamp: performance.now()
+      });
+    }
+  }
+
   createRoot(rootEl).render(<App />);
 
-  // Mark when the React app has mounted so the static hero shell can fade out.
-  // This breaks the dependency of the initial LCP on React hydration.
+  // Remove prehero ASAP after React mounts to hand off to React hero
+  // This ensures LCP is captured from static HTML, then seamlessly transitions to React
   window.requestAnimationFrame(() => {
-    document.documentElement.classList.add("app-mounted");
+    const prehero = document.getElementById("prehero");
+    if (prehero) {
+      // Debug: Log removal timing
+      if (import.meta.env.DEV || import.meta.env.VITE_DEBUG_LCP === 'true') {
+        console.log('[LCP Debug] Removing prehero after React mount:', {
+          timestamp: performance.now(),
+          timeSinceMount: performance.now()
+        });
+      }
+      prehero.remove();
+    }
   });
 }
