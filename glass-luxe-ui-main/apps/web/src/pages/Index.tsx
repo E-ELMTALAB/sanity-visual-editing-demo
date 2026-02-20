@@ -15,6 +15,37 @@ import { TrustStatsBar } from "@/components/TrustStatsBar";
 import { QuickSummaryTrustBar } from "@/components/QuickSummaryTrustBar";
 import { SeoContentCard } from "@/components/SeoContentCard";
 import { PromoBanner } from "@/components/PromoBanner";
+
+// Lazy PromoBanner that loads after first paint to prevent LCP swap
+const LazyPromoBanner = () => {
+  const [shouldRender, setShouldRender] = useState(false);
+
+  useEffect(() => {
+    // Load after first paint using requestIdleCallback or setTimeout
+    const loadBanner = () => setShouldRender(true);
+
+    if (typeof window !== 'undefined') {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(loadBanner, { timeout: 2000 });
+      } else {
+        setTimeout(loadBanner, 2000);
+      }
+    } else {
+      loadBanner();
+    }
+  }, []);
+
+  // Placeholder to reserve space and prevent LCP element swap
+  if (!shouldRender) {
+    return (
+      <div className="py-8 sm:py-10 lg:py-12 px-6 sm:px-6 lg:px-[100px]" style={{ minHeight: '400px' }} aria-hidden="true">
+        <div className="max-w-[1400px] mx-auto h-[400px] sm:h-[480px] md:h-[480px] lg:h-[448px]" />
+      </div>
+    );
+  }
+
+  return <PromoBanner />;
+};
 // Import Sanity modules statically (lazy-loading caused initialization issues)
 import { fetchFromSanity } from "@/lib/sanity.client.unified";
 import { validateSanityConfig } from "@/lib/sanity.config";
@@ -200,8 +231,8 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
         />
       </picture>
 
-      {/* Simple dimming overlay - replaces expensive filter: brightness() */}
-      <div className="absolute inset-0 -z-10 bg-black/15 pointer-events-none" />
+      {/* Simple dimming overlay - replaces expensive filter: brightness() - no layout impact */}
+      <div className="absolute inset-0 -z-10 bg-black/20 pointer-events-none" aria-hidden="true" />
 
       {/* Color gradient overlay - removed mix-blend-soft-light for performance */}
       <div className="absolute inset-0 -z-10 opacity-85 md:opacity-60 bg-gradient-to-br from-[#1E67C6]/60 via-transparent to-[#8B5CF6]/60" />
@@ -793,16 +824,59 @@ const Index = () => {
     };
   }, [medusaSlugs.join("|")]);
 
-  // Track homepage view for GA4
+  // Track homepage view for GA4 - deferred to avoid blocking LCP
   useEffect(() => {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: "page_view",
-      page_title: "Homepage - SharifGPT",
-      page_location: window.location.href,
-      page_path: window.location.pathname,
-      page_type: "homepage"
-    });
+    const trackPageView = () => {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "page_view",
+        page_title: "Homepage - SharifGPT",
+        page_location: window.location.href,
+        page_path: window.location.pathname,
+        page_type: "homepage"
+      });
+    };
+
+    // Defer analytics to after LCP
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      requestIdleCallback(trackPageView, { timeout: 3000 });
+    } else {
+      setTimeout(trackPageView, 100);
+    }
+  }, []);
+
+  // LCP Debug Instrumentation - logs LCP element for performance analysis
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return;
+
+    // Only enable in dev mode or when VITE_DEBUG_LCP is set
+    const isDebugMode = import.meta.env.DEV || import.meta.env.VITE_DEBUG_LCP === 'true';
+    if (!isDebugMode) return;
+
+    try {
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          const lcpEntry = entry as any;
+          console.log('[LCP Debug]', {
+            startTime: lcpEntry.startTime,
+            size: lcpEntry.size,
+            url: lcpEntry.url,
+            element: lcpEntry.element,
+            elementTag: lcpEntry.element?.tagName,
+            elementId: lcpEntry.element?.id,
+            elementClass: lcpEntry.element?.className,
+            renderTime: lcpEntry.renderTime || lcpEntry.startTime - lcpEntry.renderTime,
+            loadTime: lcpEntry.loadTime || lcpEntry.startTime - lcpEntry.loadTime,
+          });
+        }
+      });
+
+      observer.observe({ type: 'largest-contentful-paint', buffered: true });
+
+      return () => observer.disconnect();
+    } catch (error) {
+      console.warn('[LCP Debug] PerformanceObserver not supported:', error);
+    }
   }, []);
 
   return (
@@ -820,7 +894,8 @@ const Index = () => {
       />
 
       {/* Promo Banner - limited-time hero offer */}
-      <PromoBanner />
+      {/* Placeholder reserves space to prevent LCP element swap */}
+      <LazyPromoBanner />
 
       {/* Site-wide Promotion Banner - from Medusa */}
       {siteWidePromotion && (

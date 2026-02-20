@@ -71,8 +71,33 @@ const RouteFallback = () => (
 
 // Global Customer Support Widget - appears on all pages
 // Must be inside CartProvider to access cart state
+// Deferred until after window load to avoid blocking LCP
 const GlobalCustomerSupport = () => {
   const { state: cartState } = useCart();
+  const [shouldLoad, setShouldLoad] = useState(false);
+  
+  useEffect(() => {
+    // Defer chat widget initialization until after window load to prevent LCP interference
+    const initChatWidget = () => setShouldLoad(true);
+    
+    if (document.readyState === 'complete') {
+      // Page already loaded, use requestIdleCallback
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        requestIdleCallback(initChatWidget, { timeout: 1500 });
+      } else {
+        setTimeout(initChatWidget, 1500);
+      }
+    } else {
+      // Wait for window load event
+      window.addEventListener('load', initChatWidget, { once: true });
+    }
+    
+    return () => {
+      window.removeEventListener('load', initChatWidget);
+    };
+  }, []);
+  
+  if (!shouldLoad) return null;
   
   return (
     <Suspense fallback={null}>
