@@ -349,4 +349,48 @@
       transform: translateX(0);
     }
   }
+
+  /* Hero background glow animations - GPU-friendly, respects prefers-reduced-motion */
+  @keyframes heroGlow {
+
+    0%,
+    100% {
+      opacity: 0.4;
+      transform: scale(1);
+    }
+
+    50% {
+      opacity: 0.5;
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes heroGlowSecondary {
+
+    0%,
+    100% {
+      opacity: 0.3;
+      transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+      opacity: 0.35;
+      transform: translate(2%, -1%) scale(1.02);
+    }
+
+    66% {
+      opacity: 0.35;
+      transform: translate(-2%, 1%) scale(1.02);
+    }
+  }
+
+  @keyframes heroGradient {
+    0% {
+      opacity: 0.15;
+    }
+
+    100% {
+      opacity: 0.25;
+    }
+  }
 }

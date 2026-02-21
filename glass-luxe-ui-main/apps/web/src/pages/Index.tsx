@@ -258,8 +258,50 @@ function HeroSection() {
       dir="rtl"
       className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden"
     >
-      {/* Lightweight CSS gradient background - no image, no overlays */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
+      {/* Enhanced CSS-only background with radial glows */}
+      <div
+        className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]"
+        style={{
+          position: 'relative',
+        }}
+      >
+        {/* Radial glow effects using pseudo-elements */}
+        <div
+          className="absolute inset-0 opacity-40"
+          style={{
+            background: `
+              radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 80% 70%, rgba(30, 103, 198, 0.25) 0%, transparent 50%),
+              radial-gradient(circle at 50% 50%, rgba(110, 168, 254, 0.15) 0%, transparent 60%)
+            `,
+            mixBlendMode: 'screen',
+            willChange: 'opacity',
+            animation: 'heroGlow 20s ease-in-out infinite',
+          }}
+        />
+        <div
+          className="absolute inset-0 opacity-30"
+          style={{
+            background: `
+              radial-gradient(ellipse at 10% 20%, rgba(139, 92, 246, 0.2) 0%, transparent 40%),
+              radial-gradient(ellipse at 90% 80%, rgba(30, 103, 198, 0.2) 0%, transparent 40%)
+            `,
+            mixBlendMode: 'overlay',
+            willChange: 'transform',
+            animation: 'heroGlowSecondary 25s ease-in-out infinite',
+          }}
+        />
+      </div>
+
+      {/* Subtle animated gradient overlay for depth */}
+      <div
+        className="absolute inset-0 -z-10 opacity-20"
+        style={{
+          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, transparent 50%, rgba(30, 103, 198, 0.1) 100%)',
+          willChange: 'opacity',
+          animation: 'heroGradient 15s ease-in-out infinite alternate',
+        }}
+      />
 
       {/* Content - Redesigned with proper spacing and balanced typography */}
       <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-36 sm:pt-44 md:pt-52 pb-16 lg:pb-24">
