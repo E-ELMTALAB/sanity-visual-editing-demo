@@ -231,9 +231,8 @@ type HeroImage = { src: string; srcSet?: string };
 function HeroSection() {
   const navigate = useNavigate();
   const heroFxRef = useRef<HTMLDivElement>(null);
+  const glowSvgRef = useRef<SVGSVGElement>(null);
   const rafIdRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number>(performance.now());
-  const pointerRef = useRef({ x: 0, y: 0 });
   const isVisibleRef = useRef<boolean>(true);
 
   // Ensure prehero is removed if it still exists (fallback cleanup)
@@ -258,89 +257,114 @@ function HeroSection() {
     }
   }, []);
 
-  // Aurora blobs animation - respects prefers-reduced-motion
+  // Reflect-style glow animation - starts after page is stable, respects prefers-reduced-motion
   useEffect(() => {
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion || !heroFxRef.current) {
+    if (prefersReducedMotion || !glowSvgRef.current) {
       return;
     }
 
-    const blobs = heroFxRef.current.querySelectorAll<HTMLElement>('.aurora-blob');
-    if (blobs.length === 0) return;
+    // Start animation only after page is stable (requestIdleCallback or window load)
+    const startAnimation = () => {
+      if (!glowSvgRef.current) return;
 
-    const maxOffset = 18; // Maximum translate offset in pixels
-    const pointerInfluence = 0.3; // How much pointer affects movement (0-1)
+      const svg = glowSvgRef.current;
+      const maxOffset = 10; // Maximum parallax offset in pixels (subtle)
+      let targetX = 0;
+      let targetY = 0;
+      let currentX = 0;
+      let currentY = 0;
 
-    // Blob animation parameters (different for each blob)
-    const blobParams = [
-      { speedX: 0.00008, speedY: 0.00012, phaseX: 0, phaseY: Math.PI / 3 },
-      { speedX: 0.0001, speedY: 0.00008, phaseX: Math.PI / 2, phaseY: Math.PI },
-      { speedX: 0.00009, speedY: 0.00011, phaseX: Math.PI, phaseY: Math.PI / 4 },
-      { speedX: 0.00012, speedY: 0.00009, phaseX: Math.PI * 1.5, phaseY: Math.PI / 2 },
-      { speedX: 0.00007, speedY: 0.00013, phaseX: Math.PI / 4, phaseY: Math.PI * 1.25 },
-    ];
+      // Pointer position handler (desktop only)
+      const handlePointerMove = (e: MouseEvent) => {
+        if (!heroFxRef.current) return;
+        const rect = heroFxRef.current.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
 
-    // Pointer position handler (desktop only)
-    const handlePointerMove = (e: MouseEvent) => {
-      if (!heroFxRef.current) return;
-      const rect = heroFxRef.current.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
+        // Normalize to -1 to 1 range, apply subtle influence
+        targetX = ((e.clientX - centerX) / (rect.width / 2)) * maxOffset * 0.4;
+        targetY = ((e.clientY - centerY) / (rect.height / 2)) * maxOffset * 0.4;
+      };
 
-      // Normalize to -1 to 1 range
-      pointerRef.current.x = (e.clientX - centerX) / (rect.width / 2);
-      pointerRef.current.y = (e.clientY - centerY) / (rect.height / 2);
-    };
+      // Visibility change handler - pause when tab hidden
+      const handleVisibilityChange = () => {
+        isVisibleRef.current = !document.hidden;
+      };
 
-    // Visibility change handler - pause when tab hidden
-    const handleVisibilityChange = () => {
-      isVisibleRef.current = !document.hidden;
-    };
+      // Animation loop - only transforms, no layout reads
+      const animate = () => {
+        if (!isVisibleRef.current || !svg) {
+          rafIdRef.current = requestAnimationFrame(animate);
+          return;
+        }
 
-    // Animation loop
-    const animate = () => {
-      if (!isVisibleRef.current || !heroFxRef.current) {
+        // Smooth interpolation
+        currentX += (targetX - currentX) * 0.08;
+        currentY += (targetY - currentY) * 0.08;
+
+        // Apply transform (GPU-accelerated)
+        svg.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
         rafIdRef.current = requestAnimationFrame(animate);
-        return;
-      }
+      };
 
-      const elapsed = performance.now() - startTimeRef.current;
-
-      blobs.forEach((blob, index) => {
-        const params = blobParams[index] || blobParams[0];
-
-        // Sinusoidal drift
-        const driftX = Math.sin(elapsed * params.speedX + params.phaseX) * maxOffset;
-        const driftY = Math.cos(elapsed * params.speedY + params.phaseY) * maxOffset;
-
-        // Pointer influence (subtle)
-        const pointerX = pointerRef.current.x * maxOffset * pointerInfluence;
-        const pointerY = pointerRef.current.y * maxOffset * pointerInfluence;
-
-        // Combine drift + pointer
-        const x = driftX + pointerX;
-        const y = driftY + pointerY;
-
-        blob.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      });
-
+      // Start animation loop
       rafIdRef.current = requestAnimationFrame(animate);
+
+      // Add event listeners
+      window.addEventListener('mousemove', handlePointerMove, { passive: true });
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
+      return () => {
+        if (rafIdRef.current !== null) {
+          cancelAnimationFrame(rafIdRef.current);
+        }
+        window.removeEventListener('mousemove', handlePointerMove);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
     };
 
-    // Start animation
-    rafIdRef.current = requestAnimationFrame(animate);
+    let cleanup: (() => void) | null = null;
 
-    // Add event listeners
-    window.addEventListener('mousemove', handlePointerMove, { passive: true });
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Start after page is stable
+    let idleId: number | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
+    let loadHandler: (() => void) | null = null;
+
+    if (document.readyState === 'complete') {
+      // Page already loaded, use requestIdleCallback
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        idleId = (window as any).requestIdleCallback(() => {
+          cleanup = startAnimation();
+        }, { timeout: 2000 });
+      } else {
+        timeoutId = setTimeout(() => {
+          cleanup = startAnimation();
+        }, 100);
+      }
+    } else {
+      // Wait for window load event
+      loadHandler = () => {
+        cleanup = startAnimation();
+      };
+      window.addEventListener('load', loadHandler, { once: true });
+    }
 
     return () => {
+      if (idleId !== null && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        (window as any).cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+      if (loadHandler) {
+        window.removeEventListener('load', loadHandler);
+      }
+      if (cleanup) cleanup();
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
       }
-      window.removeEventListener('mousemove', handlePointerMove);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -352,110 +376,111 @@ function HeroSection() {
       {/* Base gradient background */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
 
-      {/* Aurora blobs effect layer */}
+      {/* Reflect-style glow effect layer */}
       <div
         ref={heroFxRef}
-        className="absolute inset-0 z-0 pointer-events-none"
+        className="heroFx absolute inset-0 z-0 pointer-events-none"
         aria-hidden="true"
         style={{
-          overflow: 'hidden',
+          contain: 'paint',
+          // DEBUG: Remove outline after verification
+          // outline: '2px solid rgba(0, 255, 0, 0.5)',
         }}
       >
-        {/* Blob 1 - Purple top-left */}
-        <span
-          className="aurora-blob absolute"
+        {/* Main glow arc - inline SVG with bloom filter */}
+        <svg
+          ref={glowSvgRef}
+          className="absolute"
           style={{
-            width: 'clamp(200px, 40vw, 500px)',
-            height: 'clamp(200px, 40vw, 500px)',
-            top: '10%',
-            left: '15%',
-            borderRadius: '9999px',
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, rgba(139, 92, 246, 0.1) 50%, transparent 70%)',
-            filter: 'blur(60px)',
-            opacity: 0.18,
-            mixBlendMode: 'screen',
+            width: 'clamp(600px, 120vw, 1400px)',
+            height: 'clamp(400px, 80vh, 900px)',
+            top: 'calc(55% - clamp(200px, 40vh, 450px))',
+            left: 'calc(50% - clamp(300px, 60vw, 700px))',
             willChange: 'transform',
           }}
-        />
+          viewBox="0 0 1400 900"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            {/* Bloom filter for soft glow */}
+            <filter id="glowBloom" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="40" result="blur" />
+              <feColorMatrix
+                in="blur"
+                type="matrix"
+                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 3 0"
+                result="coloredBlur"
+              />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
 
-        {/* Blob 2 - Blue bottom-right */}
-        <span
-          className="aurora-blob absolute"
-          style={{
-            width: 'clamp(250px, 45vw, 550px)',
-            height: 'clamp(250px, 45vw, 550px)',
-            bottom: '15%',
-            right: '20%',
-            borderRadius: '9999px',
-            background: 'radial-gradient(circle, rgba(30, 103, 198, 0.35) 0%, rgba(30, 103, 198, 0.1) 50%, transparent 70%)',
-            filter: 'blur(70px)',
-            opacity: 0.16,
-            mixBlendMode: 'screen',
-            willChange: 'transform',
-          }}
-        />
+            {/* Purple gradient for arc */}
+            <linearGradient id="arcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="rgba(139, 92, 246, 0.9)" stopOpacity="0.9" />
+              <stop offset="50%" stopColor="rgba(139, 92, 246, 1)" stopOpacity="1" />
+              <stop offset="100%" stopColor="rgba(139, 92, 246, 0.9)" stopOpacity="0.9" />
+            </linearGradient>
 
-        {/* Blob 3 - Cyan center */}
-        <span
-          className="aurora-blob absolute"
-          style={{
-            width: 'clamp(180px, 35vw, 450px)',
-            height: 'clamp(180px, 35vw, 450px)',
-            top: '45%',
-            left: '45%',
-            borderRadius: '9999px',
-            background: 'radial-gradient(circle, rgba(110, 168, 254, 0.3) 0%, rgba(110, 168, 254, 0.08) 50%, transparent 70%)',
-            filter: 'blur(50px)',
-            opacity: 0.14,
-            mixBlendMode: 'screen',
-            willChange: 'transform',
-          }}
-        />
+            {/* Radial gradient for horizon glow */}
+            <radialGradient id="horizonGlow" cx="50%" cy="50%">
+              <stop offset="0%" stopColor="rgba(139, 92, 246, 0.6)" stopOpacity="0.6" />
+              <stop offset="50%" stopColor="rgba(139, 92, 246, 0.3)" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="rgba(139, 92, 246, 0)" stopOpacity="0" />
+            </radialGradient>
+          </defs>
 
-        {/* Blob 4 - Purple bottom-left */}
-        <span
-          className="aurora-blob absolute"
-          style={{
-            width: 'clamp(220px, 38vw, 480px)',
-            height: 'clamp(220px, 38vw, 480px)',
-            bottom: '20%',
-            left: '10%',
-            borderRadius: '9999px',
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, rgba(139, 92, 246, 0.08) 50%, transparent 70%)',
-            filter: 'blur(55px)',
-            opacity: 0.15,
-            mixBlendMode: 'screen',
-            willChange: 'transform',
-          }}
-        />
+          {/* Horizon glow ellipse */}
+          <ellipse
+            cx="700"
+            cy="450"
+            rx="600"
+            ry="120"
+            fill="url(#horizonGlow)"
+            filter="url(#glowBloom)"
+            opacity="0.75"
+          />
 
-        {/* Blob 5 - Blue top-right */}
-        <span
-          className="aurora-blob absolute"
-          style={{
-            width: 'clamp(200px, 36vw, 460px)',
-            height: 'clamp(200px, 36vw, 460px)',
-            top: '20%',
-            right: '15%',
-            borderRadius: '9999px',
-            background: 'radial-gradient(circle, rgba(30, 103, 198, 0.32) 0%, rgba(30, 103, 198, 0.09) 50%, transparent 70%)',
-            filter: 'blur(65px)',
-            opacity: 0.17,
-            mixBlendMode: 'screen',
-            willChange: 'transform',
-          }}
-        />
+          {/* Main arc path (semi-circle) */}
+          <path
+            d="M 200 450 Q 700 200 1200 450"
+            stroke="url(#arcGradient)"
+            strokeWidth="8"
+            fill="none"
+            filter="url(#glowBloom)"
+            opacity="0.85"
+            style={{
+              strokeLinecap: 'round',
+            }}
+          />
 
-        {/* Subtle noise overlay (CSS-only) */}
+          {/* Secondary arc for depth */}
+          <path
+            d="M 250 450 Q 700 250 1150 450"
+            stroke="rgba(139, 92, 246, 0.5)"
+            strokeWidth="4"
+            fill="none"
+            filter="url(#glowBloom)"
+            opacity="0.6"
+            style={{
+              strokeLinecap: 'round',
+            }}
+          />
+        </svg>
+
+        {/* Additional soft bloom overlay (CSS) */}
         <div
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0"
           style={{
             background: `
-              repeating-radial-gradient(circle at 0 0, transparent 0, rgba(255, 255, 255, 0.1) 2px, transparent 4px),
-              repeating-radial-gradient(circle at 50% 50%, transparent 0, rgba(255, 255, 255, 0.08) 3px, transparent 6px)
+              radial-gradient(ellipse at center 60%, rgba(139, 92, 246, 0.25) 0%, transparent 50%),
+              radial-gradient(ellipse at center 55%, rgba(30, 103, 198, 0.15) 0%, transparent 45%)
             `,
-            backgroundSize: '200px 200px, 300px 300px',
-            mixBlendMode: 'overlay',
+            filter: 'blur(60px)',
+            mixBlendMode: 'screen',
+            opacity: 0.7,
             pointerEvents: 'none',
           }}
         />
