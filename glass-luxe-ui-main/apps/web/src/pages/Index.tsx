@@ -230,9 +230,11 @@ type HeroImage = { src: string; srcSet?: string };
 // Hero component: lightweight gradient background only, no image
 function HeroSection() {
   const navigate = useNavigate();
-  const parallaxRef = useRef<HTMLDivElement>(null);
+  const heroFxRef = useRef<HTMLDivElement>(null);
   const rafIdRef = useRef<number | null>(null);
-  const positionRef = useRef({ x: 0, y: 0 });
+  const startTimeRef = useRef<number>(performance.now());
+  const pointerRef = useRef({ x: 0, y: 0 });
+  const isVisibleRef = useRef<boolean>(true);
 
   // Ensure prehero is removed if it still exists (fallback cleanup)
   // EXPERIMENT C: Don't remove prehero immediately - let main.tsx handle it
@@ -256,72 +258,89 @@ function HeroSection() {
     }
   }, []);
 
-  // Parallax glow effect - respects prefers-reduced-motion
+  // Aurora blobs animation - respects prefers-reduced-motion
   useEffect(() => {
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion || !parallaxRef.current) {
+    if (prefersReducedMotion || !heroFxRef.current) {
       return;
     }
 
-    const maxOffset = 10; // Maximum parallax offset in pixels (subtle)
-    let targetX = 0;
-    let targetY = 0;
+    const blobs = heroFxRef.current.querySelectorAll<HTMLElement>('.aurora-blob');
+    if (blobs.length === 0) return;
 
-    // Update transform using requestAnimationFrame
-    const updateTransform = () => {
-      if (!parallaxRef.current) return;
+    const maxOffset = 18; // Maximum translate offset in pixels
+    const pointerInfluence = 0.3; // How much pointer affects movement (0-1)
 
-      // Smooth interpolation
-      positionRef.current.x += (targetX - positionRef.current.x) * 0.1;
-      positionRef.current.y += (targetY - positionRef.current.y) * 0.1;
+    // Blob animation parameters (different for each blob)
+    const blobParams = [
+      { speedX: 0.00008, speedY: 0.00012, phaseX: 0, phaseY: Math.PI / 3 },
+      { speedX: 0.0001, speedY: 0.00008, phaseX: Math.PI / 2, phaseY: Math.PI },
+      { speedX: 0.00009, speedY: 0.00011, phaseX: Math.PI, phaseY: Math.PI / 4 },
+      { speedX: 0.00012, speedY: 0.00009, phaseX: Math.PI * 1.5, phaseY: Math.PI / 2 },
+      { speedX: 0.00007, speedY: 0.00013, phaseX: Math.PI / 4, phaseY: Math.PI * 1.25 },
+    ];
 
-      parallaxRef.current.style.transform = `translate3d(${positionRef.current.x}px, ${positionRef.current.y}px, 0) scale(1.04)`;
-      rafIdRef.current = requestAnimationFrame(updateTransform);
-    };
-
-    // Mouse move handler (desktop)
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = parallaxRef.current?.getBoundingClientRect();
-      if (!rect) return;
-
+    // Pointer position handler (desktop only)
+    const handlePointerMove = (e: MouseEvent) => {
+      if (!heroFxRef.current) return;
+      const rect = heroFxRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
 
-      // Calculate offset relative to center (-1 to 1)
-      const offsetX = (e.clientX - centerX) / (rect.width / 2);
-      const offsetY = (e.clientY - centerY) / (rect.height / 2);
-
-      targetX = offsetX * maxOffset;
-      targetY = offsetY * maxOffset;
+      // Normalize to -1 to 1 range
+      pointerRef.current.x = (e.clientX - centerX) / (rect.width / 2);
+      pointerRef.current.y = (e.clientY - centerY) / (rect.height / 2);
     };
 
-    // Scroll handler (mobile)
-    const handleScroll = () => {
-      const rect = parallaxRef.current?.getBoundingClientRect();
-      if (!rect) return;
-
-      const viewportCenterY = window.innerHeight / 2;
-      const elementCenterY = rect.top + rect.height / 2;
-
-      // Calculate offset based on scroll position
-      const scrollOffset = (viewportCenterY - elementCenterY) / window.innerHeight;
-      targetY = scrollOffset * maxOffset;
+    // Visibility change handler - pause when tab hidden
+    const handleVisibilityChange = () => {
+      isVisibleRef.current = !document.hidden;
     };
 
-    // Start animation loop
-    rafIdRef.current = requestAnimationFrame(updateTransform);
+    // Animation loop
+    const animate = () => {
+      if (!isVisibleRef.current || !heroFxRef.current) {
+        rafIdRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
+      const elapsed = performance.now() - startTimeRef.current;
+
+      blobs.forEach((blob, index) => {
+        const params = blobParams[index] || blobParams[0];
+
+        // Sinusoidal drift
+        const driftX = Math.sin(elapsed * params.speedX + params.phaseX) * maxOffset;
+        const driftY = Math.cos(elapsed * params.speedY + params.phaseY) * maxOffset;
+
+        // Pointer influence (subtle)
+        const pointerX = pointerRef.current.x * maxOffset * pointerInfluence;
+        const pointerY = pointerRef.current.y * maxOffset * pointerInfluence;
+
+        // Combine drift + pointer
+        const x = driftX + pointerX;
+        const y = driftY + pointerY;
+
+        blob.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      });
+
+      rafIdRef.current = requestAnimationFrame(animate);
+    };
+
+    // Start animation
+    rafIdRef.current = requestAnimationFrame(animate);
 
     // Add event listeners
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('mousemove', handlePointerMove, { passive: true });
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
       }
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handlePointerMove);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -333,31 +352,122 @@ function HeroSection() {
       {/* Base gradient background */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
 
-      {/* Premium background effect layer - subtle parallax glow with blur */}
+      {/* Aurora blobs effect layer */}
       <div
-        ref={parallaxRef}
+        ref={heroFxRef}
+        className="absolute inset-0 z-0 pointer-events-none"
+        aria-hidden="true"
+        style={{
+          overflow: 'hidden',
+        }}
+      >
+        {/* Blob 1 - Purple top-left */}
+        <span
+          className="aurora-blob absolute"
+          style={{
+            width: 'clamp(200px, 40vw, 500px)',
+            height: 'clamp(200px, 40vw, 500px)',
+            top: '10%',
+            left: '15%',
+            borderRadius: '9999px',
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, rgba(139, 92, 246, 0.1) 50%, transparent 70%)',
+            filter: 'blur(60px)',
+            opacity: 0.18,
+            mixBlendMode: 'screen',
+            willChange: 'transform',
+          }}
+        />
+
+        {/* Blob 2 - Blue bottom-right */}
+        <span
+          className="aurora-blob absolute"
+          style={{
+            width: 'clamp(250px, 45vw, 550px)',
+            height: 'clamp(250px, 45vw, 550px)',
+            bottom: '15%',
+            right: '20%',
+            borderRadius: '9999px',
+            background: 'radial-gradient(circle, rgba(30, 103, 198, 0.35) 0%, rgba(30, 103, 198, 0.1) 50%, transparent 70%)',
+            filter: 'blur(70px)',
+            opacity: 0.16,
+            mixBlendMode: 'screen',
+            willChange: 'transform',
+          }}
+        />
+
+        {/* Blob 3 - Cyan center */}
+        <span
+          className="aurora-blob absolute"
+          style={{
+            width: 'clamp(180px, 35vw, 450px)',
+            height: 'clamp(180px, 35vw, 450px)',
+            top: '45%',
+            left: '45%',
+            borderRadius: '9999px',
+            background: 'radial-gradient(circle, rgba(110, 168, 254, 0.3) 0%, rgba(110, 168, 254, 0.08) 50%, transparent 70%)',
+            filter: 'blur(50px)',
+            opacity: 0.14,
+            mixBlendMode: 'screen',
+            willChange: 'transform',
+          }}
+        />
+
+        {/* Blob 4 - Purple bottom-left */}
+        <span
+          className="aurora-blob absolute"
+          style={{
+            width: 'clamp(220px, 38vw, 480px)',
+            height: 'clamp(220px, 38vw, 480px)',
+            bottom: '20%',
+            left: '10%',
+            borderRadius: '9999px',
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, rgba(139, 92, 246, 0.08) 50%, transparent 70%)',
+            filter: 'blur(55px)',
+            opacity: 0.15,
+            mixBlendMode: 'screen',
+            willChange: 'transform',
+          }}
+        />
+
+        {/* Blob 5 - Blue top-right */}
+        <span
+          className="aurora-blob absolute"
+          style={{
+            width: 'clamp(200px, 36vw, 460px)',
+            height: 'clamp(200px, 36vw, 460px)',
+            top: '20%',
+            right: '15%',
+            borderRadius: '9999px',
+            background: 'radial-gradient(circle, rgba(30, 103, 198, 0.32) 0%, rgba(30, 103, 198, 0.09) 50%, transparent 70%)',
+            filter: 'blur(65px)',
+            opacity: 0.17,
+            mixBlendMode: 'screen',
+            willChange: 'transform',
+          }}
+        />
+
+        {/* Subtle noise overlay (CSS-only) */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            background: `
+              repeating-radial-gradient(circle at 0 0, transparent 0, rgba(255, 255, 255, 0.1) 2px, transparent 4px),
+              repeating-radial-gradient(circle at 50% 50%, transparent 0, rgba(255, 255, 255, 0.08) 3px, transparent 6px)
+            `,
+            backgroundSize: '200px 200px, 300px 300px',
+            mixBlendMode: 'overlay',
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
+
+      {/* Vignette overlay for text contrast */}
+      <div
         className="absolute inset-0 z-0 pointer-events-none"
         style={{
           background: `
-            radial-gradient(circle at 30% 40%, rgba(139, 92, 246, 0.4) 0%, transparent 50%),
-            radial-gradient(circle at 70% 60%, rgba(30, 103, 198, 0.35) 0%, transparent 50%),
-            radial-gradient(circle at 50% 50%, rgba(110, 168, 254, 0.25) 0%, transparent 60%)
-          `,
-          opacity: 0.15,
-          mixBlendMode: 'screen',
-          filter: 'blur(32px)',
-          transform: 'scale(1.04)',
-          willChange: 'transform',
-        }}
-      />
-
-      {/* Layer 2: Vignette overlay for text contrast */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          background: `
-            radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.6) 100%),
-            linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, transparent 30%, transparent 70%, rgba(0, 0, 0, 0.3) 100%)
+            radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.35) 70%, rgba(0, 0, 0, 0.55) 100%),
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.15) 0%, transparent 30%, transparent 70%, rgba(0, 0, 0, 0.25) 100%)
           `,
           opacity: 1,
         }}
