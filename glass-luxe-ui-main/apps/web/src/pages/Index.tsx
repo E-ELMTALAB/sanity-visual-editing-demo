@@ -258,48 +258,33 @@ function HeroSection() {
       dir="rtl"
       className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden"
     >
-      {/* Enhanced CSS-only background with radial glows */}
-      <div
-        className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]"
-        style={{
-          position: 'relative',
-        }}
-      >
-        {/* Radial glow effects using pseudo-elements */}
-        <div
-          className="absolute inset-0 opacity-40"
-          style={{
-            background: `
-              radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.3) 0%, transparent 50%),
-              radial-gradient(circle at 80% 70%, rgba(30, 103, 198, 0.25) 0%, transparent 50%),
-              radial-gradient(circle at 50% 50%, rgba(110, 168, 254, 0.15) 0%, transparent 60%)
-            `,
-            mixBlendMode: 'screen',
-            willChange: 'opacity',
-            animation: 'heroGlow 20s ease-in-out infinite',
-          }}
-        />
-        <div
-          className="absolute inset-0 opacity-30"
-          style={{
-            background: `
-              radial-gradient(ellipse at 10% 20%, rgba(139, 92, 246, 0.2) 0%, transparent 40%),
-              radial-gradient(ellipse at 90% 80%, rgba(30, 103, 198, 0.2) 0%, transparent 40%)
-            `,
-            mixBlendMode: 'overlay',
-            willChange: 'transform',
-            animation: 'heroGlowSecondary 25s ease-in-out infinite',
-          }}
-        />
-      </div>
+      {/* Base gradient background */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
 
-      {/* Subtle animated gradient overlay for depth */}
+      {/* HERO_GLOW_APPLIED */}
+      {/* Layer 1: Soft radial glow - clearly visible on desktop and mobile */}
       <div
-        className="absolute inset-0 -z-10 opacity-20"
+        className="absolute inset-0 z-0"
         style={{
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, transparent 50%, rgba(30, 103, 198, 0.1) 100%)',
-          willChange: 'opacity',
-          animation: 'heroGradient 15s ease-in-out infinite alternate',
+          background: `
+            radial-gradient(circle at 25% 35%, rgba(139, 92, 246, 0.5) 0%, transparent 45%),
+            radial-gradient(circle at 75% 65%, rgba(30, 103, 198, 0.45) 0%, transparent 45%),
+            radial-gradient(circle at 50% 50%, rgba(110, 168, 254, 0.35) 0%, transparent 55%)
+          `,
+          opacity: 0.35,
+          mixBlendMode: 'screen',
+        }}
+      />
+
+      {/* Layer 2: Vignette overlay for text contrast */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          background: `
+            radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.4) 70%, rgba(0, 0, 0, 0.6) 100%),
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, transparent 30%, transparent 70%, rgba(0, 0, 0, 0.3) 100%)
+          `,
+          opacity: 1,
         }}
       />
 
