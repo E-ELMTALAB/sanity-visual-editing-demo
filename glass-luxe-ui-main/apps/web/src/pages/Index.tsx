@@ -230,6 +230,12 @@ type HeroImage = { src: string; srcSet?: string };
 // Hero component: lightweight gradient background only, no image
 function HeroSection() {
   const navigate = useNavigate();
+  const parallaxRef = useRef<HTMLDivElement>(null);
+  const rafIdRef = useRef<number | null>(null);
+  const positionRef = useRef({ x: 0, y: 0 });
+
+  // Debug marker - REMOVE AFTER VERIFICATION
+  console.log("HERO_PATCH_ACTIVE");
 
   // Ensure prehero is removed if it still exists (fallback cleanup)
   // EXPERIMENT C: Don't remove prehero immediately - let main.tsx handle it
@@ -253,6 +259,75 @@ function HeroSection() {
     }
   }, []);
 
+  // Parallax glow effect - respects prefers-reduced-motion
+  useEffect(() => {
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion || !parallaxRef.current) {
+      return;
+    }
+
+    const maxOffset = 12; // Maximum parallax offset in pixels
+    let targetX = 0;
+    let targetY = 0;
+
+    // Update transform using requestAnimationFrame
+    const updateTransform = () => {
+      if (!parallaxRef.current) return;
+
+      // Smooth interpolation
+      positionRef.current.x += (targetX - positionRef.current.x) * 0.1;
+      positionRef.current.y += (targetY - positionRef.current.y) * 0.1;
+
+      parallaxRef.current.style.transform = `translate3d(${positionRef.current.x}px, ${positionRef.current.y}px, 0)`;
+      rafIdRef.current = requestAnimationFrame(updateTransform);
+    };
+
+    // Mouse move handler (desktop)
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = parallaxRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      // Calculate offset relative to center (-1 to 1)
+      const offsetX = (e.clientX - centerX) / (rect.width / 2);
+      const offsetY = (e.clientY - centerY) / (rect.height / 2);
+
+      targetX = offsetX * maxOffset;
+      targetY = offsetY * maxOffset;
+    };
+
+    // Scroll handler (mobile)
+    const handleScroll = () => {
+      const rect = parallaxRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const viewportCenterY = window.innerHeight / 2;
+      const elementCenterY = rect.top + rect.height / 2;
+
+      // Calculate offset based on scroll position
+      const scrollOffset = (viewportCenterY - elementCenterY) / window.innerHeight;
+      targetY = scrollOffset * maxOffset;
+    };
+
+    // Start animation loop
+    rafIdRef.current = requestAnimationFrame(updateTransform);
+
+    // Add event listeners
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
     <section
       dir="rtl"
@@ -262,8 +337,9 @@ function HeroSection() {
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
 
       {/* HERO_GLOW_APPLIED */}
-      {/* Layer 1: Soft radial glow - clearly visible on desktop and mobile */}
+      {/* Layer 1: Parallax glow - moves with mouse/scroll */}
       <div
+        ref={parallaxRef}
         className="absolute inset-0 z-0"
         style={{
           background: `
@@ -273,6 +349,7 @@ function HeroSection() {
           `,
           opacity: 0.35,
           mixBlendMode: 'screen',
+          willChange: 'transform',
         }}
       />
 
@@ -287,6 +364,26 @@ function HeroSection() {
           opacity: 1,
         }}
       />
+
+      {/* DEBUG BADGE - REMOVE AFTER VERIFICATION */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          left: '20px',
+          zIndex: 99999,
+          backgroundColor: '#00ff00',
+          color: '#000',
+          padding: '12px 20px',
+          borderRadius: '8px',
+          fontSize: '14px',
+          fontWeight: 'bold',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+          pointerEvents: 'none',
+        }}
+      >
+        HERO PATCH ACTIVE
+      </div>
 
       {/* Content - Redesigned with proper spacing and balanced typography */}
       <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-36 sm:pt-44 md:pt-52 pb-16 lg:pb-24">
