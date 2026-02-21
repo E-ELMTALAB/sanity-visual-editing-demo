@@ -234,9 +234,6 @@ function HeroSection() {
   const rafIdRef = useRef<number | null>(null);
   const positionRef = useRef({ x: 0, y: 0 });
 
-  // Debug marker - REMOVE AFTER VERIFICATION
-  console.log("HERO_PATCH_ACTIVE");
-
   // Ensure prehero is removed if it still exists (fallback cleanup)
   // EXPERIMENT C: Don't remove prehero immediately - let main.tsx handle it
   useEffect(() => {
@@ -267,7 +264,7 @@ function HeroSection() {
       return;
     }
 
-    const maxOffset = 12; // Maximum parallax offset in pixels
+    const maxOffset = 10; // Maximum parallax offset in pixels (subtle)
     let targetX = 0;
     let targetY = 0;
 
@@ -279,7 +276,7 @@ function HeroSection() {
       positionRef.current.x += (targetX - positionRef.current.x) * 0.1;
       positionRef.current.y += (targetY - positionRef.current.y) * 0.1;
 
-      parallaxRef.current.style.transform = `translate3d(${positionRef.current.x}px, ${positionRef.current.y}px, 0)`;
+      parallaxRef.current.style.transform = `translate3d(${positionRef.current.x}px, ${positionRef.current.y}px, 0) scale(1.04)`;
       rafIdRef.current = requestAnimationFrame(updateTransform);
     };
 
@@ -336,19 +333,20 @@ function HeroSection() {
       {/* Base gradient background */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
 
-      {/* HERO_GLOW_APPLIED */}
-      {/* Layer 1: Parallax glow - moves with mouse/scroll */}
+      {/* Premium background effect layer - subtle parallax glow with blur */}
       <div
         ref={parallaxRef}
-        className="absolute inset-0 z-0"
+        className="absolute inset-0 z-0 pointer-events-none"
         style={{
           background: `
-            radial-gradient(circle at 25% 35%, rgba(139, 92, 246, 0.5) 0%, transparent 45%),
-            radial-gradient(circle at 75% 65%, rgba(30, 103, 198, 0.45) 0%, transparent 45%),
-            radial-gradient(circle at 50% 50%, rgba(110, 168, 254, 0.35) 0%, transparent 55%)
+            radial-gradient(circle at 30% 40%, rgba(139, 92, 246, 0.4) 0%, transparent 50%),
+            radial-gradient(circle at 70% 60%, rgba(30, 103, 198, 0.35) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(110, 168, 254, 0.25) 0%, transparent 60%)
           `,
-          opacity: 0.35,
+          opacity: 0.15,
           mixBlendMode: 'screen',
+          filter: 'blur(32px)',
+          transform: 'scale(1.04)',
           willChange: 'transform',
         }}
       />
@@ -365,27 +363,7 @@ function HeroSection() {
         }}
       />
 
-      {/* DEBUG BADGE - REMOVE AFTER VERIFICATION */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          left: '20px',
-          zIndex: 99999,
-          backgroundColor: '#00ff00',
-          color: '#000',
-          padding: '12px 20px',
-          borderRadius: '8px',
-          fontSize: '14px',
-          fontWeight: 'bold',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-          pointerEvents: 'none',
-        }}
-      >
-        HERO PATCH ACTIVE
-      </div>
-
-      {/* Content - Redesigned with proper spacing and balanced typography */}
+      {/* Content - Redesigned with proper spacing and balanced typography - z-10 ensures it's above background layers */}
       <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-36 sm:pt-44 md:pt-52 pb-16 lg:pb-24">
         <div className="flex items-center justify-center min-h-[50vh] sm:min-h-[55vh]">
           <div
