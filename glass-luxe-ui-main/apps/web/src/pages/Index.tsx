@@ -266,12 +266,12 @@ function HeroSection() {
       {/* Base gradient background */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
 
-      {/* Reflect-style hero halo - visible glow effect using pseudo-elements */}
+      {/* Reflect-style hero glow - sunrise aura halo behind headline */}
       {/* LCP SAFETY: This is decorative only (aria-hidden, pointer-events-none, z-0) */}
       {/* Hero text (h1/p) remains the LCP element, not this glow effect */}
       <div
         aria-hidden="true"
-        className="hero-halo pointer-events-none absolute inset-0 z-0"
+        className="heroGlow pointer-events-none absolute inset-0 z-0"
         style={{
           contain: 'paint',
           willChange: 'transform',
