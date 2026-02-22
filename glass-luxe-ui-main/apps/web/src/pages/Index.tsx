@@ -956,25 +956,28 @@ const Index = () => {
     }
 
     // Update robots meta - but ensure homepage always allows indexing
-    // Skip if robotsMeta contains "noindex" on homepage to allow crawling
-    if (seo.robotsMeta && !seo.robotsMeta.toLowerCase().includes('noindex')) {
-      let robots = document.querySelector('meta[name="robots"]');
-      if (!robots) {
-        robots = document.createElement('meta');
-        robots.setAttribute('name', 'robots');
-        document.head.appendChild(robots);
+    // Only do DOM manipulation if robotsMeta exists and doesn't contain noindex
+    // Otherwise, rely on the hardcoded meta tag in index.html (performance optimization)
+    if (seo.robotsMeta) {
+      const robotsMetaLower = seo.robotsMeta.toLowerCase();
+      // Skip if contains "noindex" - homepage must always be indexable
+      if (!robotsMetaLower.includes('noindex')) {
+        let robots = document.querySelector('meta[name="robots"]');
+        if (robots) {
+          // Only update if content is different (avoid unnecessary DOM writes)
+          if (robots.getAttribute('content') !== seo.robotsMeta) {
+            robots.setAttribute('content', seo.robotsMeta);
+          }
+        } else {
+          robots = document.createElement('meta');
+          robots.setAttribute('name', 'robots');
+          robots.setAttribute('content', seo.robotsMeta);
+          document.head.appendChild(robots);
+        }
       }
-      robots.setAttribute('content', seo.robotsMeta);
-    } else {
-      // Ensure homepage has index, follow if Sanity tries to set noindex
-      let robots = document.querySelector('meta[name="robots"]');
-      if (!robots) {
-        robots = document.createElement('meta');
-        robots.setAttribute('name', 'robots');
-        document.head.appendChild(robots);
-      }
-      robots.setAttribute('content', 'index, follow');
+      // If robotsMeta contains noindex, do nothing - let the hardcoded index.html tag handle it
     }
+    // If no robotsMeta, do nothing - the hardcoded meta tag in index.html is sufficient
 
     // Update Open Graph image
     if (seo.openGraphImage?.asset) {

@@ -265,53 +265,38 @@ async function updateIndexHtmlWithSeo(seo: any) {
 
     // Update robots meta if provided - but NEVER allow noindex on homepage
     // Homepage must always be indexable for SEO
-    if (seo.robotsMeta && typeof seo.robotsMeta === 'string' && seo.robotsMeta.trim()) {
-      const robotsMetaLower = seo.robotsMeta.toLowerCase().trim();
-      
-      // Skip if robotsMeta contains "noindex" - homepage must always be indexable
-      if (!robotsMetaLower.includes('noindex')) {
-        const escapedRobots = escapeHtml(seo.robotsMeta.trim());
-        // Check if robots meta already exists
-        if (html.includes('<meta name="robots"')) {
-          html = html.replace(
-            /<meta\s+name=["']robots["']\s+content=["'][^"']*["']\s*\/?>/,
-            `<meta name="robots" content="${escapedRobots}" />`
-          );
+    // Performance optimization: only process if robotsMeta exists and is valid
+    if (seo.robotsMeta && typeof seo.robotsMeta === 'string') {
+      const trimmed = seo.robotsMeta.trim();
+      if (trimmed) {
+        const robotsMetaLower = trimmed.toLowerCase();
+        
+        // Skip if robotsMeta contains "noindex" - homepage must always be indexable
+        // In this case, leave the hardcoded meta tag in index.html unchanged (performance)
+        if (!robotsMetaLower.includes('noindex')) {
+          const escapedRobots = escapeHtml(trimmed);
+          // Check if robots meta already exists
+          if (html.includes('<meta name="robots"')) {
+            html = html.replace(
+              /<meta\s+name=["']robots["']\s+content=["'][^"']*["']\s*\/?>/,
+              `<meta name="robots" content="${escapedRobots}" />`
+            );
+          } else {
+            // Insert before closing </head>
+            html = html.replace(
+              '</head>',
+              `    <meta name="robots" content="${escapedRobots}" />\n  </head>`
+            );
+          }
+          console.log(`   Updated robots meta: ${trimmed}`);
+          updated = true;
         } else {
-          // Insert before closing </head>
-          html = html.replace(
-            '</head>',
-            `    <meta name="robots" content="${escapedRobots}" />\n  </head>`
-          );
+          console.warn(`   Skipped robotsMeta "${trimmed}" - homepage must always allow indexing`);
+          // No DOM manipulation needed - hardcoded tag in index.html handles it
         }
-        console.log(`   Updated robots meta: ${seo.robotsMeta}`);
-        updated = true;
-      } else {
-        console.warn(`   Skipped robotsMeta "${seo.robotsMeta}" - homepage must always allow indexing`);
-        // Ensure index, follow is set instead
-        if (html.includes('<meta name="robots"')) {
-          html = html.replace(
-            /<meta\s+name=["']robots["']\s+content=["'][^"']*["']\s*\/?>/,
-            `<meta name="robots" content="index, follow" />`
-          );
-        } else {
-          html = html.replace(
-            '</head>',
-            `    <meta name="robots" content="index, follow" />\n  </head>`
-          );
-        }
-        updated = true;
-      }
-    } else {
-      // Ensure robots meta exists with index, follow if not provided
-      if (!html.includes('<meta name="robots"')) {
-        html = html.replace(
-          '</head>',
-          `    <meta name="robots" content="index, follow" />\n  </head>`
-        );
-        updated = true;
       }
     }
+    // If no robotsMeta or empty, do nothing - the hardcoded meta tag in index.html is sufficient
 
     // Write updated HTML back
     if (updated) {
