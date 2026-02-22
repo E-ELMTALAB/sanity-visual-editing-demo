@@ -227,80 +227,7 @@ interface SanityData {
 
 type HeroImage = { src: string; srcSet?: string };
 
-// HeroGlow component - Reflect-style luminous dome + horizon glow
-// LCP SAFETY: This is purely decorative (aria-hidden, pointer-events-none, z-0)
-// Hero text (h1/p) remains the LCP element, not this glow effect
-// Minimal DOM: 3 nodes (halo-core, halo-horizon, halo-arcs SVG)
-function HeroGlow() {
-  return (
-    <div
-      className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
-      aria-hidden="true"
-      role="presentation"
-      style={{
-        contain: 'paint',
-        willChange: 'transform',
-        transform: 'translateZ(0)',
-      }}
-    >
-      {/* Halo core - soft luminous dome (radial-gradient circle) */}
-      <div
-        className="absolute left-1/2 top-[50%] -translate-x-1/2 -translate-y-1/2"
-        style={{
-          width: 'clamp(500px, 90vw, 1000px)',
-          height: 'clamp(400px, 70vh, 800px)',
-          background: 'radial-gradient(ellipse at center, rgba(210, 170, 255, 0.5) 0%, rgba(140, 120, 255, 0.3) 30%, rgba(100, 80, 200, 0.15) 50%, transparent 75%)',
-          filter: 'blur(60px)',
-          opacity: 0.65,
-          willChange: 'transform',
-        }}
-      />
-
-      {/* Halo horizon - wide blurred band at bottom center */}
-      <div
-        className="absolute left-1/2 top-[60%] -translate-x-1/2"
-        style={{
-          width: 'clamp(600px, 100vw, 1400px)',
-          height: 'clamp(80px, 15vh, 200px)',
-          background: 'linear-gradient(90deg, transparent 0%, rgba(210, 170, 255, 0.4) 15%, rgba(140, 120, 255, 0.5) 50%, rgba(210, 170, 255, 0.4) 85%, transparent 100%)',
-          filter: 'blur(50px)',
-          opacity: 0.5,
-          willChange: 'opacity',
-        }}
-      />
-
-      {/* Halo arcs - subtle dome arcs (inline SVG) */}
-      <svg
-        className="absolute left-1/2 top-[45%] -translate-x-1/2 -translate-y-1/2 max-w-[800px] w-full h-[350px]"
-        style={{
-          willChange: 'opacity',
-        }}
-        viewBox="0 0 800 350"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-        role="presentation"
-      >
-        <defs>
-          <linearGradient id="haloArcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="rgba(210, 170, 255, 0.7)" stopOpacity="0.7" />
-            <stop offset="50%" stopColor="rgba(140, 120, 255, 0.9)" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="rgba(210, 170, 255, 0.7)" stopOpacity="0.7" />
-          </linearGradient>
-        </defs>
-
-        {/* Subtle dome arc - thin stroke, low opacity */}
-        <path
-          d="M 60 320 Q 400 50 740 320"
-          stroke="url(#haloArcGradient)"
-          strokeWidth="2.5"
-          fill="none"
-          opacity="0.4"
-          strokeLinecap="round"
-        />
-      </svg>
-    </div>
-  );
-}
+// HeroGlow component removed - using single hero-halo div with pseudo-elements instead
 
 // Hero component: lightweight gradient background only, no image
 function HeroSection() {
@@ -334,21 +261,23 @@ function HeroSection() {
   return (
     <section
       dir="rtl"
-      className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden"
+      className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden isolate"
     >
       {/* Base gradient background */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
 
-      {/* Reflect-style hero glow - horizon line + halo dome */}
+      {/* Reflect-style hero halo - visible glow effect using pseudo-elements */}
       {/* LCP SAFETY: This is decorative only (aria-hidden, pointer-events-none, z-0) */}
       {/* Hero text (h1/p) remains the LCP element, not this glow effect */}
       <div
+        aria-hidden="true"
+        className="hero-halo pointer-events-none absolute inset-0 z-0"
         style={{
-          animation: 'heroGlowFloat 10s ease-in-out infinite alternate',
+          contain: 'paint',
+          willChange: 'transform',
+          transform: 'translateZ(0)',
         }}
-      >
-        <HeroGlow />
-      </div>
+      />
 
       {/* Vignette overlay for text contrast */}
       <div

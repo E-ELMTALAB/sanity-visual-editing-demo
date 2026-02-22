@@ -447,4 +447,57 @@
       }
     }
   }
+
+  /* Hero halo - Reflect-style glowing dome + horizon glow */
+  /* Uses pseudo-elements (before/after) for minimal DOM nodes */
+  .hero-halo {
+    animation: heroGlowFloat 10s ease-in-out infinite alternate;
+  }
+
+  .hero-halo::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    transform: translate(-50%, -50%) translateZ(0);
+    width: clamp(700px, 90vw, 900px);
+    height: clamp(450px, 70vh, 520px);
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 70%,
+        rgba(168, 85, 247, 0.85) 0%,
+        rgba(99, 102, 241, 0.45) 25%,
+        rgba(139, 92, 246, 0.25) 40%,
+        rgba(0, 0, 0, 0) 70%);
+    filter: blur(40px);
+    opacity: 0.9;
+    will-change: transform;
+    pointer-events: none;
+  }
+
+  .hero-halo::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 55%;
+    transform: translate(-50%, -50%) translateZ(0);
+    width: clamp(800px, 100vw, 980px);
+    height: clamp(100px, 15vh, 120px);
+    background: linear-gradient(90deg,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(168, 85, 247, 0.75) 15%,
+        rgba(99, 102, 241, 0.5) 50%,
+        rgba(168, 85, 247, 0.75) 85%,
+        rgba(0, 0, 0, 0) 100%);
+    filter: blur(18px);
+    opacity: 0.8;
+    will-change: opacity;
+    pointer-events: none;
+  }
+
+  /* Disable animation for prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-halo {
+      animation: none;
+    }
+  }
 }
