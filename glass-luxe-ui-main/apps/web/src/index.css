@@ -420,4 +420,31 @@
       }
     }
   }
+
+  /* Hero glow float animation - slow, subtle movement */
+  @keyframes heroGlowFloat {
+
+    0%,
+    100% {
+      transform: translateY(0) translateZ(0);
+      opacity: 0.95;
+    }
+
+    50% {
+      transform: translateY(-8px) translateZ(0);
+      opacity: 1;
+    }
+  }
+
+  /* Disable animation for prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    @keyframes heroGlowFloat {
+
+      0%,
+      100% {
+        transform: translateZ(0);
+        opacity: 0.95;
+      }
+    }
+  }
 }
