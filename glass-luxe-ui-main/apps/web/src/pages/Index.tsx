@@ -934,8 +934,9 @@ const Index = () => {
       canonical.setAttribute('href', seo.canonicalUrl);
     }
 
-    // Update robots meta
-    if (seo.robotsMeta) {
+    // Update robots meta - but ensure homepage always allows indexing
+    // Skip if robotsMeta contains "noindex" on homepage to allow crawling
+    if (seo.robotsMeta && !seo.robotsMeta.toLowerCase().includes('noindex')) {
       let robots = document.querySelector('meta[name="robots"]');
       if (!robots) {
         robots = document.createElement('meta');
@@ -943,6 +944,15 @@ const Index = () => {
         document.head.appendChild(robots);
       }
       robots.setAttribute('content', seo.robotsMeta);
+    } else {
+      // Ensure homepage has index, follow if Sanity tries to set noindex
+      let robots = document.querySelector('meta[name="robots"]');
+      if (!robots) {
+        robots = document.createElement('meta');
+        robots.setAttribute('name', 'robots');
+        document.head.appendChild(robots);
+      }
+      robots.setAttribute('content', 'index, follow');
     }
 
     // Update Open Graph image
