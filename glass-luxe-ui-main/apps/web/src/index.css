@@ -421,17 +421,17 @@
     }
   }
 
-  /* Hero glow float animation - slow, subtle movement */
+  /* Hero glow float animation - slow, subtle movement (transform/opacity only) */
   @keyframes heroGlowFloat {
 
     0%,
     100% {
-      transform: translateY(0) translateZ(0);
+      transform: translateY(0) translateZ(0) scale(1);
       opacity: 0.95;
     }
 
     50% {
-      transform: translateY(-8px) translateZ(0);
+      transform: translateY(-3px) translateZ(0) scale(1.02);
       opacity: 1;
     }
   }
@@ -442,7 +442,7 @@
 
       0%,
       100% {
-        transform: translateZ(0);
+        transform: translateZ(0) scale(1);
         opacity: 0.95;
       }
     }

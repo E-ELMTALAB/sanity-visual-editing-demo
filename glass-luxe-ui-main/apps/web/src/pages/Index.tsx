@@ -227,9 +227,10 @@ interface SanityData {
 
 type HeroImage = { src: string; srcSet?: string };
 
-// HeroGlow component - Reflect-style horizon + halo dome effect
+// HeroGlow component - Reflect-style luminous dome + horizon glow
 // LCP SAFETY: This is purely decorative (aria-hidden, pointer-events-none, z-0)
 // Hero text (h1/p) remains the LCP element, not this glow effect
+// Minimal DOM: 3 nodes (halo-core, halo-horizon, halo-arcs SVG)
 function HeroGlow() {
   return (
     <div
@@ -242,153 +243,60 @@ function HeroGlow() {
         transform: 'translateZ(0)',
       }}
     >
-      {/* Horizon line with bloom layers - positioned at ~55% height */}
-      <div className="absolute left-1/2 top-[55%] -translate-x-1/2 w-full max-w-[1100px]">
-        {/* Bloom layer 2 - largest, softest (70-120px height, 40-70px blur) */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 w-full h-[100px]"
-          style={{
-            background: 'linear-gradient(90deg, transparent 0%, rgba(210, 170, 255, 0.2) 20%, rgba(140, 120, 255, 0.25) 50%, rgba(210, 170, 255, 0.2) 80%, transparent 100%)',
-            filter: 'blur(55px)',
-            opacity: 0.20,
-          }}
-        />
-
-        {/* Bloom layer 1 - medium (18-24px height, 12-18px blur) */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 w-full h-[20px]"
-          style={{
-            background: 'linear-gradient(90deg, transparent 0%, rgba(210, 170, 255, 0.55) 20%, rgba(140, 120, 255, 0.6) 50%, rgba(210, 170, 255, 0.55) 80%, transparent 100%)',
-            filter: 'blur(15px)',
-            opacity: 0.55,
-          }}
-        />
-
-        {/* Core horizon line (2px height) */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 w-full h-[2px]"
-          style={{
-            background: 'linear-gradient(90deg, transparent 0%, rgba(210, 170, 255, 0.95) 20%, rgba(140, 120, 255, 0.95) 50%, rgba(210, 170, 255, 0.95) 80%, transparent 100%)',
-          }}
-        />
-      </div>
-
-      {/* Under-horizon reflection glow */}
+      {/* Halo core - soft luminous dome (radial-gradient circle) */}
       <div
-        className="absolute left-1/2 top-[58%] -translate-x-1/2"
+        className="absolute left-1/2 top-[50%] -translate-x-1/2 -translate-y-1/2"
         style={{
-          width: 'clamp(400px, 70vw, 800px)',
-          height: 'clamp(200px, 35vh, 400px)',
-          background: 'radial-gradient(circle, rgba(170, 140, 255, 0.35) 0%, rgba(170, 140, 255, 0.15) 30%, transparent 60%)',
-          filter: 'blur(40px)',
-          opacity: 0.6,
+          width: 'clamp(500px, 90vw, 1000px)',
+          height: 'clamp(400px, 70vh, 800px)',
+          background: 'radial-gradient(ellipse at center, rgba(210, 170, 255, 0.5) 0%, rgba(140, 120, 255, 0.3) 30%, rgba(100, 80, 200, 0.15) 50%, transparent 75%)',
+          filter: 'blur(60px)',
+          opacity: 0.65,
+          willChange: 'transform',
         }}
       />
 
-      {/* Halo dome - inline SVG above horizon */}
-      <svg
-        className="absolute left-1/2 -translate-x-1/2 max-w-[900px] w-full h-[420px]"
+      {/* Halo horizon - wide blurred band at bottom center */}
+      <div
+        className="absolute left-1/2 top-[60%] -translate-x-1/2"
         style={{
-          top: 'calc(55% - 420px)',
+          width: 'clamp(600px, 100vw, 1400px)',
+          height: 'clamp(80px, 15vh, 200px)',
+          background: 'linear-gradient(90deg, transparent 0%, rgba(210, 170, 255, 0.4) 15%, rgba(140, 120, 255, 0.5) 50%, rgba(210, 170, 255, 0.4) 85%, transparent 100%)',
+          filter: 'blur(50px)',
+          opacity: 0.5,
           willChange: 'opacity',
         }}
-        viewBox="0 0 900 420"
+      />
+
+      {/* Halo arcs - subtle dome arcs (inline SVG) */}
+      <svg
+        className="absolute left-1/2 top-[45%] -translate-x-1/2 -translate-y-1/2 max-w-[800px] w-full h-[350px]"
+        style={{
+          willChange: 'opacity',
+        }}
+        viewBox="0 0 800 350"
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
         role="presentation"
       >
         <defs>
-          {/* Gaussian blur filters for glow effects */}
-          <filter id="haloInnerBlur" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="8" result="blur" />
-            <feColorMatrix
-              in="blur"
-              type="matrix"
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 2 0"
-              result="coloredBlur"
-            />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-
-          <filter id="haloOuterBlur" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="25" result="blur" />
-            <feColorMatrix
-              in="blur"
-              type="matrix"
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1.5 0"
-              result="coloredBlur"
-            />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-            </feMerge>
-          </filter>
-
-          {/* Gradient for dome arcs */}
-          <linearGradient id="domeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="rgba(210, 170, 255, 0.85)" stopOpacity="0.85" />
-            <stop offset="50%" stopColor="rgba(140, 120, 255, 1)" stopOpacity="1" />
-            <stop offset="100%" stopColor="rgba(210, 170, 255, 0.85)" stopOpacity="0.85" />
+          <linearGradient id="haloArcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(210, 170, 255, 0.7)" stopOpacity="0.7" />
+            <stop offset="50%" stopColor="rgba(140, 120, 255, 0.9)" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="rgba(210, 170, 255, 0.7)" stopOpacity="0.7" />
           </linearGradient>
         </defs>
 
-        {/* Outer haze - largest, softest (stroke 60-90, opacity ~0.12) */}
+        {/* Subtle dome arc - thin stroke, low opacity */}
         <path
-          d="M 50 400 Q 450 50 850 400"
-          stroke="rgba(210, 170, 255, 0.5)"
-          strokeWidth="75"
+          d="M 60 320 Q 400 50 740 320"
+          stroke="url(#haloArcGradient)"
+          strokeWidth="2.5"
           fill="none"
-          filter="url(#haloOuterBlur)"
-          opacity="0.12"
+          opacity="0.4"
           strokeLinecap="round"
         />
-
-        {/* Inner glow - medium (stroke 14-22, opacity ~0.35) */}
-        <path
-          d="M 80 400 Q 450 80 820 400"
-          stroke="rgba(140, 120, 255, 0.7)"
-          strokeWidth="18"
-          fill="none"
-          filter="url(#haloInnerBlur)"
-          opacity="0.35"
-          strokeLinecap="round"
-        />
-
-        {/* Core arc - thin, high opacity (stroke 3-4) */}
-        <path
-          d="M 100 400 Q 450 100 800 400"
-          stroke="url(#domeGradient)"
-          strokeWidth="3.5"
-          fill="none"
-          opacity="0.95"
-          strokeLinecap="round"
-        />
-
-        {/* Optional inner ring - second smaller arc */}
-        <path
-          d="M 120 400 Q 450 120 780 400"
-          stroke="rgba(210, 170, 255, 0.6)"
-          strokeWidth="2"
-          fill="none"
-          opacity="0.5"
-          strokeLinecap="round"
-        />
-
-        {/* Subtle particles - 12 tiny dots in dome area (opacity max 0.15) */}
-        <circle cx="200" cy="250" r="1.5" fill="rgba(210, 170, 255, 0.8)" opacity="0.12" />
-        <circle cx="300" cy="200" r="1.2" fill="rgba(140, 120, 255, 0.8)" opacity="0.10" />
-        <circle cx="450" cy="150" r="1.8" fill="rgba(210, 170, 255, 0.9)" opacity="0.15" />
-        <circle cx="600" cy="200" r="1.3" fill="rgba(140, 120, 255, 0.8)" opacity="0.12" />
-        <circle cx="700" cy="250" r="1.5" fill="rgba(210, 170, 255, 0.8)" opacity="0.10" />
-        <circle cx="250" cy="300" r="1.0" fill="rgba(140, 120, 255, 0.7)" opacity="0.08" />
-        <circle cx="400" cy="180" r="1.4" fill="rgba(210, 170, 255, 0.8)" opacity="0.13" />
-        <circle cx="550" cy="220" r="1.2" fill="rgba(140, 120, 255, 0.8)" opacity="0.11" />
-        <circle cx="650" cy="280" r="1.1" fill="rgba(210, 170, 255, 0.7)" opacity="0.09" />
-        <circle cx="350" cy="240" r="1.3" fill="rgba(140, 120, 255, 0.8)" opacity="0.12" />
-        <circle cx="500" cy="170" r="1.6" fill="rgba(210, 170, 255, 0.9)" opacity="0.14" />
-        <circle cx="150" cy="320" r="1.0" fill="rgba(140, 120, 255, 0.7)" opacity="0.08" />
       </svg>
     </div>
   );
