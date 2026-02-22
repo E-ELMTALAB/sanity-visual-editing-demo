@@ -263,24 +263,54 @@ async function updateIndexHtmlWithSeo(seo: any) {
       console.warn('   og:image not found in Sanity SEO data, keeping existing og:image');
     }
 
-    // Update robots meta if provided
+    // Update robots meta if provided - but NEVER allow noindex on homepage
+    // Homepage must always be indexable for SEO
     if (seo.robotsMeta && typeof seo.robotsMeta === 'string' && seo.robotsMeta.trim()) {
-      const escapedRobots = escapeHtml(seo.robotsMeta.trim());
-      // Check if robots meta already exists
-      if (html.includes('<meta name="robots"')) {
-        html = html.replace(
-          /<meta\s+name=["']robots["']\s+content=["'][^"']*["']\s*\/?>/,
-          `<meta name="robots" content="${escapedRobots}" />`
-        );
+      const robotsMetaLower = seo.robotsMeta.toLowerCase().trim();
+      
+      // Skip if robotsMeta contains "noindex" - homepage must always be indexable
+      if (!robotsMetaLower.includes('noindex')) {
+        const escapedRobots = escapeHtml(seo.robotsMeta.trim());
+        // Check if robots meta already exists
+        if (html.includes('<meta name="robots"')) {
+          html = html.replace(
+            /<meta\s+name=["']robots["']\s+content=["'][^"']*["']\s*\/?>/,
+            `<meta name="robots" content="${escapedRobots}" />`
+          );
+        } else {
+          // Insert before closing </head>
+          html = html.replace(
+            '</head>',
+            `    <meta name="robots" content="${escapedRobots}" />\n  </head>`
+          );
+        }
+        console.log(`   Updated robots meta: ${seo.robotsMeta}`);
+        updated = true;
       } else {
-        // Insert before closing </head>
+        console.warn(`   Skipped robotsMeta "${seo.robotsMeta}" - homepage must always allow indexing`);
+        // Ensure index, follow is set instead
+        if (html.includes('<meta name="robots"')) {
+          html = html.replace(
+            /<meta\s+name=["']robots["']\s+content=["'][^"']*["']\s*\/?>/,
+            `<meta name="robots" content="index, follow" />`
+          );
+        } else {
+          html = html.replace(
+            '</head>',
+            `    <meta name="robots" content="index, follow" />\n  </head>`
+          );
+        }
+        updated = true;
+      }
+    } else {
+      // Ensure robots meta exists with index, follow if not provided
+      if (!html.includes('<meta name="robots"')) {
         html = html.replace(
           '</head>',
-          `    <meta name="robots" content="${escapedRobots}" />\n  </head>`
+          `    <meta name="robots" content="index, follow" />\n  </head>`
         );
+        updated = true;
       }
-      console.log(`   Updated robots meta: ${seo.robotsMeta}`);
-      updated = true;
     }
 
     // Write updated HTML back
