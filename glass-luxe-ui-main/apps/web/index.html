@@ -74,6 +74,33 @@
         });
       });
     </script>
+    
+    <!-- Google Tag Manager - Deferred until after window load to improve LCP -->
+    <script>
+      // Defer GTM until after window load event to prevent blocking LCP
+      (function() {
+        var initGTM = function() {
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.defer=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-PW97M4XV');
+        };
+        
+        if (document.readyState === 'complete') {
+          // Page already loaded, use requestIdleCallback with fallback
+          if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+            requestIdleCallback(initGTM, { timeout: 2000 });
+          } else {
+            setTimeout(initGTM, 2000);
+          }
+        } else {
+          // Wait for window load event
+          window.addEventListener('load', initGTM, { once: true });
+        }
+      })();
+    </script>
+    <!-- End Google Tag Manager -->
 
     <title>SharifGPT - محصولات و خدمات هوش مصنوعی</title>
     <meta name="description" content="SharifGPT - ارائه دهنده محصولات و خدمات هوش مصنوعی" />
@@ -115,6 +142,12 @@
       </div>
     </div>
 
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+      <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PW97M4XV"
+      height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
 
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

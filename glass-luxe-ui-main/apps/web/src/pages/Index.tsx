@@ -383,10 +383,29 @@ function HeroSection() {
         aria-hidden="true"
         style={{
           contain: 'paint',
+          transform: 'translateZ(0)',
           // DEBUG: Remove outline after verification
           // outline: '2px solid rgba(0, 255, 0, 0.5)',
         }}
       >
+        {/* Radial glow behind headline - pure CSS */}
+        <div
+          className="absolute"
+          style={{
+            width: 'clamp(400px, 80vw, 800px)',
+            height: 'clamp(300px, 60vh, 600px)',
+            top: 'calc(50% - clamp(150px, 30vh, 300px))',
+            left: '50%',
+            transform: 'translate(-50%, -50%) translateZ(0)',
+            background: 'radial-gradient(ellipse at center, rgba(139, 92, 246, 0.4) 0%, rgba(139, 92, 246, 0.2) 40%, transparent 70%)',
+            filter: 'blur(60px)',
+            opacity: 0.8,
+            mixBlendMode: 'screen',
+            willChange: 'opacity',
+            pointerEvents: 'none',
+          }}
+        />
+
         {/* Main glow arc - inline SVG with bloom filter */}
         <svg
           ref={glowSvgRef}
@@ -396,7 +415,9 @@ function HeroSection() {
             height: 'clamp(400px, 80vh, 900px)',
             top: 'calc(55% - clamp(200px, 40vh, 450px))',
             left: 'calc(50% - clamp(300px, 60vw, 700px))',
-            willChange: 'transform',
+            willChange: 'transform, opacity',
+            animation: 'heroArcFloat 8s ease-in-out infinite',
+            transform: 'translateZ(0)',
           }}
           viewBox="0 0 1400 900"
           xmlns="http://www.w3.org/2000/svg"
@@ -417,11 +438,11 @@ function HeroSection() {
               </feMerge>
             </filter>
 
-            {/* Purple gradient for arc */}
+            {/* Purple/blue gradient for arc */}
             <linearGradient id="arcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="rgba(139, 92, 246, 0.9)" stopOpacity="0.9" />
               <stop offset="50%" stopColor="rgba(139, 92, 246, 1)" stopOpacity="1" />
-              <stop offset="100%" stopColor="rgba(139, 92, 246, 0.9)" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="rgba(30, 103, 198, 0.85)" stopOpacity="0.85" />
             </linearGradient>
 
             {/* Radial gradient for horizon glow */}
