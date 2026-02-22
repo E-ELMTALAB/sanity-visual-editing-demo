@@ -227,13 +227,176 @@ interface SanityData {
 
 type HeroImage = { src: string; srcSet?: string };
 
+// HeroGlow component - Reflect-style horizon + halo dome effect
+// LCP SAFETY: This is purely decorative (aria-hidden, pointer-events-none, z-0)
+// Hero text (h1/p) remains the LCP element, not this glow effect
+function HeroGlow() {
+  return (
+    <div
+      className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
+      aria-hidden="true"
+      role="presentation"
+      style={{
+        contain: 'paint',
+        willChange: 'transform',
+        transform: 'translateZ(0)',
+      }}
+    >
+      {/* Horizon line with bloom layers - positioned at ~55% height */}
+      <div className="absolute left-1/2 top-[55%] -translate-x-1/2 w-full max-w-[1100px]">
+        {/* Bloom layer 2 - largest, softest (70-120px height, 40-70px blur) */}
+        <div
+          className="absolute left-1/2 -translate-x-1/2 w-full h-[100px]"
+          style={{
+            background: 'linear-gradient(90deg, transparent 0%, rgba(210, 170, 255, 0.2) 20%, rgba(140, 120, 255, 0.25) 50%, rgba(210, 170, 255, 0.2) 80%, transparent 100%)',
+            filter: 'blur(55px)',
+            opacity: 0.20,
+          }}
+        />
+
+        {/* Bloom layer 1 - medium (18-24px height, 12-18px blur) */}
+        <div
+          className="absolute left-1/2 -translate-x-1/2 w-full h-[20px]"
+          style={{
+            background: 'linear-gradient(90deg, transparent 0%, rgba(210, 170, 255, 0.55) 20%, rgba(140, 120, 255, 0.6) 50%, rgba(210, 170, 255, 0.55) 80%, transparent 100%)',
+            filter: 'blur(15px)',
+            opacity: 0.55,
+          }}
+        />
+
+        {/* Core horizon line (2px height) */}
+        <div
+          className="absolute left-1/2 -translate-x-1/2 w-full h-[2px]"
+          style={{
+            background: 'linear-gradient(90deg, transparent 0%, rgba(210, 170, 255, 0.95) 20%, rgba(140, 120, 255, 0.95) 50%, rgba(210, 170, 255, 0.95) 80%, transparent 100%)',
+          }}
+        />
+      </div>
+
+      {/* Under-horizon reflection glow */}
+      <div
+        className="absolute left-1/2 top-[58%] -translate-x-1/2"
+        style={{
+          width: 'clamp(400px, 70vw, 800px)',
+          height: 'clamp(200px, 35vh, 400px)',
+          background: 'radial-gradient(circle, rgba(170, 140, 255, 0.35) 0%, rgba(170, 140, 255, 0.15) 30%, transparent 60%)',
+          filter: 'blur(40px)',
+          opacity: 0.6,
+        }}
+      />
+
+      {/* Halo dome - inline SVG above horizon */}
+      <svg
+        className="absolute left-1/2 -translate-x-1/2 max-w-[900px] w-full h-[420px]"
+        style={{
+          top: 'calc(55% - 420px)',
+          willChange: 'opacity',
+        }}
+        viewBox="0 0 900 420"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+        role="presentation"
+      >
+        <defs>
+          {/* Gaussian blur filters for glow effects */}
+          <filter id="haloInnerBlur" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="8" result="blur" />
+            <feColorMatrix
+              in="blur"
+              type="matrix"
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 2 0"
+              result="coloredBlur"
+            />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          <filter id="haloOuterBlur" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="25" result="blur" />
+            <feColorMatrix
+              in="blur"
+              type="matrix"
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1.5 0"
+              result="coloredBlur"
+            />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+            </feMerge>
+          </filter>
+
+          {/* Gradient for dome arcs */}
+          <linearGradient id="domeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(210, 170, 255, 0.85)" stopOpacity="0.85" />
+            <stop offset="50%" stopColor="rgba(140, 120, 255, 1)" stopOpacity="1" />
+            <stop offset="100%" stopColor="rgba(210, 170, 255, 0.85)" stopOpacity="0.85" />
+          </linearGradient>
+        </defs>
+
+        {/* Outer haze - largest, softest (stroke 60-90, opacity ~0.12) */}
+        <path
+          d="M 50 400 Q 450 50 850 400"
+          stroke="rgba(210, 170, 255, 0.5)"
+          strokeWidth="75"
+          fill="none"
+          filter="url(#haloOuterBlur)"
+          opacity="0.12"
+          strokeLinecap="round"
+        />
+
+        {/* Inner glow - medium (stroke 14-22, opacity ~0.35) */}
+        <path
+          d="M 80 400 Q 450 80 820 400"
+          stroke="rgba(140, 120, 255, 0.7)"
+          strokeWidth="18"
+          fill="none"
+          filter="url(#haloInnerBlur)"
+          opacity="0.35"
+          strokeLinecap="round"
+        />
+
+        {/* Core arc - thin, high opacity (stroke 3-4) */}
+        <path
+          d="M 100 400 Q 450 100 800 400"
+          stroke="url(#domeGradient)"
+          strokeWidth="3.5"
+          fill="none"
+          opacity="0.95"
+          strokeLinecap="round"
+        />
+
+        {/* Optional inner ring - second smaller arc */}
+        <path
+          d="M 120 400 Q 450 120 780 400"
+          stroke="rgba(210, 170, 255, 0.6)"
+          strokeWidth="2"
+          fill="none"
+          opacity="0.5"
+          strokeLinecap="round"
+        />
+
+        {/* Subtle particles - 12 tiny dots in dome area (opacity max 0.15) */}
+        <circle cx="200" cy="250" r="1.5" fill="rgba(210, 170, 255, 0.8)" opacity="0.12" />
+        <circle cx="300" cy="200" r="1.2" fill="rgba(140, 120, 255, 0.8)" opacity="0.10" />
+        <circle cx="450" cy="150" r="1.8" fill="rgba(210, 170, 255, 0.9)" opacity="0.15" />
+        <circle cx="600" cy="200" r="1.3" fill="rgba(140, 120, 255, 0.8)" opacity="0.12" />
+        <circle cx="700" cy="250" r="1.5" fill="rgba(210, 170, 255, 0.8)" opacity="0.10" />
+        <circle cx="250" cy="300" r="1.0" fill="rgba(140, 120, 255, 0.7)" opacity="0.08" />
+        <circle cx="400" cy="180" r="1.4" fill="rgba(210, 170, 255, 0.8)" opacity="0.13" />
+        <circle cx="550" cy="220" r="1.2" fill="rgba(140, 120, 255, 0.8)" opacity="0.11" />
+        <circle cx="650" cy="280" r="1.1" fill="rgba(210, 170, 255, 0.7)" opacity="0.09" />
+        <circle cx="350" cy="240" r="1.3" fill="rgba(140, 120, 255, 0.8)" opacity="0.12" />
+        <circle cx="500" cy="170" r="1.6" fill="rgba(210, 170, 255, 0.9)" opacity="0.14" />
+        <circle cx="150" cy="320" r="1.0" fill="rgba(140, 120, 255, 0.7)" opacity="0.08" />
+      </svg>
+    </div>
+  );
+}
+
 // Hero component: lightweight gradient background only, no image
 function HeroSection() {
   const navigate = useNavigate();
-  const heroFxRef = useRef<HTMLDivElement>(null);
-  const glowSvgRef = useRef<SVGSVGElement>(null);
-  const rafIdRef = useRef<number | null>(null);
-  const isVisibleRef = useRef<boolean>(true);
 
   // Ensure prehero is removed if it still exists (fallback cleanup)
   // EXPERIMENT C: Don't remove prehero immediately - let main.tsx handle it
@@ -257,116 +420,8 @@ function HeroSection() {
     }
   }, []);
 
-  // Reflect-style glow animation - starts after page is stable, respects prefers-reduced-motion
-  useEffect(() => {
-    // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion || !glowSvgRef.current) {
-      return;
-    }
-
-    // Start animation only after page is stable (requestIdleCallback or window load)
-    const startAnimation = () => {
-      if (!glowSvgRef.current) return;
-
-      const svg = glowSvgRef.current;
-      const maxOffset = 10; // Maximum parallax offset in pixels (subtle)
-      let targetX = 0;
-      let targetY = 0;
-      let currentX = 0;
-      let currentY = 0;
-
-      // Pointer position handler (desktop only)
-      const handlePointerMove = (e: MouseEvent) => {
-        if (!heroFxRef.current) return;
-        const rect = heroFxRef.current.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-
-        // Normalize to -1 to 1 range, apply subtle influence
-        targetX = ((e.clientX - centerX) / (rect.width / 2)) * maxOffset * 0.4;
-        targetY = ((e.clientY - centerY) / (rect.height / 2)) * maxOffset * 0.4;
-      };
-
-      // Visibility change handler - pause when tab hidden
-      const handleVisibilityChange = () => {
-        isVisibleRef.current = !document.hidden;
-      };
-
-      // Animation loop - only transforms, no layout reads
-      const animate = () => {
-        if (!isVisibleRef.current || !svg) {
-          rafIdRef.current = requestAnimationFrame(animate);
-          return;
-        }
-
-        // Smooth interpolation
-        currentX += (targetX - currentX) * 0.08;
-        currentY += (targetY - currentY) * 0.08;
-
-        // Apply transform (GPU-accelerated)
-        svg.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-        rafIdRef.current = requestAnimationFrame(animate);
-      };
-
-      // Start animation loop
-      rafIdRef.current = requestAnimationFrame(animate);
-
-      // Add event listeners
-      window.addEventListener('mousemove', handlePointerMove, { passive: true });
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-
-      return () => {
-        if (rafIdRef.current !== null) {
-          cancelAnimationFrame(rafIdRef.current);
-        }
-        window.removeEventListener('mousemove', handlePointerMove);
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-      };
-    };
-
-    let cleanup: (() => void) | null = null;
-
-    // Start after page is stable
-    let idleId: number | null = null;
-    let timeoutId: NodeJS.Timeout | null = null;
-    let loadHandler: (() => void) | null = null;
-
-    if (document.readyState === 'complete') {
-      // Page already loaded, use requestIdleCallback
-      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-        idleId = (window as any).requestIdleCallback(() => {
-          cleanup = startAnimation();
-        }, { timeout: 2000 });
-      } else {
-        timeoutId = setTimeout(() => {
-          cleanup = startAnimation();
-        }, 100);
-      }
-    } else {
-      // Wait for window load event
-      loadHandler = () => {
-        cleanup = startAnimation();
-      };
-      window.addEventListener('load', loadHandler, { once: true });
-    }
-
-    return () => {
-      if (idleId !== null && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
-        (window as any).cancelIdleCallback(idleId);
-      }
-      if (timeoutId !== null) {
-        clearTimeout(timeoutId);
-      }
-      if (loadHandler) {
-        window.removeEventListener('load', loadHandler);
-      }
-      if (cleanup) cleanup();
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current);
-      }
-    };
-  }, []);
+  // Animation is now handled via CSS keyframes (heroGlowFloat) - no JS needed
+  // This respects prefers-reduced-motion automatically via CSS media query
 
   return (
     <section
@@ -376,135 +431,15 @@ function HeroSection() {
       {/* Base gradient background */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
 
-      {/* Reflect-style glow effect layer */}
+      {/* Reflect-style hero glow - horizon line + halo dome */}
+      {/* LCP SAFETY: This is decorative only (aria-hidden, pointer-events-none, z-0) */}
+      {/* Hero text (h1/p) remains the LCP element, not this glow effect */}
       <div
-        ref={heroFxRef}
-        className="heroFx absolute inset-0 z-0 pointer-events-none"
-        aria-hidden="true"
         style={{
-          contain: 'paint',
-          transform: 'translateZ(0)',
-          // DEBUG: Remove outline after verification
-          // outline: '2px solid rgba(0, 255, 0, 0.5)',
+          animation: 'heroGlowFloat 10s ease-in-out infinite alternate',
         }}
       >
-        {/* Radial glow behind headline - pure CSS */}
-        <div
-          className="absolute"
-          style={{
-            width: 'clamp(400px, 80vw, 800px)',
-            height: 'clamp(300px, 60vh, 600px)',
-            top: 'calc(50% - clamp(150px, 30vh, 300px))',
-            left: '50%',
-            transform: 'translate(-50%, -50%) translateZ(0)',
-            background: 'radial-gradient(ellipse at center, rgba(139, 92, 246, 0.4) 0%, rgba(139, 92, 246, 0.2) 40%, transparent 70%)',
-            filter: 'blur(60px)',
-            opacity: 0.8,
-            mixBlendMode: 'screen',
-            willChange: 'opacity',
-            pointerEvents: 'none',
-          }}
-        />
-
-        {/* Main glow arc - inline SVG with bloom filter */}
-        <svg
-          ref={glowSvgRef}
-          className="absolute"
-          style={{
-            width: 'clamp(600px, 120vw, 1400px)',
-            height: 'clamp(400px, 80vh, 900px)',
-            top: 'calc(55% - clamp(200px, 40vh, 450px))',
-            left: 'calc(50% - clamp(300px, 60vw, 700px))',
-            willChange: 'transform, opacity',
-            animation: 'heroArcFloat 8s ease-in-out infinite',
-            transform: 'translateZ(0)',
-          }}
-          viewBox="0 0 1400 900"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            {/* Bloom filter for soft glow */}
-            <filter id="glowBloom" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="40" result="blur" />
-              <feColorMatrix
-                in="blur"
-                type="matrix"
-                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 3 0"
-                result="coloredBlur"
-              />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-
-            {/* Purple/blue gradient for arc */}
-            <linearGradient id="arcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="rgba(139, 92, 246, 0.9)" stopOpacity="0.9" />
-              <stop offset="50%" stopColor="rgba(139, 92, 246, 1)" stopOpacity="1" />
-              <stop offset="100%" stopColor="rgba(30, 103, 198, 0.85)" stopOpacity="0.85" />
-            </linearGradient>
-
-            {/* Radial gradient for horizon glow */}
-            <radialGradient id="horizonGlow" cx="50%" cy="50%">
-              <stop offset="0%" stopColor="rgba(139, 92, 246, 0.6)" stopOpacity="0.6" />
-              <stop offset="50%" stopColor="rgba(139, 92, 246, 0.3)" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="rgba(139, 92, 246, 0)" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-
-          {/* Horizon glow ellipse */}
-          <ellipse
-            cx="700"
-            cy="450"
-            rx="600"
-            ry="120"
-            fill="url(#horizonGlow)"
-            filter="url(#glowBloom)"
-            opacity="0.75"
-          />
-
-          {/* Main arc path (semi-circle) */}
-          <path
-            d="M 200 450 Q 700 200 1200 450"
-            stroke="url(#arcGradient)"
-            strokeWidth="8"
-            fill="none"
-            filter="url(#glowBloom)"
-            opacity="0.85"
-            style={{
-              strokeLinecap: 'round',
-            }}
-          />
-
-          {/* Secondary arc for depth */}
-          <path
-            d="M 250 450 Q 700 250 1150 450"
-            stroke="rgba(139, 92, 246, 0.5)"
-            strokeWidth="4"
-            fill="none"
-            filter="url(#glowBloom)"
-            opacity="0.6"
-            style={{
-              strokeLinecap: 'round',
-            }}
-          />
-        </svg>
-
-        {/* Additional soft bloom overlay (CSS) */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(ellipse at center 60%, rgba(139, 92, 246, 0.25) 0%, transparent 50%),
-              radial-gradient(ellipse at center 55%, rgba(30, 103, 198, 0.15) 0%, transparent 45%)
-            `,
-            filter: 'blur(60px)',
-            mixBlendMode: 'screen',
-            opacity: 0.7,
-            pointerEvents: 'none',
-          }}
-        />
+        <HeroGlow />
       </div>
 
       {/* Vignette overlay for text contrast */}
