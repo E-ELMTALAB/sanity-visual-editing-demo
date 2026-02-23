@@ -193,6 +193,16 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
         style={{ background: "radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%)" }} 
       />
 
+      {/* Bottom fade overlay to blend with page background */}
+      <div 
+        className="absolute bottom-0 left-0 right-0 pointer-events-none"
+        style={{ 
+          height: '120px',
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, #0A0F27 100%)',
+          zIndex: 0
+        }}
+      />
+
       {/* Content - Fixed dimensions to prevent CLS */}
       <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-28 pb-16 lg:py-24">
         <div className="flex items-center justify-center min-h-[70vh]">
