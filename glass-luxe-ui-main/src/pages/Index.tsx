@@ -155,13 +155,61 @@ type HeroImage = { src: string; srcSet?: string };
 
 // Single hero component: starts with lightweight gradient; optionally overlays deferred image
 function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
+  // #region agent log
+  useEffect(() => {
+    const inspectStyles = () => {
+      const hero = document.querySelector('section[dir="rtl"]') as HTMLElement;
+      const promoBanner = document.querySelector('section.py-8') as HTMLElement;
+      const parentWrapper = hero?.closest('.min-h-screen') as HTMLElement;
+      const body = document.body;
+      
+      if (hero) {
+        const heroStyles = window.getComputedStyle(hero);
+        const heroRect = hero.getBoundingClientRect();
+        fetch('http://127.0.0.1:7242/ingest/733a085a-e2c2-4b74-b65a-1dceb9224218',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:HeroSection',message:'Hero computed styles',data:{bgColor:heroStyles.backgroundColor,bgImage:heroStyles.backgroundImage,borderTop:heroStyles.borderTop,borderBottom:heroStyles.borderBottom,boxShadow:heroStyles.boxShadow,maskImage:heroStyles.maskImage,webkitMaskImage:heroStyles.webkitMaskImage,bottom:heroRect.bottom,height:heroRect.height},timestamp:Date.now(),runId:'debug1',hypothesisId:'A'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7242/ingest/733a085a-e2c2-4b74-b65a-1dceb9224218',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:HeroSection',message:'Hero computed styles',data:{bgColor:heroStyles.backgroundColor,bgImage:heroStyles.backgroundImage,borderTop:heroStyles.borderTop,borderBottom:heroStyles.borderBottom,boxShadow:heroStyles.boxShadow},timestamp:Date.now(),runId:'debug1',hypothesisId:'D'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7242/ingest/733a085a-e2c2-4b74-b65a-1dceb9224218',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:HeroSection',message:'Hero computed styles',data:{boxShadow:heroStyles.boxShadow},timestamp:Date.now(),runId:'debug1',hypothesisId:'E'})}).catch(()=>{});
+      }
+      if (promoBanner) {
+        const promoStyles = window.getComputedStyle(promoBanner);
+        const promoRect = promoBanner.getBoundingClientRect();
+        fetch('http://127.0.0.1:7242/ingest/733a085a-e2c2-4b74-b65a-1dceb9224218',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:HeroSection',message:'PromoBanner section computed styles',data:{bgColor:promoStyles.backgroundColor,bgImage:promoStyles.backgroundImage,borderTop:promoStyles.borderTop,borderBottom:promoStyles.borderBottom,boxShadow:promoStyles.boxShadow,top:promoRect.top},timestamp:Date.now(),runId:'debug1',hypothesisId:'B'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7242/ingest/733a085a-e2c2-4b74-b65a-1dceb9224218',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:HeroSection',message:'PromoBanner section computed styles',data:{borderTop:promoStyles.borderTop,borderBottom:promoStyles.borderBottom},timestamp:Date.now(),runId:'debug1',hypothesisId:'D'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7242/ingest/733a085a-e2c2-4b74-b65a-1dceb9224218',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:HeroSection',message:'PromoBanner section computed styles',data:{boxShadow:promoStyles.boxShadow},timestamp:Date.now(),runId:'debug1',hypothesisId:'E'})}).catch(()=>{});
+        const innerDiv = promoBanner.querySelector('.relative.overflow-hidden') as HTMLElement;
+        if (innerDiv) {
+          const innerStyles = window.getComputedStyle(innerDiv);
+          fetch('http://127.0.0.1:7242/ingest/733a085a-e2c2-4b74-b65a-1dceb9224218',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:HeroSection',message:'PromoBanner inner div computed styles',data:{bgColor:innerStyles.backgroundColor,bgImage:innerStyles.backgroundImage,borderTop:innerStyles.borderTop},timestamp:Date.now(),runId:'debug1',hypothesisId:'F'})}).catch(()=>{});
+        }
+      }
+      if (parentWrapper) {
+        const parentStyles = window.getComputedStyle(parentWrapper);
+        fetch('http://127.0.0.1:7242/ingest/733a085a-e2c2-4b74-b65a-1dceb9224218',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:HeroSection',message:'Parent wrapper computed styles',data:{bgColor:parentStyles.backgroundColor,bgImage:parentStyles.backgroundImage},timestamp:Date.now(),runId:'debug1',hypothesisId:'C'})}).catch(()=>{});
+      }
+      if (body) {
+        const bodyStyles = window.getComputedStyle(body);
+        fetch('http://127.0.0.1:7242/ingest/733a085a-e2c2-4b74-b65a-1dceb9224218',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:HeroSection',message:'Body computed styles',data:{bgColor:bodyStyles.backgroundColor,bgImage:bodyStyles.backgroundImage},timestamp:Date.now(),runId:'debug1',hypothesisId:'C'})}).catch(()=>{});
+      }
+      const fadeOverlay = hero?.querySelector('.absolute.bottom-0') as HTMLElement;
+      if (fadeOverlay) {
+        const fadeStyles = window.getComputedStyle(fadeOverlay);
+        const fadeRect = fadeOverlay.getBoundingClientRect();
+        fetch('http://127.0.0.1:7242/ingest/733a085a-e2c2-4b74-b65a-1dceb9224218',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:HeroSection',message:'Fade overlay computed styles',data:{zIndex:fadeStyles.zIndex,height:fadeStyles.height,top:fadeRect.top,bottom:fadeRect.bottom,bgImage:fadeStyles.backgroundImage},timestamp:Date.now(),runId:'debug1',hypothesisId:'G'})}).catch(()=>{});
+      }
+    };
+    const timer = setTimeout(inspectStyles, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+  // #endregion
+
   return (
     <section 
       dir="rtl"
       className="relative min-h-[92vh] w-full overflow-hidden bg-transparent"
       style={{
-        maskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
-        WebkitMaskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
+        maskImage: 'linear-gradient(to bottom, black 70%, rgba(0,0,0,0.5) 90%, transparent 100%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, black 70%, rgba(0,0,0,0.5) 90%, transparent 100%)',
+        backgroundColor: 'transparent'
       }}
     >
       {/* Static background placeholder - gradient only (counts as LCP, extremely cheap) */}

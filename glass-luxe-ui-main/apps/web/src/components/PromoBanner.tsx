@@ -71,7 +71,20 @@ export function PromoBanner({ className }: PromoBannerProps) {
   if (!showBanner) return null;
 
   return (
-    <section className={cn("py-8 sm:py-10 lg:py-12 px-6 sm:px-6 lg:px-[100px]", className)}>
+    <section className={cn("relative py-8 sm:py-10 lg:py-12 px-6 sm:px-6 lg:px-[100px]", className)} style={{ backgroundColor: 'transparent' }}>
+      {/* Top fade overlay to blend with Hero - positioned above section */}
+      <div 
+        className="pointer-events-none"
+        style={{ 
+          position: 'absolute',
+          top: '-80px',
+          left: 0,
+          right: 0,
+          height: '80px',
+          background: 'linear-gradient(to bottom, hsl(var(--bg-base-bot)) 0%, rgba(10,15,39,0) 100%)',
+          zIndex: 0
+        }}
+      />
       <div className="max-w-[1400px] mx-auto">
         <motion.div
           dir="rtl"

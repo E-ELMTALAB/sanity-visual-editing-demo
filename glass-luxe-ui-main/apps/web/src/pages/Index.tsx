@@ -258,10 +258,92 @@ function HeroSection() {
   // Animation is now handled via CSS keyframes (heroGlowFloat) - no JS needed
   // This respects prefers-reduced-motion automatically via CSS media query
 
+  // #region agent log
+  useEffect(() => {
+    const inspectStyles = () => {
+      const hero = document.querySelector('section[dir="rtl"]') as HTMLElement;
+      const promoBanner = document.querySelector('section.py-8') as HTMLElement;
+      const parentWrapper = hero?.closest('.min-h-screen') as HTMLElement;
+      const body = document.body;
+      
+      const logData: any = {};
+      
+      if (hero) {
+        const heroStyles = window.getComputedStyle(hero);
+        const heroRect = hero.getBoundingClientRect();
+        logData.hero = {
+          bgColor: heroStyles.backgroundColor,
+          bgImage: heroStyles.backgroundImage,
+          borderTop: heroStyles.borderTop,
+          borderBottom: heroStyles.borderBottom,
+          boxShadow: heroStyles.boxShadow,
+          maskImage: heroStyles.maskImage,
+          webkitMaskImage: heroStyles.webkitMaskImage,
+          bottom: heroRect.bottom,
+          height: heroRect.height
+        };
+      }
+      if (promoBanner) {
+        const promoStyles = window.getComputedStyle(promoBanner);
+        const promoRect = promoBanner.getBoundingClientRect();
+        logData.promoBanner = {
+          bgColor: promoStyles.backgroundColor,
+          bgImage: promoStyles.backgroundImage,
+          borderTop: promoStyles.borderTop,
+          borderBottom: promoStyles.borderBottom,
+          boxShadow: promoStyles.boxShadow,
+          top: promoRect.top
+        };
+        const innerDiv = promoBanner.querySelector('.relative.overflow-hidden') as HTMLElement;
+        if (innerDiv) {
+          const innerStyles = window.getComputedStyle(innerDiv);
+          logData.promoBannerInner = {
+            bgColor: innerStyles.backgroundColor,
+            bgImage: innerStyles.backgroundImage,
+            borderTop: innerStyles.borderTop
+          };
+        }
+      }
+      if (parentWrapper) {
+        const parentStyles = window.getComputedStyle(parentWrapper);
+        logData.parentWrapper = {
+          bgColor: parentStyles.backgroundColor,
+          bgImage: parentStyles.backgroundImage
+        };
+      }
+      if (body) {
+        const bodyStyles = window.getComputedStyle(body);
+        logData.body = {
+          bgColor: bodyStyles.backgroundColor,
+          bgImage: bodyStyles.backgroundImage
+        };
+      }
+      const fadeOverlay = hero?.querySelector('.absolute.bottom-0') as HTMLElement;
+      if (fadeOverlay) {
+        const fadeStyles = window.getComputedStyle(fadeOverlay);
+        const fadeRect = fadeOverlay.getBoundingClientRect();
+        logData.fadeOverlay = {
+          zIndex: fadeStyles.zIndex,
+          height: fadeStyles.height,
+          top: fadeRect.top,
+          bottom: fadeRect.bottom,
+          bgImage: fadeStyles.backgroundImage
+        };
+      }
+      
+      console.log('[DEBUG] Hero/PromoBanner styles:', logData);
+      fetch('http://127.0.0.1:7242/ingest/733a085a-e2c2-4b74-b65a-1dceb9224218',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:HeroSection',message:'All computed styles',data:logData,timestamp:Date.now(),runId:'debug1',hypothesisId:'ALL'})}).catch(()=>{});
+    };
+    const timer = setTimeout(inspectStyles, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+  // #endregion
+
   return (
     <section
       dir="rtl"
       className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden isolate"
+      style={{ backgroundColor: 'transparent' }}
     >
       {/* Base gradient background */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
@@ -295,9 +377,9 @@ function HeroSection() {
       <div 
         className="absolute bottom-0 left-0 right-0 pointer-events-none"
         style={{ 
-          height: '260px',
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(124,58,237,0.15) 35%, rgba(10,15,39,0.7) 75%, hsl(var(--bg-base-bot)) 100%)',
-          zIndex: 0
+          height: '280px',
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(124,58,237,0.2) 30%, rgba(10,15,39,0.8) 70%, hsl(var(--bg-base-bot)) 100%)',
+          zIndex: 1
         }}
       />
 
