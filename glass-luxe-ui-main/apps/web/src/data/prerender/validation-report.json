@@ -1,0 +1,66 @@
+{
+  "generatedAt": "2026-02-23T22:21:04.018Z",
+  "totalChecks": 6,
+  "passed": 0,
+  "failed": 6,
+  "checks": [
+    {
+      "route": "/",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\index.html",
+      "exists": true,
+      "hasTitle": true,
+      "hasDescription": true,
+      "hasCanonical": false,
+      "hasRootContent": false
+    },
+    {
+      "route": "/products",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\index.html",
+      "exists": false,
+      "hasTitle": false,
+      "hasDescription": false,
+      "hasCanonical": false,
+      "hasRootContent": false
+    },
+    {
+      "route": "/blog",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\blog\\index.html",
+      "exists": false,
+      "hasTitle": false,
+      "hasDescription": false,
+      "hasCanonical": false,
+      "hasRootContent": false
+    },
+    {
+      "route": "/products/canva",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\canva\\index.html",
+      "exists": false,
+      "hasTitle": false,
+      "hasDescription": false,
+      "hasCanonical": false,
+      "hasRootContent": false
+    },
+    {
+      "route": "/blog/chatgpt-plus-review",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\blog\\chatgpt-plus-review\\index.html",
+      "exists": false,
+      "hasTitle": false,
+      "hasDescription": false,
+      "hasCanonical": false,
+      "hasRootContent": false
+    },
+    {
+      "route": "/collections/ai-chatbot",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\collections\\ai-chatbot\\index.html",
+      "exists": false,
+      "hasTitle": false,
+      "hasDescription": false,
+      "hasCanonical": false,
+      "hasRootContent": false
+    }
+  ],
+  "lighthouseNextStep": [
+    "Run Lighthouse on / and one prerendered /products/:slug route.",
+    "Compare LCP before/after prerender rollout in the same network/device profile."
+  ]
+}
