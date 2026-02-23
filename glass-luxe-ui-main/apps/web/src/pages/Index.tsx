@@ -343,10 +343,10 @@ function HeroSection() {
     <section
       dir="rtl"
       className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden isolate"
-      style={{ backgroundColor: 'transparent' }}
+      style={{ backgroundColor: 'transparent', backgroundImage: 'none' }}
     >
-      {/* Base gradient background */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
+      {/* Base gradient background - ends with body background color for seamless transition */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0A0F27]" />
 
       {/* Reflect-style hero glow - sunrise aura halo behind headline */}
       {/* LCP SAFETY: This is decorative only (aria-hidden, pointer-events-none, z-0) */}
@@ -361,13 +361,13 @@ function HeroSection() {
         }}
       />
 
-      {/* Vignette overlay for text contrast */}
+      {/* Vignette overlay for text contrast - bottom fade removed to prevent dark band */}
       <div
         className="absolute inset-0 z-0 pointer-events-none"
         style={{
           background: `
             radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.35) 70%, rgba(0, 0, 0, 0.55) 100%),
-            linear-gradient(to bottom, rgba(0, 0, 0, 0.15) 0%, transparent 30%, transparent 70%, rgba(0, 0, 0, 0.25) 100%)
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.15) 0%, transparent 30%, transparent 70%, transparent 100%)
           `,
           opacity: 1,
         }}
