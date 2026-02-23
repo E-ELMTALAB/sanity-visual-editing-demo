@@ -162,10 +162,12 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
       style={{
         maskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
         WebkitMaskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
+        backgroundColor: 'transparent !important',
+        backgroundImage: 'none !important',
+        background: 'transparent !important'
       }}
     >
-      {/* Static background placeholder - gradient only (counts as LCP, extremely cheap) */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
+      {/* Hero-specific background REMOVED - Hero now inherits body/page background */}
       {/* Deferred hero image overlays when ready */}
       {heroImage?.src && (
         <picture className="absolute inset-0 h-full w-full -z-10">
@@ -186,12 +188,7 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
         </picture>
       )}
       
-      {/* Overlay */}
-      <div className="absolute inset-0 -z-10 mix-blend-soft-light opacity-85 md:opacity-60 bg-gradient-to-br from-[#1E67C6]/60 via-transparent to-[#8B5CF6]/60" />
-      <div 
-        className="absolute inset-0 -z-10"
-        style={{ background: "radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%)" }} 
-      />
+      {/* Overlay layers REMOVED - Hero inherits body background, no custom backgrounds */}
 
       {/* Content - Fixed dimensions to prevent CLS */}
       <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-28 pb-16 lg:py-24">

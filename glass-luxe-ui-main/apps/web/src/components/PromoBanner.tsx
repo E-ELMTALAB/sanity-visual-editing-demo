@@ -71,7 +71,7 @@ export function PromoBanner({ className }: PromoBannerProps) {
   if (!showBanner) return null;
 
   return (
-    <section className={cn("py-8 sm:py-10 lg:py-12 px-6 sm:px-6 lg:px-[100px]", className)} style={{ backgroundColor: 'transparent', backgroundImage: 'none' }}>
+    <section className={cn("py-8 sm:py-10 lg:py-12 px-6 sm:px-6 lg:px-[100px]", className)} style={{ backgroundColor: 'transparent !important', backgroundImage: 'none !important', background: 'transparent !important' }}>
       <div className="max-w-[1400px] mx-auto">
         <motion.div
           dir="rtl"
