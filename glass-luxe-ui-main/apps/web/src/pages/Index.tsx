@@ -230,172 +230,7 @@ interface SanityData {
 
 type HeroImage = { src: string; srcSet?: string };
 
-// HeroGlow component - Reflect-style horizon + halo dome effect
-// LCP SAFETY: This is purely decorative (aria-hidden, pointer-events-none, z-0)
-// Hero text (h1/p) remains the LCP element, not this glow effect
-function HeroGlow() {
-  return (
-    <div
-      className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
-      aria-hidden="true"
-      role="presentation"
-      style={{
-        contain: 'paint',
-        willChange: 'transform',
-        transform: 'translateZ(0)',
-      }}
-    >
-      {/* Horizon line with bloom layers - positioned at ~55% height */}
-      <div className="absolute left-1/2 top-[55%] -translate-x-1/2 w-full max-w-[1100px]">
-        {/* Bloom layer 2 - largest, softest (70-120px height, 40-70px blur) */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 w-full h-[100px]"
-          style={{
-            background: 'linear-gradient(90deg, transparent 0%, rgba(210, 170, 255, 0.2) 20%, rgba(140, 120, 255, 0.25) 50%, rgba(210, 170, 255, 0.2) 80%, transparent 100%)',
-            filter: 'blur(55px)',
-            opacity: 0.20,
-          }}
-        />
-
-        {/* Bloom layer 1 - medium (18-24px height, 12-18px blur) */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 w-full h-[20px]"
-          style={{
-            background: 'linear-gradient(90deg, transparent 0%, rgba(210, 170, 255, 0.55) 20%, rgba(140, 120, 255, 0.6) 50%, rgba(210, 170, 255, 0.55) 80%, transparent 100%)',
-            filter: 'blur(15px)',
-            opacity: 0.55,
-          }}
-        />
-
-        {/* Core horizon line (2px height) */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 w-full h-[2px]"
-          style={{
-            background: 'linear-gradient(90deg, transparent 0%, rgba(210, 170, 255, 0.95) 20%, rgba(140, 120, 255, 0.95) 50%, rgba(210, 170, 255, 0.95) 80%, transparent 100%)',
-          }}
-        />
-      </div>
-
-      {/* Under-horizon reflection glow */}
-      <div
-        className="absolute left-1/2 top-[58%] -translate-x-1/2"
-        style={{
-          width: 'clamp(400px, 70vw, 800px)',
-          height: 'clamp(200px, 35vh, 400px)',
-          background: 'radial-gradient(circle, rgba(170, 140, 255, 0.35) 0%, rgba(170, 140, 255, 0.15) 30%, transparent 60%)',
-          filter: 'blur(40px)',
-          opacity: 0.6,
-        }}
-      />
-
-      {/* Halo dome - inline SVG above horizon */}
-      <svg
-        className="absolute left-1/2 -translate-x-1/2 max-w-[900px] w-full h-[420px]"
-        style={{
-          top: 'calc(55% - 420px)',
-          willChange: 'opacity',
-        }}
-        viewBox="0 0 900 420"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-        role="presentation"
-      >
-        <defs>
-          {/* Gaussian blur filters for glow effects */}
-          <filter id="haloInnerBlur" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="8" result="blur" />
-            <feColorMatrix
-              in="blur"
-              type="matrix"
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 2 0"
-              result="coloredBlur"
-            />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-
-          <filter id="haloOuterBlur" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="25" result="blur" />
-            <feColorMatrix
-              in="blur"
-              type="matrix"
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1.5 0"
-              result="coloredBlur"
-            />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-            </feMerge>
-          </filter>
-
-          {/* Gradient for dome arcs */}
-          <linearGradient id="domeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="rgba(210, 170, 255, 0.85)" stopOpacity="0.85" />
-            <stop offset="50%" stopColor="rgba(140, 120, 255, 1)" stopOpacity="1" />
-            <stop offset="100%" stopColor="rgba(210, 170, 255, 0.85)" stopOpacity="0.85" />
-          </linearGradient>
-        </defs>
-
-        {/* Outer haze - largest, softest (stroke 60-90, opacity ~0.12) */}
-        <path
-          d="M 50 400 Q 450 50 850 400"
-          stroke="rgba(210, 170, 255, 0.5)"
-          strokeWidth="75"
-          fill="none"
-          filter="url(#haloOuterBlur)"
-          opacity="0.12"
-          strokeLinecap="round"
-        />
-
-        {/* Inner glow - medium (stroke 14-22, opacity ~0.35) */}
-        <path
-          d="M 80 400 Q 450 80 820 400"
-          stroke="rgba(140, 120, 255, 0.7)"
-          strokeWidth="18"
-          fill="none"
-          filter="url(#haloInnerBlur)"
-          opacity="0.35"
-          strokeLinecap="round"
-        />
-
-        {/* Core arc - thin, high opacity (stroke 3-4) */}
-        <path
-          d="M 100 400 Q 450 100 800 400"
-          stroke="url(#domeGradient)"
-          strokeWidth="3.5"
-          fill="none"
-          opacity="0.95"
-          strokeLinecap="round"
-        />
-
-        {/* Optional inner ring - second smaller arc */}
-        <path
-          d="M 120 400 Q 450 120 780 400"
-          stroke="rgba(210, 170, 255, 0.6)"
-          strokeWidth="2"
-          fill="none"
-          opacity="0.5"
-          strokeLinecap="round"
-        />
-
-        {/* Subtle particles - 12 tiny dots in dome area (opacity max 0.15) */}
-        <circle cx="200" cy="250" r="1.5" fill="rgba(210, 170, 255, 0.8)" opacity="0.12" />
-        <circle cx="300" cy="200" r="1.2" fill="rgba(140, 120, 255, 0.8)" opacity="0.10" />
-        <circle cx="450" cy="150" r="1.8" fill="rgba(210, 170, 255, 0.9)" opacity="0.15" />
-        <circle cx="600" cy="200" r="1.3" fill="rgba(140, 120, 255, 0.8)" opacity="0.12" />
-        <circle cx="700" cy="250" r="1.5" fill="rgba(210, 170, 255, 0.8)" opacity="0.10" />
-        <circle cx="250" cy="300" r="1.0" fill="rgba(140, 120, 255, 0.7)" opacity="0.08" />
-        <circle cx="400" cy="180" r="1.4" fill="rgba(210, 170, 255, 0.8)" opacity="0.13" />
-        <circle cx="550" cy="220" r="1.2" fill="rgba(140, 120, 255, 0.8)" opacity="0.11" />
-        <circle cx="650" cy="280" r="1.1" fill="rgba(210, 170, 255, 0.7)" opacity="0.09" />
-        <circle cx="350" cy="240" r="1.3" fill="rgba(140, 120, 255, 0.8)" opacity="0.12" />
-        <circle cx="500" cy="170" r="1.6" fill="rgba(210, 170, 255, 0.9)" opacity="0.14" />
-        <circle cx="150" cy="320" r="1.0" fill="rgba(140, 120, 255, 0.7)" opacity="0.08" />
-      </svg>
-    </div>
-  );
-}
+// HeroGlow component removed - using single hero-halo div with pseudo-elements instead
 
 // Hero component: lightweight gradient background only, no image
 function HeroSection() {
@@ -404,32 +239,120 @@ function HeroSection() {
   // Animation is now handled via CSS keyframes (heroGlowFloat) - no JS needed
   // This respects prefers-reduced-motion automatically via CSS media query
 
+  // #region agent log
+  useEffect(() => {
+    const inspectStyles = () => {
+      const hero = document.querySelector('section[dir="rtl"]') as HTMLElement;
+      const promoBanner = document.querySelector('section.py-8') as HTMLElement;
+      const parentWrapper = hero?.closest('.min-h-screen') as HTMLElement;
+      const body = document.body;
+      
+      const logData: any = {};
+      
+      if (hero) {
+        const heroStyles = window.getComputedStyle(hero);
+        const heroRect = hero.getBoundingClientRect();
+        logData.hero = {
+          bgColor: heroStyles.backgroundColor,
+          bgImage: heroStyles.backgroundImage,
+          borderTop: heroStyles.borderTop,
+          borderBottom: heroStyles.borderBottom,
+          boxShadow: heroStyles.boxShadow,
+          maskImage: heroStyles.maskImage,
+          webkitMaskImage: heroStyles.webkitMaskImage,
+          bottom: heroRect.bottom,
+          height: heroRect.height
+        };
+      }
+      if (promoBanner) {
+        const promoStyles = window.getComputedStyle(promoBanner);
+        const promoRect = promoBanner.getBoundingClientRect();
+        logData.promoBanner = {
+          bgColor: promoStyles.backgroundColor,
+          bgImage: promoStyles.backgroundImage,
+          borderTop: promoStyles.borderTop,
+          borderBottom: promoStyles.borderBottom,
+          boxShadow: promoStyles.boxShadow,
+          top: promoRect.top
+        };
+        const innerDiv = promoBanner.querySelector('.relative.overflow-hidden') as HTMLElement;
+        if (innerDiv) {
+          const innerStyles = window.getComputedStyle(innerDiv);
+          logData.promoBannerInner = {
+            bgColor: innerStyles.backgroundColor,
+            bgImage: innerStyles.backgroundImage,
+            borderTop: innerStyles.borderTop
+          };
+        }
+      }
+      if (parentWrapper) {
+        const parentStyles = window.getComputedStyle(parentWrapper);
+        logData.parentWrapper = {
+          bgColor: parentStyles.backgroundColor,
+          bgImage: parentStyles.backgroundImage
+        };
+      }
+      if (body) {
+        const bodyStyles = window.getComputedStyle(body);
+        logData.body = {
+          bgColor: bodyStyles.backgroundColor,
+          bgImage: bodyStyles.backgroundImage
+        };
+      }
+      const fadeOverlay = hero?.querySelector('.absolute.bottom-0') as HTMLElement;
+      if (fadeOverlay) {
+        const fadeStyles = window.getComputedStyle(fadeOverlay);
+        const fadeRect = fadeOverlay.getBoundingClientRect();
+        logData.fadeOverlay = {
+          zIndex: fadeStyles.zIndex,
+          height: fadeStyles.height,
+          top: fadeRect.top,
+          bottom: fadeRect.bottom,
+          bgImage: fadeStyles.backgroundImage
+        };
+      }
+      
+      console.log('[DEBUG] Hero/PromoBanner styles:', logData);
+      fetch('http://127.0.0.1:7242/ingest/733a085a-e2c2-4b74-b65a-1dceb9224218',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:HeroSection',message:'All computed styles',data:logData,timestamp:Date.now(),runId:'debug1',hypothesisId:'ALL'})}).catch(()=>{});
+    };
+    const timer = setTimeout(inspectStyles, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+  // #endregion
+
   return (
     <section
       dir="rtl"
-      className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden"
+      className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden isolate"
+      style={{ 
+        backgroundColor: 'transparent !important',
+        backgroundImage: 'none !important',
+        background: 'transparent !important'
+      }}
     >
-      {/* Base gradient background */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
-
-      {/* Reflect-style hero glow - horizon line + halo dome */}
+      {/* Hero-specific backgrounds removed - Hero now inherits body/page background */}
+      {/* Base gradient background REMOVED - Hero inherits body background */}
+      
+      {/* Reflect-style hero glow - sunrise aura halo behind headline */}
       {/* LCP SAFETY: This is decorative only (aria-hidden, pointer-events-none, z-0) */}
       {/* Hero text (h1/p) remains the LCP element, not this glow effect */}
       <div
+        aria-hidden="true"
+        className="heroGlow pointer-events-none absolute inset-0 z-0"
         style={{
-          animation: 'heroGlowFloat 10s ease-in-out infinite alternate',
+          contain: 'paint',
+          willChange: 'transform',
+          transform: 'translateZ(0)',
         }}
-      >
-        <HeroGlow />
-      </div>
+      />
 
-      {/* Vignette overlay for text contrast */}
+      {/* Vignette overlay - very light, no dark bottom to prevent seam */}
       <div
         className="absolute inset-0 z-0 pointer-events-none"
         style={{
           background: `
-            radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.35) 70%, rgba(0, 0, 0, 0.55) 100%),
-            linear-gradient(to bottom, rgba(0, 0, 0, 0.15) 0%, transparent 30%, transparent 70%, rgba(0, 0, 0, 0.25) 100%)
+            radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.25) 70%, transparent 100%),
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.08) 0%, transparent 40%, transparent 100%)
           `,
           opacity: 1,
         }}

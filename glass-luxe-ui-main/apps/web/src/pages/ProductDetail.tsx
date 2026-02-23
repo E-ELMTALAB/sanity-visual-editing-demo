@@ -96,6 +96,11 @@ interface FaqItem {
 }
 
 
+// Feature flag: Temporarily disable testimonials on Product Detail page
+// TODO: Re-enable by setting ENABLE_PRODUCT_DETAIL_TESTIMONIAL to true
+// Temporarily disabled until Sanity integration is ready
+const ENABLE_PRODUCT_DETAIL_TESTIMONIAL = false;
+
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -1043,40 +1048,43 @@ const ProductDetail = () => {
           {/* Delivery Process Section */}
           <DeliveryProcessSection />
 
-          {/* Customer Reviews */}
-          <CustomerReviews
-            reviews={[
-              {
-                id: "1",
-                text: "محصولات عالی و با کیفیت. تحویل سریع و پشتیبانی عالی داشتند. حتماً دوباره خرید می‌کنم.",
-                screenshot: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80",
-                source: {
-                  platform: "telegram",
-                  label: "کانال تلگرام",
-                  url: "https://t.me/sharifgpt",
+          {/* Customer Reviews / Testimonials Section */}
+          {/* TEMPORARILY DISABLED: Testimonial section will be re-enabled after Sanity integration is complete */}
+          {ENABLE_PRODUCT_DETAIL_TESTIMONIAL && (
+            <CustomerReviews
+              reviews={[
+                {
+                  id: "1",
+                  text: "محصولات عالی و با کیفیت. تحویل سریع و پشتیبانی عالی داشتند. حتماً دوباره خرید می‌کنم.",
+                  screenshot: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80",
+                  source: {
+                    platform: "telegram",
+                    label: "کانال تلگرام",
+                    url: "https://t.me/sharifgpt",
+                  },
                 },
-              },
-              {
-                id: "2",
-                text: "راضی هستم از خرید. قیمت‌ها مناسب و محصولات با کیفیت هستند.",
-                screenshot: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=800&q=80",
-                source: {
-                  platform: "instagram",
-                  label: "صفحه اینستاگرام",
-                  url: "https://instagram.com/sharifgpt",
+                {
+                  id: "2",
+                  text: "راضی هستم از خرید. قیمت‌ها مناسب و محصولات با کیفیت هستند.",
+                  screenshot: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=800&q=80",
+                  source: {
+                    platform: "instagram",
+                    label: "صفحه اینستاگرام",
+                    url: "https://instagram.com/sharifgpt",
+                  },
                 },
-              },
-              {
-                id: "3",
-                text: "خدمات عالی و سریع. پیشنهاد می‌کنم به همه دوستان.",
-                source: {
-                  platform: "whatsapp",
-                  label: "واتساپ",
-                  url: "https://wa.me/1234567890",
+                {
+                  id: "3",
+                  text: "خدمات عالی و سریع. پیشنهاد می‌کنم به همه دوستان.",
+                  source: {
+                    platform: "whatsapp",
+                    label: "واتساپ",
+                    url: "https://wa.me/1234567890",
+                  },
                 },
-              },
-            ]}
-          />
+              ]}
+            />
+          )}
 
           {/* Product Description */}
           <ProductDescription

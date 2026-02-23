@@ -71,17 +71,24 @@ const RouteFallback = () => (
   </div>
 );
 
+// Feature flag: Temporarily disable customer support widget
+// TODO: Re-enable by setting ENABLE_SUPPORT_WIDGET to true when chatbot is ready
+const ENABLE_SUPPORT_WIDGET = false;
+
 // Global Customer Support Widget - appears on all pages
 // Must be inside CartProvider to access cart state
 // Deferred until after window load to avoid blocking LCP
 const GlobalCustomerSupport = () => {
+  // Temporarily disabled - widget will not render at all
+  if (!ENABLE_SUPPORT_WIDGET) return null;
+
   const { state: cartState } = useCart();
   const [shouldLoad, setShouldLoad] = useState(false);
-  
+
   useEffect(() => {
     // Defer chat widget initialization until after window load to prevent LCP interference
     const initChatWidget = () => setShouldLoad(true);
-    
+
     if (document.readyState === 'complete') {
       // Page already loaded, use requestIdleCallback
       if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
@@ -93,20 +100,20 @@ const GlobalCustomerSupport = () => {
       // Wait for window load event
       window.addEventListener('load', initChatWidget, { once: true });
     }
-    
+
     return () => {
       window.removeEventListener('load', initChatWidget);
     };
   }, []);
-  
+
   if (!shouldLoad) return null;
-  
+
   return (
     <Suspense fallback={null}>
       <FloatingDock
-        onOpenChat={() => {}}
-        onOpenSupport={() => {}}
-        onOpenCart={() => {}}
+        onOpenChat={() => { }}
+        onOpenSupport={() => { }}
+        onOpenCart={() => { }}
         cartItemCount={cartState.itemCount}
       />
     </Suspense>
@@ -117,11 +124,11 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
       <DirectionProvider>
         <CartProvider>
-        <PromotionProvider>
-        <TooltipProvider>
-          {/* Global Unified Background */}
-          <div id="unified-bg" className="fixed inset-0 -z-50 pointer-events-none" />
-          <style>{`
+          <PromotionProvider>
+            <TooltipProvider>
+              {/* Global Unified Background */}
+              <div id="unified-bg" className="fixed inset-0 -z-50 pointer-events-none" />
+              <style>{`
             /* Unified bg uses tokens from index.css */
             #unified-bg::before{
               content: "";
@@ -137,45 +144,45 @@ const App = () => (
             }
           `}</style>
 
-          {/* Global toasters (defer until idle to avoid layout thrash) */}
-          <DeferredToasters />
-          <BrowserRouter>
-            <ScrollToTop />
-            <Suspense fallback={<RouteFallback />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/products/:slug" element={<ProductDetail />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/blog/:slug" element={<BlogPost />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/payment/callback" element={<PaymentCallback />} />
-                <Route path="/payment/success" element={<PaymentCallback />} />
-                <Route path="/order/confirmation" element={<OrderConfirmation />} />
-                <Route path="/policies/refund-replacement" element={<RefundPolicy />} />
-                <Route path="/support" element={<Support />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/faq" element={<Faq />} />
-                <Route path="/team/erfan" element={<Erfan />} />
-                <Route path="/team/amir" element={<Amir />} />
-                <Route path="/collections/:slug" element={<Collection />} />
-                {/* Studio excluded - deploy separately via 'npx sanity deploy' */}
-                <Route path="/admin/verify" element={<AdminVerify />} />
-                {/* Preview route for Sanity visual editing */}
-                <Route path="/preview" element={<Preview />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-          {/* Global Customer Support Widget - appears on all pages */}
-          <GlobalCustomerSupport />
-          {/* Visual Editing - only loads in preview mode */}
-          <AppVisualEditing />
-        </TooltipProvider>
-        </PromotionProvider>
+              {/* Global toasters (defer until idle to avoid layout thrash) */}
+              <DeferredToasters />
+              <BrowserRouter>
+                <ScrollToTop />
+                <Suspense fallback={<RouteFallback />}>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/products/:slug" element={<ProductDetail />} />
+                    <Route path="/blog" element={<Blog />} />
+                    <Route path="/blog/:slug" element={<BlogPost />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/payment/callback" element={<PaymentCallback />} />
+                    <Route path="/payment/success" element={<PaymentCallback />} />
+                    <Route path="/order/confirmation" element={<OrderConfirmation />} />
+                    <Route path="/policies/refund-replacement" element={<RefundPolicy />} />
+                    <Route path="/support" element={<Support />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/faq" element={<Faq />} />
+                    <Route path="/team/erfan" element={<Erfan />} />
+                    <Route path="/team/amir" element={<Amir />} />
+                    <Route path="/collections/:slug" element={<Collection />} />
+                    {/* Studio excluded - deploy separately via 'npx sanity deploy' */}
+                    <Route path="/admin/verify" element={<AdminVerify />} />
+                    {/* Preview route for Sanity visual editing */}
+                    <Route path="/preview" element={<Preview />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </BrowserRouter>
+              {/* Global Customer Support Widget - appears on all pages */}
+              <GlobalCustomerSupport />
+              {/* Visual Editing - only loads in preview mode */}
+              <AppVisualEditing />
+            </TooltipProvider>
+          </PromotionProvider>
         </CartProvider>
       </DirectionProvider>
   </QueryClientProvider>

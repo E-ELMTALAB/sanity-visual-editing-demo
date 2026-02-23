@@ -155,6 +155,57 @@ type HeroImage = { src: string; srcSet?: string };
 
 // Single hero component: starts with lightweight gradient; optionally overlays deferred image
 function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
+  // Dev-only: Diagnostic MutationObserver to identify flashing elements
+  useEffect(() => {
+    if (import.meta.env.DEV || import.meta.env.VITE_DEBUG_HERO_FLASH === 'true') {
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              const el = node as Element;
+              const heroText = el.querySelector?.('[data-hero-text]') || 
+                             (el.matches?.('[data-hero-text]') ? el : null) ||
+                             (el.closest?.('[data-hero-text]'));
+              
+              if (heroText) {
+                const textContent = heroText.textContent || '';
+                const selector = heroText.id 
+                  ? `#${heroText.id}` 
+                  : heroText.className 
+                    ? `.${heroText.className.split(' ')[0]}` 
+                    : heroText.tagName.toLowerCase();
+                
+                console.log('[HERO FLASH DEBUG] Hero text node detected:', {
+                  selector,
+                  textLength: textContent.length,
+                  textPreview: textContent.substring(0, 50),
+                  timestamp: performance.now(),
+                  node: heroText
+                });
+              }
+            }
+          });
+        });
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+
+      // Also mark Hero text elements visually in dev
+      setTimeout(() => {
+        const heroTextEls = document.querySelectorAll('[data-hero-text]');
+        heroTextEls.forEach((el) => {
+          (el as HTMLElement).style.outline = '2px solid red';
+          (el as HTMLElement).style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
+        });
+      }, 100);
+
+      return () => observer.disconnect();
+    }
+  }, []);
+
   return (
     <section 
       dir="rtl"
@@ -162,10 +213,12 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
       style={{
         maskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
         WebkitMaskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
+        backgroundColor: 'transparent !important',
+        backgroundImage: 'none !important',
+        background: 'transparent !important'
       }}
     >
-      {/* Static background placeholder - gradient only (counts as LCP, extremely cheap) */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
+      {/* Hero-specific background REMOVED - Hero now inherits body/page background */}
       {/* Deferred hero image overlays when ready */}
       {heroImage?.src && (
         <picture className="absolute inset-0 h-full w-full -z-10">
@@ -186,19 +239,32 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
         </picture>
       )}
       
-      {/* Overlay */}
-      <div className="absolute inset-0 -z-10 mix-blend-soft-light opacity-85 md:opacity-60 bg-gradient-to-br from-[#1E67C6]/60 via-transparent to-[#8B5CF6]/60" />
-      <div 
-        className="absolute inset-0 -z-10"
-        style={{ background: "radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%)" }} 
-      />
+      {/* Overlay layers REMOVED - Hero inherits body background, no custom backgrounds */}
 
       {/* Content - Fixed dimensions to prevent CLS */}
       <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-28 pb-16 lg:py-24">
-        <div className="flex items-center justify-center min-h-[70vh]">
+        <div className="flex items-center justify-center min-h-[70vh] relative">
+          {/* Safe overlay mask: covers Hero text area until stable paint, prevents flash */}
+          {/* This overlay is removed quickly (<100ms) and doesn't hide the LCP element */}
           <div 
+            id="hero-text-mask"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(180deg, hsl(218 45% 4%) 0%, hsl(229 60% 6%) 100%)',
+              pointerEvents: 'none',
+              zIndex: 20,
+              transition: 'opacity 0.1s ease-out'
+            }}
+          />
+          <div 
+            data-hero-text
             className="text-white text-center flex flex-col justify-center items-center max-w-3xl"
-            style={{ minHeight: '300px' }} // Fixed height to prevent CLS
+            style={{ 
+              minHeight: '300px', // Fixed height to prevent CLS
+              position: 'relative',
+              zIndex: 10
+            }}
           >
             <span className="inline-block rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs md:text-sm w-fit border border-white/20">
             بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
@@ -213,8 +279,58 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
           </div>
         </div>
       </div>
+      
+      {/* Remove overlay mask after stable paint - minimal JS, runs ASAP */}
+      <HeroMaskRemover />
     </section>
   );
+}
+
+// Minimal component to remove overlay mask after stable paint
+function HeroMaskRemover() {
+  useEffect(() => {
+    const removeMask = () => {
+      const mask = document.getElementById('hero-text-mask');
+      if (mask) {
+        mask.style.opacity = '0';
+        // Remove from DOM after fade to avoid any layout impact
+        setTimeout(() => {
+          mask.remove();
+        }, 150);
+      }
+    };
+
+    // Remove mask on earliest safe signal: fonts ready OR 2 frames after DOMContentLoaded
+    const ready = () => {
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(removeMask);
+          });
+        });
+      } else {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(removeMask);
+        });
+      }
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', ready);
+    } else {
+      ready();
+    }
+
+    // Safety: always remove after 100ms max
+    const timeout = setTimeout(removeMask, 100);
+    
+    return () => {
+      clearTimeout(timeout);
+      document.removeEventListener('DOMContentLoaded', ready);
+    };
+  }, []);
+
+  return null;
 }
 
 // Trust elements - static, no external deps
