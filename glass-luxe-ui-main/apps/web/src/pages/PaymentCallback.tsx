@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 import { verifyPayment } from "@/lib/medusa-cart";
 import { useCart } from "@/contexts/cart-context";
 import { Button } from "@/components/ui/button";

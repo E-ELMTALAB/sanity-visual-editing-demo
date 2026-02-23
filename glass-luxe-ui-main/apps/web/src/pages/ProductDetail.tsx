@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type CSSProperties } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 import { motion } from "framer-motion";
 import { ShoppingCart, Check, Truck, Shield, RefreshCw, ChevronRight } from "lucide-react";
 import { Header } from "@/components/Header";

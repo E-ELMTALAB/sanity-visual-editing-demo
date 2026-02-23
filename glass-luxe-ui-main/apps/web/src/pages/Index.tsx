@@ -1,6 +1,7 @@
 import { useState, lazy, Suspense, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "@/components/Helmet";
 import TrustBadges from "@/components/TrustBadges";
 import TestimonialsRow from "@/components/TestimonialsRow";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
@@ -198,6 +199,8 @@ const fallbackSeoContent = `
 const HERO_TITLE = "خرید اکانت ChatGPT";
 const HERO_SUBTITLE =
   "اکانت‌های قانونی ChatGPT با تحویل آنی، اتصال پایدار و پشتیبانی واقعی برای تجربه‌ای بدون دغدغه.";
+const HOMEPAGE_DEFAULT_TITLE = "SharifGPT | محصولات و خدمات هوش مصنوعی";
+const HOMEPAGE_DEFAULT_DESCRIPTION = "SharifGPT - ارائه محصولات و خدمات هوش مصنوعی";
 
 // Type for Sanity data
 interface SanityData {
@@ -397,28 +400,6 @@ function HeroGlow() {
 // Hero component: lightweight gradient background only, no image
 function HeroSection() {
   const navigate = useNavigate();
-
-  // Ensure prehero is removed if it still exists (fallback cleanup)
-  // EXPERIMENT C: Don't remove prehero immediately - let main.tsx handle it
-  useEffect(() => {
-    const experiment = import.meta.env.VITE_EXPERIMENT || 'baseline';
-
-    if (experiment === 'C' || experiment === 'c') {
-      // Don't remove prehero in Experiment C - let main.tsx handle it after 5s
-      console.log('[EXPERIMENT C] React hero mounted, prehero will be removed by main.tsx after 5s or interaction');
-      return;
-    }
-
-    const prehero = document.getElementById("prehero");
-    if (prehero && prehero.parentNode) {
-      if (import.meta.env.DEV || import.meta.env.VITE_DEBUG_LCP === 'true') {
-        console.log('[LCP Debug] React hero mounted, removing prehero (fallback):', {
-          timestamp: performance.now()
-        });
-      }
-      prehero.remove();
-    }
-  }, []);
 
   // Animation is now handled via CSS keyframes (heroGlowFloat) - no JS needed
   // This respects prefers-reduced-motion automatically via CSS media query
@@ -835,110 +816,6 @@ const Index = () => {
     }
   }, []);
 
-  // Set title and description from Sanity SEO data (directly in document head, no Helmet)
-  useEffect(() => {
-    if (!sanityData?.seo) return;
-
-    const seo = sanityData.seo;
-
-    // Update document title
-    if (seo.metaTitle) {
-      document.title = seo.metaTitle;
-    }
-
-    // Update meta description
-    let metaDescription = document.querySelector('meta[name="description"]');
-    if (!metaDescription) {
-      metaDescription = document.createElement('meta');
-      metaDescription.setAttribute('name', 'description');
-      document.head.appendChild(metaDescription);
-    }
-    if (seo.metaDescription) {
-      metaDescription.setAttribute('content', seo.metaDescription);
-    }
-
-    // Update Open Graph title
-    let ogTitle = document.querySelector('meta[property="og:title"]');
-    if (!ogTitle) {
-      ogTitle = document.createElement('meta');
-      ogTitle.setAttribute('property', 'og:title');
-      document.head.appendChild(ogTitle);
-    }
-    if (seo.openGraphTitle || seo.metaTitle) {
-      ogTitle.setAttribute('content', seo.openGraphTitle || seo.metaTitle || '');
-    }
-
-    // Update Open Graph description
-    let ogDescription = document.querySelector('meta[property="og:description"]');
-    if (!ogDescription) {
-      ogDescription = document.createElement('meta');
-      ogDescription.setAttribute('property', 'og:description');
-      document.head.appendChild(ogDescription);
-    }
-    if (seo.openGraphDescription || seo.metaDescription) {
-      ogDescription.setAttribute('content', seo.openGraphDescription || seo.metaDescription || '');
-    }
-
-    // Update canonical URL
-    if (seo.canonicalUrl) {
-      let canonical = document.querySelector('link[rel="canonical"]');
-      if (!canonical) {
-        canonical = document.createElement('link');
-        canonical.setAttribute('rel', 'canonical');
-        document.head.appendChild(canonical);
-      }
-      canonical.setAttribute('href', seo.canonicalUrl);
-    }
-
-    // Update robots meta - but ensure homepage always allows indexing
-    // Only do DOM manipulation if robotsMeta exists and doesn't contain noindex
-    // Otherwise, rely on the hardcoded meta tag in index.html (performance optimization)
-    if (seo.robotsMeta) {
-      const robotsMetaLower = seo.robotsMeta.toLowerCase();
-      // Skip if contains "noindex" - homepage must always be indexable
-      if (!robotsMetaLower.includes('noindex')) {
-        let robots = document.querySelector('meta[name="robots"]');
-        if (robots) {
-          // Only update if content is different (avoid unnecessary DOM writes)
-          if (robots.getAttribute('content') !== seo.robotsMeta) {
-            robots.setAttribute('content', seo.robotsMeta);
-          }
-        } else {
-          robots = document.createElement('meta');
-          robots.setAttribute('name', 'robots');
-          robots.setAttribute('content', seo.robotsMeta);
-          document.head.appendChild(robots);
-        }
-      }
-      // If robotsMeta contains noindex, do nothing - let the hardcoded index.html tag handle it
-    }
-    // If no robotsMeta, do nothing - the hardcoded meta tag in index.html is sufficient
-
-    // Update Open Graph image
-    if (seo.openGraphImage?.asset) {
-      const ogImageUrl = getImageUrl(seo.openGraphImage, 1200);
-
-      let ogImage = document.querySelector('meta[property="og:image"]');
-      if (!ogImage) {
-        ogImage = document.createElement('meta');
-        ogImage.setAttribute('property', 'og:image');
-        document.head.appendChild(ogImage);
-      }
-      ogImage.setAttribute('content', ogImageUrl);
-    }
-
-    // Add structured data if available
-    if (seo.structuredData) {
-      let structuredDataScript = document.querySelector('script[type="application/ld+json"]');
-      if (!structuredDataScript) {
-        structuredDataScript = document.createElement('script');
-        structuredDataScript.setAttribute('type', 'application/ld+json');
-        document.head.appendChild(structuredDataScript);
-      }
-      structuredDataScript.textContent = seo.structuredData;
-    }
-  }, [sanityData?.seo]);
-
   // Intersection Observer for Footer
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -1220,6 +1097,31 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative">
+      <Helmet>
+        <title>{sanityData?.seo?.metaTitle || HOMEPAGE_DEFAULT_TITLE}</title>
+        <meta
+          name="description"
+          content={sanityData?.seo?.metaDescription || HOMEPAGE_DEFAULT_DESCRIPTION}
+        />
+        <meta
+          property="og:title"
+          content={sanityData?.seo?.openGraphTitle || sanityData?.seo?.metaTitle || HOMEPAGE_DEFAULT_TITLE}
+        />
+        <meta
+          property="og:description"
+          content={sanityData?.seo?.openGraphDescription || sanityData?.seo?.metaDescription || HOMEPAGE_DEFAULT_DESCRIPTION}
+        />
+        <meta
+          property="og:image"
+          content={sanityData?.seo?.openGraphImage?.asset ? getImageUrl(sanityData.seo.openGraphImage, 1200) : "/favicon.png"}
+        />
+        <meta name="robots" content="index,follow" />
+        <link rel="canonical" href={sanityData?.seo?.canonicalUrl || "https://sharifgpt.com/"} />
+        {sanityData?.seo?.structuredData ? (
+          <script type="application/ld+json">{sanityData.seo.structuredData}</script>
+        ) : null}
+      </Helmet>
+
       {/* Header - lightweight, loads immediately */}
       <Header onSearch={handleSearch} megaItems={megaItems} />
 

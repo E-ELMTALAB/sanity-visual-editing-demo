@@ -5,7 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer/Footer";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 
 const Erfan = () => {
   const springTransition: Transition = {

@@ -490,30 +490,10 @@ async function fetchHomepageData() {
 
     await saveToCache('homepage.json', homeData);
 
-    // Update index.html with SEO data from Sanity cache (BEFORE build)
-    // This ensures Google crawlers see correct meta tags in static HTML
-    if ((homeData as any)?.seo) {
-      console.log('\nUpdating index.html with SEO data from Sanity cache...');
-      console.log('   - Meta Title:', (homeData as any).seo.metaTitle || 'NOT SET in Sanity');
-      console.log('   - Meta Description:', (homeData as any).seo.metaDescription || 'NOT SET in Sanity');
-      console.log('   - Open Graph Title:', (homeData as any).seo.openGraphTitle || (homeData as any).seo.metaTitle || 'NOT SET in Sanity');
-      console.log('   - Open Graph Description:', (homeData as any).seo.openGraphDescription || (homeData as any).seo.metaDescription || 'NOT SET in Sanity');
-      await updateIndexHtmlWithSeo((homeData as any).seo);
-    } else {
-      console.warn('\nNo SEO data found in homepage data from Sanity');
-      console.warn('   index.html will NOT be updated - meta tags will remain as hardcoded values');
-      console.warn('   Please ensure SEO fields are set in Sanity Studio -> Home -> SEO tab');
-    }
-
-    // Update hero image preload link in index.html (BEFORE build)
-    // This ensures LCP image is discoverable in initial document
-    if (Array.isArray((homeData as any)?.heroSlides) && (homeData as any).heroSlides.length > 0) {
-      console.log('\nUpdating hero image preload link in index.html...');
-      await updateHeroImagePreload((homeData as any).heroSlides);
-    } else {
-      console.warn('\nNo hero slides found in homepage data');
-      console.warn('   Hero image preload will use fallback image from index.html');
-    }
+    // IMPORTANT:
+    // Keep index.html route-neutral for SPA multi-route crawler correctness.
+    // Do not inject homepage-specific SEO or hero preload into shared shell HTML.
+    console.log('\nSkipping shared index.html SEO/hero injection (route-neutral shell mode)');
 
     console.log('\nFetching featured products...');
     const featuredProducts = await fetchFromSanity(client, featuredProductsQuery);

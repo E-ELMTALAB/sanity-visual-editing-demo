@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 import heroBg from "@/assets/hero-ai-cubes.png";
 
 interface HeroSlide {

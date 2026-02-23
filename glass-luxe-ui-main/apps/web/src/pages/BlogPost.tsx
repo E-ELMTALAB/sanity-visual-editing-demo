@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 import { motion } from "framer-motion";
 import { Clock, Facebook, Twitter, Linkedin, Link2, ChevronLeft, User } from "lucide-react";
 import { Header } from "@/components/Header";

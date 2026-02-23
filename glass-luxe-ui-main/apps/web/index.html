@@ -11,10 +11,6 @@
     <!-- Preload critical font -->
     <link rel="preload" href="/font/Vazirmatn-VariableFont_wght.woff2" as="font" type="font/woff2" crossorigin />
     
-    <!-- Preload hero image (fallback) - ensures LCP image is discoverable in initial document -->
-    <!-- This will be replaced with Sanity hero image URL at build time if available -->
-    <link rel="preload" href="/assets/hero-ai-cubes.png" as="image" fetchpriority="high" data-hero-preload="true" />
-    
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon.png" />
@@ -30,32 +26,6 @@
       @font-face{font-family:"Vazirmatn";src:url("/font/Vazirmatn-VariableFont_wght.woff2") format("woff2");font-weight:100 900;font-display:swap}
       /* Hero placeholder for instant LCP */
       .hero-placeholder{min-height:92vh;background:#060914}
-
-      /* Static prehero - minimal LCP image rendered before React mounts */
-      #prehero {
-        position: relative;
-        min-height: 100vh;
-        width: 100%;
-        overflow: hidden;
-        z-index: 0;
-      }
-
-      #prehero-img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: 20% 50%;
-        display: block;
-      }
-
-      #prehero .overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.2);
-        pointer-events: none;
-      }
     </style>
 
     <!-- Preload runtime-injected styles as soon as they appear to reduce render-blocking -->
@@ -102,12 +72,12 @@
     </script>
     <!-- End Google Tag Manager -->
 
-    <title>SharifGPT - محصولات و خدمات هوش مصنوعی</title>
-    <meta name="description" content="SharifGPT - ارائه دهنده محصولات و خدمات هوش مصنوعی" />
+    <title>SharifGPT | محصولات و خدمات هوش مصنوعی</title>
+    <meta name="description" content="SharifGPT - ارائه محصولات و خدمات هوش مصنوعی" />
     <meta name="author" content="SharifGPT" />
 
-    <meta property="og:title" content="SharifGPT - محصولات و خدمات هوش مصنوعی" />
-    <meta property="og:description" content="SharifGPT - ارائه دهنده محصولات و خدمات هوش مصنوعی" />
+    <meta property="og:title" content="SharifGPT | محصولات و خدمات هوش مصنوعی" />
+    <meta property="og:description" content="SharifGPT - ارائه محصولات و خدمات هوش مصنوعی" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/favicon.png" />
 
@@ -116,35 +86,10 @@
     <meta name="twitter:image" content="/favicon.png" />
     
     <!-- Robots meta tag - explicitly allow indexing -->
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index,follow" />
   </head>
 
   <body>
-    <!-- EXPERIMENT C: Real pre-React hero - stays visible until after LCP window (5s+) -->
-    <div id="prehero" style="position: relative; min-height: 90vh; width: 100%; overflow: hidden; z-index: 0;">
-      <img
-        id="prehero-img"
-        data-lcp-hero="true"
-        src="/assets/hero-ai-cubes.png"
-        alt="Hero background"
-        fetchpriority="high"
-        decoding="async"
-        loading="eager"
-        width="1920"
-        height="1080"
-        style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 20% 50%; display: block;"
-      />
-      <div class="overlay" style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.2); pointer-events: none;" aria-hidden="true"></div>
-      
-      <!-- Hero content overlay -->
-      <div style="position: relative; z-index: 10; max-width: 1400px; margin: 0 auto; padding: 144px 16px 64px; display: flex; align-items: center; justify-content: center; min-height: 50vh;">
-        <div style="text-align: center; color: white; max-width: 768px;">
-          <h1 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 1.5rem;">خرید اکانت ChatGPT</h1>
-          <p style="font-size: 1.125rem; opacity: 0.9; margin-bottom: 2rem;">اکانت‌های قانونی ChatGPT با تحویل آنی، اتصال پایدار و پشتیبانی واقعی برای تجربه‌ای بدون دغدغه.</p>
-        </div>
-      </div>
-    </div>
-
     <!-- Google Tag Manager (noscript) -->
     <noscript>
       <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PW97M4XV"

@@ -4,11 +4,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { HelmetProvider } from "react-helmet-async";
 import { DirectionProvider } from "@/contexts/DirectionContext";
 import { CartProvider, useCart } from "@/contexts/cart-context";
 import { PromotionProvider } from "@/contexts/promotion-context";
 import { ScrollToTop } from "./components/ScrollToTop";
+import Index from "./pages/Index";
 
 // Visual Editing - only loaded when in preview mode
 const AppVisualEditing = lazy(() => import("./components/visual-editing/VisualEditing"));
@@ -16,7 +16,6 @@ const AppVisualEditing = lazy(() => import("./components/visual-editing/VisualEd
 // Global Customer Support Widget - lazy loaded
 const FloatingDock = lazy(() => import("./components/FloatingDock/FloatingDock").then((m) => ({ default: m.FloatingDock })));
 
-const Index = lazy(() => import("./pages/Index"));
 const Products = lazy(() => import("./pages/Products"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const Blog = lazy(() => import("./pages/Blog"));
@@ -64,8 +63,11 @@ const DeferredToasters = () => {
 };
 
 const RouteFallback = () => (
-  <div className="min-h-screen w-full flex items-center justify-center text-white/80">
-    در حال بارگذاری...
+  <div
+    className="min-h-screen w-full flex items-center justify-center"
+    aria-hidden="true"
+  >
+    <div className="h-8 w-8 rounded-full border-2 border-white/40 border-t-transparent animate-spin" />
   </div>
 );
 
@@ -113,7 +115,6 @@ const GlobalCustomerSupport = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <HelmetProvider>
       <DirectionProvider>
         <CartProvider>
         <PromotionProvider>
@@ -177,7 +178,6 @@ const App = () => (
         </PromotionProvider>
         </CartProvider>
       </DirectionProvider>
-    </HelmetProvider>
   </QueryClientProvider>
 );
 
