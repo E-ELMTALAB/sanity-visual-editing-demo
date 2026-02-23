@@ -918,7 +918,12 @@ const Index = () => {
     };
 
     // Track hero image src assignment and visibility
+    // Guard against infinite RAF loops when no hero image is rendered.
+    let rafId: number | null = null;
+    const maxChecks = 120; // ~2s at 60fps
+    let checks = 0;
     const checkHeroImage = () => {
+      checks += 1;
       const heroImg = document.querySelector('img[data-lcp-hero]') as HTMLImageElement | null;
 
       if (heroImg) {
@@ -967,9 +972,12 @@ const Index = () => {
         }
       }
 
-      // Keep checking until we have all metrics or timeout
-      if (!metrics.heroLoadTime || !metrics.heroVisibleTime) {
-        requestAnimationFrame(checkHeroImage);
+      // Keep checking until we have all metrics, but stop after max checks
+      // so pages without data-lcp-hero don't run forever.
+      if ((!metrics.heroLoadTime || !metrics.heroVisibleTime) && checks < maxChecks) {
+        rafId = requestAnimationFrame(checkHeroImage);
+      } else if (!heroImg && checks >= maxChecks) {
+        console.log('[LCP INSTRUMENT] No hero image found after max checks, stopping observer loop');
       }
     };
 
@@ -1012,7 +1020,12 @@ const Index = () => {
 
       observer.observe({ type: 'largest-contentful-paint', buffered: true });
 
-      return () => observer.disconnect();
+      return () => {
+        observer.disconnect();
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+        }
+      };
     } catch (error) {
       console.warn('[LCP INSTRUMENT] PerformanceObserver not supported:', error);
     }
