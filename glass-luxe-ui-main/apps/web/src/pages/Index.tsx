@@ -373,16 +373,6 @@ function HeroSection() {
         }}
       />
 
-      {/* Bottom fade overlay to blend with page background (stronger, multi-stop) */}
-      <div 
-        className="absolute bottom-0 left-0 right-0 pointer-events-none"
-        style={{ 
-          height: '280px',
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(124,58,237,0.2) 30%, rgba(10,15,39,0.8) 70%, hsl(var(--bg-base-bot)) 100%)',
-          zIndex: 1
-        }}
-      />
-
       {/* Content - Redesigned with proper spacing and balanced typography - z-10 ensures it's above background layers */}
       <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-36 sm:pt-44 md:pt-52 pb-16 lg:pb-24">
         <div className="flex items-center justify-center min-h-[50vh] sm:min-h-[55vh]">
