@@ -193,12 +193,12 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
         style={{ background: "radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%)" }} 
       />
 
-      {/* Bottom fade overlay to blend with page background */}
+      {/* Bottom fade overlay to blend with page background (stronger, multi-stop) */}
       <div 
         className="absolute bottom-0 left-0 right-0 pointer-events-none"
         style={{ 
-          height: '120px',
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, #0A0F27 100%)',
+          height: '260px',
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(124,58,237,0.15) 35%, rgba(10,15,39,0.7) 75%, hsl(var(--bg-base-bot)) 100%)',
           zIndex: 0
         }}
       />

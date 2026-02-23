@@ -291,12 +291,12 @@ function HeroSection() {
         }}
       />
 
-      {/* Bottom fade overlay to blend with page background */}
+      {/* Bottom fade overlay to blend with page background (stronger, multi-stop) */}
       <div 
         className="absolute bottom-0 left-0 right-0 pointer-events-none"
         style={{ 
-          height: '120px',
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, #0A0F27 100%)',
+          height: '260px',
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(124,58,237,0.15) 35%, rgba(10,15,39,0.7) 75%, hsl(var(--bg-base-bot)) 100%)',
           zIndex: 0
         }}
       />

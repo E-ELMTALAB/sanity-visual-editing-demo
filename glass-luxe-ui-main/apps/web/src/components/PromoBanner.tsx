@@ -102,6 +102,15 @@ export function PromoBanner({ className }: PromoBannerProps) {
             backgroundPosition: "center",
           }}
         >
+          {/* Top fade overlay to blend with page background */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0"
+            style={{
+              height: '80px',
+              background: 'linear-gradient(to bottom, hsl(var(--bg-base-bot)) 0%, rgba(10,15,39,0) 100%)',
+              zIndex: 0,
+            }}
+          />
           {/* Animated accent glow */}
           <motion.div
             aria-hidden="true"
