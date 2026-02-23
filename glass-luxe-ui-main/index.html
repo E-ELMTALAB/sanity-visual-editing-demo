@@ -29,7 +29,42 @@
       @font-face{font-family:"Vazirmatn";src:url("/font/Vazirmatn-VariableFont_wght.woff2") format("woff2");font-weight:100 900;font-display:optional}
       /* Hero placeholder for instant LCP */
       .hero-placeholder{min-height:92vh;background:#060914}
+      
+      /* Prevent Hero text flash: hide until CSS is ready */
+      /* This targets the Hero text container specifically */
+      html:not(.css-ready) [data-hero-text] {
+        visibility: hidden;
+        opacity: 0;
+      }
+      html.css-ready [data-hero-text] {
+        visibility: visible;
+        opacity: 1;
+        transition: opacity 0.1s ease-in;
+      }
     </style>
+    
+    <!-- Mark CSS as ready after first paint to prevent FOUC -->
+    <script>
+      (function() {
+        // Wait for first paint, then mark CSS as ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function() {
+            requestAnimationFrame(function() {
+              requestAnimationFrame(function() {
+                document.documentElement.classList.add('css-ready');
+              });
+            });
+          });
+        } else {
+          // DOM already loaded, mark immediately after next frame
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+              document.documentElement.classList.add('css-ready');
+            });
+          });
+        }
+      })();
+    </script>
 
     <!-- Preload runtime-injected styles as soon as they appear to reduce render-blocking -->
     <script>

@@ -155,41 +155,6 @@ type HeroImage = { src: string; srcSet?: string };
 
 // Single hero component: starts with lightweight gradient; optionally overlays deferred image
 function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
-  // Prevent text flash: wait for fonts/styles to be ready before showing Hero text
-  const [textReady, setTextReady] = useState(false);
-
-  useEffect(() => {
-    // Prevent text flash: wait for fonts/styles to be ready before showing Hero text
-    // This is minimal delay (1-2 frames max) and won't affect LCP
-    let timeoutId: ReturnType<typeof setTimeout>;
-    
-    const showText = () => {
-      setTextReady(true);
-    };
-
-    // Check if fonts are loaded (or ready API available)
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => {
-        // Wait one more frame to ensure CSS is fully applied
-        requestAnimationFrame(() => {
-          showText();
-        });
-      });
-    } else {
-      // Fallback: wait 1 frame for CSS to apply (minimal delay)
-      requestAnimationFrame(() => {
-        showText();
-      });
-    }
-
-    // Safety timeout: always show text after 100ms max (prevents permanent hiding)
-    timeoutId = setTimeout(showText, 100);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, []);
-
   return (
     <section 
       dir="rtl"
@@ -229,11 +194,10 @@ function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
       <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-28 pb-16 lg:py-24">
         <div className="flex items-center justify-center min-h-[70vh]">
           <div 
+            data-hero-text
             className="text-white text-center flex flex-col justify-center items-center max-w-3xl"
             style={{ 
-              minHeight: '300px', // Fixed height to prevent CLS
-              opacity: textReady ? 1 : 0, // Prevent flash until ready
-              transition: textReady ? 'opacity 0.15s ease-in' : 'none' // Smooth fade-in only when showing
+              minHeight: '300px' // Fixed height to prevent CLS
             }}
           >
             <span className="inline-block rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs md:text-sm w-fit border border-white/20">
