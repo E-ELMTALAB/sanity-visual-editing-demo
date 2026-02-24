@@ -380,17 +380,6 @@ function buildRouteContent(route: string, cache: CacheModule): string {
   return `<section id="prerender-content" dir="rtl"><h1>${escapeHtml(heading)}</h1></section>`;
 }
 
-function wrapCrawlerOnlyContent(content: string): string {
-  return `
-<div
-  id="prerender-crawler-content"
-  aria-hidden="true"
-  style="position:absolute!important;left:-99999px!important;top:auto!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(1px,1px,1px,1px)!important;clip-path:inset(50%)!important;white-space:nowrap!important;pointer-events:none!important;"
->
-  ${content}
-</div>`.trim();
-}
-
 function setTagContent(html: string, matcher: RegExp, replacement: string): string {
   if (matcher.test(html)) {
     return html.replace(matcher, replacement);
@@ -496,7 +485,7 @@ async function main() {
   for (const route of routes) {
     try {
       const head = getPageHead(route, cache);
-      const prerenderContent = wrapCrawlerOnlyContent(buildRouteContent(route, cache));
+      const prerenderContent = buildRouteContent(route, cache);
       const htmlWithHead = injectHead(baseHtml, head);
       const htmlWithContent = htmlWithHead.replace(
         /<div id="root"><\/div>/,
