@@ -25,6 +25,7 @@ import {
   collectionBySlugQuery,
   promoBannerQuery,
   testimonialsQuery,
+  pageBySlugQuery,
 } from '../src/lib/sanity.queries';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -74,13 +75,17 @@ async function fetchViaProxy<T>(query: string, params?: Record<string, any>): Pr
     throw new Error(`[BUILD] Proxy request failed (${response.status}): ${errorText}`);
   }
 
-  const payload = await response.json();
+  const payload = (await response.json()) as {
+    success?: boolean;
+    error?: string;
+    data?: T | null;
+  };
 
   if (!payload?.success) {
     throw new Error(payload?.error || '[BUILD] Proxy response missing success flag');
   }
 
-  return (payload.data ?? null) as T | null;
+  return payload.data ?? null;
 }
 
 /**
@@ -101,7 +106,10 @@ async function fetchFromSanity<T>(
   }
   
   // Direct fetch (works when not behind filtering)
-  return await client.fetch<T>(query, params);
+  if (params) {
+    return await client.fetch<T>(query, params);
+  }
+  return await client.fetch<T>(query);
 }
 
 async function ensureCacheDir() {
@@ -644,6 +652,22 @@ async function fetchHomepageData() {
     }
     await saveToCache('all-posts-list.json', allPostsList);
 
+    // Fetch page-level SEO documents used by listing pages (pageBySlugQuery)
+    console.log('\nFetching page-level SEO documents...');
+    const pageSlugs = ['products', 'blog'];
+    const pagesMap: Record<string, any> = {};
+    for (const slug of pageSlugs) {
+      try {
+        const pageDoc = await fetchFromSanity(client, pageBySlugQuery, { slug });
+        pagesMap[slug] = pageDoc;
+        console.log(`   page "${slug}":`, pageDoc ? 'found' : 'missing');
+      } catch (error) {
+        console.error(`   Error fetching page "${slug}":`, error);
+        pagesMap[slug] = null;
+      }
+    }
+    await saveToCache('pages-map.json', pagesMap);
+
     // Fetch full detail for each blog post (for detail pages)
     console.log('\nFetching full details for blog post detail pages...');
     const postsMap: Record<string, any> = {};
@@ -734,7 +758,7 @@ async function fetchHomepageData() {
 
     // Fetch promo banner
     console.log('\nFetching promo banner...');
-    const promoBanner = await fetchFromSanity(client, promoBannerQuery);
+    const promoBanner = await fetchFromSanity<any>(client, promoBannerQuery);
     console.log("Fetched promoBanner:", promoBanner?._id || 'null');
     if (promoBanner) {
       console.log(`   - Title: ${(promoBanner as any).title || 'N/A'}`);
@@ -810,6 +834,8 @@ export const promoBannerCache = ${JSON.stringify(promoBanner, null, 2)} as const
 
 export const testimonialsCache = ${JSON.stringify(testimonials, null, 2)} as const;
 
+export const pagesCache = ${JSON.stringify(pagesMap, null, 2)} as const;
+
 export const cacheMetadata = ${JSON.stringify(metadata, null, 2)} as const;
 `;
     await writeFile(join(CACHE_DIR, 'index.ts'), indexContent, 'utf-8');
@@ -832,6 +858,7 @@ export const cacheMetadata = ${JSON.stringify(metadata, null, 2)} as const;
     console.log(`   - Collections (detail pages): ${Object.keys(collectionsMap).length}`);
     console.log(`   - Promo Banner: ${promoBanner ? 'YES' : 'NO'}`);
     console.log(`   - Testimonials: ${(testimonials as any[])?.length || 0}`);
+    console.log(`   - Pages SEO docs: ${Object.keys(pagesMap).length}`);
     console.log(`\nCache location: ${CACHE_DIR}`);
   } catch (error) {
     console.error('\nError fetching homepage data:', error);

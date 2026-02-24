@@ -3,6 +3,7 @@
 import { createClient } from '@sanity/client'
 import { projectId, dataset, apiVersion } from './sanity.config'
 import { getCachedData, isCacheAvailable } from './sanity-cache'
+import { SANITY_CACHE_MODE } from './sanity-cache-mode'
 import { 
   PROXY_ENABLED, 
   UNIFIED_PROXY_URL, 
@@ -26,14 +27,11 @@ const client = createClient({
 const proxyEndpoint = PROXY_ENABLED ? UNIFIED_PROXY_URL : ''
 const shouldUseProxy = PROXY_ENABLED && Boolean(proxyEndpoint)
 
-// CACHE-ONLY MODE: Set VITE_SANITY_CACHE_ONLY=true to block all API calls (for testing)
-// This will throw an error if cache miss occurs, helping verify no API calls are made
-const CACHE_ONLY_MODE = import.meta.env.VITE_SANITY_CACHE_ONLY === 'true' || import.meta.env.VITE_SANITY_CACHE_ONLY === '1'
+const CACHE_ONLY_MODE = SANITY_CACHE_MODE === 'cache-only'
+const API_ONLY_MODE = SANITY_CACHE_MODE === 'api-only'
+const CACHE_FIRST_MODE = SANITY_CACHE_MODE === 'cache-first'
 
-if (CACHE_ONLY_MODE) {
-  console.warn('[SANITY] CACHE-ONLY MODE ENABLED - All API calls will be blocked!')
-  console.warn('[SANITY] This mode is for testing. Set VITE_SANITY_CACHE_ONLY=false to disable.')
-}
+console.info(`[SANITY] Runtime cache mode: ${SANITY_CACHE_MODE}`)
 
 let hasLoggedClientOrigin = false
 let hasLoggedProxyOrigin = false
@@ -112,8 +110,8 @@ export async function fetchFromSanity<T>(query: string, params?: Record<string, 
     return null
   }
 
-  // In production, try to use cached data first
-  if (import.meta.env.PROD || CACHE_ONLY_MODE) {
+  // Cache path (cache-only and cache-first)
+  if (!API_ONLY_MODE && (CACHE_ONLY_MODE || CACHE_FIRST_MODE || import.meta.env.PROD)) {
     const cached = await getCachedData<T>(query, params)
     if (cached !== null) {
       // Cache hit - logCacheUsage already called in getCachedData
@@ -134,12 +132,11 @@ export async function fetchFromSanity<T>(query: string, params?: Record<string, 
                      'unknown query'
     
     if (CACHE_ONLY_MODE) {
-      // In cache-only mode, throw error instead of falling back to API
       if (!hasLoggedCacheOnlyMode) {
         console.error('[SANITY] CACHE-ONLY MODE: API call blocked!')
         console.error(`[SANITY] Query: ${queryName}`)
         console.error('[SANITY] This error indicates a cache miss. Check that:')
-        console.error('   1. Build script ran successfully (npm run fetch:homepage)')
+        console.error('   1. Build script ran successfully and generated cache json files')
         console.error('   2. Cache files exist in src/data/sanity-cache/')
         console.error('   3. Query matches cache logic in sanity-cache.ts')
         hasLoggedCacheOnlyMode = true
@@ -164,7 +161,7 @@ export async function fetchFromSanity<T>(query: string, params?: Record<string, 
     throw new Error(`[SANITY] CACHE-ONLY MODE: API call blocked for ${queryName}. This should not happen if cache is working.`)
   }
 
-  // Always use proxy when enabled (for Iran filtering bypass)
+  // In cache-first/api-only modes, API/proxy path is allowed
   if (shouldUseProxy) {
     try {
       if (!hasLoggedProxyOrigin) {
