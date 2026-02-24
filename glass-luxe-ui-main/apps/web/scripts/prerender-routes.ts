@@ -307,7 +307,7 @@ function buildRouteContent(route: string, cache: CacheModule): string {
       .join("");
 
     return `
-<section id="prerender-content" dir="rtl">
+<section id="prerender-content" dir="rtl" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
   <h1>${escapeHtml(heroTitle)}</h1>
   <p>${escapeHtml(heroSubtitle)}</p>
   ${seoText ? `<p>${escapeHtml(seoText)}</p>` : ""}
