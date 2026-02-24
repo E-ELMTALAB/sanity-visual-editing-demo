@@ -1,5 +1,4 @@
-import { mkdir, readFile, writeFile, stat } from "fs/promises";
-import { createServer } from "http";
+import { mkdir, readFile, writeFile } from "fs/promises";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -8,6 +7,7 @@ const __dirname = dirname(__filename);
 const PROJECT_ROOT = join(__dirname, "..");
 const DIST_DIR = join(PROJECT_ROOT, "dist");
 const MANIFEST_PATH = join(PROJECT_ROOT, "src/data/prerender/routes.json");
+const DIST_INDEX = join(DIST_DIR, "index.html");
 const REPORT_PATH = join(PROJECT_ROOT, "src/data/prerender/prerender-report.json");
 
 type RouteManifest = {
@@ -25,69 +25,75 @@ type PageHead = {
 };
 
 type ProductLike = {
+  _id?: string;
   name?: string;
   title?: string;
   slug?: string | { current?: string };
-  shortDescription?: string;
-  description?: string;
+  shortDescription?: unknown;
+  description?: unknown;
+  category?: unknown;
   seo?: {
-    metaTitle?: string;
-    metaDescription?: string;
-    canonicalUrl?: string;
-    robotsMeta?: string;
-    openGraphTitle?: string;
-    openGraphDescription?: string;
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    canonicalUrl?: string | null;
+    robotsMeta?: string | null;
+    openGraphTitle?: string | null;
+    openGraphDescription?: string | null;
     openGraphImage?: unknown;
-    structuredData?: string;
+    structuredData?: string | null;
   };
 };
 
 type PostLike = {
+  _id?: string;
   title?: string;
   slug?: string | { current?: string };
-  excerpt?: string;
+  excerpt?: unknown;
   seo?: {
-    metaTitle?: string;
-    metaDescription?: string;
-    canonicalUrl?: string;
-    robotsMeta?: string;
-    openGraphTitle?: string;
-    openGraphDescription?: string;
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    canonicalUrl?: string | null;
+    robotsMeta?: string | null;
+    openGraphTitle?: string | null;
+    openGraphDescription?: string | null;
     openGraphImage?: unknown;
-    structuredData?: string;
+    structuredData?: string | null;
   };
 };
 
 type CollectionLike = {
+  _id?: string;
   title?: string;
   slug?: string | { current?: string };
-  description?: string;
+  description?: unknown;
   seo?: {
-    metaTitle?: string;
-    metaDescription?: string;
-    canonicalUrl?: string;
-    robotsMeta?: string;
-    openGraphTitle?: string;
-    openGraphDescription?: string;
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    canonicalUrl?: string | null;
+    robotsMeta?: string | null;
+    openGraphTitle?: string | null;
+    openGraphDescription?: string | null;
     openGraphImage?: unknown;
-    structuredData?: string;
+    structuredData?: string | null;
   };
 };
 
 type CacheModule = {
   homepageCache?: {
+    seoContent?: string;
+    bestSellerProducts?: readonly ProductLike[];
     seo?: {
-      metaTitle?: string;
-      metaDescription?: string;
-      canonicalUrl?: string;
-      robotsMeta?: string;
-      openGraphTitle?: string;
-      openGraphDescription?: string;
+      metaTitle?: string | null;
+      metaDescription?: string | null;
+      canonicalUrl?: string | null;
+      robotsMeta?: string | null;
+      openGraphTitle?: string | null;
+      openGraphDescription?: string | null;
       openGraphImage?: unknown;
-      structuredData?: string;
+      structuredData?: string | null;
     };
   };
-  allProductsListCache?: ProductLike[];
+  allProductsListCache?: readonly ProductLike[];
   productsCache?: Record<string, ProductLike>;
   postsCache?: Record<string, PostLike>;
   collectionsCache?: Record<string, CollectionLike>;
@@ -99,10 +105,6 @@ function normalizeRoute(route: string): string {
   const prefixed = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
   const clean = prefixed.replace(/\/+$/g, "");
   return clean || "/";
-}
-
-function ensureTrailingSlash(route: string): string {
-  return route === "/" ? "/" : `${route}/`;
 }
 
 function normalizeSlug(value: unknown): string | null {
@@ -201,8 +203,8 @@ function getPageHead(route: string, cache: CacheModule): PageHead {
     const seo = source?.seo;
     const titleBase = source?.title || source?.name || "محصول";
     const descBase =
-      source?.shortDescription ||
-      source?.description ||
+      extractTextFromPortable(source?.shortDescription) ||
+      extractTextFromPortable(source?.description) ||
       "جزئیات محصول، ویژگی‌ها و شرایط خرید در SharifGPT";
 
     return {
@@ -221,7 +223,7 @@ function getPageHead(route: string, cache: CacheModule): PageHead {
     const post = cache.postsCache?.[slug];
     const seo = post?.seo;
     const titleBase = post?.title || "مقاله";
-    const descBase = post?.excerpt || "مطلبی از مجله SharifGPT";
+    const descBase = extractTextFromPortable(post?.excerpt) || "مطلبی از مجله SharifGPT";
 
     return {
       title: seo?.metaTitle || `${titleBase} | SharifGPT`,
@@ -239,7 +241,7 @@ function getPageHead(route: string, cache: CacheModule): PageHead {
     const collection = cache.collectionsCache?.[slug];
     const seo = collection?.seo;
     const titleBase = collection?.title || "کلکسیون";
-    const descBase = collection?.description || "کلکسیون محصولات در SharifGPT";
+    const descBase = extractTextFromPortable(collection?.description) || "کلکسیون محصولات در SharifGPT";
 
     return {
       title: seo?.metaTitle || `${titleBase} | SharifGPT`,
@@ -260,6 +262,122 @@ function getPageHead(route: string, cache: CacheModule): PageHead {
     ogType: "website",
     ogImage: "/favicon.png",
   };
+}
+
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/[*_>#-]/g, " ")
+    .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractTextFromPortable(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (!value) return "";
+  if (Array.isArray(value)) {
+    return value
+      .map((block) => {
+        if (!block || typeof block !== "object") return "";
+        const children = (block as Record<string, unknown>).children;
+        if (!Array.isArray(children)) return "";
+        return children
+          .map((child) => {
+            if (!child || typeof child !== "object") return "";
+            const text = (child as Record<string, unknown>).text;
+            return typeof text === "string" ? text : "";
+          })
+          .join(" ");
+      })
+      .join(" ");
+  }
+  return "";
+}
+
+function buildRouteContent(route: string, cache: CacheModule): string {
+  if (route === "/") {
+    const heroTitle = "خرید اکانت ChatGPT";
+    const heroSubtitle = "اکانت‌های قانونی ChatGPT با تحویل آنی، اتصال پایدار و پشتیبانی واقعی.";
+    const seoText = cache.homepageCache?.seoContent ? truncate(stripMarkdown(cache.homepageCache.seoContent), 500) : "";
+    const featured = (cache.homepageCache?.bestSellerProducts || []).slice(0, 8);
+    const featuredList = featured
+      .map((item) => `<li>${escapeHtml(item.title || item.name || "محصول")}</li>`)
+      .join("");
+
+    return `
+<section id="prerender-content" dir="rtl">
+  <h1>${escapeHtml(heroTitle)}</h1>
+  <p>${escapeHtml(heroSubtitle)}</p>
+  ${seoText ? `<p>${escapeHtml(seoText)}</p>` : ""}
+  ${featuredList ? `<h2>محصولات پیشنهادی</h2><ul>${featuredList}</ul>` : ""}
+</section>`.trim();
+  }
+
+  if (route.startsWith("/products/")) {
+    const slug = route.replace("/products/", "");
+    const product = cache.productsCache?.[slug] || (cache.allProductsListCache || []).find((p) => normalizeSlug(p.slug) === slug);
+    if (!product) return `<section id="prerender-content" dir="rtl"><h1>محصول</h1></section>`;
+    const title = product.title || product.name || "محصول";
+    const descSource =
+      extractTextFromPortable(product.shortDescription) ||
+      extractTextFromPortable(product.description) ||
+      "جزئیات این محصول در صفحه ارائه شده است.";
+    const desc = truncate(stripMarkdown(descSource), 400);
+    const categoryText = extractTextFromPortable(product.category);
+    const category = categoryText ? `<p>دسته‌بندی: ${escapeHtml(categoryText)}</p>` : "";
+    return `
+<section id="prerender-content" dir="rtl">
+  <h1>${escapeHtml(title)}</h1>
+  <p>${escapeHtml(desc)}</p>
+  ${category}
+</section>`.trim();
+  }
+
+  if (route.startsWith("/blog/")) {
+    const slug = route.replace("/blog/", "");
+    const post = cache.postsCache?.[slug];
+    if (!post) return `<section id="prerender-content" dir="rtl"><h1>مقاله</h1></section>`;
+    const title = post.title || "مقاله";
+    const excerpt = truncate(stripMarkdown(extractTextFromPortable(post.excerpt) || "جزئیات مقاله در صفحه قابل مشاهده است."), 500);
+    return `
+<section id="prerender-content" dir="rtl">
+  <h1>${escapeHtml(title)}</h1>
+  <p>${escapeHtml(excerpt)}</p>
+</section>`.trim();
+  }
+
+  if (route.startsWith("/collections/")) {
+    const slug = route.replace("/collections/", "");
+    const collection = cache.collectionsCache?.[slug];
+    if (!collection) return `<section id="prerender-content" dir="rtl"><h1>کلکسیون</h1></section>`;
+    const title = collection.title || "کلکسیون";
+    const description = truncate(
+      stripMarkdown(extractTextFromPortable(collection.description) || "جزئیات این کلکسیون در صفحه ارائه شده است."),
+      450,
+    );
+    return `
+<section id="prerender-content" dir="rtl">
+  <h1>${escapeHtml(title)}</h1>
+  <p>${escapeHtml(description)}</p>
+</section>`.trim();
+  }
+
+  const staticTitleMap: Record<string, string> = {
+    "/products": "فروشگاه محصولات",
+    "/blog": "مجله و مقالات",
+    "/about": "درباره ما",
+    "/contact": "تماس با ما",
+    "/support": "پشتیبانی",
+    "/faq": "سوالات متداول",
+    "/team/amir": "تیم - امیر",
+    "/team/erfan": "تیم - عرفان",
+    "/policies/refund-replacement": "قوانین تعویض و بازگشت",
+  };
+
+  const heading = staticTitleMap[route] || "SharifGPT";
+  return `<section id="prerender-content" dir="rtl"><h1>${escapeHtml(heading)}</h1></section>`;
 }
 
 function setTagContent(html: string, matcher: RegExp, replacement: string): string {
@@ -345,35 +463,6 @@ function getRouteFilePath(route: string): string {
   return join(DIST_DIR, route.slice(1), "index.html");
 }
 
-async function wait(ms: number): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function waitForStableContent(page: any): Promise<void> {
-  const timeout = 7000;
-  const interval = 150;
-  const start = Date.now();
-  let stableTicks = 0;
-  let lastLength = -1;
-
-  while (Date.now() - start < timeout) {
-    const length = await page.evaluate(() => {
-      const root = document.getElementById("root");
-      return (root?.innerText || "").trim().length;
-    });
-
-    if (length > 120 && length === lastLength) {
-      stableTicks += 1;
-      if (stableTicks >= 3) return;
-    } else {
-      stableTicks = 0;
-      lastLength = length;
-    }
-
-    await wait(interval);
-  }
-}
-
 async function loadManifest(): Promise<RouteManifest> {
   const content = await readFile(MANIFEST_PATH, "utf-8");
   const manifest = JSON.parse(content) as RouteManifest;
@@ -388,136 +477,36 @@ async function loadCacheModule(): Promise<CacheModule> {
   return mod as CacheModule;
 }
 
-function getContentType(pathname: string): string {
-  if (pathname.endsWith(".js")) return "application/javascript; charset=utf-8";
-  if (pathname.endsWith(".css")) return "text/css; charset=utf-8";
-  if (pathname.endsWith(".json")) return "application/json; charset=utf-8";
-  if (pathname.endsWith(".svg")) return "image/svg+xml";
-  if (pathname.endsWith(".png")) return "image/png";
-  if (pathname.endsWith(".jpg") || pathname.endsWith(".jpeg")) return "image/jpeg";
-  if (pathname.endsWith(".webp")) return "image/webp";
-  if (pathname.endsWith(".woff2")) return "font/woff2";
-  if (pathname.endsWith(".ico")) return "image/x-icon";
-  return "text/html; charset=utf-8";
-}
-
-async function resolveDistFile(urlPath: string): Promise<string> {
-  const cleanPath = urlPath.split("?")[0].split("#")[0];
-  const rel = cleanPath.replace(/^\/+/, "");
-
-  const candidateFile = join(DIST_DIR, rel);
-  try {
-    const s = await stat(candidateFile);
-    if (s.isFile()) return candidateFile;
-  } catch {
-    // continue
-  }
-
-  if (!rel || rel.endsWith("/")) {
-    const asIndex = join(DIST_DIR, rel, "index.html");
-    try {
-      const s = await stat(asIndex);
-      if (s.isFile()) return asIndex;
-    } catch {
-      // continue
-    }
-  } else {
-    const asDirIndex = join(DIST_DIR, rel, "index.html");
-    try {
-      const s = await stat(asDirIndex);
-      if (s.isFile()) return asDirIndex;
-    } catch {
-      // continue
-    }
-  }
-
-  // SPA fallback
-  return join(DIST_DIR, "index.html");
-}
-
-async function startStaticServer(): Promise<{ origin: string; close: () => Promise<void> }> {
-  const server = createServer(async (req, res) => {
-    try {
-      const requestPath = req.url || "/";
-      const filePath = await resolveDistFile(requestPath);
-      const body = await readFile(filePath);
-      const contentType = getContentType(filePath);
-      res.statusCode = 200;
-      res.setHeader("Content-Type", contentType);
-      res.end(body);
-    } catch {
-      res.statusCode = 500;
-      res.end("Prerender server error");
-    }
-  });
-
-  await new Promise<void>((resolve) => {
-    server.listen(0, "127.0.0.1", () => resolve());
-  });
-
-  const addr = server.address();
-  if (!addr || typeof addr === "string") {
-    throw new Error("Failed to start prerender server");
-  }
-
-  return {
-    origin: `http://127.0.0.1:${addr.port}`,
-    close: async () =>
-      new Promise<void>((resolve, reject) => {
-        server.close((err) => (err ? reject(err) : resolve()));
-      }),
-  };
-}
-
 async function main() {
-  const [{ chromium }, manifest, cache] = await Promise.all([
-    import("playwright"),
-    loadManifest(),
-    loadCacheModule(),
-  ]);
-
+  const [manifest, cache, baseHtml] = await Promise.all([loadManifest(), loadCacheModule(), readFile(DIST_INDEX, "utf-8")]);
   const routes = manifest.routes.map(normalizeRoute);
-  const staticServer = await startStaticServer();
-  const browser = await chromium.launch({ headless: true });
   const report: Array<{ route: string; file: string; status: "ok" | "failed"; error?: string }> = [];
 
-  try {
-    for (const route of routes) {
-      const context = await browser.newContext({
-        viewport: { width: 1366, height: 900 },
+  for (const route of routes) {
+    try {
+      const head = getPageHead(route, cache);
+      const prerenderContent = buildRouteContent(route, cache);
+      const htmlWithHead = injectHead(baseHtml, head);
+      const htmlWithContent = htmlWithHead.replace(
+        /<div id="root"><\/div>/,
+        `${prerenderContent}\n    <div id="root"></div>`,
+      );
+
+      const outPath = getRouteFilePath(route);
+      await mkdir(dirname(outPath), { recursive: true });
+      await writeFile(outPath, htmlWithContent, "utf-8");
+
+      report.push({ route, file: outPath, status: "ok" });
+      console.log(`[prerender] OK ${route} -> ${outPath}`);
+    } catch (error) {
+      report.push({
+        route,
+        file: getRouteFilePath(route),
+        status: "failed",
+        error: error instanceof Error ? error.message : String(error),
       });
-      const page = await context.newPage();
-
-      try {
-        const targetUrl = `${staticServer.origin}${ensureTrailingSlash(route)}`;
-        await page.goto(targetUrl, { waitUntil: "networkidle", timeout: 20000 });
-        await waitForStableContent(page);
-
-        const rendered = await page.content();
-        const head = getPageHead(route, cache);
-        const htmlWithHead = injectHead(rendered, head);
-
-        const outPath = getRouteFilePath(route);
-        await mkdir(dirname(outPath), { recursive: true });
-        await writeFile(outPath, htmlWithHead, "utf-8");
-
-        report.push({ route, file: outPath, status: "ok" });
-        console.log(`[prerender] OK ${route} -> ${outPath}`);
-      } catch (error) {
-        report.push({
-          route,
-          file: getRouteFilePath(route),
-          status: "failed",
-          error: error instanceof Error ? error.message : String(error),
-        });
-        console.error(`[prerender] FAIL ${route}:`, error);
-      } finally {
-        await context.close();
-      }
+      console.error(`[prerender] FAIL ${route}:`, error);
     }
-  } finally {
-    await staticServer.close();
-    await browser.close();
   }
 
   await mkdir(dirname(REPORT_PATH), { recursive: true });
