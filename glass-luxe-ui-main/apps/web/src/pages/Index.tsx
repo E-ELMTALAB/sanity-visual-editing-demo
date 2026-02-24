@@ -1068,11 +1068,7 @@ const Index = () => {
       <LazyPromoBanner />
 
       {/* Site-wide Promotion Banner - from Medusa */}
-      {siteWidePromotion && (
-        <div className="container mx-auto px-4 md:px-6 -mt-8 mb-8 relative z-20">
-          <PromotionBanner promotion={siteWidePromotion} variant="hero" />
-        </div>
-      )}
+
 
       {/* <TestimonialsRow /> */}
 
