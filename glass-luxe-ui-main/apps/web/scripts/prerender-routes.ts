@@ -307,7 +307,7 @@ function buildRouteContent(route: string, cache: CacheModule): string {
       .join("");
 
     return `
-<section id="prerender-content" dir="rtl">
+<section id="prerender-content" dir="rtl" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
   <h1>${escapeHtml(heroTitle)}</h1>
   <p>${escapeHtml(heroSubtitle)}</p>
   ${seoText ? `<p>${escapeHtml(seoText)}</p>` : ""}
@@ -378,6 +378,10 @@ function buildRouteContent(route: string, cache: CacheModule): string {
 
   const heading = staticTitleMap[route] || "SharifGPT";
   return `<section id="prerender-content" dir="rtl"><h1>${escapeHtml(heading)}</h1></section>`;
+}
+
+function buildPrerenderShell(_route: string, contentHtml: string): string {
+  return contentHtml;
 }
 
 function setTagContent(html: string, matcher: RegExp, replacement: string): string {
@@ -486,10 +490,11 @@ async function main() {
     try {
       const head = getPageHead(route, cache);
       const prerenderContent = buildRouteContent(route, cache);
+      const prerenderShell = buildPrerenderShell(route, prerenderContent);
       const htmlWithHead = injectHead(baseHtml, head);
       const htmlWithContent = htmlWithHead.replace(
         /<div id="root"><\/div>/,
-        `${prerenderContent}\n    <div id="root"></div>`,
+        `<div id="root">${prerenderShell}</div>`,
       );
 
       const outPath = getRouteFilePath(route);
