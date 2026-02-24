@@ -10,9 +10,7 @@ import { SurfaceGlass } from "@/components/ui/surface-glass";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { PortableText } from "@portabletext/react";
-import { fetchFromSanity } from "@/lib/sanity.client.light";
-import { validateSanityConfig } from "@/lib/sanity.config";
-import { postBySlugQuery } from "@/lib/sanity.queries";
+import { getPostBySlug } from "@/lib/sanity-cache-direct";
 import { transformBlogPost, transformBlogPostDetail } from "@/lib/sanity.transformers";
 import EnhancedMarkdownRenderer from "@/components/EnhancedMarkdownRenderer";
 import { useDirection } from "@/contexts/DirectionContext";
@@ -155,10 +153,9 @@ export default function BlogPost() {
 
   // Fetch article
   useEffect(() => {
-    const isConfigValid = validateSanityConfig();
-    if (!isConfigValid || !slug) {
+    if (!slug) {
       setIsLoading(false);
-      setFetchError("پیکربندی Sanity کامل نیست");
+      setFetchError("آدرس مقاله نامعتبر است");
       return;
     }
 
@@ -167,7 +164,7 @@ export default function BlogPost() {
     async function loadArticle() {
       try {
         setIsLoading(true);
-        const result = await fetchFromSanity<any>(postBySlugQuery, { slug });
+        const result = await getPostBySlug(slug!);
 
         if (!isMounted) return;
 

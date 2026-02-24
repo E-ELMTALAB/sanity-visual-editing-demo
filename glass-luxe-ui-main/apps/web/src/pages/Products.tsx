@@ -21,9 +21,7 @@ import { useDirection } from "@/contexts/DirectionContext";
 import { useCart } from "@/contexts/cart-context";
 import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
 import { usePromotions } from "@/contexts/promotion-context";
-import { fetchFromSanity } from "@/lib/sanity.client.unified";
-import { validateSanityConfig } from "@/lib/sanity.config";
-import { allProductsQuery, faqsByPageQuery, pageBySlugQuery } from "@/lib/sanity.queries";
+import { getAllProducts, getFaqsByPage, getPageBySlug } from "@/lib/sanity-cache-direct";
 import { transformFaqItem, transformProductListItem } from "@/lib/sanity.transformers";
 import { getImageUrl } from "@/lib/sanity.image";
 
@@ -94,23 +92,15 @@ export default function Products() {
   const [pageSeo, setPageSeo] = useState<SeoMeta | null>(null);
 
   useEffect(() => {
-    const isConfigValid = validateSanityConfig();
-    if (!isConfigValid) {
-      setIsLoading(false);
-      return;
-    }
-
     let isMounted = true;
 
     async function loadProductsPage() {
       try {
         setIsLoading(true);
         const [productsResult, faqsResult, seoResult] = await Promise.all([
-          fetchFromSanity<any[]>(allProductsQuery),
-          // TEMPORARILY DISABLED: Fetch FAQs from Sanity to prevent build errors
-          // fetchFromSanity<any[]>(faqsByPageQuery, { page: "products" }),
-          Promise.resolve([]), // Return empty array for FAQs
-          fetchFromSanity<any>(pageBySlugQuery, { slug: "products" }),
+          getAllProducts(),
+          getFaqsByPage('products').catch(() => [] as any[]),
+          getPageBySlug('products'),
         ]);
 
         if (!isMounted) return;

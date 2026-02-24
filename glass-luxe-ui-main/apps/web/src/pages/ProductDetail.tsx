@@ -23,9 +23,7 @@ import { useCart } from "@/contexts/cart-context";
 import { useProductPromotion } from "@/contexts/promotion-context";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import { fetchFromSanity } from "@/lib/sanity.client.unified";
-import { validateSanityConfig } from "@/lib/sanity.config";
-import { productBySlugQuery, faqsByPageQuery } from "@/lib/sanity.queries";
+import { getProductBySlug } from "@/lib/sanity-cache-direct";
 import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";
 import { fetchProductPrices, type MedusaVariant } from "@/lib/medusa-prices";
 import { toPersianNumber, calculateDiscountedPrice } from "@/lib/medusa-promotions";
@@ -156,14 +154,8 @@ const ProductDetail = () => {
   const productPromotion = useProductPromotion(slug, productIdForPromotion, priceForPromotion);
 
   useEffect(() => {
-    const configValid = validateSanityConfig();
     if (!slug) {
       setError("شناسه محصول معتبر نیست");
-      setIsLoading(false);
-      return;
-    }
-    if (!configValid) {
-      setError("اتصال به Sanity پیکربندی نشده است");
       setIsLoading(false);
       return;
     }
@@ -173,7 +165,7 @@ const ProductDetail = () => {
     async function loadProduct() {
       try {
         setIsLoading(true);
-        const result = await fetchFromSanity(productBySlugQuery, { slug });
+        const result = await getProductBySlug(slug!);
 
         // Debug logging for chatgpt-plus
         if (slug === 'chatgpt-plus') {

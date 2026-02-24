@@ -8,9 +8,7 @@ import { BlogGrid } from "@/components/Blog/BlogGrid";
 import { BlogPost } from "@/components/Blog/BlogCard";
 import { useDirection } from "@/contexts/DirectionContext";
 import { toast } from "@/hooks/use-toast";
-import { fetchFromSanity } from "@/lib/sanity.client.light";
-import { validateSanityConfig } from "@/lib/sanity.config";
-import { allPostsQuery, pageBySlugQuery } from "@/lib/sanity.queries";
+import { getAllPosts, getPageBySlug } from "@/lib/sanity-cache-direct";
 import { transformBlogPost } from "@/lib/sanity.transformers";
 import { getImageUrl } from "@/lib/sanity.image";
 
@@ -84,19 +82,13 @@ export default function Blog() {
   };
 
   useEffect(() => {
-    const isConfigValid = validateSanityConfig();
-    if (!isConfigValid) {
-      setIsLoading(false);
-      return;
-    }
-
     let isMounted = true;
 
     async function loadPosts() {
       try {
         setIsLoading(true);
-        const response = await fetchFromSanity<any[]>(allPostsQuery);
-        const pageSeoResult = await fetchFromSanity<any>(pageBySlugQuery, { slug: "blog" });
+        const response = await getAllPosts();
+        const pageSeoResult = await getPageBySlug("blog");
 
         if (!isMounted) return;
 
