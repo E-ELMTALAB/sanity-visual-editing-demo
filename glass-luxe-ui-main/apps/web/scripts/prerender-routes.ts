@@ -307,7 +307,7 @@ function buildRouteContent(route: string, cache: CacheModule): string {
       .join("");
 
     return `
-<section id="prerender-content" dir="rtl" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
+<section id="prerender-content" dir="rtl">
   <h1>${escapeHtml(heroTitle)}</h1>
   <p>${escapeHtml(heroSubtitle)}</p>
   ${seoText ? `<p>${escapeHtml(seoText)}</p>` : ""}
@@ -493,7 +493,7 @@ async function main() {
       const prerenderShell = buildPrerenderShell(route, prerenderContent);
       const htmlWithHead = injectHead(baseHtml, head);
       const htmlWithContent = htmlWithHead.replace(
-        /<div id="root"><\/div>/,
+        /<div id="root">[\s\S]*?<\/div>/,
         `<div id="root">${prerenderShell}</div>`,
       );
 

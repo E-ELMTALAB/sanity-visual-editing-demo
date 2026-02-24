@@ -1,0 +1,203 @@
+{
+  "generatedAt": "2026-02-24T21:17:33.841Z",
+  "total": 39,
+  "ok": 39,
+  "failed": 0,
+  "routes": [
+    {
+      "route": "/",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/about",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\about\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/blog",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\blog\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/blog/chatgpt-plus-review",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\blog\\chatgpt-plus-review\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/blog/chatgpt-review",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\blog\\chatgpt-review\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/blog/claude-ai-capabilities-guide",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\blog\\claude-ai-capabilities-guide\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/blog/gemini-review-capabilities",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\blog\\gemini-review-capabilities\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/blog/gpt5-capabilities",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\blog\\gpt5-capabilities\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/blog/write-article-with-chatgpt",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\blog\\write-article-with-chatgpt\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/collections/ai-chatbot",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\collections\\ai-chatbot\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/collections/image-video-generation",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\collections\\image-video-generation\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/collections/social-media",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\collections\\social-media\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/contact",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\contact\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/faq",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\faq\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/policies/refund-replacement",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\policies\\refund-replacement\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/canva",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\canva\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/capcut-pro",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\capcut-pro\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/chatgpt-plus",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\chatgpt-plus\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/chatgpt-plus-shared",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\chatgpt-plus-shared\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/chatgpt-pro",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\chatgpt-pro\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/claude-pro",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\claude-pro\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/cursor-ai",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\cursor-ai\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/doulingo-plus-max",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\doulingo-plus-max\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/gamma-account",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\gamma-account\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/gemini-ultra",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\gemini-ultra\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/github-copilot",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\github-copilot\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/google-ai-gemini",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\google-ai-gemini\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/grok-shared",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\grok-shared\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/kling-ai",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\kling-ai\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/leonardo-ai",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\leonardo-ai\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/midjourney-ai",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\midjourney-ai\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/monica-account",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\monica-account\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/runway-ai",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\runway-ai\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/spotify-premium",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\spotify-premium\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/products/telegram-premium",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\products\\telegram-premium\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/support",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\support\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/team/amir",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\team\\amir\\index.html",
+      "status": "ok"
+    },
+    {
+      "route": "/team/erfan",
+      "file": "E:\\website-builder\\vercel\\sanity-visual-editing-demo\\glass-luxe-ui-main\\apps\\web\\dist\\team\\erfan\\index.html",
+      "status": "ok"
+    }
+  ]
+}
