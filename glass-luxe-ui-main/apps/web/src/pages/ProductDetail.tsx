@@ -116,6 +116,7 @@ const ProductDetail = () => {
   const [pricesLoading, setPricesLoading] = useState(false);
   const [pricesError, setPricesError] = useState<string | null>(null);
   const [relatedProductPrices, setRelatedProductPrices] = useState<Record<string, { variants: MedusaVariant[] }>>({});
+  const [isHydrated, setIsHydrated] = useState(false);
   const { addItem, setSingleItem, state: cartState } = useCart();
   const stickyRef = useRef<HTMLDivElement>(null);
 
@@ -152,6 +153,11 @@ const ProductDetail = () => {
 
   const priceForPromotion = getPriceForPromotion();
   const productPromotion = useProductPromotion(slug, productIdForPromotion, priceForPromotion);
+
+  // Mark as hydrated after first paint to defer image loading
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (!slug) {
@@ -736,6 +742,13 @@ const ProductDetail = () => {
   const ogDescription = seo.openGraphDescription || seo.metaDescription || seoDescription;
   const ogImage = seo.openGraphImage || product.image || currentImage;
   return <>
+    {/* CSS for gradient placeholder animation (lightweight, no JS) */}
+    <style>{`
+      @keyframes gradient-shift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+      }
+    `}</style>
     <Helmet>
       <title>{seoTitle}</title>
       <meta name="description" content={seoDescription} />
@@ -794,9 +807,9 @@ const ProductDetail = () => {
                   <span className="text-foreground line-clamp-1 min-w-0">{product.titleFa || product.title}</span>
                 </nav>
 
-                {/* Title Section */}
+                {/* Title Section - Prominent H1 for LCP */}
                 <div className="min-w-0 mb-6" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4 leading-tight break-words" style={{ textAlign: "right", marginRight: 0 }}>
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-foreground mb-3 sm:mb-4 leading-tight break-words" style={{ textAlign: "right", marginRight: 0, fontWeight: 800 }}>
                     {product.titleFa || product.title}
                   </h1>
 
@@ -945,21 +958,43 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* Images */}
+              {/* Images - Deferred loading to prevent image from being LCP */}
               <div className="w-full md:w-1/2 lg:w-[55%] space-y-4 min-w-0 order-first md:order-none">
                 <motion.div key={selectedImage} initial={{
                   opacity: 0
                 }} animate={{
                   opacity: 1
                 }} className="relative aspect-square rounded-2xl overflow-hidden glass w-full">
-                  <img src={currentImage} alt={isRTL ? product.titleFa : product.title} className="w-full h-full object-cover object-top" />
-                  {product.badge && <div className="absolute top-4 ltr:left-4 rtl:right-4">
-                    <Badge variant={product.badge as "sale" | "new" | "hot"}>
-                      {product.badge === "sale" && "تخفیف"}
-                      {product.badge === "new" && "جدید"}
-                      {product.badge === "hot" && "داغ"}
-                    </Badge>
-                  </div>}
+                  {/* CSS-only placeholder during initial load to prevent CLS */}
+                  {!isHydrated && (
+                    <div
+                      className="w-full h-full"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(30,103,198,0.15))",
+                        backgroundSize: "200% 200%",
+                        animation: "gradient-shift 3s ease infinite"
+                      }}
+                    />
+                  )}
+                  {/* Real image loads after hydration */}
+                  {isHydrated && (
+                    <img
+                      src={currentImage}
+                      alt={isRTL ? product.titleFa : product.title}
+                      className="w-full h-full object-cover object-top"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
+                  {product.badge && isHydrated && (
+                    <div className="absolute top-4 ltr:left-4 rtl:right-4">
+                      <Badge variant={product.badge as "sale" | "new" | "hot"}>
+                        {product.badge === "sale" && "تخفیف"}
+                        {product.badge === "new" && "جدید"}
+                        {product.badge === "hot" && "داغ"}
+                      </Badge>
+                    </div>
+                  )}
                 </motion.div>
 
                 {/* Variants Selection */}
