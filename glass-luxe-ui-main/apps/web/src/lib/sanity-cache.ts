@@ -28,6 +28,26 @@ function shouldUseCache(): boolean {
 }
 
 /**
+ * Normalize a slug value (handles string or object with current property)
+ */
+function normalizeSlug(value: unknown): string | null {
+  if (typeof value === "string") {
+    const cleaned = value.trim().replace(/^\/+|\/+$/g, "");
+    return cleaned || null;
+  }
+
+  if (value && typeof value === "object" && "current" in (value as Record<string, unknown>)) {
+    const current = (value as { current?: unknown }).current;
+    if (typeof current === "string") {
+      const cleaned = current.trim().replace(/^\/+|\/+$/g, "");
+      return cleaned || null;
+    }
+  }
+
+  return null;
+}
+
+/**
  * Transform all Sanity CDN URLs in an object to use the proxy
  * Recursively walks the object and transforms any strings that look like CDN URLs
  */
@@ -430,20 +450,75 @@ export async function getCachedData<T>(
   if (normalizedQuery.includes('_type == "product"') && 
       normalizedQuery.includes('slug.current == $slug') && 
       params?.slug) {
+    const requestedSlug = params.slug;
+    const normalizedRequestedSlug = normalizeSlug(requestedSlug);
+    
+    // Debug logs (dev only)
+    if (import.meta.env.DEV) {
+      console.log(`[SANITY-CACHE DEBUG] Product lookup - requested slug: "${requestedSlug}", normalized: "${normalizedRequestedSlug}"`);
+    }
+    
     const productsMap = cache.productsCache;
-    if (productsMap && typeof productsMap === 'object') {
-      const rawData = (productsMap[params.slug] as T) || null;
+    const allProductsList = cache.allProductsListCache;
+    
+    if (import.meta.env.DEV) {
+      const hasProductsMap = productsMap && typeof productsMap === 'object';
+      const productsMapKeys = hasProductsMap ? Object.keys(productsMap as Record<string, any>) : [];
+      const allProductsCount = Array.isArray(allProductsList) ? allProductsList.length : 0;
+      const sampleSlugs = hasProductsMap 
+        ? productsMapKeys.slice(0, 5).map(k => normalizeSlug(k))
+        : (Array.isArray(allProductsList) 
+            ? allProductsList.slice(0, 5).map((p: any) => normalizeSlug(p.slug))
+            : []);
       
-      if (rawData !== null) {
-        console.info(`[SANITY-CACHE] CACHE HIT: productBySlugQuery (slug: ${params.slug})`);
-        return transformCdnUrls(rawData);
-      } else {
-        console.warn(`[SANITY-CACHE] CACHE MISS: productBySlugQuery (slug: ${params.slug}) - product not found in cache`);
+      console.log(`[SANITY-CACHE DEBUG] productsCache exists: ${hasProductsMap}, keys count: ${productsMapKeys.length}`);
+      console.log(`[SANITY-CACHE DEBUG] allProductsListCache count: ${allProductsCount}`);
+      console.log(`[SANITY-CACHE DEBUG] Sample normalized slugs from cache:`, sampleSlugs);
+    }
+    
+    // Try direct lookup first (with normalized slug)
+    if (productsMap && typeof productsMap === 'object' && normalizedRequestedSlug) {
+      // Try exact match first
+      let rawData = (productsMap[normalizedRequestedSlug] as T) || null;
+      
+      // If not found, try iterating through keys with normalized comparison
+      if (!rawData) {
+        const productsMapObj = productsMap as Record<string, any>;
+        for (const key in productsMapObj) {
+          const normalizedKey = normalizeSlug(key);
+          if (normalizedKey === normalizedRequestedSlug) {
+            rawData = productsMapObj[key] as T;
+            if (import.meta.env.DEV) {
+              console.log(`[SANITY-CACHE DEBUG] Found product via normalized key match: "${key}" -> "${normalizedKey}"`);
+            }
+            break;
+          }
+        }
       }
       
-      return rawData;
+      if (rawData !== null) {
+        console.info(`[SANITY-CACHE] CACHE HIT: productBySlugQuery (slug: ${requestedSlug})`);
+        return transformCdnUrls(rawData);
+      }
     }
-    console.warn(`[SANITY-CACHE] CACHE MISS: productBySlugQuery (products map not available)`);
+    
+    // Fallback: search in allProductsListCache with normalized comparison
+    if (Array.isArray(allProductsList) && normalizedRequestedSlug) {
+      const found = allProductsList.find((p: any) => {
+        const productSlug = normalizeSlug(p.slug);
+        return productSlug === normalizedRequestedSlug;
+      });
+      
+      if (found) {
+        if (import.meta.env.DEV) {
+          console.log(`[SANITY-CACHE DEBUG] Found product in allProductsListCache via normalized slug match`);
+        }
+        console.info(`[SANITY-CACHE] CACHE HIT: productBySlugQuery (slug: ${requestedSlug}, from allProductsList)`);
+        return transformCdnUrls(found as T);
+      }
+    }
+    
+    console.warn(`[SANITY-CACHE] CACHE MISS: productBySlugQuery (slug: ${requestedSlug}, normalized: ${normalizedRequestedSlug}) - product not found in cache`);
     return null;
   }
 
