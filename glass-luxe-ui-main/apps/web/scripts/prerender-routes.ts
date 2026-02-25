@@ -317,21 +317,70 @@ function buildRouteContent(route: string, cache: CacheModule): string {
 
   if (route.startsWith("/products/")) {
     const slug = route.replace("/products/", "");
-    const product = cache.productsCache?.[slug] || (cache.allProductsListCache || []).find((p) => normalizeSlug(p.slug) === slug);
-    if (!product) return `<section id="prerender-content" dir="rtl"><h1>محصول</h1></section>`;
+    const product =
+      cache.productsCache?.[slug] ||
+      (cache.allProductsListCache || []).find((p) => normalizeSlug(p.slug) === slug);
+
+    // Cache miss: generic visible placeholder, no fetching.
+    if (!product) {
+      return `
+<section id="prerender-content" dir="rtl" data-prerender="product-detail-fallback" style="min-height:70vh;display:flex;align-items:center;justify-content:center;padding:120px 16px 48px;box-sizing:border-box;">
+  <div style="max-width:960px;width:100%;text-align:center;">
+    <h1 style="font-size:2rem;margin:0 0 0.75rem;">محصول</h1>
+    <p style="font-size:0.95rem;opacity:0.8;margin:0;">در حال بارگذاری اطلاعات محصول…</p>
+  </div>
+</section>`.trim();
+    }
+
     const title = product.title || product.name || "محصول";
     const descSource =
       extractTextFromPortable(product.shortDescription) ||
       extractTextFromPortable(product.description) ||
       "جزئیات این محصول در صفحه ارائه شده است.";
-    const desc = truncate(stripMarkdown(descSource), 400);
-    const categoryText = extractTextFromPortable(product.category);
-    const category = categoryText ? `<p>دسته‌بندی: ${escapeHtml(categoryText)}</p>` : "";
+    const desc = truncate(stripMarkdown(descSource), 220);
+
+    const rawPrice = typeof product.price === "number" ? product.price : product.originalPrice;
+    const hasPrice = typeof rawPrice === "number" && rawPrice > 0;
+    const priceText = hasPrice
+      ? new Intl.NumberFormat("fa-IR").format(rawPrice as number)
+      : null;
+
+    const ctaLabel = "خرید";
+
     return `
-<section id="prerender-content" dir="rtl">
-  <h1>${escapeHtml(title)}</h1>
-  <p>${escapeHtml(desc)}</p>
-  ${category}
+<section
+  id="prerender-content"
+  dir="rtl"
+  data-prerender="product-detail"
+  style="min-height:70vh;display:flex;align-items:center;justify-content:center;padding:120px 16px 48px;box-sizing:border-box;"
+>
+  <div style="max-width:960px;width:100%;text-align:right;">
+    <h1 style="font-size:2.1rem;line-height:1.25;margin:0 0 0.75rem;font-weight:800;">
+      ${escapeHtml(title)}
+    </h1>
+    <p style="font-size:0.98rem;line-height:1.7;opacity:0.9;margin:0 0 1.25rem;">
+      ${escapeHtml(desc)}
+    </p>
+    ${
+      priceText
+        ? `<p style="font-size:1.1rem;font-weight:700;margin:0 0 1.5rem;">
+      قیمت: <span style="font-weight:800;">${priceText}</span> <span style="font-size:0.9rem;opacity:0.85;">تومان</span>
+    </p>`
+        : ""
+    }
+    <button
+      type="button"
+      style="
+        display:inline-flex;align-items:center;justify-content:center;
+        padding:0.75rem 1.75rem;border-radius:999px;border:none;
+        font-size:0.95rem;font-weight:700;cursor:pointer;
+        background:linear-gradient(135deg, rgba(139,92,246,0.22), rgba(30,103,198,0.22));
+        color:#ffffff;box-shadow:0 8px 24px rgba(15,23,42,0.6);
+      "
+    >
+      ${ctaLabel}
+    </button>
+  </div>
 </section>`.trim();
   }
 

@@ -44,5 +44,7 @@ Element.prototype.getAttribute = function(name: string) {
 const rootEl = document.getElementById("root");
 
 if (rootEl) {
+  // Mark document as hydrated so prerender snapshots can be hidden post-hydration.
+  document.documentElement.classList.add("hydrated");
   createRoot(rootEl).render(<App />);
 }

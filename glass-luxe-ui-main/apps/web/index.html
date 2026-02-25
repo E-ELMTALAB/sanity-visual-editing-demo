@@ -26,6 +26,8 @@
       @font-face{font-family:"Vazirmatn";src:url("/font/Vazirmatn-VariableFont_wght.woff2") format("woff2");font-weight:100 900;font-display:swap}
       /* Hero placeholder for instant LCP */
       .hero-placeholder{min-height:92vh;background:#060914}
+      /* Hide prerender content after React hydration to avoid duplicate content flashes */
+      html.hydrated #prerender-content{display:none!important}
     </style>
 
     <!-- Preload runtime-injected styles as soon as they appear to reduce render-blocking -->
