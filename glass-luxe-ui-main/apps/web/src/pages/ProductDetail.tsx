@@ -23,10 +23,8 @@ import { useCart } from "@/contexts/cart-context";
 import { useProductPromotion } from "@/contexts/promotion-context";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import { fetchFromSanity } from "@/lib/sanity.client.unified";
-import { validateSanityConfig } from "@/lib/sanity.config";
-import { productBySlugQuery, faqsByPageQuery } from "@/lib/sanity.queries";
-import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";
+import { getProductBySlug } from "@/lib/sanity-cache-direct";
+import { transformProductDetail } from "@/lib/sanity.transformers";
 import { fetchProductPrices, type MedusaVariant } from "@/lib/medusa-prices";
 import { toPersianNumber, calculateDiscountedPrice } from "@/lib/medusa-promotions";
 const springTransition = {
@@ -156,14 +154,8 @@ const ProductDetail = () => {
   const productPromotion = useProductPromotion(slug, productIdForPromotion, priceForPromotion);
 
   useEffect(() => {
-    const configValid = validateSanityConfig();
     if (!slug) {
       setError("شناسه محصول معتبر نیست");
-      setIsLoading(false);
-      return;
-    }
-    if (!configValid) {
-      setError("اتصال به Sanity پیکربندی نشده است");
       setIsLoading(false);
       return;
     }
@@ -173,18 +165,7 @@ const ProductDetail = () => {
     async function loadProduct() {
       try {
         setIsLoading(true);
-        const result = await fetchFromSanity(productBySlugQuery, { slug });
-
-        // Debug logging for chatgpt-plus
-        if (slug === 'chatgpt-plus') {
-          const rawResult = result as any;
-          console.log('[PRODUCT-DETAIL DEBUG] Raw Sanity result for chatgpt-plus:', rawResult);
-          console.log('[PRODUCT-DETAIL DEBUG] Image field:', rawResult?.image);
-          console.log('[PRODUCT-DETAIL DEBUG] FeaturedImage field:', rawResult?.featuredImage);
-          console.log('[PRODUCT-DETAIL DEBUG] Gallery field:', rawResult?.gallery);
-          console.log('[PRODUCT-DETAIL DEBUG] Price field:', rawResult?.price);
-          console.log('[PRODUCT-DETAIL DEBUG] Options field:', rawResult?.options);
-        }
+        const result = await getProductBySlug(slug);
 
         if (!isMounted) return;
 
@@ -196,13 +177,13 @@ const ProductDetail = () => {
 
         const transformed = transformProductDetail(result);
 
-        // Debug logging for chatgpt-plus
-        if (slug === 'chatgpt-plus') {
-          console.log('[PRODUCT-DETAIL DEBUG] Transformed product:', transformed);
-          console.log('[PRODUCT-DETAIL DEBUG] Transformed image:', transformed.image);
-          console.log('[PRODUCT-DETAIL DEBUG] Transformed images array:', transformed.images);
-          console.log('[PRODUCT-DETAIL DEBUG] Transformed price:', transformed.price);
-          console.log('[PRODUCT-DETAIL DEBUG] Transformed variants:', transformed.variants);
+        // Debug logging for chatgpt-plus (cache-only)
+        if (slug === "chatgpt-plus") {
+          console.log("[PRODUCT-DETAIL DEBUG] Transformed product (from cache):", transformed);
+          console.log("[PRODUCT-DETAIL DEBUG] Transformed image:", transformed.image);
+          console.log("[PRODUCT-DETAIL DEBUG] Transformed images array:", transformed.images);
+          console.log("[PRODUCT-DETAIL DEBUG] Transformed price:", transformed.price);
+          console.log("[PRODUCT-DETAIL DEBUG] Transformed variants:", transformed.variants);
         }
 
         setProduct(transformed);
