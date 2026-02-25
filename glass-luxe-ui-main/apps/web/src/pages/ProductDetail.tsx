@@ -23,12 +23,10 @@ import { useCart } from "@/contexts/cart-context";
 import { useProductPromotion } from "@/contexts/promotion-context";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import { fetchFromSanity } from "@/lib/sanity.client.unified";
-import { validateSanityConfig } from "@/lib/sanity.config";
-import { productBySlugQuery, faqsByPageQuery } from "@/lib/sanity.queries";
-import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";
+import { transformProductDetail } from "@/lib/sanity.transformers";
 import { fetchProductPrices, type MedusaVariant } from "@/lib/medusa-prices";
 import { toPersianNumber, calculateDiscountedPrice } from "@/lib/medusa-promotions";
+import * as sanityCache from "@/data/sanity-cache";
 const springTransition = {
   type: "spring" as const,
   stiffness: 220,
@@ -95,6 +93,30 @@ interface FaqItem {
   a: string;
 }
 
+// Local cache-only helper for product detail data.
+// Reads from the build-time Sanity cache module and never makes network requests.
+function getProductFromCache(slug: string): any | null {
+  try {
+    const productsMap = (sanityCache as any)?.productsCache;
+    const raw = productsMap ? productsMap[slug] ?? null : null;
+
+    if (!raw && import.meta.env.DEV) {
+      console.error(
+        "[PRODUCT-DETAIL] Product not found in local cache for slug:",
+        slug,
+        "- Sanity fetch is disabled for product pages."
+      );
+    }
+
+    return raw;
+  } catch (err) {
+    if (import.meta.env.DEV) {
+      console.error("[PRODUCT-DETAIL] Failed to read product from cache:", err);
+    }
+    return null;
+  }
+}
+
 
 // Feature flag: Temporarily disable testimonials on Product Detail page
 // TODO: Re-enable by setting ENABLE_PRODUCT_DETAIL_TESTIMONIAL to true
@@ -156,14 +178,8 @@ const ProductDetail = () => {
   const productPromotion = useProductPromotion(slug, productIdForPromotion, priceForPromotion);
 
   useEffect(() => {
-    const configValid = validateSanityConfig();
     if (!slug) {
       setError("شناسه محصول معتبر نیست");
-      setIsLoading(false);
-      return;
-    }
-    if (!configValid) {
-      setError("اتصال به Sanity پیکربندی نشده است");
       setIsLoading(false);
       return;
     }
@@ -173,18 +189,7 @@ const ProductDetail = () => {
     async function loadProduct() {
       try {
         setIsLoading(true);
-        const result = await fetchFromSanity(productBySlugQuery, { slug });
-
-        // Debug logging for chatgpt-plus
-        if (slug === 'chatgpt-plus') {
-          const rawResult = result as any;
-          console.log('[PRODUCT-DETAIL DEBUG] Raw Sanity result for chatgpt-plus:', rawResult);
-          console.log('[PRODUCT-DETAIL DEBUG] Image field:', rawResult?.image);
-          console.log('[PRODUCT-DETAIL DEBUG] FeaturedImage field:', rawResult?.featuredImage);
-          console.log('[PRODUCT-DETAIL DEBUG] Gallery field:', rawResult?.gallery);
-          console.log('[PRODUCT-DETAIL DEBUG] Price field:', rawResult?.price);
-          console.log('[PRODUCT-DETAIL DEBUG] Options field:', rawResult?.options);
-        }
+        const result = getProductFromCache(slug);
 
         if (!isMounted) return;
 
