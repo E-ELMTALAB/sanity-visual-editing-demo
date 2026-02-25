@@ -116,7 +116,7 @@ const ProductDetail = () => {
   const [pricesLoading, setPricesLoading] = useState(false);
   const [pricesError, setPricesError] = useState<string | null>(null);
   const [relatedProductPrices, setRelatedProductPrices] = useState<Record<string, { variants: MedusaVariant[] }>>({});
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const { addItem, setSingleItem, state: cartState } = useCart();
   const stickyRef = useRef<HTMLDivElement>(null);
 
@@ -156,7 +156,7 @@ const ProductDetail = () => {
 
   // Mark as hydrated after first paint to defer image loading
   useEffect(() => {
-    setIsHydrated(true);
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
@@ -966,7 +966,7 @@ const ProductDetail = () => {
                   opacity: 1
                 }} className="relative aspect-square rounded-2xl overflow-hidden glass w-full">
                   {/* CSS-only placeholder during initial load to prevent CLS */}
-                  {!isHydrated && (
+                  {!hydrated && (
                     <div
                       className="w-full h-full"
                       style={{
@@ -977,7 +977,7 @@ const ProductDetail = () => {
                     />
                   )}
                   {/* Real image loads after hydration */}
-                  {isHydrated && (
+                  {hydrated && (
                     <img
                       src={currentImage}
                       alt={isRTL ? product.titleFa : product.title}
@@ -986,7 +986,7 @@ const ProductDetail = () => {
                       decoding="async"
                     />
                   )}
-                  {product.badge && isHydrated && (
+                  {product.badge && hydrated && (
                     <div className="absolute top-4 ltr:left-4 rtl:right-4">
                       <Badge variant={product.badge as "sale" | "new" | "hot"}>
                         {product.badge === "sale" && "تخفیف"}
