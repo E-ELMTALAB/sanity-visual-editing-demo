@@ -13,6 +13,7 @@ interface PromoBannerContent {
   description?: string;
   buttonText: string;
   buttonLink: string;
+  backgroundImage?: any; // Sanity image object with asset
 }
 
 /**
@@ -50,6 +51,7 @@ export function getPromoBannerContent(): PromoBannerContent {
         description: banner.description || defaults.description,
         buttonText: banner.buttonText || defaults.buttonText,
         buttonLink: banner.buttonLink || defaults.buttonLink,
+        backgroundImage: banner.backgroundImage || undefined,
       };
     }
 

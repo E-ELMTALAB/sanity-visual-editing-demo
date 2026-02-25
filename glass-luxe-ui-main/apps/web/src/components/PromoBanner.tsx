@@ -5,6 +5,7 @@ import { Sparkles, ArrowLeft } from "lucide-react";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { cn } from "@/lib/utils";
 import { getPromoBannerContent } from "@/lib/sanityContent";
+import { getImageUrl } from "@/lib/sanity.image";
 
 interface PromoBannerProps {
   className?: string;
@@ -61,12 +62,14 @@ export function PromoBanner({ className }: PromoBannerProps) {
   // Hide banner if not active or no expiry time
   const showBanner = bannerContent.isActive && !!endsAt;
 
-  // Optimize image URL with better compression and format
-  const backgroundImageUrl = useMemo(
-    () =>
-      "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1600&q=75&auto=format&fit=crop&format=webp",
-    []
-  );
+  // Build image URL from cached backgroundImage, fallback to placeholder
+  const backgroundImageUrl = useMemo(() => {
+    if (bannerContent.backgroundImage?.asset) {
+      return getImageUrl(bannerContent.backgroundImage, 1600, undefined, 75);
+    }
+    // Fallback to placeholder if no image in cache
+    return "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1600&q=75&auto=format&fit=crop&format=webp";
+  }, [bannerContent.backgroundImage]);
 
   if (!showBanner) return null;
 
