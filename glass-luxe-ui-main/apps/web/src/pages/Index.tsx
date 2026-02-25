@@ -86,18 +86,15 @@ const DeferredTrustBadges = () => {
     </div>
   );
 };
-// Import Sanity modules statically (lazy-loading caused initialization issues)
-import { fetchFromSanity } from "@/lib/sanity.client.unified";
-import { validateSanityConfig } from "@/lib/sanity.config";
+// Direct cache access — zero runtime Sanity API calls in production
 import {
-  heroSlideQuery,
-  homePageQuery,
-  featuredProductsQuery,
-  featuredCoursesQuery,
-  featuredPostsQuery,
-  productsByCategoryQuery,
-  faqsByPageQuery
-} from "@/lib/sanity.queries";
+  getHomepageData,
+  getFeaturedProducts,
+  getFeaturedCourses,
+  getFeaturedPosts,
+  getProductsByCategory,
+  getFaqsByPage,
+} from "@/lib/sanity-cache-direct";
 import * as transformers from "@/lib/sanity.transformers";
 import { getImageUrl } from "@/lib/sanity.image";
 
@@ -509,38 +506,25 @@ const Index = () => {
       return;
     }
 
-    // BASELINE or EXPERIMENT C: Normal Sanity fetch
+    // BASELINE or EXPERIMENT C: Normal cache / Sanity fetch
     const loadHeroSlide = async () => {
       const sanityStart = performance.now();
-      console.log('[LCP INSTRUMENT] Sanity fetch START:', sanityStart, 'ms');
 
       try {
-        const isConfigValid = validateSanityConfig();
-        if (!isConfigValid) {
-          console.warn('[HOMEPAGE] Sanity not configured, skipping hero fetch');
-          return;
-        }
-
-        console.log('[HOMEPAGE] 🚀 Fetching hero slide immediately...');
-        const heroData = await fetchFromSanity<any>(heroSlideQuery);
+        const heroData = await getHomepageData();
 
         const sanityEnd = performance.now();
-        console.log('[LCP INSTRUMENT] Sanity fetch END:', sanityEnd, 'ms', 'Duration:', (sanityEnd - sanityStart).toFixed(2), 'ms');
+        console.log('[LCP INSTRUMENT] Homepage cache read:', (sanityEnd - sanityStart).toFixed(2), 'ms');
 
         if (heroData?.heroSlides?.length) {
           const transformed = transformers.transformHeroSlide(heroData.heroSlides[0]);
-          const heroSrcSetTime = performance.now();
           setHeroSlide(transformed);
-          console.log('[LCP INSTRUMENT] heroSlide state SET (heroSrcSetTime):', heroSrcSetTime, 'ms', 'Image URL:', transformed.image || 'none');
-        } else {
-          console.warn('[HOMEPAGE] No hero slide data found');
         }
       } catch (error) {
-        console.error("[HOMEPAGE] Failed to fetch hero slide:", error);
+        console.error("[HOMEPAGE] Failed to load hero slide:", error);
       }
     };
 
-    // Fetch hero immediately - no delay
     loadHeroSlide();
   }, []);
 
@@ -568,17 +552,10 @@ const Index = () => {
     console.log('[HOMEPAGE] ✅ Preload link added for hero image');
   }, [heroSlide?.image, heroSlide?.imageSrcSet]);
 
-  // Load remaining Sanity data off the critical path (deferred until after initial paint)
+  // Load remaining data off the critical path (deferred until after initial paint)
   useEffect(() => {
     const loadSanityData = async () => {
       try {
-        const isConfigValid = validateSanityConfig();
-        if (!isConfigValid) {
-          console.warn('[HOMEPAGE] Sanity not configured');
-          setDataLoaded(true);
-          return;
-        }
-
         const categoryMap: Record<string, string> = {
           ai: "ai",
           social: "social-media",
@@ -587,41 +564,25 @@ const Index = () => {
           sim: "sim-card",
         };
 
-        console.log('[HOMEPAGE] 🔄 Starting data fetch...');
-        console.log('[HOMEPAGE] Category map:', categoryMap);
-
         const [homeData, featuredProductsData, featuredCoursesData, featuredPostsData, tabbedProductGroups, faqsData] =
           await Promise.all([
-            fetchFromSanity<any>(homePageQuery),
-            fetchFromSanity<any[]>(featuredProductsQuery),
-            fetchFromSanity<any[]>(featuredCoursesQuery),
-            fetchFromSanity<any[]>(featuredPostsQuery),
+            getHomepageData(),
+            getFeaturedProducts(),
+            getFeaturedCourses(),
+            getFeaturedPosts(),
             Promise.all(
               Object.entries(categoryMap).map(async ([key, category]) => {
                 try {
-                  console.log(`[HOMEPAGE] 📦 Fetching products for tab "${key}" (Sanity category: "${category}")`);
-                  const categoryProducts = await fetchFromSanity<any[]>(productsByCategoryQuery, { category });
-                  console.log(`[HOMEPAGE] 📦 Category "${key}" returned:`, categoryProducts?.length || 0, 'products');
-                  if (categoryProducts?.length) {
-                    console.log(`[HOMEPAGE] 📦 First product in "${key}":`, categoryProducts[0]);
-                  }
-                  if (!categoryProducts?.length) {
-                    console.log(`[HOMEPAGE] ⚠️ No products found for category "${key}" (Sanity: "${category}")`);
-                    return [];
-                  }
-                  const transformed = categoryProducts.map((p: any, i: number) => transformers.transformTabbedProduct(p, key, i));
-                  console.log(`[HOMEPAGE] ✅ Transformed ${transformed.length} products for "${key}":`, transformed);
-                  return transformed;
+                  const categoryProducts = await getProductsByCategory(category);
+                  if (!categoryProducts?.length) return [];
+                  return categoryProducts.map((p: any, i: number) => transformers.transformTabbedProduct(p, key, i));
                 } catch (err) {
-                  console.error(`[HOMEPAGE] ❌ Error fetching category "${key}":`, err);
+                  console.error(`[HOMEPAGE] Error loading category "${key}":`, err);
                   return [];
                 }
               }),
             ),
-            fetchFromSanity<any[]>(faqsByPageQuery, { page: 'home' }).catch((err) => {
-              console.warn('[HOMEPAGE] Failed to fetch FAQs:', err);
-              return [];
-            }),
+            getFaqsByPage('home').catch(() => [] as any[]),
           ]);
 
         console.log('[HOMEPAGE] 📊 Raw tabbedProductGroups:', tabbedProductGroups);
@@ -1065,14 +1026,10 @@ const Index = () => {
       <HeroSection />
 
       {/* Promo Banner - deferred until after LCP (5s or user interaction) */}
-      <LazyPromoBanner />
+
 
       {/* Site-wide Promotion Banner - from Medusa */}
-      {siteWidePromotion && (
-        <div className="container mx-auto px-4 md:px-6 -mt-8 mb-8 relative z-20">
-          <PromotionBanner promotion={siteWidePromotion} variant="hero" />
-        </div>
-      )}
+
 
       {/* <TestimonialsRow /> */}
 

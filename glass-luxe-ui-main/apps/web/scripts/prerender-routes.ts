@@ -380,6 +380,10 @@ function buildRouteContent(route: string, cache: CacheModule): string {
   return `<section id="prerender-content" dir="rtl"><h1>${escapeHtml(heading)}</h1></section>`;
 }
 
+function buildPrerenderShell(_route: string, contentHtml: string): string {
+  return contentHtml;
+}
+
 function setTagContent(html: string, matcher: RegExp, replacement: string): string {
   if (matcher.test(html)) {
     return html.replace(matcher, replacement);
@@ -486,10 +490,11 @@ async function main() {
     try {
       const head = getPageHead(route, cache);
       const prerenderContent = buildRouteContent(route, cache);
+      const prerenderShell = buildPrerenderShell(route, prerenderContent);
       const htmlWithHead = injectHead(baseHtml, head);
       const htmlWithContent = htmlWithHead.replace(
-        /<div id="root"><\/div>/,
-        `${prerenderContent}\n    <div id="root"></div>`,
+        /<div id="root">[\s\S]*?<\/div>/,
+        `<div id="root">${prerenderShell}</div>`,
       );
 
       const outPath = getRouteFilePath(route);

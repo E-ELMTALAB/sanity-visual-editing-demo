@@ -23,7 +23,10 @@ import { useCart } from "@/contexts/cart-context";
 import { useProductPromotion } from "@/contexts/promotion-context";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import { transformProductDetail } from "@/lib/sanity.transformers";
+
+import { getProductBySlug } from "@/lib/sanity-cache-direct";
+import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";
+
 import { fetchProductPrices, type MedusaVariant } from "@/lib/medusa-prices";
 import { toPersianNumber, calculateDiscountedPrice } from "@/lib/medusa-promotions";
 import * as sanityCache from "@/data/sanity-cache";
@@ -189,7 +192,19 @@ const ProductDetail = () => {
     async function loadProduct() {
       try {
         setIsLoading(true);
-        const result = getProductFromCache(slug);
+
+        const result = await getProductBySlug(slug!);
+
+        // Debug logging for chatgpt-plus
+        if (slug === 'chatgpt-plus') {
+          const rawResult = result as any;
+          console.log('[PRODUCT-DETAIL DEBUG] Raw Sanity result for chatgpt-plus:', rawResult);
+          console.log('[PRODUCT-DETAIL DEBUG] Image field:', rawResult?.image);
+          console.log('[PRODUCT-DETAIL DEBUG] FeaturedImage field:', rawResult?.featuredImage);
+          console.log('[PRODUCT-DETAIL DEBUG] Gallery field:', rawResult?.gallery);
+          console.log('[PRODUCT-DETAIL DEBUG] Price field:', rawResult?.price);
+          console.log('[PRODUCT-DETAIL DEBUG] Options field:', rawResult?.options);
+        }
 
         if (!isMounted) return;
 
