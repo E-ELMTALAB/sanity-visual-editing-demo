@@ -7,6 +7,7 @@ import post from './schemas/documents/post'
 import product from './schemas/documents/product'
 import project from './schemas/documents/project'
 import testimonial from './schemas/documents/testimonial'
+import promoBanner from './schemas/documents/promoBanner'
 
 // Objects
 import duration from './schemas/objects/duration'
@@ -42,6 +43,7 @@ export const schemaTypes = [
   instructor,
   collection,
   testimonial,
+  promoBanner,
   // Objects
   productOption,
   milestone,
