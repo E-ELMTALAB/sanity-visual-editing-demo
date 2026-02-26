@@ -230,120 +230,97 @@ type HeroImage = { src: string; srcSet?: string };
 // HeroGlow component removed - using single hero-halo div with pseudo-elements instead
 
 // Hero component: lightweight gradient background only, no image
+
 function HeroSection() {
   const navigate = useNavigate();
+  const heroRef = useRef<HTMLElement | null>(null);
+  const interactiveRef = useRef<HTMLDivElement | null>(null);
 
-  // Animation is now handled via CSS keyframes (heroGlowFloat) - no JS needed
-  // This respects prefers-reduced-motion automatically via CSS media query
-
-  // #region agent log
+  // Replicates the original main.ts logic (mouse-follow with smoothing)
   useEffect(() => {
-    const inspectStyles = () => {
-      const hero = document.querySelector('section[dir="rtl"]') as HTMLElement;
-      const promoBanner = document.querySelector('section.py-8') as HTMLElement;
-      const parentWrapper = hero?.closest('.min-h-screen') as HTMLElement;
-      const body = document.body;
-      
-      const logData: any = {};
-      
-      if (hero) {
-        const heroStyles = window.getComputedStyle(hero);
-        const heroRect = hero.getBoundingClientRect();
-        logData.hero = {
-          bgColor: heroStyles.backgroundColor,
-          bgImage: heroStyles.backgroundImage,
-          borderTop: heroStyles.borderTop,
-          borderBottom: heroStyles.borderBottom,
-          boxShadow: heroStyles.boxShadow,
-          maskImage: heroStyles.maskImage,
-          webkitMaskImage: heroStyles.webkitMaskImage,
-          bottom: heroRect.bottom,
-          height: heroRect.height
-        };
-      }
-      if (promoBanner) {
-        const promoStyles = window.getComputedStyle(promoBanner);
-        const promoRect = promoBanner.getBoundingClientRect();
-        logData.promoBanner = {
-          bgColor: promoStyles.backgroundColor,
-          bgImage: promoStyles.backgroundImage,
-          borderTop: promoStyles.borderTop,
-          borderBottom: promoStyles.borderBottom,
-          boxShadow: promoStyles.boxShadow,
-          top: promoRect.top
-        };
-        const innerDiv = promoBanner.querySelector('.relative.overflow-hidden') as HTMLElement;
-        if (innerDiv) {
-          const innerStyles = window.getComputedStyle(innerDiv);
-          logData.promoBannerInner = {
-            bgColor: innerStyles.backgroundColor,
-            bgImage: innerStyles.backgroundImage,
-            borderTop: innerStyles.borderTop
-          };
-        }
-      }
-      if (parentWrapper) {
-        const parentStyles = window.getComputedStyle(parentWrapper);
-        logData.parentWrapper = {
-          bgColor: parentStyles.backgroundColor,
-          bgImage: parentStyles.backgroundImage
-        };
-      }
-      if (body) {
-        const bodyStyles = window.getComputedStyle(body);
-        logData.body = {
-          bgColor: bodyStyles.backgroundColor,
-          bgImage: bodyStyles.backgroundImage
-        };
-      }
-      const fadeOverlay = hero?.querySelector('.absolute.bottom-0') as HTMLElement;
-      if (fadeOverlay) {
-        const fadeStyles = window.getComputedStyle(fadeOverlay);
-        const fadeRect = fadeOverlay.getBoundingClientRect();
-        logData.fadeOverlay = {
-          zIndex: fadeStyles.zIndex,
-          height: fadeStyles.height,
-          top: fadeRect.top,
-          bottom: fadeRect.bottom,
-          bgImage: fadeStyles.backgroundImage
-        };
-      }
-      
-      console.log('[DEBUG] Hero/PromoBanner styles:', logData);
-      fetch('http://127.0.0.1:7242/ingest/733a085a-e2c2-4b74-b65a-1dceb9224218',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:HeroSection',message:'All computed styles',data:logData,timestamp:Date.now(),runId:'debug1',hypothesisId:'ALL'})}).catch(()=>{});
+    const interBubble = interactiveRef.current;
+    if (!interBubble) return;
+
+    let curX = 0;
+    let curY = 0;
+    let tgX = 0;
+    let tgY = 0;
+    let raf = 0;
+
+    const move = () => {
+      curX += (tgX - curX) / 20;
+      curY += (tgY - curY) / 20;
+      interBubble.style.transform = `translate(${Math.round(curX)}px, ${Math.round(curY)}px)`;
+      raf = requestAnimationFrame(move);
     };
-    const timer = setTimeout(inspectStyles, 1000);
-    return () => clearTimeout(timer);
+
+    const onMove = (event: MouseEvent) => {
+      tgX = event.clientX;
+      tgY = event.clientY;
+    };
+
+    window.addEventListener("mousemove", onMove);
+    move();
+
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(raf);
+    };
   }, []);
-  // #endregion
 
   return (
     <section
+      ref={(el) => (heroRef.current = el)}
       dir="rtl"
       className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden isolate"
-      style={{ 
-        backgroundColor: 'transparent !important',
-        backgroundImage: 'none !important',
-        background: 'transparent !important'
+      style={{
+        backgroundColor: "transparent",
+        backgroundImage: "none",
+        background: "transparent",
       }}
     >
-      {/* Hero-specific backgrounds removed - Hero now inherits body/page background */}
-      {/* Base gradient background REMOVED - Hero inherits body background */}
-      
-      {/* Reflect-style hero glow - sunrise aura halo behind headline */}
-      {/* LCP SAFETY: This is decorative only (aria-hidden, pointer-events-none, z-0) */}
-      {/* Hero text (h1/p) remains the LCP element, not this glow effect */}
+      {/* ✅ gradients-bg replicated (background layer) */}
+      <div className="gradient-bg absolute inset-0 z-0 pointer-events-none" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="goo">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+              <feColorMatrix
+                in="blur"
+                mode="matrix"
+                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8"
+                result="goo"
+              />
+              <feBlend in="SourceGraphic" in2="goo" />
+            </filter>
+          </defs>
+        </svg>
+
+        <div className="gradients-container">
+          <div className="g1" />
+          <div className="g2" />
+          <div className="g3" />
+          <div className="g4" />
+          <div className="g5" />
+          <div ref={interactiveRef} className="interactive" />
+        </div>
+      </div>
+
+      {/* Keep your existing background layers if you want */}
+      {/* <PixelStarfield /> */}
+
+      {/* Your existing heroGlow (keep) */}
       <div
         aria-hidden="true"
         className="heroGlow pointer-events-none absolute inset-0 z-0"
         style={{
-          contain: 'paint',
-          willChange: 'transform',
-          transform: 'translateZ(0)',
+          contain: "paint",
+          willChange: "transform",
+          transform: "translateZ(0)",
         }}
       />
 
-      {/* Vignette overlay - very light, no dark bottom to prevent seam */}
+      {/* Your existing vignette overlay (keep) */}
       <div
         className="absolute inset-0 z-0 pointer-events-none"
         style={{
@@ -355,13 +332,10 @@ function HeroSection() {
         }}
       />
 
-      {/* Content - Redesigned with proper spacing and balanced typography - z-10 ensures it's above background layers */}
+      {/* Content (unchanged) */}
       <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-36 sm:pt-44 md:pt-52 pb-16 lg:pb-24">
         <div className="flex items-center justify-center min-h-[50vh] sm:min-h-[55vh]">
-          <div
-            className="text-white text-center flex flex-col justify-center items-center max-w-3xl w-full space-y-6"
-          >
-            {/* Badge / Tag above headline - 100% static for LCP (no animations) */}
+          <div className="text-white text-center flex flex-col justify-center items-center max-w-3xl w-full space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/5">
               <span className="w-2 h-2 rounded-full bg-primary" />
               <span className="font-vazirmatn text-xs sm:text-sm font-medium text-white/90">
@@ -369,45 +343,44 @@ function HeroSection() {
               </span>
             </div>
 
-            {/* Main Headline - NO animation, renders immediately visible */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
               {HERO_TITLE}
             </h1>
 
-            {/* Subtitle - NO animation, renders immediately visible */}
             <p className="max-w-2xl text-white/90 text-base sm:text-lg md:text-xl leading-relaxed font-normal px-4">
               {HERO_SUBTITLE}
             </p>
 
-            {/* Value Props / Trust Badges - Deferred until after LCP to prevent swap */}
-            <DeferredTrustBadges />
+            {/* <DeferredTrustBadges /> */}
 
-            {/* Optional CTA Button - 100% static for LCP (hover effects only, no transitions on mount) */}
             <div className="mt-6 sm:mt-8">
               <button
                 onClick={() => navigate("/products")}
                 className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-white cursor-pointer"
                 style={{
-                  background: "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(30, 103, 198, 0.2) 100%)",
-                  boxShadow: "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                  background:
+                    "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(30, 103, 198, 0.2) 100%)",
+                  boxShadow:
+                    "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = "0 12px 40px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)";
+                  e.currentTarget.style.boxShadow =
+                    "0 12px 40px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)";
                   e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
+                  e.currentTarget.style.boxShadow =
+                    "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
                   e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
                 }}
               >
                 <span className="font-vazirmatn relative z-10">مشاهده محصولات</span>
                 <span className="relative z-10">→</span>
-                {/* Subtle shine effect on hover only - no transition on mount */}
                 <span
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100"
                   style={{
-                    background: "linear-gradient(120deg, transparent, rgba(255,255,255,0.1), transparent)"
+                    background: "linear-gradient(120deg, transparent, rgba(255,255,255,0.1), transparent)",
                   }}
                 />
               </button>
@@ -415,6 +388,151 @@ function HeroSection() {
           </div>
         </div>
       </div>
+
+      {/* ✅ Inline CSS (compiled from your SCSS, no nesting) */}
+      <style>{`
+        :root {
+          --color-bg1: rgb(108, 0, 162);
+          --color-bg2: rgb(0, 17, 82);
+          --color1: 18, 113, 255;
+          --color2: 221, 74, 255;
+          --color3: 100, 220, 255;
+          --color4: 200, 50, 50;
+          --color5: 180, 180, 50;
+          --color-interactive: 140, 100, 255;
+          --circle-size: 80%;
+          --blending: hard-light;
+        }
+
+        @keyframes moveInCircle {
+          0% { transform: rotate(0deg); }
+          50% { transform: rotate(180deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        @keyframes moveVertical {
+          0% { transform: translateY(-50%); }
+          50% { transform: translateY(50%); }
+          100% { transform: translateY(-50%); }
+        }
+
+        @keyframes moveHorizontal {
+          0% { transform: translateX(-50%) translateY(-10%); }
+          50% { transform: translateX(50%) translateY(10%); }
+          100% { transform: translateX(-50%) translateY(-10%); }
+        }
+
+        .gradient-bg {
+          width: 100%;
+          height: 100%;
+          position: absolute;
+          overflow: hidden;
+          background: linear-gradient(40deg, var(--color-bg1), var(--color-bg2));
+          top: 0;
+          left: 0;
+        }
+
+        .gradient-bg svg {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 0;
+          height: 0;
+        }
+
+        .gradient-bg .gradients-container {
+          filter: url(#goo) blur(40px);
+          width: 100%;
+          height: 100%;
+        }
+
+        .gradient-bg .g1 {
+          position: absolute;
+          background: radial-gradient(circle at center, rgba(var(--color1), 0.8) 0, rgba(var(--color1), 0) 50%) no-repeat;
+          mix-blend-mode: var(--blending);
+          width: var(--circle-size);
+          height: var(--circle-size);
+          top: calc(50% - var(--circle-size) / 2);
+          left: calc(50% - var(--circle-size) / 2);
+          transform-origin: center center;
+          animation: moveVertical 30s ease infinite;
+          opacity: 1;
+        }
+
+        .gradient-bg .g2 {
+          position: absolute;
+          background: radial-gradient(circle at center, rgba(var(--color2), 0.8) 0, rgba(var(--color2), 0) 50%) no-repeat;
+          mix-blend-mode: var(--blending);
+          width: var(--circle-size);
+          height: var(--circle-size);
+          top: calc(50% - var(--circle-size) / 2);
+          left: calc(50% - var(--circle-size) / 2);
+          transform-origin: calc(50% - 400px);
+          animation: moveInCircle 20s reverse infinite;
+          opacity: 1;
+        }
+
+        .gradient-bg .g3 {
+          position: absolute;
+          background: radial-gradient(circle at center, rgba(var(--color3), 0.8) 0, rgba(var(--color3), 0) 50%) no-repeat;
+          mix-blend-mode: var(--blending);
+          width: var(--circle-size);
+          height: var(--circle-size);
+          top: calc(50% - var(--circle-size) / 2 + 200px);
+          left: calc(50% - var(--circle-size) / 2 - 500px);
+          transform-origin: calc(50% + 400px);
+          animation: moveInCircle 40s linear infinite;
+          opacity: 1;
+        }
+
+        .gradient-bg .g4 {
+          position: absolute;
+          background: radial-gradient(circle at center, rgba(var(--color4), 0.8) 0, rgba(var(--color4), 0) 50%) no-repeat;
+          mix-blend-mode: var(--blending);
+          width: var(--circle-size);
+          height: var(--circle-size);
+          top: calc(50% - var(--circle-size) / 2);
+          left: calc(50% - var(--circle-size) / 2);
+          transform-origin: calc(50% - 200px);
+          animation: moveHorizontal 40s ease infinite;
+          opacity: 0.7;
+        }
+
+        .gradient-bg .g5 {
+          position: absolute;
+          background: radial-gradient(circle at center, rgba(var(--color5), 0.8) 0, rgba(var(--color5), 0) 50%) no-repeat;
+          mix-blend-mode: var(--blending);
+          width: calc(var(--circle-size) * 2);
+          height: calc(var(--circle-size) * 2);
+          top: calc(50% - var(--circle-size));
+          left: calc(50% - var(--circle-size));
+          transform-origin: calc(50% - 800px) calc(50% + 200px);
+          animation: moveInCircle 20s ease infinite;
+          opacity: 1;
+        }
+
+        .gradient-bg .interactive {
+          position: absolute;
+          background: radial-gradient(circle at center, rgba(var(--color-interactive), 0.8) 0, rgba(var(--color-interactive), 0) 50%) no-repeat;
+          mix-blend-mode: var(--blending);
+          width: 100%;
+          height: 100%;
+          top: -50%;
+          left: -50%;
+          opacity: 0.7;
+          transform: translate(0px, 0px);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .gradient-bg .g1,
+          .gradient-bg .g2,
+          .gradient-bg .g3,
+          .gradient-bg .g4,
+          .gradient-bg .g5 {
+            animation: none !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }
