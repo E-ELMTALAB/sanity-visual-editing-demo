@@ -1026,7 +1026,7 @@ const Index = () => {
       <HeroSection />
 
       {/* Promo Banner - deferred until after LCP (5s or user interaction) */}
-      <LazyPromoBanner />
+      {/* <LazyPromoBanner /> */}
 
       {/* Site-wide Promotion Banner - from Medusa */}
 
