@@ -97,7 +97,7 @@ interface FaqItem {
 // Feature flag: Temporarily disable testimonials on Product Detail page
 // TODO: Re-enable by setting ENABLE_PRODUCT_DETAIL_TESTIMONIAL to true
 // Temporarily disabled until Sanity integration is ready
-const ENABLE_PRODUCT_DETAIL_TESTIMONIAL = true;
+const ENABLE_PRODUCT_DETAIL_TESTIMONIAL = false;
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -107,7 +107,6 @@ const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
-  const [hasUserSelectedVariant, setHasUserSelectedVariant] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -117,7 +116,7 @@ const ProductDetail = () => {
   const [pricesLoading, setPricesLoading] = useState(false);
   const [pricesError, setPricesError] = useState<string | null>(null);
   const [relatedProductPrices, setRelatedProductPrices] = useState<Record<string, { variants: MedusaVariant[] }>>({});
-  const [hydrated, setHydrated] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const { addItem, setSingleItem, state: cartState } = useCart();
   const stickyRef = useRef<HTMLDivElement>(null);
 
@@ -157,7 +156,7 @@ const ProductDetail = () => {
 
   // Mark as hydrated after first paint to defer image loading
   useEffect(() => {
-    setHydrated(true);
+    setIsHydrated(true);
   }, []);
 
   useEffect(() => {
@@ -380,12 +379,14 @@ const ProductDetail = () => {
     // Skip if we don't have product data yet
     if (!product) return;
 
+    // Only set default variant if no variant is currently selected (initial load only)
     // Once user selects a variant, don't override their choice
-    if (hasUserSelectedVariant) return;
+    if (selectedVariant !== null) return;
 
     // Always prioritize Medusa variants (they're the source of truth)
     const medusaDefault = getLowestPricedMedusaVariantId();
     if (medusaDefault) {
+      console.log('[PRODUCT-DETAIL] Setting default variant from Medusa:', medusaDefault);
       setSelectedVariant(medusaDefault);
       return;
     }
@@ -393,23 +394,28 @@ const ProductDetail = () => {
     // Fallback to Sanity variants if Medusa variants aren't available yet
     const sanityDefault = getLowestPricedSanityVariantId();
     if (sanityDefault) {
+      console.log('[PRODUCT-DETAIL] Setting default variant from Sanity (fallback):', sanityDefault);
       setSelectedVariant(sanityDefault);
+    } else {
+      console.log('[PRODUCT-DETAIL] No variants available yet - waiting for Medusa prices...');
     }
-  }, [medusaVariants, product?.variants, product, hasUserSelectedVariant]);
+  }, [medusaVariants, product?.variants, product]);
 
   // Get current price based on selected variant
   const getCurrentPrice = () => {
-    const hasAnyVariants = (medusaVariants.length > 0 || (product?.variants?.length ?? 0) > 0);
-
-    // Simple products without variants: always use product price (no Medusa flash)
-    if (!hasAnyVariants) {
-      return product?.price || 0;
-    }
+    console.log('[PRODUCT-DETAIL] getCurrentPrice called:', {
+      slug,
+      medusaVariantsCount: medusaVariants.length,
+      selectedVariant,
+      pricesLoading,
+      productPrice: product?.price,
+    });
 
     // Priority 1: Medusa variant price (if variant selected)
     if (medusaVariants.length > 0 && selectedVariant) {
       const variant = medusaVariants.find(v => v.variant_id === selectedVariant);
       if (variant?.price) {
+        console.log('[PRODUCT-DETAIL] ✅ getCurrentPrice - Using Medusa variant price:', variant.price, 'for variant:', variant.name);
         return variant.price;
       }
     }
@@ -418,6 +424,7 @@ const ProductDetail = () => {
     if (medusaVariants.length > 0) {
       const lowestPrice = Math.min(...medusaVariants.filter(v => v.price > 0).map(v => v.price));
       if (lowestPrice && lowestPrice !== Infinity) {
+        console.log('[PRODUCT-DETAIL] ✅ getCurrentPrice - Using lowest Medusa price:', lowestPrice);
         return lowestPrice;
       }
     }
@@ -426,16 +433,19 @@ const ProductDetail = () => {
     if (product?.variants && selectedVariant) {
       const variant = product.variants.find(v => v.id === selectedVariant);
       if (variant?.price) {
+        console.log('[PRODUCT-DETAIL] ⚠️ getCurrentPrice - Using Sanity variant price:', variant.price, 'for variant:', variant.name);
         return variant.price;
       }
     }
 
-    // Priority 4: If prices are still loading and we don't have better data, keep UI in loading state
+    // Priority 4: If prices are still loading, show 0 (will update when loaded)
     if (pricesLoading) {
+      console.log('[PRODUCT-DETAIL] ⏳ getCurrentPrice - Prices loading, showing 0');
       return 0;
     }
 
     // Priority 5: Sanity product price (last resort fallback)
+    console.log('[PRODUCT-DETAIL] ⚠️ getCurrentPrice - Using Sanity product price fallback:', product?.price || 0);
     return product?.price || 0;
   };
 
@@ -479,42 +489,46 @@ const ProductDetail = () => {
   };
 
   const addProductToCart = () => {
+    console.log('[PRODUCT-DETAIL] ========== ADD TO CART STARTED ==========');
+    console.log('[PRODUCT-DETAIL] Product ID:', product?.id);
+    console.log('[PRODUCT-DETAIL] Product title:', product?.title);
+    console.log('[PRODUCT-DETAIL] Selected variant:', selectedVariant);
+    console.log('[PRODUCT-DETAIL] Quantity:', quantity);
+    console.log('[PRODUCT-DETAIL] Medusa variants available:', medusaVariants.length);
+    console.log('[PRODUCT-DETAIL] All Medusa variants:', medusaVariants.map(v => ({ id: v.variant_id, name: v.name, price: v.price })));
+    console.log('[PRODUCT-DETAIL] Current price from getCurrentPrice():', getCurrentPrice());
+
     if (!product) {
+      console.error('[PRODUCT-DETAIL] ❌ No product data');
+      return false;
+    }
+
+    // Use Medusa variant if available
+    const selectedVariantData = medusaVariants.find(v => v.variant_id === selectedVariant);
+    console.log('[PRODUCT-DETAIL] Found selected variant data:', selectedVariantData);
+
+    if ((medusaVariants.length > 0 || (product?.variants?.length ?? 0) > 0) && !selectedVariant) {
+      toast({
+        title: "انتخاب گزینه",
+        description: "لطفاً ابتدا یکی از گزینه‌های محصول را انتخاب کنید.",
+        variant: "destructive",
+      });
       return false;
     }
 
     if (medusaVariants.length > 0) {
-      // Prefer Medusa variants when available
-      let effectiveVariant: MedusaVariant | undefined;
+      console.log('[PRODUCT-DETAIL] Using Medusa variant data');
+      console.log('[PRODUCT-DETAIL] Selected variant data details:', {
+        variant_id: selectedVariantData?.variant_id,
+        name: selectedVariantData?.name,
+        price: selectedVariantData?.price,
+        currency: selectedVariantData?.currency
+      });
 
-      // 1) Try the explicitly selected Medusa variant
-      if (selectedVariant) {
-        effectiveVariant = medusaVariants.find(v => v.variant_id === selectedVariant);
-
-        // 2) If selectedVariant is a Sanity ID, try to map it by name
-        if (!effectiveVariant && product.variants?.length) {
-          const sanityVariant = product.variants.find(v => v.id === selectedVariant);
-          if (sanityVariant) {
-            effectiveVariant = medusaVariants.find(
-              v => v.name === sanityVariant.nameFa || v.name === sanityVariant.name
-            );
-          }
-        }
-      }
-
-      // 3) If still nothing (or nothing selected), fall back to lowest-priced Medusa variant
-      if (!effectiveVariant) {
-        const medusaDefaultId = getLowestPricedMedusaVariantId();
-        if (medusaDefaultId) {
-          effectiveVariant = medusaVariants.find(v => v.variant_id === medusaDefaultId);
-          if (effectiveVariant) {
-            setSelectedVariant(effectiveVariant.variant_id);
-          }
-        }
-      }
-
-      // If we have Medusa variants but none has a valid price, show a hard error
-      if (!effectiveVariant || !effectiveVariant.price || effectiveVariant.price <= 0) {
+      // If we have Medusa variants, validate price
+      if (!selectedVariantData || !selectedVariantData.price || selectedVariantData.price === 0) {
+        console.error('[PRODUCT-DETAIL] ❌ Invalid or missing price for variant:', selectedVariant);
+        console.error('[PRODUCT-DETAIL] Available variants:', medusaVariants.map(v => ({ id: v.variant_id, name: v.name, price: v.price })));
         toast({
           title: "خطا",
           description: 'قیمت این محصول در دسترس نیست. لطفاً با پشتیبانی تماس بگیرید.',
@@ -528,10 +542,12 @@ const ProductDetail = () => {
         ? product.handle
         : slug || '';
 
+      console.log('[PRODUCT-DETAIL] Sanity slug:', sanitySlug);
+
       // Calculate final price with discount applied if promotion exists
-      let finalPrice = effectiveVariant.price;
-      if (productPromotion && productPromotion.promotion && effectiveVariant.price > 0) {
-        finalPrice = calculateDiscountedPrice(effectiveVariant.price, productPromotion.promotion);
+      let finalPrice = selectedVariantData.price;
+      if (productPromotion && productPromotion.promotion && selectedVariantData.price > 0) {
+        finalPrice = calculateDiscountedPrice(selectedVariantData.price, productPromotion.promotion);
       }
 
       const cartItem = {
@@ -540,40 +556,38 @@ const ProductDetail = () => {
         price: finalPrice, // Use discounted price for cart/checkout
         image: product.image || '/placeholder.svg',
         quantity: quantity,
-        selectedOption: effectiveVariant.name,
+        selectedOption: selectedVariantData.name,
         sanity_slug: sanitySlug,
-        variant_id: effectiveVariant.variant_id,
-        option_name: effectiveVariant.name,
+        variant_id: selectedVariantData.variant_id,
+        option_name: selectedVariantData.name,
       };
 
+      console.log('[PRODUCT-DETAIL] Cart item being created:', {
+        title: cartItem.title,
+        price: cartItem.price,
+        variant_id: cartItem.variant_id,
+        option_name: cartItem.option_name,
+        sanity_slug: cartItem.sanity_slug
+      });
       setSingleItem(cartItem);
+      console.log('[PRODUCT-DETAIL] ✅ Cart replaced with single product');
+      console.log('[PRODUCT-DETAIL] =========================================');
       return true;
     } else {
+      console.log('[PRODUCT-DETAIL] Using fallback (no Medusa variants)');
       // Fallback: use product data without Medusa (for products not synced yet)
       const sanitySlug = typeof product.handle === 'string'
         ? product.handle
         : slug || '';
 
-      let selectedProductVariant = product.variants.find(v => v.id === selectedVariant);
+      const selectedProductVariant = product.variants.find(v => v.id === selectedVariant);
+      const originalPrice = selectedProductVariant?.price || product.price || 0;
 
-      // If user hasn't selected a variant (or selection is invalid) but variants exist,
-      // automatically choose the lowest-priced valid variant
-      if (!selectedProductVariant && product.variants?.length) {
-        const sanityDefaultId = getLowestPricedSanityVariantId();
-        if (sanityDefaultId) {
-          selectedProductVariant = product.variants.find(v => v.id === sanityDefaultId);
-          if (selectedProductVariant) {
-            setSelectedVariant(selectedProductVariant.id);
-          }
-        }
-      }
+      console.log('[PRODUCT-DETAIL] Fallback price:', originalPrice);
+      console.log('[PRODUCT-DETAIL] Sanity slug:', sanitySlug);
 
-      const originalPrice =
-        (typeof selectedProductVariant?.price === "number" && selectedProductVariant.price > 0
-          ? selectedProductVariant.price
-          : product.price) || 0;
-
-      if (originalPrice <= 0) {
+      if (originalPrice === 0) {
+        console.error('[PRODUCT-DETAIL] ❌ Price is zero');
         toast({
           title: "خطا",
           description: 'قیمت این محصول در دسترس نیست.',
@@ -598,7 +612,10 @@ const ProductDetail = () => {
         sanity_slug: sanitySlug,
       };
 
+      console.log('[PRODUCT-DETAIL] Cart item to set (fallback, replacing cart):', cartItem);
       setSingleItem(cartItem);
+      console.log('[PRODUCT-DETAIL] ✅ Cart replaced with single product (fallback)');
+      console.log('[PRODUCT-DETAIL] =========================================');
       return true;
     }
   };
@@ -802,27 +819,8 @@ const ProductDetail = () => {
                 {(() => {
                   const hasVariants = (medusaVariants.length > 0 || (product?.variants?.length || 0) > 0);
                   const shouldShowOnMobile = !hasVariants || selectedVariant;
-                  const isPriceLoading = hasVariants && pricesLoading && !hasMedusaPricing;
 
                   if (!shouldShowOnMobile) return null; // Hide on mobile if variants exist but none selected
-
-                  // While Medusa prices are loading for variant products, keep layout
-                  // stable but avoid flashing an incorrect fallback price.
-                  if (isPriceLoading) {
-                    return (
-                      <div className="mt-4 mb-6" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
-                        <SurfaceGlass className="rounded-xl p-4 sm:p-5 border border-white/20">
-                          <div className="flex flex-col gap-3" dir="rtl">
-                            <div className="flex flex-col gap-1.5" dir="rtl">
-                              <div className="flex items-baseline gap-2" style={{ direction: "rtl" }}>
-                                <div className="h-8 w-24 rounded-md bg-muted/40 animate-pulse" />
-                              </div>
-                            </div>
-                          </div>
-                        </SurfaceGlass>
-                      </div>
-                    );
-                  }
 
                   const displayPrice = productPromotion ? productPromotion.discountedPrice : currentPrice;
                   const displayOldPrice = productPromotion ? productPromotion.originalPrice : (shouldShowOriginalPrice ? originalPrice : undefined);
@@ -968,7 +966,7 @@ const ProductDetail = () => {
                   opacity: 1
                 }} className="relative aspect-square rounded-2xl overflow-hidden glass w-full">
                   {/* CSS-only placeholder during initial load to prevent CLS */}
-                  {!hydrated && (
+                  {!isHydrated && (
                     <div
                       className="w-full h-full"
                       style={{
@@ -979,7 +977,7 @@ const ProductDetail = () => {
                     />
                   )}
                   {/* Real image loads after hydration */}
-                  {hydrated && (
+                  {isHydrated && (
                     <img
                       src={currentImage}
                       alt={isRTL ? product.titleFa : product.title}
@@ -988,7 +986,7 @@ const ProductDetail = () => {
                       decoding="async"
                     />
                   )}
-                  {product.badge && hydrated && (
+                  {product.badge && isHydrated && (
                     <div className="absolute top-4 ltr:left-4 rtl:right-4">
                       <Badge variant={product.badge as "sale" | "new" | "hot"}>
                         {product.badge === "sale" && "تخفیف"}
@@ -1019,10 +1017,7 @@ const ProductDetail = () => {
                       return (
                         <button
                           key={variantId || idx}
-                          onClick={() => {
-                            setSelectedVariant(variantId);
-                            setHasUserSelectedVariant(true);
-                          }}
+                          onClick={() => setSelectedVariant(variantId)}
                           disabled={!variantInStock}
                           className={cn("relative p-4 rounded-xl border-2 transition-all duration-200 min-w-0 overflow-hidden", "hover:scale-[1.02] active:scale-[0.98]", selectedVariant === variantId ? "border-primary bg-primary/10 shadow-lg shadow-primary/20" : "border-border/50 bg-surface-glass/30 hover:border-border", !variantInStock && "opacity-50 cursor-not-allowed hover:scale-100")}
                         >
@@ -1159,30 +1154,8 @@ const ProductDetail = () => {
         {(() => {
           const hasVariants = (medusaVariants.length > 0 || (product?.variants?.length || 0) > 0);
           const shouldShowOnMobile = !hasVariants || selectedVariant;
-          const isPriceLoading = hasVariants && pricesLoading && !hasMedusaPricing;
 
           if (!shouldShowOnMobile) return null;
-
-          if (isPriceLoading) {
-            return (
-              <div className="md:hidden fixed bottom-0 inset-x-0 z-50 glass border-t border-border-glass backdrop-blur-lg pb-safe">
-                <div className="flex items-center gap-3 p-3 sm:p-4 min-w-0 max-w-full">
-                  <div className="flex flex-col shrink-0 min-w-0">
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      قیمت:
-                    </span>
-                    <div className="min-w-0 flex items-baseline gap-1">
-                      <div className="h-4 w-16 rounded-md bg-muted/40 animate-pulse" />
-                    </div>
-                  </div>
-                  <Button size="sm" disabled className="flex-1 min-w-0 h-10 text-sm opacity-70">
-                    <ShoppingCart className="ltr:mr-1 rtl:ml-1 h-3.5 w-3.5 shrink-0" />
-                    <span className="truncate">در حال محاسبه...</span>
-                  </Button>
-                </div>
-              </div>
-            );
-          }
 
           // Calculate final price based on selected variant with discount applied
           // Get the selected variant's price (already computed in currentPrice)

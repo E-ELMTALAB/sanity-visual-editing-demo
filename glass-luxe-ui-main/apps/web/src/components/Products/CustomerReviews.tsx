@@ -23,6 +23,9 @@ interface CustomerReviewsProps {
   className?: string;
 }
 
+// TODO: Re-enable Sanity testimonials after screenshot phase
+const USE_STATIC_TESTIMONIALS = true;
+
 const springTransition = {
   type: "spring" as const,
   stiffness: 220,
@@ -35,6 +38,60 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [api, setApi] = useState<CarouselApi>();
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  if (USE_STATIC_TESTIMONIALS) {
+    const staticTestimonials = [
+      { id: 1, image: "/images/testimonials/t1.jpg" },
+      { id: 2, image: "/images/testimonials/t2.jpg" },
+      { id: 3, image: "/images/testimonials/t3.jpg" },
+    ];
+
+    return (
+      <section dir="rtl" className={cn("py-10 md:py-4", className)}>
+        <SurfaceGlass className="rounded-2xl overflow-hidden p-6 md:p-4">
+          {/* Background accent gradient */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage:
+                "linear-gradient(to bottom right, hsl(var(--primary) / 0.05), transparent, hsl(var(--accent) / 0.05))",
+            }}
+          />
+
+          <div className="relative z-10">
+            {/* Header */}
+            <div className="mb-4 md:mb-3 text-center">
+              <h2 className="font-vazirmatn text-[18px] md:text-[20px] lg:text-[24px] font-bold leading-[1.3] text-foreground">
+                مورد اعتماد هزاران دانشجو
+              </h2>
+              <p className="font-vazirmatn text-[16px] md:text-[14px] font-normal leading-[1.5] text-muted-foreground hidden md:block mt-1">
+                تجربه واقعی مشتریان از محصولات ما
+              </p>
+            </div>
+
+            {/* Static testimonial screenshots grid */}
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {staticTestimonials.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-xl overflow-hidden shadow-md shadow-black/10 bg-background/40"
+                >
+                  <div className="relative w-full aspect-[9/16]">
+                    <img
+                      src={item.image}
+                      alt={isRTL ? "اسکرین‌شات رضایت مشتری" : "Customer testimonial screenshot"}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </SurfaceGlass>
+      </section>
+    );
+  }
 
   const openLightbox = useCallback((image: string) => {
     setLightboxImage(image);
