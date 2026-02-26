@@ -288,6 +288,95 @@ function HeroSection() {
               {HERO_SUBTITLE}
             </p>
 
+            <div className="mt-4 sm:mt-6">
+              <div
+                dir="rtl"
+                className="flex flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8"
+              >
+                <div className="flex flex-col items-center gap-3 sm:gap-4 group">
+                  <div className="relative">
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl glass border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:shadow-xl group-hover:brightness-110 transition-all duration-200 backdrop-blur-md">
+                      <div className="text-white/95 group-hover:text-white transition-colors duration-200 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-refresh-cw w-full h-full"
+                        >
+                          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                          <path d="M21 3v5h-5" />
+                          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                          <path d="M8 16H3v5" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-white/90 text-xs sm:text-sm md:text-base font-medium text-center whitespace-nowrap">
+                    تضمین تعویض
+                  </span>
+                </div>
+
+                <div className="flex flex-col items-center gap-3 sm:gap-4 group">
+                  <div className="relative">
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl glass border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:shadow-xl group-hover:brightness-110 transition-all duration-200 backdrop-blur-md">
+                      <div className="text-white/95 group-hover:text-white transition-colors duration-200 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-shield w-full h-full"
+                        >
+                          <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-white/90 text-xs sm:text-sm md:text-base font-medium text-center whitespace-nowrap">
+                    اکانت‌های اصل
+                  </span>
+                </div>
+
+                <div className="flex flex-col items-center gap-3 sm:gap-4 group">
+                  <div className="relative">
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl glass border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:shadow-xl group-hover:brightness-110 transition-all duration-200 backdrop-blur-md">
+                      <div className="text-white/95 group-hover:text-white transition-colors duration-200 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-clock w-full h-full"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-white/90 text-xs sm:text-sm md:text-base font-medium text-center whitespace-nowrap">
+                    پشتیبانی ۲۴/۷
+                  </span>
+                </div>
+              </div>
+            </div>
+
             {/* <DeferredTrustBadges /> */}
 
             <div className="mt-6 sm:mt-8">
