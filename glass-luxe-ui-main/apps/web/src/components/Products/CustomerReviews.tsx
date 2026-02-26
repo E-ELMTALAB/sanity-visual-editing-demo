@@ -39,6 +39,14 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   const [api, setApi] = useState<CarouselApi>();
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const openLightbox = useCallback((image: string) => {
+    setLightboxImage(image);
+  }, []);
+
+  const closeLightbox = useCallback(() => {
+    setLightboxImage(null);
+  }, []);
+
   if (USE_STATIC_TESTIMONIALS) {
     const staticTestimonials = [
       { id: 1, image: "/images/testimonials/t1.jpg" },
@@ -47,59 +55,97 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
     ];
 
     return (
-      <section dir="rtl" className={cn("py-10 md:py-4", className)}>
-        <SurfaceGlass className="rounded-2xl overflow-hidden p-6 md:p-4">
-          {/* Background accent gradient */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              backgroundImage:
-                "linear-gradient(to bottom right, hsl(var(--primary) / 0.05), transparent, hsl(var(--accent) / 0.05))",
-            }}
-          />
+      <>
+        <section dir="rtl" className={cn("py-10 md:py-4", className)}>
+          <SurfaceGlass className="rounded-2xl overflow-hidden p-6 md:p-4">
+            {/* Background accent gradient */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage:
+                  "linear-gradient(to bottom right, hsl(var(--primary) / 0.05), transparent, hsl(var(--accent) / 0.05))",
+              }}
+            />
 
-          <div className="relative z-10">
-            {/* Header */}
-            <div className="mb-4 md:mb-3 text-center">
-              <h2 className="font-vazirmatn text-[18px] md:text-[20px] lg:text-[24px] font-bold leading-[1.3] text-foreground">
-                مورد اعتماد هزاران دانشجو
-              </h2>
-              <p className="font-vazirmatn text-[16px] md:text-[14px] font-normal leading-[1.5] text-muted-foreground hidden md:block mt-1">
-                تجربه واقعی مشتریان از محصولات ما
-              </p>
-            </div>
+            <div className="relative z-10">
+              {/* Header */}
+              <div className="mb-4 md:mb-3 text-center">
+                <h2 className="font-vazirmatn text-[18px] md:text-[20px] lg:text-[24px] font-bold leading-[1.3] text-foreground">
+                  مورد اعتماد هزاران دانشجو
+                </h2>
+                <p className="font-vazirmatn text-[16px] md:text-[14px] font-normal leading-[1.5] text-muted-foreground hidden md:block mt-1">
+                  تجربه واقعی مشتریان از محصولات ما
+                </p>
+              </div>
 
-            {/* Static testimonial screenshots grid */}
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {staticTestimonials.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-xl overflow-hidden shadow-md shadow-black/10 bg-background/40"
-                >
-                  <div className="relative w-full aspect-[9/16]">
-                    <img
-                      src={item.image}
-                      alt={isRTL ? "اسکرین‌شات رضایت مشتری" : "Customer testimonial screenshot"}
-                      loading="lazy"
-                      className="w-full h-full object-cover"
-                    />
+              {/* Static testimonial screenshots grid */}
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                {staticTestimonials.map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-xl overflow-hidden shadow-md shadow-black/10 bg-background/40 cursor-pointer group hover:shadow-lg hover:shadow-black/20 transition-shadow"
+                    onClick={() => openLightbox(item.image)}
+                  >
+                    <div className="relative w-full aspect-[9/16]">
+                      <img
+                        src={item.image}
+                        alt={isRTL ? "اسکرین‌شات رضایت مشتری" : "Customer testimonial screenshot"}
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-opacity duration-200 flex items-center justify-center">
+                        <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        </SurfaceGlass>
-      </section>
+          </SurfaceGlass>
+        </section>
+
+        {/* Lightbox Modal */}
+        <AnimatePresence>
+          {lightboxImage && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              style={{
+                backgroundColor: "rgba(0, 0, 0, 0.8)",
+                backdropFilter: "blur(4px)",
+              }}
+              onClick={closeLightbox}
+            >
+              {/* Close Button */}
+              <button
+                onClick={closeLightbox}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors duration-200 flex items-center justify-center z-10"
+                aria-label="بستن"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+
+              {/* Image */}
+              <motion.img
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                src={lightboxImage}
+                alt="Testimonial screenshot"
+                className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </>
     );
   }
-
-  const openLightbox = useCallback((image: string) => {
-    setLightboxImage(image);
-  }, []);
-
-  const closeLightbox = useCallback(() => {
-    setLightboxImage(null);
-  }, []);
 
   // Keep currentIndex in bounds when reviews change (mobile-only logic)
   useEffect(() => {

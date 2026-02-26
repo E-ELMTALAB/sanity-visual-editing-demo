@@ -97,7 +97,7 @@ interface FaqItem {
 // Feature flag: Temporarily disable testimonials on Product Detail page
 // TODO: Re-enable by setting ENABLE_PRODUCT_DETAIL_TESTIMONIAL to true
 // Temporarily disabled until Sanity integration is ready
-const ENABLE_PRODUCT_DETAIL_TESTIMONIAL = false;
+const ENABLE_PRODUCT_DETAIL_TESTIMONIAL = true;
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
