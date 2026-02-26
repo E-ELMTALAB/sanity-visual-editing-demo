@@ -205,7 +205,10 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
               <img
                 src={review.screenshot}
                 alt="Review screenshot"
-                className="w-full h-full object-contain object-center"
+                className={cn(
+                  "w-full h-full",
+                  USE_STATIC_TESTIMONIALS ? "object-cover object-center" : "object-contain object-center"
+                )}
                 loading="lazy"
                 onClick={() => openLightbox(review.screenshot!)}
               />
@@ -298,8 +301,8 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
             {/* Carousel / Mobile vs Desktop */}
             {isMobile ? (
               <>
-                {renderReviewCard(reviews[currentIndex], currentIndex)}
-                {reviews.length > 1 && (
+                {effectiveReviews.length > 0 && renderReviewCard(effectiveReviews[currentIndex], currentIndex)}
+                {effectiveReviews.length > 1 && (
                   <div className="flex justify-center items-center gap-4 md:gap-2 mt-8 md:mt-6 relative z-20 pb-2">
                     <button
                       type="button"
@@ -324,7 +327,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                     <button
                       type="button"
                       onClick={handleNextMobile}
-                      disabled={currentIndex === reviews.length - 1}
+                      disabled={currentIndex === effectiveReviews.length - 1}
                       className={cn(
                         "static w-10 h-10 md:w-8 md:h-8 rounded-full",
                         "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
@@ -346,7 +349,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
               </>
             ) : (
               <Carousel
-                key={`carousel-${reviews.length}-${isRTL}`}
+                key={`carousel-${effectiveReviews.length}-${isRTL}`}
                 setApi={setApi}
                 opts={{
                   align: "start",
@@ -361,7 +364,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                 className="w-full"
               >
                 <CarouselContent className={isRTL ? "-mr-4 md:-mr-2" : "-ml-4 md:-ml-2"}>
-                  {reviews.map((review, index) => {
+                  {effectiveReviews.map((review, index) => {
                     // Ensure review exists before rendering
                     if (!review || !review.id) {
                       console.warn('[CustomerReviews] Invalid review at index:', index);
@@ -407,7 +410,10 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                                   <img
                                     src={review.screenshot}
                                     alt="Review screenshot"
-                                    className="w-full h-full object-contain object-center"
+                                    className={cn(
+                                      "w-full h-full",
+                                      USE_STATIC_TESTIMONIALS ? "object-cover object-center" : "object-contain object-center"
+                                    )}
                                     loading="lazy"
                                     onClick={() => openLightbox(review.screenshot!)}
                                   />
