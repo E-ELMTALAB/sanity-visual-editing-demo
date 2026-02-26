@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState, useRef } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -120,29 +120,80 @@ const GlobalCustomerSupport = () => {
   );
 };
 
+const GlobalGradientBackground = () => {
+  const interactiveRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const interBubble = interactiveRef.current;
+    if (!interBubble) return;
+
+    let curX = 0;
+    let curY = 0;
+    let tgX = 0;
+    let tgY = 0;
+    let raf = 0;
+
+    const move = () => {
+      curX += (tgX - curX) / 20;
+      curY += (tgY - curY) / 20;
+      interBubble.style.transform = `translate(${Math.round(curX)}px, ${Math.round(curY)}px)`;
+      raf = requestAnimationFrame(move);
+    };
+
+    const onMove = (event: MouseEvent) => {
+      tgX = event.clientX;
+      tgY = event.clientY;
+    };
+
+    window.addEventListener("mousemove", onMove);
+    move();
+
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  return (
+    <div
+      aria-hidden="true"
+      className="gradient-bg pointer-events-none -z-10"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="goo">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+            <feColorMatrix
+              in="blur"
+              mode="matrix"
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8"
+              result="goo"
+            />
+            <feBlend in="SourceGraphic" in2="goo" />
+          </filter>
+        </defs>
+      </svg>
+
+      <div className="gradients-container">
+        <div className="g1" />
+        <div className="g2" />
+        <div className="g3" />
+        <div className="g4" />
+        <div className="g5" />
+        <div ref={interactiveRef} className="interactive" />
+      </div>
+    </div>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
       <DirectionProvider>
         <CartProvider>
           <PromotionProvider>
             <TooltipProvider>
-              {/* Global Unified Background */}
-              <div id="unified-bg" className="fixed inset-0 -z-50 pointer-events-none" />
-              <style>{`
-            /* Unified bg uses tokens from index.css */
-            #unified-bg::before{
-              content: "";
-              position: absolute;
-              inset: -20vh -20vw;
-              pointer-events: none;
-              background:
-                radial-gradient(80% 55% at 15% 10%, hsl(var(--bg-blue)) 0%, rgba(0,0,0,0) 60%),
-                radial-gradient(70% 60% at 85% 30%, hsl(var(--bg-purple)) 0%, rgba(0,0,0,0) 65%),
-                radial-gradient(60% 70% at 30% 90%, hsl(var(--bg-cyan)) 0%, rgba(0,0,0,0) 60%);
-              filter: blur(40px) saturate(120%);
-              opacity: 0.95;
-            }
-          `}</style>
+              {/* Global Hero Gradient Background */}
+              <GlobalGradientBackground />
 
               {/* Global toasters (defer until idle to avoid layout thrash) */}
               <DeferredToasters />
