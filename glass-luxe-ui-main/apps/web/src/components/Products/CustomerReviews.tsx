@@ -38,8 +38,8 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   const isMobile = useIsMobile();
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [api, setApi] = useState<CarouselApi>();
-  const [desktopIndex, setDesktopIndex] = useState(0);
-  const [desktopSlideCount, setDesktopSlideCount] = useState(0);
+  const [desktopCanPrev, setDesktopCanPrev] = useState(false);
+  const [desktopCanNext, setDesktopCanNext] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const openLightbox = useCallback((image: string) => {
@@ -56,21 +56,21 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
     ? [
         {
           id: "static-1",
-          text: "",
+          text: "رضایت مشتری از پشتیبانی سریع و پیگیری دقیق",
           screenshot: "/images/testimonials/t1.jpg",
-          source: { platform: "instagram", label: "", url: "#" },
+          source: { platform: "telegram", label: "تلگرام", url: "#" },
         },
         {
           id: "static-2",
-          text: "",
+          text: "رضایت مشتری از کیفیت محصول و تحویل به‌موقع",
           screenshot: "/images/testimonials/t2.jpg",
-          source: { platform: "instagram", label: "", url: "#" },
+          source: { platform: "telegram", label: "تلگرام", url: "#" },
         },
         {
           id: "static-3",
-          text: "",
+          text: "رضایت مشتری از پاسخگویی و همراهی تیم",
           screenshot: "/images/testimonials/t3.jpg",
-          source: { platform: "instagram", label: "", url: "#" },
+          source: { platform: "telegram", label: "تلگرام", url: "#" },
         },
       ]
     : [];
@@ -139,14 +139,14 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
     };
   }, [api, effectiveReviews.length, isMobile]);
 
-  // Track selected index & slide count for desktop to control arrow disabled state
+  // Track canScrollPrev/Next for desktop to control arrow disabled state
   useEffect(() => {
     if (!api || isMobile) return;
 
     const updateFromApi = () => {
       try {
-        setDesktopSlideCount(api.scrollSnapList().length);
-        setDesktopIndex(api.selectedScrollSnap());
+        setDesktopCanPrev(api.canScrollPrev());
+        setDesktopCanNext(api.canScrollNext());
       } catch (error) {
         console.warn("[CustomerReviews] Failed to read carousel state:", error);
       }
@@ -265,21 +265,19 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
           )}
         </div>
 
-        {/* Quote Icon */}
-        <div className="mb-3 md:mb-2 flex justify-start">
+        {/* Quote Icon + One-line description (same row, same baseline) */}
+        <div className="mb-4 md:mb-3 flex items-center gap-2">
           <Quote
-            className="w-8 h-8 md:w-5 md:h-5"
+            className="w-8 h-8 md:w-5 md:h-5 shrink-0"
             style={{
               color: "hsl(var(--primary) / 0.4)",
               transform: "rotate(180deg)",
             }}
           />
+          <p className="font-vazirmatn text-[13px] md:text-[12px] font-normal leading-[1.625] text-foreground/80">
+            {review.text}
+          </p>
         </div>
-
-        {/* Review Text */}
-        <p className="font-vazirmatn text-[14px] md:text-[12px] font-normal leading-[1.625] text-foreground/90 flex-1 mb-4 md:mb-3">
-          {review.text}
-        </p>
 
         {/* Source Divider */}
         <div
@@ -319,7 +317,7 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
             {/* Header */}
             <div className="mb-4 md:mb-3 text-center">
               <h2 className="font-vazirmatn text-[18px] md:text-[20px] lg:text-[24px] font-bold leading-[1.3] text-foreground">
-                مورد اعتماد هزاران دانشجو
+                مورد اعتماد کاربران
               </h2>
               <p className="font-vazirmatn text-[16px] md:text-[14px] font-normal leading-[1.5] text-muted-foreground hidden md:block mt-1">
                 تجربه واقعی مشتریان از محصولات ما
@@ -419,19 +417,24 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                 </CarouselContent>
 
                 {/* Navigation Buttons - Centered below carousel (desktop only) */}
-                <div className="flex justify-center items-center gap-4 md:gap-2 mt-8 md:mt-6 relative z-20 pb-2">
+                <div className="flex justify-center items-center gap-4 md:gap-2 mt-8 md:mt-6 relative z-50 pb-2 pointer-events-auto">
                   {/* Previous button (visually right in RTL, scrolls to previous slide) */}
                   <button
                     type="button"
-                    onClick={() => api?.scrollPrev()}
-                    disabled={!api || desktopIndex <= 0}
+                    onClick={() => {
+                      if (process.env.NODE_ENV !== "production") {
+                        console.log("[CustomerReviews] DESKTOP PREV CLICK");
+                      }
+                      api?.scrollPrev();
+                    }}
+                    disabled={!api || !desktopCanPrev}
                     className={cn(
                       "static w-10 h-10 md:w-8 md:h-8 rounded-full",
                       "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
                       "active:scale-95",
                       "transition-all duration-200 flex items-center justify-center",
                       "disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:hover:bg-transparent disabled:hover:text-inherit",
-                      "cursor-pointer z-20 pointer-events-auto"
+                      "cursor-pointer z-50 pointer-events-auto"
                     )}
                     aria-label="قبلی"
                   >
@@ -444,19 +447,20 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                   {/* Next button (visually left in RTL, scrolls to next slide) */}
                   <button
                     type="button"
-                    onClick={() => api?.scrollNext()}
-                    disabled={
-                      !api ||
-                      desktopSlideCount <= 0 ||
-                      desktopIndex >= desktopSlideCount - 1
-                    }
+                    onClick={() => {
+                      if (process.env.NODE_ENV !== "production") {
+                        console.log("[CustomerReviews] DESKTOP NEXT CLICK");
+                      }
+                      api?.scrollNext();
+                    }}
+                    disabled={!api || !desktopCanNext}
                     className={cn(
                       "static w-10 h-10 md:w-8 md:h-8 rounded-full",
                       "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
                       "active:scale-95",
                       "transition-all duration-200 flex items-center justify-center",
                       "disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:hover:bg-transparent disabled:hover:text-inherit",
-                      "cursor-pointer z-20 pointer-events-auto"
+                      "cursor-pointer z-50 pointer-events-auto"
                     )}
                     aria-label="بعدی"
                   >
