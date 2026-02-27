@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Quote, ZoomIn, Send, Instagram, MessageCircle, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 import { useDirection } from "@/contexts/DirectionContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -38,6 +38,8 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   const isMobile = useIsMobile();
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [api, setApi] = useState<CarouselApi>();
+  const [desktopIndex, setDesktopIndex] = useState(0);
+  const [desktopSlideCount, setDesktopSlideCount] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const openLightbox = useCallback((image: string) => {
@@ -136,6 +138,29 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
       window.removeEventListener("resize", handleResize);
     };
   }, [api, effectiveReviews.length, isMobile]);
+
+  // Track selected index & slide count for desktop to control arrow disabled state
+  useEffect(() => {
+    if (!api || isMobile) return;
+
+    const updateFromApi = () => {
+      try {
+        setDesktopSlideCount(api.scrollSnapList().length);
+        setDesktopIndex(api.selectedScrollSnap());
+      } catch (error) {
+        console.warn("[CustomerReviews] Failed to read carousel state:", error);
+      }
+    };
+
+    updateFromApi();
+    api.on("select", updateFromApi);
+    api.on("reInit", updateFromApi);
+
+    return () => {
+      api.off("select", updateFromApi);
+      api.off("reInit", updateFromApi);
+    };
+  }, [api, isMobile]);
 
   const handlePrevMobile = useCallback(() => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : prev));
@@ -393,10 +418,13 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                   })}
                 </CarouselContent>
 
-                {/* Navigation Buttons - Centered below carousel */}
+                {/* Navigation Buttons - Centered below carousel (desktop only) */}
                 <div className="flex justify-center items-center gap-4 md:gap-2 mt-8 md:mt-6 relative z-20 pb-2">
                   {/* Previous button (visually right in RTL, scrolls to previous slide) */}
-                  <CarouselPrevious
+                  <button
+                    type="button"
+                    onClick={() => api?.scrollPrev()}
+                    disabled={!api || desktopIndex <= 0}
                     className={cn(
                       "static w-10 h-10 md:w-8 md:h-8 rounded-full",
                       "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
@@ -406,9 +434,22 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                       "cursor-pointer z-20 pointer-events-auto"
                     )}
                     aria-label="قبلی"
-                  />
+                  >
+                    {isRTL ? (
+                      <ChevronRight className="w-5 h-5" />
+                    ) : (
+                      <ChevronLeft className="w-5 h-5" />
+                    )}
+                  </button>
                   {/* Next button (visually left in RTL, scrolls to next slide) */}
-                  <CarouselNext
+                  <button
+                    type="button"
+                    onClick={() => api?.scrollNext()}
+                    disabled={
+                      !api ||
+                      desktopSlideCount <= 0 ||
+                      desktopIndex >= desktopSlideCount - 1
+                    }
                     className={cn(
                       "static w-10 h-10 md:w-8 md:h-8 rounded-full",
                       "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
@@ -418,7 +459,13 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                       "cursor-pointer z-20 pointer-events-auto"
                     )}
                     aria-label="بعدی"
-                  />
+                  >
+                    {isRTL ? (
+                      <ChevronLeft className="w-5 h-5" />
+                    ) : (
+                      <ChevronRight className="w-5 h-5" />
+                    )}
+                  </button>
                 </div>
               </Carousel>
             )}
