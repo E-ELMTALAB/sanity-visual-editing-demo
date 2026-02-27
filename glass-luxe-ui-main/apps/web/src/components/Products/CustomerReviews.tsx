@@ -10,8 +10,6 @@ import { cn } from "@/lib/utils";
 export interface CustomerReview {
   id: string;
   text: string;
-  // Optional short caption shown under the screenshot (used for static mode)
-  caption?: string;
   screenshot?: string;
   source: {
     platform: "telegram" | "instagram" | "whatsapp";
@@ -40,8 +38,6 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
   const isMobile = useIsMobile();
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [api, setApi] = useState<CarouselApi>();
-  const [canScrollPrevDesktop, setCanScrollPrevDesktop] = useState(false);
-  const [canScrollNextDesktop, setCanScrollNextDesktop] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const openLightbox = useCallback((image: string) => {
@@ -59,21 +55,18 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
         {
           id: "static-1",
           text: "",
-          caption: "رضایت مشتری ۱",
           screenshot: "/images/testimonials/t1.jpg",
           source: { platform: "instagram", label: "", url: "#" },
         },
         {
           id: "static-2",
           text: "",
-          caption: "رضایت مشتری ۲",
           screenshot: "/images/testimonials/t2.jpg",
           source: { platform: "instagram", label: "", url: "#" },
         },
         {
           id: "static-3",
           text: "",
-          caption: "رضایت مشتری ۳",
           screenshot: "/images/testimonials/t3.jpg",
           source: { platform: "instagram", label: "", url: "#" },
         },
@@ -143,29 +136,6 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
       window.removeEventListener("resize", handleResize);
     };
   }, [api, effectiveReviews.length, isMobile]);
-
-  // Keep desktop arrow enabled/disabled state in sync with Embla
-  useEffect(() => {
-    if (!api || isMobile) return;
-
-    const updateCanScroll = () => {
-      try {
-        setCanScrollPrevDesktop(api.canScrollPrev());
-        setCanScrollNextDesktop(api.canScrollNext());
-      } catch (error) {
-        console.warn("[CustomerReviews] Failed to read carousel canScroll state:", error);
-      }
-    };
-
-    updateCanScroll();
-    api.on("select", updateCanScroll);
-    api.on("reInit", updateCanScroll);
-
-    return () => {
-      api.off("select", updateCanScroll);
-      api.off("reInit", updateCanScroll);
-    };
-  }, [api, isMobile]);
 
   const handlePrevMobile = useCallback(() => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : prev));
@@ -269,13 +239,6 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
             </div>
           )}
         </div>
-
-        {/* Optional per-slide caption (small, subtle text) */}
-        {review.caption && (
-          <p className="font-vazirmatn text-[11px] md:text-[12px] text-muted-foreground mb-3 text-center">
-            {review.caption}
-          </p>
-        )}
 
         {/* Quote Icon */}
         <div className="mb-3 md:mb-2 flex justify-start">
@@ -434,8 +397,6 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                 <div className="flex justify-center items-center gap-4 md:gap-2 mt-8 md:mt-6 relative z-20 pb-2">
                   {/* Previous button (visually right in RTL, scrolls to previous slide) */}
                   <CarouselPrevious
-                    disabled={!canScrollPrevDesktop}
-                    onClick={() => api?.scrollPrev()}
                     className={cn(
                       "static w-10 h-10 md:w-8 md:h-8 rounded-full",
                       "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
@@ -448,8 +409,6 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                   />
                   {/* Next button (visually left in RTL, scrolls to next slide) */}
                   <CarouselNext
-                    disabled={!canScrollNextDesktop}
-                    onClick={() => api?.scrollNext()}
                     className={cn(
                       "static w-10 h-10 md:w-8 md:h-8 rounded-full",
                       "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
