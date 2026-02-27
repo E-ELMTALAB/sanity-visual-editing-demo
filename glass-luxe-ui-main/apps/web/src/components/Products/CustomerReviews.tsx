@@ -427,7 +427,6 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                       }
                       api?.scrollPrev();
                     }}
-                    disabled={!api || !desktopCanPrev}
                     className={cn(
                       "static w-10 h-10 md:w-8 md:h-8 rounded-full",
                       "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
@@ -453,7 +452,6 @@ export function CustomerReviews({ reviews, className }: CustomerReviewsProps) {
                       }
                       api?.scrollNext();
                     }}
-                    disabled={!api || !desktopCanNext}
                     className={cn(
                       "static w-10 h-10 md:w-8 md:h-8 rounded-full",
                       "border hover:bg-primary hover:text-primary-foreground hover:border-primary",
