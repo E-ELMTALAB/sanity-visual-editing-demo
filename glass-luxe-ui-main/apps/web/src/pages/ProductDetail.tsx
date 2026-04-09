@@ -635,32 +635,8 @@ const ProductDetail = () => {
   };
 
   const handleBuyNow = () => {
-    if (addProductToCart()) {
-      // Fire begin_checkout event for GA4 ecommerce tracking
-      if (product) {
-        const priceInRial = getCurrentPrice() * 10; // Convert toman to rial
-
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          event: "begin_checkout",
-          ecommerce: {
-            currency: "IRR",
-            value: priceInRial,
-            items: [{
-              item_id: product.handle || slug || product.id,
-              item_name: product.titleFa || product.title,
-              item_category: product.categoryFa || product.category,
-              item_variant: selectedVariant || "default",
-              price: priceInRial,
-              quantity: quantity
-            }]
-          }
-        });
-      }
-
-      // Navigate to checkout page
-      navigate("/checkout");
-    }
+    // Redirect directly to Bale link
+    window.location.href = 'https://ble.ir/sharifgptadmin';
   };
 
   if (isLoading) {
@@ -921,7 +897,7 @@ const ProductDetail = () => {
                       )}>
                         <Button size="lg" onClick={handleBuyNow} className="flex-1 min-w-0 text-sm sm:text-base font-semibold">
                           <ShoppingCart className="ml-1 h-4 w-4 shrink-0" />
-                          <span className="truncate">خرید</span>
+                          <span className="truncate">خرید اکانت در بله</span>
                         </Button>
                       </div>
                     );
@@ -1160,7 +1136,7 @@ const ProductDetail = () => {
                 </div>
                 <Button size="sm" onClick={handleBuyNow} className="flex-1 min-w-0 h-10 text-sm">
                   <ShoppingCart className="ltr:mr-1 rtl:ml-1 h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">خرید</span>
+                  <span className="truncate">خرید اکانت در بله</span>
                 </Button>
               </div>
             </div>
