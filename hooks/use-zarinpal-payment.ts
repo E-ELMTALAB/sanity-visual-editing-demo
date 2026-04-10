@@ -43,6 +43,55 @@ export function useZarinpalPayment() {
     })
   }, [])
 
+  const ZARINPAL_DIRECT_MERCHANT_ID = '34cb37f4-920c-49da-bfa0-229a91ed98bd'
+  const ZARINPAL_DIRECT_CALLBACK_PATH = '/payment/callback'
+  const ZARINPAL_DIRECT_SANDBOX = true
+  const ZARINPAL_DIRECT_API_URL = 'https://api.zarinpal.com/pg/v4/payment/request.json'
+  const ZARINPAL_DIRECT_CHECKOUT_BASE = ZARINPAL_DIRECT_SANDBOX
+    ? 'https://sandbox.zarinpal.com/pg/checkout/start/'
+    : 'https://www.zarinpal.com/pg/checkout/start/'
+
+  const createZarinpalFrontendPaymentUrl = useCallback(async (
+    amount: number,
+    customerInfo: CustomerInfo
+  ): Promise<{ paymentUrl: string }> => {
+    if (typeof window === 'undefined') {
+      throw new Error('Cannot create Zarinpal payment URL on the server side')
+    }
+
+    const callbackUrl = `${window.location.origin}${ZARINPAL_DIRECT_CALLBACK_PATH}`
+
+    const requestBody = {
+      merchant_id: ZARINPAL_DIRECT_MERCHANT_ID,
+      amount: Math.round(amount),
+      callback_url: callbackUrl,
+      description: 'پرداخت سفارش',
+      metadata: {
+        email: customerInfo.email,
+        mobile: customerInfo.phone,
+      },
+      mobile: customerInfo.phone,
+    }
+
+    const response = await fetch(ZARINPAL_DIRECT_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    })
+
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok || !data.data?.authority) {
+      const errorMessage = data.errors?.[0]?.message || data.error || data.data?.message || 'Zarinpal direct payment request failed.'
+      throw new Error(errorMessage)
+    }
+
+    return {
+      paymentUrl: `${ZARINPAL_DIRECT_CHECKOUT_BASE}${data.data.authority}`,
+    }
+  }, [])
+
   const initiatePayment = useCallback(async (
     cartItems: Array<{
       id: number
@@ -61,78 +110,56 @@ export function useZarinpalPayment() {
   ): Promise<PaymentResult> => {
     setStatus({ loading: true, error: null, resourceId: null })
 
+    let totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    if (additionalServices) {
+      if (additionalServices.insurance) totalAmount += 50000
+      if (additionalServices.warranty) totalAmount += 75000
+      if (additionalServices.priority) totalAmount += 100000
+    }
+
+    let cartId: string | null = null
+
+    const items = cartItems.map(item => ({
+      id: item.id,
+      title: item.title,
+      price: item.price,
+      quantity: item.quantity
+    }))
+
+    if (additionalServices) {
+      if (additionalServices.insurance) {
+        items.push({ id: 9991, title: 'بیمه اکانت', price: 50000, quantity: 1 })
+      }
+      if (additionalServices.warranty) {
+        items.push({ id: 9992, title: 'ضمانت کیفیت', price: 75000, quantity: 1 })
+      }
+      if (additionalServices.priority) {
+        items.push({ id: 9993, title: 'پشتیبانی اولویت‌دار', price: 100000, quantity: 1 })
+      }
+    }
+
+    console.log('Initiating payment with test endpoint...')
+    console.log('Items:', items)
+    console.log('Total amount:', totalAmount)
+
     try {
-      // Calculate total amount including additional services
-      let totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-      
-      // Add additional services
-      if (additionalServices) {
-        if (additionalServices.insurance) totalAmount += 50000
-        if (additionalServices.warranty) totalAmount += 75000
-        if (additionalServices.priority) totalAmount += 100000
-      }
-
-      // Prepare items for the test endpoint
-      const items = cartItems.map(item => ({
-        id: item.id,
-        title: item.title,
-        price: item.price,
-        quantity: item.quantity
-      }))
-
-      // Add additional services as items if selected
-      if (additionalServices) {
-        if (additionalServices.insurance) {
-          items.push({
-            id: 9991,
-            title: 'بیمه اکانت',
-            price: 50000,
-            quantity: 1
-          })
-        }
-        if (additionalServices.warranty) {
-          items.push({
-            id: 9992,
-            title: 'ضمانت کیفیت',
-            price: 75000,
-            quantity: 1
-          })
-        }
-        if (additionalServices.priority) {
-          items.push({
-            id: 9993,
-            title: 'پشتیبانی اولویت‌دار',
-            price: 100000,
-            quantity: 1
-          })
-        }
-      }
-
-      console.log('Initiating payment with test endpoint...')
-      console.log('Items:', items)
-      console.log('Total amount:', totalAmount)
-
-      // Use the exact same Medusa endpoints that were tested successfully
-      // Supports Cloudflare proxy for bypassing internet filtering
       const BASE_URL = getMedusaBackendUrl()
       const PK = 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
-      
-      // Step 1: Get regions
+
       const regionsResponse = await fetch(`${BASE_URL}/store/regions`, {
         method: 'GET',
         headers: {
           'x-publishable-api-key': PK,
         }
       })
-      
+
       if (!regionsResponse.ok) {
         throw new Error(`Failed to fetch regions: ${regionsResponse.statusText}`)
       }
-      
+
       const regionsData = await regionsResponse.json()
       const regionId = regionsData.regions[0].id
-      
-      // Step 2: Create cart
+
       const cartResponse = await fetch(`${BASE_URL}/store/carts`, {
         method: 'POST',
         headers: {
@@ -144,15 +171,14 @@ export function useZarinpalPayment() {
           email: customerInfo.email
         })
       })
-      
+
       if (!cartResponse.ok) {
         throw new Error(`Failed to create cart: ${cartResponse.statusText}`)
       }
-      
+
       const cartData = await cartResponse.json()
-      const cartId = cartData.cart.id
-      
-      // Step 3: Add items to cart (simplified - using first item for now)
+      cartId = cartData.cart.id
+
       if (items.length > 0) {
         const firstItem = items[0]
         const lineItemResponse = await fetch(`${BASE_URL}/store/carts/${cartId}/line-items`, {
@@ -162,17 +188,16 @@ export function useZarinpalPayment() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            variant_id: 'variant_01K7GP9FB4RWKVS7ES39YKP2TR', // Use a known variant ID
+            variant_id: 'variant_01K7GP9FB4RWKVS7ES39YKP2TR',
             quantity: firstItem.quantity
           })
         })
-        
+
         if (!lineItemResponse.ok) {
           throw new Error(`Failed to add item to cart: ${lineItemResponse.statusText}`)
         }
       }
-      
-      // Step 4: Create payment collection
+
       const paymentCollectionResponse = await fetch(`${BASE_URL}/store/payment-collections`, {
         method: 'POST',
         headers: {
@@ -183,15 +208,14 @@ export function useZarinpalPayment() {
           cart_id: cartId
         })
       })
-      
+
       if (!paymentCollectionResponse.ok) {
         throw new Error(`Failed to create payment collection: ${paymentCollectionResponse.statusText}`)
       }
-      
+
       const paymentCollectionData = await paymentCollectionResponse.json()
       const paymentCollectionId = paymentCollectionData.payment_collection.id
-      
-      // Step 5: Create Zarinpal payment session
+
       const response = await fetch(`${BASE_URL}/store/payment-collections/${paymentCollectionId}/payment-sessions`, {
         method: 'POST',
         headers: {
@@ -218,7 +242,7 @@ export function useZarinpalPayment() {
       setStatus({
         loading: false,
         error: null,
-        resourceId: cartId, // Use cart ID as resource ID
+        resourceId: cartId,
       })
 
       return {
@@ -228,9 +252,27 @@ export function useZarinpalPayment() {
       }
     } catch (error) {
       console.error('Payment initiation failed:', error)
-      
+
+      try {
+        console.warn('Backend Zarinpal flow failed, falling back to frontend-only Zarinpal request')
+        const directResult = await createZarinpalFrontendPaymentUrl(totalAmount, customerInfo)
+
+        setStatus({
+          loading: false,
+          error: null,
+          resourceId: cartId,
+        })
+
+        return {
+          success: true,
+          paymentUrl: directResult.paymentUrl,
+          resourceId: cartId || undefined,
+        }
+      } catch (directError) {
+        console.error('Frontend Zarinpal fallback failed:', directError)
+      }
+
       let errorMessage = 'خطا در شروع فرآیند پرداخت'
-      
       if (error instanceof Error) {
         if (error.message.includes('Failed to fetch') || error.message.includes('Network error')) {
           errorMessage = 'خطا در اتصال به سرور. لطفاً اتصال اینترنت خود را بررسی کنید.'
@@ -252,7 +294,7 @@ export function useZarinpalPayment() {
         error: errorMessage,
       }
     }
-  }, [])
+  }, [createZarinpalFrontendPaymentUrl])
 
   const checkPaymentStatus = useCallback(async (resourceId: string) => {
     try {
