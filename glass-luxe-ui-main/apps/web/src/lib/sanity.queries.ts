@@ -1,3 +1,23 @@
+// Hero-only query for critical LCP image - fetched immediately
+export const heroSlideQuery = `
+  *[_type == "home"][0]{
+    _id,
+    _type,
+    // Hero Section only
+    heroSlides[]{
+      _key,
+      title,
+      subtitle,
+      buttonText,
+      buttonHref,
+      image{
+        ...,
+        asset->
+      }
+    }
+  }
+`
+
 // Home singleton query - Main homepage content
 export const homePageQuery = `
   *[_type == "home"][0]{
@@ -614,4 +634,42 @@ export const allFaqsQuery = `
     order
   }
 `
+
+// Query for promo banner (active banner)
+export const promoBannerQuery = `
+  *[_type == "promoBanner" && isActive == true] | order(order asc, _updatedAt desc)[0]{
+    _id,
+    _type,
+    title,
+    subtitle,
+    description,
+    buttonText,
+    buttonLink,
+    backgroundImage{
+      ...,
+      asset->
+    },
+    order,
+    isActive,
+    _updatedAt
+  }
+`
+
+
+// Query for active testimonials (schema-compatible)
+export const testimonialsQuery = `
+  *[_type == "testimonial"] | order(_updatedAt desc){
+    _id,
+    _type,
+    "name": author,
+    "subtitle": role,
+    quote,
+    avatar{
+      ...,
+      asset->
+    },
+    _updatedAt
+  }
+`
+
 

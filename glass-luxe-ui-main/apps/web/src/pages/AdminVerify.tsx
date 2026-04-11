@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer/Footer";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
@@ -329,7 +329,7 @@ export default function AdminVerify() {
         <Footer 
           links={{
             products: "/products",
-            magazine: "/magazine",
+            magazine: "/blog",
             courses: "/courses",
             pricing: "/pricing",
             support: "/support",

@@ -3,8 +3,8 @@ import { Search, Menu, X, Headphones } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDirection } from "@/contexts/DirectionContext";
 import { cn } from "@/lib/utils";
-// Import optimized logo with vite-imagetools
-import sharifgptLogo from "@/assets/sharifgpt-logo.png?w=80&h=80&format=webp&quality=85";
+// Import optimized logo
+import sharifgptLogo from "@/assets/sharifgpt-logo.webp";
 
 interface MegaLink {
   label: string;
@@ -102,8 +102,11 @@ export function Header({ onSearch, megaItems, active }: HeaderProps) {
             "glass-strong h-full transition-all duration-300 rounded-2xl",
             isScrolled && "backdrop-blur-[28px] rounded-none",
           )}
-          style={{
-            borderBottom: "1px solid hsl(var(--border-glass))",
+          style={{ 
+            borderBottom: 'none',
+            boxShadow: isScrolled 
+              ? '0 10px 44px rgba(0, 0, 0, 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.15), inset 0 -1px 0 transparent'
+              : undefined
           }}
         >
           <div className="max-w-[1400px] mx-auto h-full px-4 sm:px-6 lg:px-8">
@@ -119,7 +122,7 @@ export function Header({ onSearch, megaItems, active }: HeaderProps) {
                   className="w-10 h-10 rounded-full"
                   width="40"
                   height="40"
-                  loading="eager"
+                  loading="lazy"
                   decoding="async"
                 />
                 <span className="text-xl font-bold text-foreground">SharifGPT</span>

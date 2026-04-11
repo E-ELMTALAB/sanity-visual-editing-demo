@@ -22,7 +22,9 @@ let cacheLoadPromise: Promise<any> | null = null;
 function shouldUseCache(): boolean {
   // Use cache in production builds OR if cache-only mode is enabled (for testing)
   const cacheOnlyMode = import.meta.env.VITE_SANITY_CACHE_ONLY === 'true' || import.meta.env.VITE_SANITY_CACHE_ONLY === '1';
-  return (import.meta.env.PROD && import.meta.env.MODE === 'production') || cacheOnlyMode;
+  // In Vite, import.meta.env.PROD is true for production builds
+  // MODE check is redundant - PROD is sufficient
+  return import.meta.env.PROD || cacheOnlyMode;
 }
 
 /**

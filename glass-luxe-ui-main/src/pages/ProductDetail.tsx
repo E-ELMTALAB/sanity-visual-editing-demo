@@ -826,19 +826,27 @@ const ProductDetail = () => {
                     )}
                   </div>
 
-                  {/* Features */}
-                  <div style={{ textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}>
-                    {(product.featuresFa || product.features).map((feature, idx) => (
-                      <div 
-                        key={idx} 
-                        className="flex items-start gap-2 text-sm mb-2 justify-end flex-row-reverse"
-                        style={{ direction: "rtl", textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}
-                      >
-                        <span className="text-foreground/80" style={{ marginRight: 0 }}>{feature}</span>
-                        <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                  {/* Features List - Modern Minimal Design */}
+                  {(product.featuresFa || product.features).length > 0 && (
+                    <div className="mt-6 mb-6" dir="rtl" style={{ textAlign: "right", marginRight: 0, paddingRight: 0, width: "100%" }}>
+                      <div className="space-y-3.5">
+                        {(product.featuresFa || product.features).map((feature, idx) => (
+                          <div 
+                            key={idx} 
+                            className="flex items-center gap-3 text-sm sm:text-base group"
+                            style={{ direction: "rtl" }}
+                          >
+                            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center transition-all group-hover:bg-green-500/15 group-hover:border-green-500/30">
+                              <Check className="w-3.5 h-3.5 text-green-400" strokeWidth={2.5} />
+                            </div>
+                            <span className="text-foreground/90 leading-relaxed flex-1 transition-colors group-hover:text-foreground">
+                              {feature}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
 
                   {/* Quantity & Actions */}
                   <div className="min-w-0" style={{ textAlign: "right", marginRight: 0, paddingRight: 0 }}>
@@ -1142,7 +1150,7 @@ const ProductDetail = () => {
 
         <Footer links={{
         products: "/products",
-        magazine: "/magazine",
+        magazine: "/blog",
         courses: "/courses",
         pricing: "/pricing",
         support: "/support"

@@ -51,7 +51,7 @@ export default function Checkout() {
             </Button>
           </div>
         </main>
-        <Footer links={{ products: "/products", magazine: "/magazine", courses: "/courses", pricing: "/pricing", support: "/support" }} socials={[]} />
+        <Footer links={{ products: "/products", magazine: "/blog", courses: "/courses", pricing: "/pricing", support: "/support" }} socials={[]} />
       </div>
     );
   }
@@ -331,7 +331,7 @@ export default function Checkout() {
       <Footer
         links={{
           products: "/products",
-          magazine: "/magazine",
+          magazine: "/blog",
           courses: "/courses",
           pricing: "/pricing",
           support: "/support",

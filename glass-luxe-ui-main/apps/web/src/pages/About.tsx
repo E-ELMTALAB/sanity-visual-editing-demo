@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
@@ -510,7 +510,7 @@ export default function About() {
         <Footer 
           links={{
             products: "/products",
-            magazine: "/magazine",
+            magazine: "/blog",
             courses: "/courses",
             pricing: "/pricing",
             support: "/support"

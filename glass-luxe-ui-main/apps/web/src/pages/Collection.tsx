@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 import { motion } from "framer-motion";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer/Footer";
 import { ProductCard } from "@/components/Products/ProductCard";
 import { toast } from "sonner";
 import { FaqAccordion } from "@/components/Products/FaqAccordion";
-import { fetchFromSanity } from "@/lib/sanity.client.unified";
-import { validateSanityConfig } from "@/lib/sanity.config";
-import { collectionBySlugQuery } from "@/lib/sanity.queries";
+import { getCollectionBySlug } from "@/lib/sanity-cache-direct";
 import { transformCollectionDetail, transformFaqItem } from "@/lib/sanity.transformers";
 import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
 import { usePromotions } from "@/contexts/promotion-context";
@@ -31,10 +29,9 @@ export default function Collection() {
   const siteWidePromotion = getSiteWidePromotion();
 
   useEffect(() => {
-    const isConfigValid = validateSanityConfig();
-    if (!isConfigValid || !slug) {
+    if (!slug) {
       setIsLoading(false);
-      setFetchError("پیکربندی Sanity کامل نیست یا آدرس نامعتبر است");
+      setFetchError("آدرس کلکسیون نامعتبر است");
       return;
     }
 
@@ -43,7 +40,7 @@ export default function Collection() {
     async function loadCollection() {
       try {
         setIsLoading(true);
-        const result = await fetchFromSanity<any>(collectionBySlugQuery, { slug });
+        const result = await getCollectionBySlug(slug!);
         if (!isMounted) return;
 
         if (!result) {

@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 import { motion } from "framer-motion";
 import { MessageSquare, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";

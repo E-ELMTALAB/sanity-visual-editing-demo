@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 import { motion } from "framer-motion";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer/Footer";
@@ -9,6 +9,8 @@ import { PageIntro } from "@/components/ui/page-intro";
 import { ProductCard } from "@/components/Products/ProductCard";
 import { FiltersSidebar } from "@/components/Products/FiltersSidebar";
 import { FaqAccordion } from "@/components/Products/FaqAccordion";
+import { CustomerReviews, type CustomerReview } from "@/components/Products/CustomerReviews";
+import { ProductsContentAccordion } from "@/components/Products/ProductsContentAccordion";
 import { FloatingDock } from "@/components/FloatingDock/FloatingDock";
 import { CartDrawer } from "@/components/FloatingDock/CartDrawer";
 import { ChatbotPanel } from "@/components/FloatingDock/ChatbotPanel";
@@ -19,9 +21,7 @@ import { useDirection } from "@/contexts/DirectionContext";
 import { useCart } from "@/contexts/cart-context";
 import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
 import { usePromotions } from "@/contexts/promotion-context";
-import { fetchFromSanity } from "@/lib/sanity.client.unified";
-import { validateSanityConfig } from "@/lib/sanity.config";
-import { allProductsQuery, faqsByPageQuery, pageBySlugQuery } from "@/lib/sanity.queries";
+import { getAllProducts, getFaqsByPage, getPageBySlug } from "@/lib/sanity-cache-direct";
 import { transformFaqItem, transformProductListItem } from "@/lib/sanity.transformers";
 import { getImageUrl } from "@/lib/sanity.image";
 
@@ -67,6 +67,11 @@ type SeoMeta = {
   structuredData?: string;
 };
 
+// Feature flag: Temporarily disable testimonials on Product listing page
+// TODO: Re-enable by setting ENABLE_PRODUCTS_PAGE_TESTIMONIAL to true
+// Temporarily disabled on Product listing page. Still active on Product Detail page.
+const ENABLE_PRODUCTS_PAGE_TESTIMONIAL = false;
+
 export default function Products() {
   const { isRTL } = useDirection();
   const [cartOpen, setCartOpen] = useState(false);
@@ -87,23 +92,15 @@ export default function Products() {
   const [pageSeo, setPageSeo] = useState<SeoMeta | null>(null);
 
   useEffect(() => {
-    const isConfigValid = validateSanityConfig();
-    if (!isConfigValid) {
-      setIsLoading(false);
-      return;
-    }
-
     let isMounted = true;
 
     async function loadProductsPage() {
       try {
         setIsLoading(true);
         const [productsResult, faqsResult, seoResult] = await Promise.all([
-          fetchFromSanity<any[]>(allProductsQuery),
-          // TEMPORARILY DISABLED: Fetch FAQs from Sanity to prevent build errors
-          // fetchFromSanity<any[]>(faqsByPageQuery, { page: "products" }),
-          Promise.resolve([]), // Return empty array for FAQs
-          fetchFromSanity<any>(pageBySlugQuery, { slug: "products" }),
+          getAllProducts(),
+          getFaqsByPage('products').catch(() => [] as any[]),
+          getPageBySlug('products'),
         ]);
 
         if (!isMounted) return;
@@ -152,13 +149,13 @@ export default function Products() {
   useEffect(() => {
     const fetchAllPrices = async () => {
       if (!products || products.length === 0) return;
-      
+
       const slugs = products
         .map((p: any) => p.slug || p.handle)
         .filter(Boolean);
-      
+
       if (slugs.length === 0) return;
-      
+
       try {
         const prices = await fetchProductPrices(slugs);
         setProductPrices(prices);
@@ -166,7 +163,7 @@ export default function Products() {
         console.error('[PRODUCTS-LIST] Failed to fetch prices from Medusa:', error);
       }
     };
-    
+
     fetchAllPrices();
   }, [products]);
 
@@ -216,7 +213,7 @@ export default function Products() {
   const handleAddToCart = (productId: string) => {
     console.log('[PRODUCTS-LIST] ========== ADD TO CART FROM LIST ==========');
     console.log('[PRODUCTS-LIST] Product ID:', productId);
-    
+
     const product = products.find((p) => p.id === productId);
     if (!product) {
       console.error('[PRODUCTS-LIST] ❌ Product not found:', productId);
@@ -403,6 +400,44 @@ export default function Products() {
                   ))}
                 </motion.div>
 
+                {/* Customer Reviews / Testimonials Section */}
+                {/* Temporarily disabled on Product listing page. Still active on Product Detail page. */}
+                {ENABLE_PRODUCTS_PAGE_TESTIMONIAL && (
+                  <CustomerReviews
+                    reviews={[
+                      {
+                        id: "1",
+                        text: "محصولات عالی و با کیفیت. تحویل سریع و پشتیبانی عالی داشتند. حتماً دوباره خرید می‌کنم.",
+                        screenshot: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80",
+                        source: {
+                          platform: "telegram",
+                          label: "کانال تلگرام",
+                          url: "https://t.me/sharifgpt",
+                        },
+                      },
+                      {
+                        id: "2",
+                        text: "راضی هستم از خرید. قیمت‌ها مناسب و محصولات با کیفیت هستند.",
+                        screenshot: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=800&q=80",
+                        source: {
+                          platform: "instagram",
+                          label: "صفحه اینستاگرام",
+                          url: "https://instagram.com/sharifgpt",
+                        },
+                      },
+                      {
+                        id: "3",
+                        text: "خدمات عالی و سریع. پیشنهاد می‌کنم به همه دوستان.",
+                        source: {
+                          platform: "whatsapp",
+                          label: "واتساپ",
+                          url: "https://wa.me/1234567890",
+                        },
+                      },
+                    ]}
+                  />
+                )}
+
                 {/* Products Grid */}
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -434,78 +469,78 @@ export default function Products() {
                         هیچ محصولی مطابق فیلترهای شما یافت نشد.
                       </div>
                     ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5 sm:gap-x-6 sm:gap-y-7 lg:gap-x-8 lg:gap-y-10">
                         {filteredProducts.map((product, index) => {
-                      // Get promotion info for this product
-                      const productPriceData = product.slug ? productPrices?.[product.slug] : undefined;
-                      const medusaVariants = productPriceData?.variants || [];
-                      const medusaProductId = productPriceData?.product_id; // Medusa product ID
-                      
-                      // Find the variant with the lowest current price
-                      const validVariants = medusaVariants.filter(v => v.price > 0);
-                      const lowestPriceVariant = validVariants.length > 0
-                        ? validVariants.reduce((lowest, current) => 
-                            current.price < lowest.price ? current : lowest
-                          )
-                        : null;
-                      
-                      // For product cards: original price should be the lowest variant's original_price
-                      // If the lowest variant has original_price, use it; otherwise use its current price as original
-                      const originalPrice = lowestPriceVariant?.original_price || lowestPriceVariant?.price || product.price;
-                      
-                      // Use Medusa product ID if available, otherwise fall back to Sanity ID
-                      const productIdForMatching = medusaProductId || product.id;
-                      const promotionInfo = product.slug && originalPrice > 0
-                        ? getPromotionForProduct(product.slug, productIdForMatching, originalPrice)
-                        : null;
+                          // Get promotion info for this product
+                          const productPriceData = product.slug ? productPrices?.[product.slug] : undefined;
+                          const medusaVariants = productPriceData?.variants || [];
+                          const medusaProductId = productPriceData?.product_id; // Medusa product ID
 
-                      // Check if product has a discount from variant
-                      const hasVariantDiscount = lowestPriceVariant?.original_price && lowestPriceVariant.original_price > lowestPriceVariant.price;
-                      
-                      // Determine endsAt: priority is promotionInfo > variant promotion_ends_at > site-wide promotion
-                      const variantEndsAt = lowestPriceVariant?.promotion_ends_at;
-                      const endsAt = promotionInfo?.endsAt || variantEndsAt || siteWidePromotion?.campaign?.ends_at;
-                      
-                      // Check if product has any discount (from promotion or variant)
-                      const hasDiscount = promotionInfo || hasVariantDiscount || (lowestPriceVariant?.price && lowestPriceVariant.price < originalPrice);
+                          // Find the variant with the lowest current price
+                          const validVariants = medusaVariants.filter(v => v.price > 0);
+                          const lowestPriceVariant = validVariants.length > 0
+                            ? validVariants.reduce((lowest, current) =>
+                              current.price < lowest.price ? current : lowest
+                            )
+                            : null;
 
-                      return (
-                      <motion.div
-                        key={product.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                          ...springTransition,
-                          delay: 0.3 + index * 0.05,
-                        }}
-                        className="w-full"
-                      >
-                        <ProductCard
-                          id={product.id}
-                          slug={product.slug}
-                          title={product.title}
-                          image={product.image}
-                          price={product.price}
-                          medusaVariants={medusaVariants}
-                          onAdd={handleAddToCart}
-                          promotion={promotionInfo ? {
-                            discountPercentage: promotionInfo.discountPercentage,
-                            originalPrice: promotionInfo.originalPrice,
-                            discountedPrice: promotionInfo.discountedPrice,
-                            endsAt: endsAt,
-                          } : (hasDiscount ? {
-                            discountPercentage: hasVariantDiscount && lowestPriceVariant?.discount_percentage 
-                              ? lowestPriceVariant.discount_percentage 
-                              : (originalPrice > 0 ? Math.round(((originalPrice - (lowestPriceVariant?.price || originalPrice)) / originalPrice) * 100) : 0),
-                            originalPrice: originalPrice,
-                            discountedPrice: lowestPriceVariant?.price || originalPrice,
-                            endsAt: endsAt, // Will be used if available, ProductCard will fallback to site-wide
-                          } : undefined)}
-                        />
-                      </motion.div>
-                    );
-                    })}
-                    </div>
+                          // For product cards: original price should be the lowest variant's original_price
+                          // If the lowest variant has original_price, use it; otherwise use its current price as original
+                          const originalPrice = lowestPriceVariant?.original_price || lowestPriceVariant?.price || product.price;
+
+                          // Use Medusa product ID if available, otherwise fall back to Sanity ID
+                          const productIdForMatching = medusaProductId || product.id;
+                          const promotionInfo = product.slug && originalPrice > 0
+                            ? getPromotionForProduct(product.slug, productIdForMatching, originalPrice)
+                            : null;
+
+                          // Check if product has a discount from variant
+                          const hasVariantDiscount = lowestPriceVariant?.original_price && lowestPriceVariant.original_price > lowestPriceVariant.price;
+
+                          // Determine endsAt: priority is promotionInfo > variant promotion_ends_at > site-wide promotion
+                          const variantEndsAt = lowestPriceVariant?.promotion_ends_at;
+                          const endsAt = promotionInfo?.endsAt || variantEndsAt || siteWidePromotion?.campaign?.ends_at;
+
+                          // Check if product has any discount (from promotion or variant)
+                          const hasDiscount = promotionInfo || hasVariantDiscount || (lowestPriceVariant?.price && lowestPriceVariant.price < originalPrice);
+
+                          return (
+                            <motion.div
+                              key={product.id}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{
+                                ...springTransition,
+                                delay: 0.3 + index * 0.05,
+                              }}
+                              className="w-full"
+                            >
+                              <ProductCard
+                                id={product.id}
+                                slug={product.slug}
+                                title={product.title}
+                                image={product.image}
+                                price={product.price}
+                                medusaVariants={medusaVariants}
+                                onAdd={handleAddToCart}
+                                promotion={promotionInfo ? {
+                                  discountPercentage: promotionInfo.discountPercentage,
+                                  originalPrice: promotionInfo.originalPrice,
+                                  discountedPrice: promotionInfo.discountedPrice,
+                                  endsAt: endsAt,
+                                } : (hasDiscount ? {
+                                  discountPercentage: hasVariantDiscount && lowestPriceVariant?.discount_percentage
+                                    ? lowestPriceVariant.discount_percentage
+                                    : (originalPrice > 0 ? Math.round(((originalPrice - (lowestPriceVariant?.price || originalPrice)) / originalPrice) * 100) : 0),
+                                  originalPrice: originalPrice,
+                                  discountedPrice: lowestPriceVariant?.price || originalPrice,
+                                  endsAt: endsAt, // Will be used if available, ProductCard will fallback to site-wide
+                                } : undefined)}
+                              />
+                            </motion.div>
+                          );
+                        })}
+                      </div>
                     )}
                   </div>
                 </motion.div>
@@ -514,6 +549,9 @@ export default function Products() {
                 {faqItems.length > 0 && (
                   <FaqAccordion items={faqItems} className="mt-16" />
                 )}
+
+                {/* Products Content / Trust Accordion (below product cards, above footer) */}
+                <ProductsContentAccordion />
               </div>
             </div>
           </div>
@@ -522,7 +560,7 @@ export default function Products() {
         <Footer
           links={{
             products: "/products",
-            magazine: "/magazine",
+            magazine: "/blog",
             courses: "/courses",
             pricing: "/pricing",
             support: "/support",

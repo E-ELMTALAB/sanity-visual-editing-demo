@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { ChevronRight, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDirection } from "@/contexts/DirectionContext";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 
 interface BreadcrumbItem {
   label: string;

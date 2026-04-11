@@ -10,9 +10,6 @@
     <link rel="preconnect" href="https://backend.sharifgpt.com" crossorigin />
     <!-- Preload critical font -->
     <link rel="preload" href="/font/Vazirmatn-VariableFont_wght.woff2" as="font" type="font/woff2" crossorigin />
-    <!-- Preconnects for critical origins -->
-    <link rel="preconnect" href="https://cdn.sanity.io" crossorigin />
-    <link rel="preconnect" href="https://backend.sharifgpt.com" crossorigin />
     
     
     <!-- Favicon -->
@@ -25,8 +22,8 @@
       html,body{margin:0;padding:0;height:100%}
       body{font-family:"Vazirmatn",Tahoma,system-ui,sans-serif;background:#060914;color:rgba(255,255,255,.92);-webkit-font-smoothing:antialiased}
       #root{min-height:100vh}
-      /* Use font-display:optional to prevent CLS */
-      @font-face{font-family:"Vazirmatn";src:url("/font/Vazirmatn-VariableFont_wght.woff2") format("woff2");font-weight:100 900;font-display:optional}
+      /* Use font-display:swap for better performance - shows text immediately with fallback */
+      @font-face{font-family:"Vazirmatn";src:url("/font/Vazirmatn-VariableFont_wght.woff2") format("woff2");font-weight:100 900;font-display:swap}
       /* Hero placeholder for instant LCP */
       .hero-placeholder{min-height:92vh;background:#060914}
     </style>
@@ -48,29 +45,48 @@
       });
     </script>
     
-    <!-- Google Tag Manager -->
+    <!-- Google Tag Manager - Deferred until after window load to improve LCP -->
     <script>
-      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-      })(window,document,'script','dataLayer','GTM-PW97M4XV');
+      // Defer GTM until after window load event to prevent blocking LCP
+      (function() {
+        var initGTM = function() {
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.defer=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-PW97M4XV');
+        };
+        
+        if (document.readyState === 'complete') {
+          // Page already loaded, use requestIdleCallback with fallback
+          if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+            requestIdleCallback(initGTM, { timeout: 2000 });
+          } else {
+            setTimeout(initGTM, 2000);
+          }
+        } else {
+          // Wait for window load event
+          window.addEventListener('load', initGTM, { once: true });
+        }
+      })();
     </script>
     <!-- End Google Tag Manager -->
 
-    <title>خرید اکانت ChatGPT Plus و Pro بینهایت با ضمانت تعویض ‏| SharifGPT</title>
-    <meta name="description" content="برای خرید اکانت chatgpt pro، خرید اکانت chatgpt plus و خرید gpt، بهترین نسخه چت جی پی تی را با گارانتی تعویض از ما بخواهید. استفاده نامحدود و ضمانت کامل." />
+    <title>SharifGPT | محصولات و خدمات هوش مصنوعی</title>
+    <meta name="description" content="SharifGPT - ارائه محصولات و خدمات هوش مصنوعی" />
     <meta name="author" content="SharifGPT" />
 
-    <meta property="og:title" content="خرید اکانت ChatGPT Plus و Pro بینهایت با ضمانت تعویض ‏| SharifGPT" />
-    <meta property="og:description" content="برای خرید اکانت chatgpt pro، خرید اکانت chatgpt plus و خرید gpt، بهترین نسخه چت جی پی تی را با گارانتی تعویض از ما بخواهید. استفاده نامحدود و ضمانت کامل." />
+    <meta property="og:title" content="SharifGPT | محصولات و خدمات هوش مصنوعی" />
+    <meta property="og:description" content="SharifGPT - ارائه محصولات و خدمات هوش مصنوعی" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/favicon.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@SharifGPT" />
     <meta name="twitter:image" content="/favicon.png" />
-      <meta name="robots" content="index,follow" />
+    
+    <!-- Robots meta tag - explicitly allow indexing -->
+    <meta name="robots" content="index,follow" />
   </head>
 
   <body>

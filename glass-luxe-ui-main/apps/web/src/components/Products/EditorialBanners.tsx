@@ -20,13 +20,13 @@ export function EditorialBanners({ banners, className }: EditorialBannersProps) 
   const { isRTL } = useDirection();
 
   return (
-    <section className={cn("py-8 sm:py-10 lg:py-12 px-2 md:px-3 lg:px-4 bg-transparent", className)}>
-      <div className="max-w-[1100px] mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+    <section className={cn("py-8 sm:py-10 lg:py-12 px-4 sm:px-6 lg:px-8 bg-transparent", className)}>
+      <div className="max-w-screen-xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
           {banners.map((banner, index) => (
           <div
             key={banner.id}
-            className="group relative h-[280px] sm:h-[320px] md:h-[360px] rounded-3xl overflow-hidden cursor-pointer ring-1 ring-white/10 animate-fadeIn"
+            className="group relative w-full h-[280px] sm:h-[320px] md:h-[360px] rounded-3xl overflow-hidden cursor-pointer ring-1 ring-white/10 animate-fadeIn"
             style={{ animationDelay: `${index * 100}ms` }}
             onClick={banner.onClick}
           >

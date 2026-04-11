@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 import { motion } from "framer-motion";
 import { Copy, ExternalLink, Clock, ShieldCheck } from "lucide-react";
 import { Header } from "@/components/Header";

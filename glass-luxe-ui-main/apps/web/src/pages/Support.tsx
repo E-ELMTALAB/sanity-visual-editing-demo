@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -460,7 +460,7 @@ export default function Support() {
         <Footer
           links={{
             products: "/products",
-            magazine: "/magazine",
+            magazine: "/blog",
             courses: "/courses",
             pricing: "/pricing",
             support: "/support",

@@ -3,8 +3,8 @@ import { Search, Menu, X, Headphones } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDirection } from "@/contexts/DirectionContext";
 import { cn } from "@/lib/utils";
-// Import optimized logo with vite-imagetools
-import sharifgptLogo from "@/assets/sharifgpt-logo.png?w=80&h=80&format=webp&quality=85";
+// Import optimized logo
+import sharifgptLogo from "@/assets/sharifgpt-logo.webp";
 
 interface MegaLink {
   label: string;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 import { motion, AnimatePresence } from "framer-motion";
 import { Minus, Plus, X, ShoppingBag, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -89,7 +89,7 @@ const Cart = () => {
   };
   const footerLinks = {
     products: "/products",
-    magazine: "/magazine",
+    magazine: "/blog",
     courses: "/courses",
     pricing: "/pricing",
     support: "/support"

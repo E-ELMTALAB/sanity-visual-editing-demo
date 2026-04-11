@@ -161,6 +161,25 @@ export default defineType({
       ],
       group: 'content',
     }),
+    defineField({
+      name: 'testimonials',
+      title: 'Testimonials',
+      type: 'array',
+      description: 'Testimonials shown in CustomerReviews section on the Products page.',
+      of: [
+        defineArrayMember({
+          type: 'reference',
+          to: [{ type: 'testimonial' }],
+          options: {
+            disableNew: false,
+          },
+        }),
+      ],
+      options: {
+        unique: true,
+      },
+      group: 'content',
+    }),
 
     // SEO Fields
     defineField({

@@ -41,8 +41,8 @@ const originalGetAttribute = Element.prototype.getAttribute;
 Element.prototype.getAttribute = function(name: string) {
   if (name === 'class' && this.className && typeof this.className !== 'string') {
     // If className is an object (from React/CSS modules), convert it to string
-    if (this.className.baseVal !== undefined) {
-      return this.className.baseVal;
+    if ((this as any).className.baseVal !== undefined) {
+      return (this as any).className.baseVal;
     }
     // Fallback: try to get the class string from the element's classList
     return Array.from(this.classList || []).join(' ') || '';
@@ -50,4 +50,8 @@ Element.prototype.getAttribute = function(name: string) {
   return originalGetAttribute.call(this, name);
 };
 
-createRoot(document.getElementById("root")!).render(<App />);
+const rootEl = document.getElementById("root");
+
+if (rootEl) {
+  createRoot(rootEl).render(<App />);
+}

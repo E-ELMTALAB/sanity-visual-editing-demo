@@ -820,6 +820,14 @@ export default function CheckoutPage() {
                     )}
                   </Button>
 
+                  <div className="mt-4 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm text-red-900">
+                    <p className="font-semibold text-base">توجه بسیار مهم قبل از پرداخت</p>
+                    <p className="mt-2">لطفاً پس از کلیک روی دکمه‌ی <strong>پرداخت نهایی</strong> کمی صبر کنید تا به صفحه پرداخت هدایت شوید.</p>
+                    <p className="mt-2">برای ادامه پرداخت حتماً <strong>VPN خود را خاموش کنید</strong> و پس از اتمام پرداخت می‌توانید دوباره VPN را روشن کنید.</p>
+                    <p className="mt-2">در صورت هرگونه مشکل یا سوال، از طریق بله با ما تماس بگیرید:</p>
+                    <p className="mt-2 font-semibold text-blue-700"><a href="https://ble.ir/sharifgptadmin" target="_blank" rel="noreferrer">https://ble.ir/sharifgptadmin</a></p>
+                  </div>
+
                   <div className="text-xs text-gray-500 text-center mt-4">
                     با تکمیل خرید، شما با
                     <Link href="/terms" className="text-blue-600 hover:underline mx-1">

@@ -1,6 +1,7 @@
 import { useState, lazy, Suspense, useEffect, useRef, useCallback, useMemo } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Users, Award, Shield, CheckCircle } from "lucide-react";
+import { Helmet } from "@/components/Helmet";
 import TrustBadges from "@/components/TrustBadges";
 import TestimonialsRow from "@/components/TestimonialsRow";
 import { SurfaceGlass } from "@/components/ui/surface-glass";
@@ -11,23 +12,95 @@ import { useSiteWidePromotion } from "@/contexts/promotion-context";
 import { toast } from "@/hooks/use-toast";
 import type { ProductPrices } from "@/lib/medusa-prices";
 import { PromotionBanner } from "@/components/Hero/PromotionBanner";
-// Import Sanity modules statically (lazy-loading caused initialization issues)
-import { fetchFromSanity } from "@/lib/sanity.client.unified";
-import { validateSanityConfig } from "@/lib/sanity.config";
-import { 
-  homePageQuery, 
-  featuredProductsQuery, 
-  featuredCoursesQuery, 
-  featuredPostsQuery, 
-  productsByCategoryQuery, 
-  faqsByPageQuery 
-} from "@/lib/sanity.queries";
+import { TrustStatsBar } from "@/components/TrustStatsBar";
+import { QuickSummaryTrustBar } from "@/components/QuickSummaryTrustBar";
+import { SeoContentCard } from "@/components/SeoContentCard";
+import { PromoBanner } from "@/components/PromoBanner";
+
+// Lazy PromoBanner that loads after LCP window (5s or user interaction)
+const LazyPromoBanner = () => {
+  const [shouldRender, setShouldRender] = useState(false);
+
+  useEffect(() => {
+    const loadBanner = () => setShouldRender(true);
+    let hasInteracted = false;
+
+    const onInteraction = () => {
+      if (hasInteracted) return;
+      hasInteracted = true;
+      loadBanner();
+      window.removeEventListener('scroll', onInteraction);
+      window.removeEventListener('pointerdown', onInteraction);
+      window.removeEventListener('keydown', onInteraction);
+    };
+
+    // Load on user interaction (scroll, click, keydown)
+    window.addEventListener('scroll', onInteraction, { passive: true, once: true });
+    window.addEventListener('pointerdown', onInteraction, { passive: true, once: true });
+    window.addEventListener('keydown', onInteraction, { once: true });
+
+    // Fallback: load after 5 seconds (after LCP window)
+    setTimeout(loadBanner, 5000);
+  }, []);
+
+  if (!shouldRender) {
+    return null; // No placeholder to avoid layout shift
+  }
+
+  return <PromoBanner />;
+};
+
+// Deferred TrustBadges - loads after LCP to prevent swap
+const DeferredTrustBadges = () => {
+  const [shouldRender, setShouldRender] = useState(false);
+
+  useEffect(() => {
+    const loadBadges = () => setShouldRender(true);
+    let hasInteracted = false;
+
+    const onInteraction = () => {
+      if (hasInteracted) return;
+      hasInteracted = true;
+      loadBadges();
+      window.removeEventListener('scroll', onInteraction);
+      window.removeEventListener('pointerdown', onInteraction);
+      window.removeEventListener('keydown', onInteraction);
+    };
+
+    // Load on user interaction
+    window.addEventListener('scroll', onInteraction, { passive: true, once: true });
+    window.addEventListener('pointerdown', onInteraction, { passive: true, once: true });
+    window.addEventListener('keydown', onInteraction, { once: true });
+
+    // Fallback: load after 5 seconds
+    setTimeout(loadBadges, 5000);
+  }, []);
+
+  if (!shouldRender) {
+    return null;
+  }
+
+  return (
+    <div className="mt-4 sm:mt-6">
+      <TrustBadges />
+    </div>
+  );
+};
+// Direct cache access — zero runtime Sanity API calls in production
+import {
+  getHomepageData,
+  getFeaturedProducts,
+  getFeaturedCourses,
+  getFeaturedPosts,
+  getProductsByCategory,
+  getFaqsByPage,
+} from "@/lib/sanity-cache-direct";
 import * as transformers from "@/lib/sanity.transformers";
 import { getImageUrl } from "@/lib/sanity.image";
 
 // Lazy load heavy components - don't load until needed
 const Footer = lazy(() => import("@/components/Footer/Footer").then((m) => ({ default: m.Footer })));
-const FloatingDock = lazy(() => import("@/components/FloatingDock/FloatingDock").then((m) => ({ default: m.FloatingDock })));
+// FloatingDock moved to global App.tsx - appears on all pages
 const CartDrawer = lazy(() => import("@/components/FloatingDock/CartDrawer").then((m) => ({ default: m.CartDrawer })));
 const ChatbotPanel = lazy(() => import("@/components/FloatingDock/ChatbotPanel").then((m) => ({ default: m.ChatbotPanel })));
 const SupportPanel = lazy(() => import("@/components/FloatingDock/SupportPanel").then((m) => ({ default: m.SupportPanel })));
@@ -123,6 +196,8 @@ const fallbackSeoContent = `
 const HERO_TITLE = "خرید اکانت ChatGPT";
 const HERO_SUBTITLE =
   "اکانت‌های قانونی ChatGPT با تحویل آنی، اتصال پایدار و پشتیبانی واقعی برای تجربه‌ای بدون دغدغه.";
+const HOMEPAGE_DEFAULT_TITLE = "SharifGPT | محصولات و خدمات هوش مصنوعی";
+const HOMEPAGE_DEFAULT_DESCRIPTION = "SharifGPT - ارائه محصولات و خدمات هوش مصنوعی";
 
 // Type for Sanity data
 interface SanityData {
@@ -152,129 +227,198 @@ interface SanityData {
 
 type HeroImage = { src: string; srcSet?: string };
 
-// Single hero component: starts with lightweight gradient; optionally overlays deferred image
-function HeroSection({ heroImage }: { heroImage?: HeroImage | null }) {
+// HeroGlow component removed - using single hero-halo div with pseudo-elements instead
+
+// Hero component: lightweight gradient background only, no image
+
+function HeroSection() {
+  const navigate = useNavigate();
+  const heroRef = useRef<HTMLElement | null>(null);
+
   return (
-    <section 
+    <section
+      ref={(el) => (heroRef.current = el)}
       dir="rtl"
-      className="relative min-h-[92vh] w-full overflow-hidden bg-transparent"
+      className="relative min-h-[85vh] sm:min-h-[90vh] w-full overflow-hidden isolate"
       style={{
-        maskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
-        WebkitMaskImage: 'linear-gradient(to bottom, black 82%, transparent 100%)',
+        backgroundColor: "transparent",
+        backgroundImage: "none",
+        background: "transparent",
       }}
     >
-      {/* Static background placeholder - gradient only (counts as LCP, extremely cheap) */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1024] via-[#0f152f] to-[#0c1028]" />
-      {/* Deferred hero image overlays when ready */}
-      {heroImage?.src && (
-        <picture className="absolute inset-0 h-full w-full -z-10">
-          {heroImage.srcSet && (
-            <source srcSet={heroImage.srcSet} sizes="100vw" />
-          )}
-          <img
-            src={heroImage.src}
-            srcSet={heroImage.srcSet}
-            sizes={heroImage.srcSet ? "100vw" : undefined}
-            alt="Hero background"
-            loading="eager"
-            fetchPriority="high"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover object-[20%_50%] md:object-[60%_50%]"
-            style={{ filter: 'brightness(0.85)' }}
-          />
-        </picture>
-      )}
-      
-      {/* Overlay */}
-      <div className="absolute inset-0 -z-10 mix-blend-soft-light opacity-85 md:opacity-60 bg-gradient-to-br from-[#1E67C6]/60 via-transparent to-[#8B5CF6]/60" />
-      <div 
-        className="absolute inset-0 -z-10"
-        style={{ background: "radial-gradient(120% 80% at 85% 50%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.70) 100%)" }} 
+      {/* Your existing heroGlow (keep) */}
+      <div
+        aria-hidden="true"
+        className="heroGlow pointer-events-none absolute inset-0 z-0"
+        style={{
+          contain: "paint",
+          willChange: "transform",
+          transform: "translateZ(0)",
+        }}
       />
 
-      {/* Content - Fixed dimensions to prevent CLS */}
-      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-28 pb-16 lg:py-24">
-        <div className="flex items-center justify-center min-h-[70vh]">
-          <div 
-            className="text-white text-center flex flex-col justify-center items-center max-w-3xl"
-            style={{ minHeight: '300px' }} // Fixed height to prevent CLS
-          >
-            <span className="inline-block rounded-full bg-white/10 backdrop-blur-sm px-3 py-1 text-xs md:text-sm w-fit border border-white/20">
-            بزرگترین ارائه‌دهنده اکانت های هوش مصنوعی 
-            </span>
-            <h1 className="mt-4 text-7xl sm:text-8xl md:text-6xl lg:text-7xl font-black leading-tight">
+      {/* Your existing vignette overlay (keep) */}
+      <div
+        className="absolute inset-0 z-0 pointer-events-none"
+        style={{
+          background: `
+            radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0) 70%, transparent 100%),
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.08) 0%, transparent 40%, transparent 100%)
+          `,
+          opacity: 1,
+        }}
+      />
+
+      {/* Content (unchanged) */}
+      <div className="relative z-10 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-36 sm:pt-44 md:pt-52 pb-16 lg:pb-24">
+        <div className="flex items-center justify-center min-h-[50vh] sm:min-h-[55vh]">
+          <div className="text-white text-center flex flex-col justify-center items-center max-w-3xl w-full space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/5">
+              <span className="w-2 h-2 rounded-full bg-primary" />
+              <span className="font-vazirmatn text-xs sm:text-sm font-medium text-white/90">
+                پلتفرم پیشرو در هوش مصنوعی
+              </span>
+            </div>
+
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
               {HERO_TITLE}
             </h1>
-            <p className="mt-4 max-w-xl text-white/90 text-xl md:text-lg lg:text-xl leading-relaxed whitespace-pre-line">
+
+            <p className="max-w-2xl text-white/90 text-base sm:text-lg md:text-xl leading-relaxed font-normal px-4">
               {HERO_SUBTITLE}
             </p>
-            <TrustBadges />
+
+            <div className="mt-4 sm:mt-6">
+              <div
+                dir="rtl"
+                className="flex flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8"
+              >
+                <div className="flex flex-col items-center gap-3 sm:gap-4 group">
+                  <div className="relative">
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl glass border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:shadow-xl group-hover:brightness-110 transition-all duration-200 backdrop-blur-md">
+                      <div className="text-white/95 group-hover:text-white transition-colors duration-200 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-refresh-cw w-full h-full"
+                        >
+                          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                          <path d="M21 3v5h-5" />
+                          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                          <path d="M8 16H3v5" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-white/90 text-xs sm:text-sm md:text-base font-medium text-center whitespace-nowrap">
+                    تضمین تعویض
+                  </span>
+                </div>
+
+                <div className="flex flex-col items-center gap-3 sm:gap-4 group">
+                  <div className="relative">
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl glass border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:shadow-xl group-hover:brightness-110 transition-all duration-200 backdrop-blur-md">
+                      <div className="text-white/95 group-hover:text-white transition-colors duration-200 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-shield w-full h-full"
+                        >
+                          <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-white/90 text-xs sm:text-sm md:text-base font-medium text-center whitespace-nowrap">
+                    اکانت‌های اصل
+                  </span>
+                </div>
+
+                <div className="flex flex-col items-center gap-3 sm:gap-4 group">
+                  <div className="relative">
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl glass border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:shadow-xl group-hover:brightness-110 transition-all duration-200 backdrop-blur-md">
+                      <div className="text-white/95 group-hover:text-white transition-colors duration-200 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-clock w-full h-full"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-white/90 text-xs sm:text-sm md:text-base font-medium text-center whitespace-nowrap">
+                    پشتیبانی ۲۴/۷
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* <DeferredTrustBadges /> */}
+
+            <div className="mt-6 sm:mt-8">
+              <button
+                onClick={() => navigate("/products")}
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-white cursor-pointer"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(30, 103, 198, 0.2) 100%)",
+                  boxShadow:
+                    "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow =
+                    "0 12px 40px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)";
+                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow =
+                    "0 8px 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
+                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
+                }}
+              >
+                <span className="font-vazirmatn relative z-10">مشاهده محصولات</span>
+                <span className="relative z-10">→</span>
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100"
+                  style={{
+                    background: "linear-gradient(120deg, transparent, rgba(255,255,255,0.1), transparent)",
+                  }}
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
     </section>
   );
 }
 
-// Trust elements - static, no external deps
-function TrustElements() {
-  return (
-      <section className="container mx-auto px-4 md:px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          <SurfaceGlass variant="default" className="p-8 text-center group hover:scale-105 transition-transform duration-300">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300" />
-                <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 p-4 rounded-full">
-                  <Users className="w-8 h-8 text-white" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-white">+۱۰,۰۰۰</h3>
-                <p className="text-gray-300 font-medium">کاربر راضی</p>
-                <p className="text-sm text-gray-400">از ابزارهای هوش مصنوعی ما استفاده می‌کنند</p>
-              </div>
-              <CheckCircle className="w-5 h-5 text-green-400" />
-            </div>
-          </SurfaceGlass>
-
-          <SurfaceGlass variant="default" className="p-8 text-center group hover:scale-105 transition-transform duration-300">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300" />
-                <div className="relative bg-gradient-to-r from-purple-500 to-pink-600 p-4 rounded-full">
-                  <Award className="w-8 h-8 text-white" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-white">۳+</h3>
-                <p className="text-gray-300 font-medium">سال تجربه</p>
-                <p className="text-sm text-gray-400">در ارائه راهکارهای دیجیتال و هوش مصنوعی</p>
-              </div>
-              <CheckCircle className="w-5 h-5 text-green-400" />
-            </div>
-          </SurfaceGlass>
-
-          <SurfaceGlass variant="default" className="p-8 text-center group hover:scale-105 transition-transform duration-300">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300" />
-                <div className="relative bg-gradient-to-r from-green-500 to-blue-600 p-4 rounded-full">
-                  <Shield className="w-8 h-8 text-white" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-white">۱۰۰%</h3>
-                <p className="text-gray-300 font-medium">امنیت پرداخت</p>
-                <p className="text-sm text-gray-400">تراکنش‌های امن با پشتیبانی از همه کارت‌ها</p>
-              </div>
-              <CheckCircle className="w-5 h-5 text-green-400" />
-            </div>
-          </SurfaceGlass>
-        </div>
-      </section>
-  );
-}
 
 // Loading placeholder for lazy sections
 const SectionPlaceholder = () => (
@@ -322,30 +466,96 @@ const Index = () => {
   const footerTriggerRef = useRef<HTMLDivElement>(null);
   // Promotions from Medusa
   const siteWidePromotion = useSiteWidePromotion();
-  
+
   // UI state
   const [chatOpen, setChatOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [showFooter, setShowFooter] = useState(false);
   const [showDynamicContent, setShowDynamicContent] = useState(false);
-  
+
+  // Hero slide state - loaded immediately for LCP
+  const [heroSlide, setHeroSlide] = useState<{ image: string; imageSrcSet?: string } | null>(null);
+
   // Sanity data state - starts empty, loads after paint
   const [sanityData, setSanityData] = useState<SanityData | null>(null);
   const [medusaPrices, setMedusaPrices] = useState<Record<string, ProductPrices>>({});
   const [dataLoaded, setDataLoaded] = useState(false);
 
-  // Load Sanity data off the critical path (idle)
+  // Load hero slide immediately (critical for LCP) - no requestIdleCallback
+  useEffect(() => {
+    const experiment = import.meta.env.VITE_EXPERIMENT || 'baseline';
+    console.log('[EXPERIMENT] Mode:', experiment);
+
+    // EXPERIMENT A: Static hero (no Sanity fetch)
+    if (experiment === 'A' || experiment === 'a') {
+      console.log('[EXPERIMENT A] Using static hero (no Sanity fetch)');
+      const heroSrcSetTime = performance.now();
+      setHeroSlide({
+        image: '/assets/hero-ai-cubes.png', // Static fallback
+        imageSrcSet: undefined,
+      });
+      console.log('[LCP INSTRUMENT] heroSlide state SET (heroSrcSetTime):', heroSrcSetTime, 'ms', 'Image URL: /assets/hero-ai-cubes.png');
+      return;
+    }
+
+    // EXPERIMENT B: Gradient only (no hero image)
+    if (experiment === 'B' || experiment === 'b') {
+      console.log('[EXPERIMENT B] Gradient only (no hero image)');
+      setHeroSlide(null); // No image
+      return;
+    }
+
+    // BASELINE or EXPERIMENT C: Normal cache / Sanity fetch
+    const loadHeroSlide = async () => {
+      const sanityStart = performance.now();
+
+      try {
+        const heroData = await getHomepageData();
+
+        const sanityEnd = performance.now();
+        console.log('[LCP INSTRUMENT] Homepage cache read:', (sanityEnd - sanityStart).toFixed(2), 'ms');
+
+        if (heroData?.heroSlides?.length) {
+          const transformed = transformers.transformHeroSlide(heroData.heroSlides[0]);
+          setHeroSlide(transformed);
+        }
+      } catch (error) {
+        console.error("[HOMEPAGE] Failed to load hero slide:", error);
+      }
+    };
+
+    loadHeroSlide();
+  }, []);
+
+  // Preload hero image when available
+  useEffect(() => {
+    if (!heroSlide?.image) return;
+
+    // Check if preload link already exists
+    const existingPreload = document.querySelector('link[rel="preload"][as="image"][data-hero-preload]');
+    if (existingPreload) return;
+
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = heroSlide.image;
+    link.setAttribute('fetchpriority', 'high');
+    link.setAttribute('data-hero-preload', 'true');
+
+    if (heroSlide.imageSrcSet) {
+      link.setAttribute('imagesrcset', heroSlide.imageSrcSet);
+      link.setAttribute('imagesizes', '100vw');
+    }
+
+    document.head.appendChild(link);
+    console.log('[HOMEPAGE] ✅ Preload link added for hero image');
+  }, [heroSlide?.image, heroSlide?.imageSrcSet]);
+
+  // Load remaining data off the critical path (deferred until after initial paint)
   useEffect(() => {
     const loadSanityData = async () => {
       try {
-        const isConfigValid = validateSanityConfig();
-        if (!isConfigValid) {
-          console.warn('[HOMEPAGE] Sanity not configured');
-          setDataLoaded(true);
-          return;
-        }
-
         const categoryMap: Record<string, string> = {
           ai: "ai",
           social: "social-media",
@@ -354,51 +564,39 @@ const Index = () => {
           sim: "sim-card",
         };
 
-        console.log('[HOMEPAGE] 🔄 Starting data fetch...');
-        console.log('[HOMEPAGE] Category map:', categoryMap);
-
-        const [homeData, featuredProductsData, featuredCoursesData, featuredPostsData, tabbedProductGroups, faqsData] = 
+        const [homeData, featuredProductsData, featuredCoursesData, featuredPostsData, tabbedProductGroups, faqsData] =
           await Promise.all([
-            fetchFromSanity<any>(homePageQuery),
-            fetchFromSanity<any[]>(featuredProductsQuery),
-            fetchFromSanity<any[]>(featuredCoursesQuery),
-            fetchFromSanity<any[]>(featuredPostsQuery),
+            getHomepageData(),
+            getFeaturedProducts(),
+            getFeaturedCourses(),
+            getFeaturedPosts(),
             Promise.all(
               Object.entries(categoryMap).map(async ([key, category]) => {
                 try {
-                  console.log(`[HOMEPAGE] 📦 Fetching products for tab "${key}" (Sanity category: "${category}")`);
-                  const categoryProducts = await fetchFromSanity<any[]>(productsByCategoryQuery, { category });
-                  console.log(`[HOMEPAGE] 📦 Category "${key}" returned:`, categoryProducts?.length || 0, 'products');
-                  if (categoryProducts?.length) {
-                    console.log(`[HOMEPAGE] 📦 First product in "${key}":`, categoryProducts[0]);
-                  }
-                  if (!categoryProducts?.length) {
-                    console.log(`[HOMEPAGE] ⚠️ No products found for category "${key}" (Sanity: "${category}")`);
-                    return [];
-                  }
-                  const transformed = categoryProducts.map((p: any, i: number) => transformers.transformTabbedProduct(p, key, i));
-                  console.log(`[HOMEPAGE] ✅ Transformed ${transformed.length} products for "${key}":`, transformed);
-                  return transformed;
+                  const categoryProducts = await getProductsByCategory(category);
+                  if (!categoryProducts?.length) return [];
+                  return categoryProducts.map((p: any, i: number) => transformers.transformTabbedProduct(p, key, i));
                 } catch (err) {
-                  console.error(`[HOMEPAGE] ❌ Error fetching category "${key}":`, err);
+                  console.error(`[HOMEPAGE] Error loading category "${key}":`, err);
                   return [];
                 }
               }),
             ),
-            // TEMPORARILY DISABLED: Fetch FAQs from Sanity to prevent build errors
-            // fetchFromSanity<any[]>(faqsByPageQuery, { page: 'home' }).catch((err) => {
-            //   console.warn('[HOMEPAGE] Failed to fetch FAQs:', err);
-            //   return [];
-            // }),
-            Promise.resolve([]), // Return empty array for FAQs
+            getFaqsByPage('home').catch(() => [] as any[]),
           ]);
-        
+
         console.log('[HOMEPAGE] 📊 Raw tabbedProductGroups:', tabbedProductGroups);
 
         // Transform data
-        const heroSlide = homeData?.heroSlides?.length 
-          ? transformers.transformHeroSlide(homeData.heroSlides[0]) 
+        // Note: heroSlide is already loaded separately, but we keep it here for consistency
+        const heroSlideFromHome = homeData?.heroSlides?.length
+          ? transformers.transformHeroSlide(homeData.heroSlides[0])
           : null;
+
+        // Update hero slide if not already set (fallback in case immediate fetch failed)
+        if (!heroSlide && heroSlideFromHome) {
+          setHeroSlide(heroSlideFromHome);
+        }
 
         const sanitizedBestSellers = homeData?.bestSellerProducts?.filter((item: any) => item?._id) ?? [];
         const bestSellerProducts = sanitizedBestSellers.length
@@ -429,10 +627,10 @@ const Index = () => {
             ? featuredCoursesData.map((c: any, i: number) => transformers.transformCourse(c, i))
             : [];
 
-        const blogPostsSource = homeData?.magazinePosts?.length 
-          ? homeData.magazinePosts 
-          : homeData?.featuredBlogs?.length 
-            ? homeData.featuredBlogs 
+        const blogPostsSource = homeData?.magazinePosts?.length
+          ? homeData.magazinePosts
+          : homeData?.featuredBlogs?.length
+            ? homeData.featuredBlogs
             : featuredPostsData;
         const magazinePosts = blogPostsSource?.length
           ? blogPostsSource.map((p: any, i: number) => transformers.transformBlogPost(p, i))
@@ -441,7 +639,7 @@ const Index = () => {
         let tabbedProducts = tabbedProductGroups?.flat() ?? [];
         console.log('[HOMEPAGE] 📊 Final flattened tabbedProducts:', tabbedProducts);
         console.log('[HOMEPAGE] 📊 tabbedProducts count:', tabbedProducts.length);
-        
+
         // Fallback: If no products found by category, use featured products and distribute across categories
         if (tabbedProducts.length === 0 && featuredProductsData?.length > 0) {
           console.log('[HOMEPAGE] ⚠️ No category products found, using fallback with featured products');
@@ -453,12 +651,12 @@ const Index = () => {
           });
           console.log('[HOMEPAGE] 📊 Fallback tabbedProducts:', tabbedProducts);
         }
-        
+
         if (tabbedProducts.length > 0) {
           console.log('[HOMEPAGE] 📊 Sample tabbed product:', tabbedProducts[0]);
           console.log('[HOMEPAGE] 📊 Categories in tabbedProducts:', [...new Set(tabbedProducts.map((p: any) => p.category))]);
         }
-        
+
         const collectionsBanner = homeData?.collectionsBanner
           ? transformers.transformCollectionsBanner(homeData.collectionsBanner)
           : null;
@@ -472,7 +670,7 @@ const Index = () => {
           : [];
 
         setSanityData({
-          heroSlide,
+          heroSlide: heroSlideFromHome || heroSlide,
           bestSellerProducts,
           editorialBanners,
           specialOfferProducts,
@@ -492,109 +690,15 @@ const Index = () => {
         console.error("[HOMEPAGE] Failed to fetch Sanity data:", error);
         setDataLoaded(true);
       }
-      };
-
-    const schedule = () => {
-      loadSanityData();
     };
 
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(schedule, { timeout: 1500 });
+    // Use requestIdleCallback for better performance, fallback to setTimeout
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      requestIdleCallback(loadSanityData, { timeout: 2000 });
     } else {
-      setTimeout(schedule, 0);
+      setTimeout(loadSanityData, 100);
     }
   }, []);
-
-  // Set title and description from Sanity SEO data (directly in document head, no Helmet)
-  useEffect(() => {
-    if (!sanityData?.seo) return;
-
-    const seo = sanityData.seo;
-    
-    // Update document title
-    if (seo.metaTitle) {
-      document.title = seo.metaTitle;
-    }
-
-    // Update meta description
-    let metaDescription = document.querySelector('meta[name="description"]');
-    if (!metaDescription) {
-      metaDescription = document.createElement('meta');
-      metaDescription.setAttribute('name', 'description');
-      document.head.appendChild(metaDescription);
-    }
-    if (seo.metaDescription) {
-      metaDescription.setAttribute('content', seo.metaDescription);
-    }
-
-    // Update Open Graph title
-    let ogTitle = document.querySelector('meta[property="og:title"]');
-    if (!ogTitle) {
-      ogTitle = document.createElement('meta');
-      ogTitle.setAttribute('property', 'og:title');
-      document.head.appendChild(ogTitle);
-    }
-    if (seo.openGraphTitle || seo.metaTitle) {
-      ogTitle.setAttribute('content', seo.openGraphTitle || seo.metaTitle || '');
-    }
-
-    // Update Open Graph description
-    let ogDescription = document.querySelector('meta[property="og:description"]');
-    if (!ogDescription) {
-      ogDescription = document.createElement('meta');
-      ogDescription.setAttribute('property', 'og:description');
-      document.head.appendChild(ogDescription);
-    }
-    if (seo.openGraphDescription || seo.metaDescription) {
-      ogDescription.setAttribute('content', seo.openGraphDescription || seo.metaDescription || '');
-    }
-
-    // Update canonical URL
-    if (seo.canonicalUrl) {
-      let canonical = document.querySelector('link[rel="canonical"]');
-      if (!canonical) {
-        canonical = document.createElement('link');
-        canonical.setAttribute('rel', 'canonical');
-        document.head.appendChild(canonical);
-      }
-      canonical.setAttribute('href', seo.canonicalUrl);
-    }
-
-    // Update robots meta
-    if (seo.robotsMeta) {
-      let robots = document.querySelector('meta[name="robots"]');
-      if (!robots) {
-        robots = document.createElement('meta');
-        robots.setAttribute('name', 'robots');
-        document.head.appendChild(robots);
-      }
-      robots.setAttribute('content', seo.robotsMeta);
-    }
-
-    // Update Open Graph image
-    if (seo.openGraphImage?.asset) {
-      const ogImageUrl = getImageUrl(seo.openGraphImage, 1200);
-      
-      let ogImage = document.querySelector('meta[property="og:image"]');
-      if (!ogImage) {
-        ogImage = document.createElement('meta');
-        ogImage.setAttribute('property', 'og:image');
-        document.head.appendChild(ogImage);
-      }
-      ogImage.setAttribute('content', ogImageUrl);
-    }
-
-    // Add structured data if available
-    if (seo.structuredData) {
-      let structuredDataScript = document.querySelector('script[type="application/ld+json"]');
-      if (!structuredDataScript) {
-        structuredDataScript = document.createElement('script');
-        structuredDataScript.setAttribute('type', 'application/ld+json');
-        document.head.appendChild(structuredDataScript);
-      }
-      structuredDataScript.textContent = seo.structuredData;
-    }
-  }, [sanityData?.seo]);
 
   // Intersection Observer for Footer
   useEffect(() => {
@@ -735,38 +839,197 @@ const Index = () => {
     };
   }, [medusaSlugs.join("|")]);
 
-  // Track homepage view for GA4
+  // Track homepage view for GA4 - deferred to avoid blocking LCP
   useEffect(() => {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: "page_view",
-      page_title: "Homepage - SharifGPT",
-      page_location: window.location.href,
-      page_path: window.location.pathname,
-      page_type: "homepage"
-    });
+    const trackPageView = () => {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "page_view",
+        page_title: "Homepage - SharifGPT",
+        page_location: window.location.href,
+        page_path: window.location.pathname,
+        page_type: "homepage"
+      });
+    };
+
+    // Defer analytics to after LCP
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      requestIdleCallback(trackPageView, { timeout: 3000 });
+    } else {
+      setTimeout(trackPageView, 100);
+    }
+  }, []);
+
+  // LCP Instrumentation - comprehensive timing and visibility tracking
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return;
+
+    const reactMountTime = performance.now();
+    console.log('[LCP INSTRUMENT] React mounted at:', reactMountTime, 'ms');
+
+    const metrics = {
+      reactMountTime,
+      heroSrcSetTime: null as number | null,
+      heroInDOMTime: null as number | null,
+      heroVisibleTime: null as number | null,
+      heroLoadTime: null as number | null,
+      lcpTime: null as number | null,
+      lcpElement: null as Element | null,
+      lcpUrl: null as string | null,
+    };
+
+    // Track hero image src assignment and visibility
+    // Guard against infinite RAF loops when no hero image is rendered.
+    let rafId: number | null = null;
+    const maxChecks = 120; // ~2s at 60fps
+    let checks = 0;
+    const checkHeroImage = () => {
+      checks += 1;
+      const heroImg = document.querySelector('img[data-lcp-hero]') as HTMLImageElement | null;
+
+      if (heroImg) {
+        const currentSrc = heroImg.src || heroImg.getAttribute('src') || '';
+
+        // Track when src is set
+        if (currentSrc && currentSrc !== '' && !metrics.heroSrcSetTime) {
+          metrics.heroSrcSetTime = performance.now();
+          console.log('[LCP INSTRUMENT] Hero img src SET:', metrics.heroSrcSetTime, 'ms', 'src:', currentSrc);
+        }
+
+        // Track when in DOM
+        if (!metrics.heroInDOMTime) {
+          metrics.heroInDOMTime = performance.now();
+          console.log('[LCP INSTRUMENT] Hero img in DOM:', metrics.heroInDOMTime, 'ms');
+        }
+
+        // Track visibility using getBoundingClientRect + computedStyle
+        if (!metrics.heroVisibleTime) {
+          const rect = heroImg.getBoundingClientRect();
+          const style = window.getComputedStyle(heroImg);
+          const isVisible =
+            rect.width > 0 &&
+            rect.height > 0 &&
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            style.opacity !== '0' &&
+            rect.top < window.innerHeight &&
+            rect.bottom > 0;
+
+          if (isVisible) {
+            metrics.heroVisibleTime = performance.now();
+            console.log('[LCP INSTRUMENT] Hero img VISIBLE:', metrics.heroVisibleTime, 'ms', 'rect:', { width: rect.width, height: rect.height, top: rect.top });
+          }
+        }
+
+        // Track when image finishes loading
+        if (heroImg.complete && !metrics.heroLoadTime) {
+          metrics.heroLoadTime = performance.now();
+          console.log('[LCP INSTRUMENT] Hero img LOADED (complete):', metrics.heroLoadTime, 'ms');
+        } else if (!heroImg.complete && !metrics.heroLoadTime) {
+          heroImg.addEventListener('load', () => {
+            metrics.heroLoadTime = performance.now();
+            console.log('[LCP INSTRUMENT] Hero img LOADED (event):', metrics.heroLoadTime, 'ms');
+          }, { once: true });
+        }
+      }
+
+      // Keep checking until we have all metrics, but stop after max checks
+      // so pages without data-lcp-hero don't run forever.
+      if ((!metrics.heroLoadTime || !metrics.heroVisibleTime) && checks < maxChecks) {
+        rafId = requestAnimationFrame(checkHeroImage);
+      } else if (!heroImg && checks >= maxChecks) {
+        console.log('[LCP INSTRUMENT] No hero image found after max checks, stopping observer loop');
+      }
+    };
+
+    // Start checking after a short delay to allow React to render
+    setTimeout(() => checkHeroImage(), 50);
+
+    // Track LCP via PerformanceObserver
+    try {
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          const lcpEntry = entry as any;
+          metrics.lcpTime = lcpEntry.startTime;
+          metrics.lcpElement = lcpEntry.element;
+          metrics.lcpUrl = lcpEntry.url;
+
+          // Create short selector for LCP element
+          let selector = '';
+          if (lcpEntry.element) {
+            const el = lcpEntry.element as Element;
+            if (el.id) selector = `#${el.id}`;
+            else if (el.className) selector = `.${el.className.split(' ')[0]}`;
+            else selector = el.tagName.toLowerCase();
+          }
+
+          console.log('[LCP INSTRUMENT] LCP EVENT:', {
+            lcpTime: metrics.lcpTime.toFixed(2),
+            lcpElement: lcpEntry.element?.tagName,
+            lcpSelector: selector,
+            lcpUrl: metrics.lcpUrl,
+            lcpSize: lcpEntry.size,
+            timeFromReactMount: (metrics.lcpTime - metrics.reactMountTime).toFixed(2),
+            timeFromHeroVisible: metrics.heroVisibleTime ? (metrics.lcpTime - metrics.heroVisibleTime).toFixed(2) : 'N/A',
+            heroSrcSetTime: metrics.heroSrcSetTime ? metrics.heroSrcSetTime.toFixed(2) : 'N/A',
+            heroInDOMTime: metrics.heroInDOMTime ? metrics.heroInDOMTime.toFixed(2) : 'N/A',
+            heroVisibleTime: metrics.heroVisibleTime ? metrics.heroVisibleTime.toFixed(2) : 'N/A',
+            heroLoadTime: metrics.heroLoadTime ? metrics.heroLoadTime.toFixed(2) : 'N/A',
+          });
+        }
+      });
+
+      observer.observe({ type: 'largest-contentful-paint', buffered: true });
+
+      return () => {
+        observer.disconnect();
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+        }
+      };
+    } catch (error) {
+      console.warn('[LCP INSTRUMENT] PerformanceObserver not supported:', error);
+    }
   }, []);
 
   return (
     <div className="min-h-screen relative">
+      <Helmet>
+        <title>{sanityData?.seo?.metaTitle || HOMEPAGE_DEFAULT_TITLE}</title>
+        <meta
+          name="description"
+          content={sanityData?.seo?.metaDescription || HOMEPAGE_DEFAULT_DESCRIPTION}
+        />
+        <meta
+          property="og:title"
+          content={sanityData?.seo?.openGraphTitle || sanityData?.seo?.metaTitle || HOMEPAGE_DEFAULT_TITLE}
+        />
+        <meta
+          property="og:description"
+          content={sanityData?.seo?.openGraphDescription || sanityData?.seo?.metaDescription || HOMEPAGE_DEFAULT_DESCRIPTION}
+        />
+        <meta
+          property="og:image"
+          content={sanityData?.seo?.openGraphImage?.asset ? getImageUrl(sanityData.seo.openGraphImage, 1200) : "/favicon.png"}
+        />
+        <meta name="robots" content="index,follow" />
+        <link rel="canonical" href={sanityData?.seo?.canonicalUrl || "https://sharifgpt.com/"} />
+        {sanityData?.seo?.structuredData ? (
+          <script type="application/ld+json">{sanityData.seo.structuredData}</script>
+        ) : null}
+      </Helmet>
+
       {/* Header - lightweight, loads immediately */}
       <Header onSearch={handleSearch} megaItems={megaItems} />
 
-      {/* Hero Section - single instance; gradient is LCP, image swaps in lazily */}
-      <HeroSection
-        heroImage={
-          showDynamicContent && sanityData?.heroSlide?.image
-            ? { src: sanityData.heroSlide.image, srcSet: sanityData.heroSlide.imageSrcSet }
-            : null
-        }
-      />
+      {/* Hero Section - gradient background only, no image */}
+      <HeroSection />
+
+      {/* Promo Banner - deferred until after LCP (5s or user interaction) */}
+      {/* <LazyPromoBanner /> */}
 
       {/* Site-wide Promotion Banner - from Medusa */}
-      {siteWidePromotion && (
-        <div className="container mx-auto px-4 md:px-6 -mt-8 mb-8 relative z-20">
-          <PromotionBanner promotion={siteWidePromotion} variant="hero" />
-        </div>
-      )}
+
 
       {/* <TestimonialsRow /> */}
 
@@ -785,11 +1048,11 @@ const Index = () => {
 
           {/* Special Offers */}
           {sanityData.specialOfferProducts.length > 0 && (
-            <SpecialOffers 
-              products={sanityData.specialOfferProducts} 
+            <SpecialOffers
+              products={sanityData.specialOfferProducts}
               productPrices={medusaPrices}
               onAdd={handleAddToCart}
-              onViewAll={() => {}}
+              onViewAll={() => { }}
               className="mx-[10px]"
             />
           )}
@@ -817,15 +1080,15 @@ const Index = () => {
               }))}
               productPrices={medusaPrices}
               onAdd={handleAddToCart}
-              onViewAll={() => {}}
+              onViewAll={() => { }}
               className="mx-[10px]"
             />
           )}
 
           {/* Collections Banner */}
           {sanityData.collectionsBanner && (
-            <CollectionsBanner 
-              onClick={handleCollectionsBanner} 
+            <CollectionsBanner
+              onClick={handleCollectionsBanner}
               className="mx-[10px]"
               title={sanityData.collectionsBanner.title}
               subtitle={sanityData.collectionsBanner.subtitle}
@@ -840,7 +1103,7 @@ const Index = () => {
             <EduProductsSlider
               items={sanityData.eduProducts}
               onAdd={handleAddToCart}
-              onViewAll={() => {}}
+              onViewAll={() => { }}
               rtl={isRTL}
             />
           )}
@@ -849,8 +1112,8 @@ const Index = () => {
           {sanityData.magazinePosts.length > 0 && (
             <BlogsCarousel
               posts={sanityData.magazinePosts}
-              onRead={() => {}}
-              onViewAll={() => {}}
+              onRead={() => { }}
+              onViewAll={() => { }}
               className="mx-[10px]"
             />
           )}
@@ -864,19 +1127,50 @@ const Index = () => {
         </Suspense>
       )}
 
-      {/* Trust Elements - Static, always visible */}
-      <TrustElements />
+      {/* Trust Stats Bar - Simple icon + number stats */}
+      <TrustStatsBar />
 
-      {/* SEO Content / Fallback */}
-      <section className="container mx-auto px-4 md:px-6 py-16">
-        <SurfaceGlass variant="subtle" className="p-8 md:p-12">
-          <div className="max-w-4xl mx-auto">
-            <Suspense fallback={<SectionPlaceholder />}>
-              <EnhancedMarkdownRenderer content={sanityData?.seoContent || fallbackSeoContent} />
-            </Suspense>
-          </div>
-        </SurfaceGlass>
+      {/* Quick Summary Trust Bar */}
+      <section className="container mx-auto px-4 md:px-6">
+        <QuickSummaryTrustBar />
       </section>
+
+      {/* SEO Content / Fallback - progressive reveal card */}
+      <section className="container mx-auto px-4 md:px-6 py-16">
+        <Suspense fallback={<SectionPlaceholder />}>
+          <SeoContentCard>
+            <EnhancedMarkdownRenderer content={sanityData?.seoContent || fallbackSeoContent} />
+          </SeoContentCard>
+        </Suspense>
+      </section>
+
+      {/* FAQ Section - Always show below SeoContentCard */}
+      <Suspense fallback={<SectionPlaceholder />}>
+        <FaqAccordion
+          items={
+            (dataLoaded && sanityData?.faqs && sanityData.faqs.length > 0)
+              ? sanityData.faqs
+              : [
+                {
+                  q: "چگونه می‌توانم محصولات را خریداری کنم؟",
+                  a: "شما می‌توانید با مراجعه به صفحه محصولات، محصول مورد نظر خود را انتخاب کرده و به سبد خرید اضافه کنید. پس از تکمیل اطلاعات، پرداخت را انجام دهید."
+                },
+                {
+                  q: "روش‌های پرداخت چیست؟",
+                  a: "ما از روش‌های مختلف پرداخت مانند کارت‌های بانکی، پرداخت آنلاین و سایر روش‌های امن پشتیبانی می‌کنیم."
+                },
+                {
+                  q: "آیا محصولات ضمانت دارند؟",
+                  a: "بله، تمام محصولات ما دارای ضمانت کیفیت هستند. در صورت بروز هرگونه مشکل، می‌توانید با پشتیبانی تماس بگیرید."
+                },
+                {
+                  q: "چگونه می‌توانم با پشتیبانی تماس بگیرم؟",
+                  a: "شما می‌توانید از طریق صفحه تماس با ما، ایمیل یا چت آنلاین با تیم پشتیبانی در ارتباط باشید."
+                }
+              ]
+          }
+        />
+      </Suspense>
 
       {/* Footer Trigger Point */}
       <div ref={footerTriggerRef} className="h-px" />
@@ -887,7 +1181,7 @@ const Index = () => {
           <Footer
             links={{
               products: "/products",
-              magazine: "/magazine",
+              magazine: "/blog",
               courses: "/courses",
               pricing: "/pricing",
               support: "/support",
@@ -903,21 +1197,14 @@ const Index = () => {
       )}
 
       {/* Floating UI - Lazy loaded */}
-      {/* <Suspense fallback={null}>
-        <FloatingDock
-          onOpenChat={() => setChatOpen(true)}
-          onOpenSupport={() => setSupportOpen(true)}
-          onOpenCart={() => setCartOpen(true)}
-          cartItemCount={cartState.itemCount}
-        />
-      </Suspense> */}
+      {/* FloatingDock moved to global App.tsx - appears on all pages */}
 
       {/* <Suspense fallback={null}>
       <ChatbotPanel open={chatOpen} onClose={() => setChatOpen(false)} />
       </Suspense> */}
 
       <Suspense fallback={null}>
-      <SupportPanel open={supportOpen} onClose={() => setSupportOpen(false)} />
+        <SupportPanel open={supportOpen} onClose={() => setSupportOpen(false)} />
       </Suspense>
 
       <Suspense fallback={null}>

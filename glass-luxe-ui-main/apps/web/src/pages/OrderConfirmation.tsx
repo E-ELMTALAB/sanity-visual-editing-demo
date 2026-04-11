@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@/components/Helmet";
 import { motion } from "framer-motion";
 import {
   CheckCircle2,
@@ -305,7 +305,7 @@ export default function OrderConfirmation() {
         <Footer
           links={{
             products: "/products",
-            magazine: "/magazine",
+            magazine: "/blog",
             courses: "/courses",
             pricing: "/pricing",
             support: "/support",

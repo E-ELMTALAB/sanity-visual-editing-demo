@@ -9,8 +9,8 @@
   src: url("../font/Vazirmatn-VariableFont_wght.woff2") format("woff2");
   font-weight: 100 900;
   font-style: normal;
-  /* Use 'optional' to prevent CLS - font won't cause layout shift */
-  font-display: optional;
+  /* Use 'swap' for better performance - shows text immediately with fallback, then swaps when font loads */
+  font-display: swap;
 }
 
 /* Fallback font metrics to minimize CLS */
@@ -25,63 +25,74 @@
 @layer base {
   :root {
     /* Dark Background Base */
-    --bg-base-top: 218 45% 4%;      /* #060914 - very dark navy */
-    --bg-base-bot: 229 60% 6%;      /* #0A0F27 - deep indigo */
-    
+    --bg-base-top: 218 45% 4%;
+    /* #060914 - very dark navy */
+    --bg-base-bot: 229 60% 6%;
+    /* #0A0F27 - deep indigo */
+
     /* Blurred Gradient Overlays */
-    --bg-blue: 212 100% 58% / 0.45;    /* rgba(40,130,255,0.45) */
-    --bg-purple: 265 100% 68% / 0.42;  /* rgba(160,90,255,0.42) */
-    --bg-cyan: 192 100% 62% / 0.20;    /* rgba(60,220,255,0.20) */
-    
+    --bg-blue: 212 100% 58% / 0.45;
+    /* rgba(40,130,255,0.45) */
+    --bg-purple: 265 100% 68% / 0.42;
+    /* rgba(160,90,255,0.42) */
+    --bg-cyan: 192 100% 62% / 0.20;
+    /* rgba(60,220,255,0.20) */
+
     /* Core Colors (HSL) */
-    --primary: 212 98% 70%;        /* #6EA8FE */
+    --primary: 212 98% 70%;
+    /* #6EA8FE */
     --primary-foreground: 0 0% 100%;
-    
-    --secondary: 262 77% 76%;      /* #B388FF */
+
+    --secondary: 262 77% 76%;
+    /* #B388FF */
     --secondary-foreground: 0 0% 100%;
-    
-    --accent-magenta: 325 100% 66%; /* #FF5AC8 */
-    --accent-green: 145 76% 51%;    /* #30D158 */
-    --accent-blue: 208 100% 52%;    /* #0A84FF */
-    --accent-red: 5 100% 61%;       /* #FF453A */
-    
+
+    --accent-magenta: 325 100% 66%;
+    /* #FF5AC8 */
+    --accent-green: 145 76% 51%;
+    /* #30D158 */
+    --accent-blue: 208 100% 52%;
+    /* #0A84FF */
+    --accent-red: 5 100% 61%;
+    /* #FF453A */
+
     /* Glass Surface Colors - Enhanced for dark theme */
     --surface-glass: 0 0% 100% / 0.14;
     --border-glass: 0 0% 100% / 0.42;
-    
+
     /* Text Colors */
     --text-primary: 0 0% 100% / 0.92;
     --text-secondary: 0 0% 100% / 0.72;
-    
+
     /* Background Gradient */
     --bg-gradient-from: 218 45% 4%;
     --bg-gradient-to: 229 60% 6%;
-    
+
     /* Standard tokens for compatibility */
     --background: 218 45% 4%;
     --foreground: 0 0% 100% / 0.92;
-    
+
     --card: 0 0% 100% / 0.08;
     --card-foreground: 0 0% 100% / 0.92;
-    
+
     --popover: 0 0% 100% / 0.12;
     --popover-foreground: 0 0% 100% / 0.92;
-    
+
     --muted: 0 0% 100% / 0.06;
     --muted-foreground: 0 0% 100% / 0.72;
-    
+
     --accent: 262 77% 76%;
     --accent-foreground: 0 0% 100%;
-    
+
     --destructive: 5 100% 61%;
     --destructive-foreground: 0 0% 100%;
-    
+
     --border: 0 0% 100% / 0.15;
     --input: 0 0% 100% / 0.12;
     --ring: 212 98% 70%;
-    
+
     --radius: 1rem;
-    
+
     --sidebar-background: 0 0% 100% / 0.06;
     --sidebar-foreground: 0 0% 100% / 0.92;
     --sidebar-primary: 212 98% 70%;
@@ -94,7 +105,9 @@
 }
 
 @layer base {
-  html, body {
+
+  html,
+  body {
     height: 100%;
   }
 
@@ -115,7 +128,7 @@
     -moz-osx-font-smoothing: grayscale;
     position: relative;
   }
-  
+
   /* Blurred gradient overlay with radial spotlights */
   body::before {
     content: '';
@@ -123,12 +136,8 @@
     inset: -20vh -20vw;
     z-index: -1;
     pointer-events: none;
-    background:
-      radial-gradient(80% 55% at 15% 10%, hsl(var(--bg-blue)) 0%, rgba(0,0,0,0) 60%),
-      radial-gradient(70% 60% at 85% 30%, hsl(var(--bg-purple)) 0%, rgba(0,0,0,0) 65%),
-      radial-gradient(60% 70% at 30% 90%, hsl(var(--bg-cyan)) 0%, rgba(0,0,0,0) 60%);
-    filter: blur(40px) saturate(115%);
-    opacity: 0.7;
+    background: none;
+    opacity: 0;
   }
 
   /* Ultra-subtle noise to prevent banding */
@@ -136,36 +145,177 @@
     content: '';
     position: fixed;
     inset: 0;
-    z-index: -1;
+    z-index: -5;
     pointer-events: none;
-    opacity: 0.035;
-    mix-blend-mode: soft-light;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .25 0'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>");
-    background-size: 220px 220px;
+    background: rgba(0, 0, 0, 0.65);
+    opacity: 1;
   }
-  
+
   /* RTL Support */
   [dir="rtl"] {
     direction: rtl;
   }
-  
+
   [dir="ltr"] {
     direction: ltr;
   }
 }
 
+/* Global Hero Gradient Background (from homepage hero) */
+:root {
+  --color-bg1: rgb(108, 0, 162);
+  --color-bg2: rgb(0, 17, 82);
+  --color1: 18, 113, 255;
+  --color2: 221, 74, 255;
+  --color3: 100, 220, 255;
+  --color4: 200, 50, 50;
+  --color5: 180, 180, 50;
+  --color-interactive: 140, 100, 255;
+  --circle-size: 80%;
+  --blending: hard-light;
+}
+
+@keyframes moveInCircle {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes moveVertical {
+  0% { transform: translateY(-50%); }
+  50% { transform: translateY(50%); }
+  100% { transform: translateY(-50%); }
+}
+
+@keyframes moveHorizontal {
+  0% { transform: translateX(-50%) translateY(-10%); }
+  50% { transform: translateX(50%) translateY(10%); }
+  100% { transform: translateX(-50%) translateY(-10%); }
+}
+
+.gradient-bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(40deg, var(--color-bg1), var(--color-bg2));
+}
+
+.gradient-bg svg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+}
+
+.gradient-bg .gradients-container {
+  filter: url(#goo) blur(40px);
+  width: 100%;
+  height: 100%;
+}
+
+.gradient-bg .g1 {
+  position: absolute;
+  background: radial-gradient(circle at center, rgba(var(--color1), 0.8) 0, rgba(var(--color1), 0) 50%) no-repeat;
+  mix-blend-mode: var(--blending);
+  width: var(--circle-size);
+  height: var(--circle-size);
+  top: calc(50% - var(--circle-size) / 2);
+  left: calc(50% - var(--circle-size) / 2);
+  transform-origin: center center;
+  animation: moveVertical 30s ease infinite;
+  opacity: 1;
+}
+
+.gradient-bg .g2 {
+  position: absolute;
+  background: radial-gradient(circle at center, rgba(var(--color2), 0.8) 0, rgba(var(--color2), 0) 50%) no-repeat;
+  mix-blend-mode: var(--blending);
+  width: var(--circle-size);
+  height: var(--circle-size);
+  top: calc(50% - var(--circle-size) / 2);
+  left: calc(50% - var(--circle-size) / 2);
+  transform-origin: calc(50% - 400px);
+  animation: moveInCircle 20s reverse infinite;
+  opacity: 1;
+}
+
+.gradient-bg .g3 {
+  position: absolute;
+  background: radial-gradient(circle at center, rgba(var(--color3), 0.8) 0, rgba(var(--color3), 0) 50%) no-repeat;
+  mix-blend-mode: var(--blending);
+  width: var(--circle-size);
+  height: var(--circle-size);
+  top: calc(50% - var(--circle-size) / 2 + 200px);
+  left: calc(50% - var(--circle-size) / 2 - 500px);
+  transform-origin: calc(50% + 400px);
+  animation: moveInCircle 40s linear infinite;
+  opacity: 1;
+}
+
+.gradient-bg .g4 {
+  position: absolute;
+  background: radial-gradient(circle at center, rgba(var(--color4), 0.8) 0, rgba(var(--color4), 0) 50%) no-repeat;
+  mix-blend-mode: var(--blending);
+  width: var(--circle-size);
+  height: var(--circle-size);
+  top: calc(50% - var(--circle-size) / 2);
+  left: calc(50% - var(--circle-size) / 2);
+  transform-origin: calc(50% - 200px);
+  animation: moveHorizontal 40s ease infinite;
+  opacity: 0.7;
+}
+
+.gradient-bg .g5 {
+  position: absolute;
+  background: radial-gradient(circle at center, rgba(var(--color5), 0.8) 0, rgba(var(--color5), 0) 50%) no-repeat;
+  mix-blend-mode: var(--blending);
+  width: calc(var(--circle-size) * 2);
+  height: calc(var(--circle-size) * 2);
+  top: calc(50% - var(--circle-size));
+  left: calc(50% - var(--circle-size));
+  transform-origin: calc(50% - 800px) calc(50% + 200px);
+  animation: moveInCircle 20s ease infinite;
+  opacity: 1;
+}
+
+.gradient-bg .interactive {
+  position: absolute;
+  background: radial-gradient(circle at center, rgba(var(--color-interactive), 0.8) 0, rgba(var(--color-interactive), 0) 50%) no-repeat;
+  mix-blend-mode: var(--blending);
+  width: 100%;
+  height: 100%;
+  top: -50%;
+  left: -50%;
+  opacity: 0.7;
+  transform: translate(0px, 0px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gradient-bg .g1,
+  .gradient-bg .g2,
+  .gradient-bg .g3,
+  .gradient-bg .g4,
+  .gradient-bg .g5 {
+    animation: none !important;
+  }
+}
+
 @layer components {
+
   /* Glassmorphism utility - Enhanced for dark theme */
   .glass {
     backdrop-filter: blur(22px) saturate(160%);
     background: hsl(var(--surface-glass));
     border: 1px solid hsl(var(--border-glass));
-    box-shadow: 
+    box-shadow:
       0 8px 34px rgba(0, 0, 0, 0.28),
       inset 0 1px 0 hsl(0 0% 100% / 0.10);
     border-radius: 1.25rem;
   }
-  
+
   /* Glass variants */
   .glass-subtle {
     backdrop-filter: blur(16px) saturate(140%);
@@ -174,46 +324,55 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22);
     border-radius: 1rem;
   }
-  
+
   .glass-strong {
     backdrop-filter: blur(28px) saturate(180%);
     background: hsl(0 0% 100% / 0.18);
     border: 1px solid hsl(var(--border-glass));
-    box-shadow: 
+    box-shadow:
       0 10px 44px rgba(0, 0, 0, 0.35),
       inset 0 1px 0 hsl(0 0% 100% / 0.15);
     border-radius: 1.75rem;
   }
-  
+
+  /* Remove bottom border from header */
+  header .glass-strong {
+    border-bottom: none !important;
+  }
+
   /* Focus styles */
   .focus-ring {
     @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
   }
-  
+
   /* Safe area support */
   .safe-area-inset-top {
     padding-top: env(safe-area-inset-top);
   }
-  
+
   .safe-area-inset-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
-  
+
   /* Hero background image positioning */
   .hero-bg {
-    background-position: 60% 50%; /* desktop/tablet: show a bit right */
+    background-position: 60% 50%;
+    /* desktop/tablet: show a bit right */
   }
-  
+
   @media (max-width: 768px) {
     .hero-bg {
-      background-position: 20% 50%; /* mobile: show more LEFT */
+      background-position: 20% 50%;
+      /* mobile: show more LEFT */
     }
   }
 }
 
 @layer utilities {
+
   /* Respect reduced motion */
   @media (prefers-reduced-motion: reduce) {
+
     *,
     *::before,
     *::after {
@@ -222,78 +381,293 @@
       transition-duration: 0.01ms !important;
     }
   }
-  
+
   /* Performance: CSS-only pulse animation for floating dock */
   .animate-pulse-ring {
     animation: pulse-ring 2s ease-in-out infinite;
   }
-  
+
   @keyframes pulse-ring {
-    0%, 100% {
+
+    0%,
+    100% {
       box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
     }
+
     50% {
       box-shadow: 0 0 0 8px hsl(var(--primary) / 0);
     }
   }
-  
+
+  /* Pulse animation for bonus bar emoji */
+  .animate-pulse-emoji {
+    animation: pulse-emoji 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-emoji {
+
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    50% {
+      transform: scale(1.1);
+      opacity: 0.9;
+    }
+  }
+
   /* Performance: will-change hints for animated elements */
   .will-change-transform {
     will-change: transform;
   }
-  
+
   .will-change-opacity {
     will-change: opacity;
   }
-  
+
   /* CSS animations to replace framer-motion */
   .animate-slideDown {
     animation: slideDown 0.4s ease-out;
   }
-  
+
   @keyframes slideDown {
     from {
       transform: translateY(-100%);
       opacity: 0;
     }
+
     to {
       transform: translateY(0);
       opacity: 1;
     }
   }
-  
+
   .animate-fadeIn {
     animation: fadeIn 0.2s ease-out;
   }
-  
+
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
-  
+
   .animate-slideInRight {
     animation: slideInRight 0.3s ease-out;
   }
-  
+
   @keyframes slideInRight {
     from {
       transform: translateX(100%);
     }
+
     to {
       transform: translateX(0);
     }
   }
-  
+
   .animate-slideInLeft {
     animation: slideInLeft 0.3s ease-out;
   }
-  
+
   @keyframes slideInLeft {
     from {
       transform: translateX(-100%);
     }
+
     to {
       transform: translateX(0);
+    }
+  }
+
+  /* Hero background glow animations - GPU-friendly, respects prefers-reduced-motion */
+  @keyframes heroGlow {
+
+    0%,
+    100% {
+      opacity: 0.4;
+      transform: scale(1);
+    }
+
+    50% {
+      opacity: 0.5;
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes heroGlowSecondary {
+
+    0%,
+    100% {
+      opacity: 0.3;
+      transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+      opacity: 0.35;
+      transform: translate(2%, -1%) scale(1.02);
+    }
+
+    66% {
+      opacity: 0.35;
+      transform: translate(-2%, 1%) scale(1.02);
+    }
+  }
+
+  @keyframes heroGradient {
+    0% {
+      opacity: 0.15;
+    }
+
+    100% {
+      opacity: 0.25;
+    }
+  }
+
+  /* Hero arc float animation - very slow and subtle */
+  @keyframes heroArcFloat {
+
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 0.85;
+    }
+
+    50% {
+      transform: translate3d(0, -8px, 0) scale(1.01);
+      opacity: 0.9;
+    }
+  }
+
+  /* Respect prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    @keyframes heroArcFloat {
+
+      0%,
+      100% {
+        transform: translate3d(0, 0, 0);
+        opacity: 0.85;
+      }
+    }
+  }
+
+  /* Hero glow float animation - slow, subtle movement (transform/opacity only) */
+  @keyframes heroGlowFloat {
+
+    0%,
+    100% {
+      transform: translateY(0) translateZ(0) scale(1);
+      opacity: 0.95;
+    }
+
+    50% {
+      transform: translateY(-3px) translateZ(0) scale(1.02);
+      opacity: 1;
+    }
+  }
+
+  /* Disable animation for prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    @keyframes heroGlowFloat {
+
+      0%,
+      100% {
+        transform: translateZ(0) scale(1);
+        opacity: 0.95;
+      }
+    }
+  }
+
+  /* Hero glow - Reflect-style sunrise aura halo */
+  /* Layered radial-gradients create bright core + soft outer aura */
+  /* CSS-only: no images, no heavy filters, no canvas */
+  .heroGlow {
+    /* Multiple stacked radial-gradients for layered sunrise aura */
+    background:
+      /* Outer soft aura - widest, lowest opacity */
+      radial-gradient(ellipse 120% 100% at 50% 48%,
+        rgba(168, 85, 247, 0.25) 0%,
+        rgba(139, 92, 246, 0.15) 30%,
+        rgba(99, 102, 241, 0.08) 50%,
+        transparent 75%),
+      /* Mid aura - medium spread */
+      radial-gradient(ellipse 90% 80% at 50% 48%,
+        rgba(168, 85, 247, 0.4) 0%,
+        rgba(139, 92, 246, 0.25) 25%,
+        rgba(99, 102, 241, 0.12) 45%,
+        transparent 65%),
+      /* Bright core - intense center glow */
+      radial-gradient(ellipse 60% 50% at 50% 48%,
+        rgba(196, 181, 253, 0.7) 0%,
+        rgba(168, 85, 247, 0.5) 20%,
+        rgba(139, 92, 246, 0.3) 35%,
+        rgba(99, 102, 241, 0.15) 50%,
+        transparent 70%);
+    /* Single blur filter on the entire element (not animated) */
+    filter: blur(35px);
+    opacity: 1;
+    /* Subtle animation: only transform/opacity, not blur */
+    animation: heroGlowFloat 10s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+
+  /* Bright core accent - additional intense glow */
+  .heroGlow::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 48%;
+    transform: translate(-50%, -50%) translateZ(0);
+    width: clamp(400px, 50vw, 600px);
+    height: clamp(300px, 40vh, 450px);
+    border-radius: 50%;
+    /* Bright center core */
+    background: radial-gradient(circle at center,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(196, 181, 253, 0.6) 15%,
+        rgba(168, 85, 247, 0.4) 30%,
+        rgba(139, 92, 246, 0.2) 50%,
+        transparent 70%);
+    /* No blur on this layer - it's already soft */
+    opacity: 0.85;
+    will-change: transform;
+    pointer-events: none;
+  }
+
+  /* Thin arc line - subtle dome arc using conic-gradient */
+  .heroGlow::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    transform: translate(-50%, -50%) translateZ(0);
+    width: clamp(600px, 80vw, 900px);
+    height: clamp(300px, 50vh, 450px);
+    border-radius: 50%;
+    /* Thin ring using radial-gradient with transparent center */
+    background: radial-gradient(circle at center,
+        transparent 48%,
+        rgba(168, 85, 247, 0.4) 48.5%,
+        rgba(139, 92, 246, 0.5) 49%,
+        rgba(168, 85, 247, 0.4) 49.5%,
+        transparent 50%);
+    /* Very light blur for softness */
+    filter: blur(1.5px);
+    opacity: 0.6;
+    will-change: opacity;
+    pointer-events: none;
+  }
+
+  /* Disable animation for prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    .heroGlow {
+      animation: none;
     }
   }
 }
