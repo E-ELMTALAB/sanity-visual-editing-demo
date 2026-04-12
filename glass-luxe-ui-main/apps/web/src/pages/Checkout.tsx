@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronDown, ShieldCheck } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer/Footer";
@@ -25,6 +25,7 @@ const contactSchema = z.object({
 
 export default function Checkout() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { state: cartState, clearCart } = useCart();
   const [isLoading, setIsLoading] = useState(false);
   const [showItems, setShowItems] = useState(true);
@@ -35,7 +36,14 @@ export default function Checkout() {
     fullName: "",
     phone: "",
   });
-  const [selectedGateway, setSelectedGateway] = useState<PaymentGateway>(null);
+  const [selectedGateway, setSelectedGateway] = useState<PaymentGateway>(() => {
+    // Set Zarinpal as default if gateway parameter is present
+    const gatewayParam = searchParams.get('gateway');
+    if (gatewayParam === 'zarinpal') {
+      return 'zarinpal';
+    }
+    return null;
+  });
   const [showGatewayValidation, setShowGatewayValidation] = useState(false);
 
   const subtotal = cartState.total;

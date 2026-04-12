@@ -39,7 +39,7 @@ export function getCachedClient(options?: CachedClientOptions) {
   // Wrap the fetch method to add cache layer
   const originalFetch = baseClient.fetch.bind(baseClient)
 
-  const cachedFetch = async (query: string, params?: Record<string, any>) => {
+  baseClient.fetch = async (query: string, params?: Record<string, any>) => {
     // Respect options
     if (options?.forceApi || options?.draft) {
       console.info('[SANITY-CACHED-CLIENT] Using live API (forced or draft mode)')
@@ -71,13 +71,9 @@ export function getCachedClient(options?: CachedClientOptions) {
     // Cache miss or not available: use API
     console.info('[SANITY-CACHED-CLIENT] Using live API (cache miss or not available)')
     return originalFetch(query, params)
-  }
+  } as any
 
-  // Return a client with the cached fetch method
-  return {
-    ...baseClient,
-    fetch: cachedFetch,
-  }
+  return baseClient
 }
 
 /**

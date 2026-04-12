@@ -635,8 +635,11 @@ const ProductDetail = () => {
   };
 
   const handleBuyNow = () => {
-    // Redirect directly to Bale link
-    window.location.href = 'https://ble.ir/sharifgptadmin';
+    // Add product to cart and navigate to checkout with Zarinpal as default
+    if (addProductToCart()) {
+      // Navigate to checkout with Zarinpal parameter
+      navigate('/checkout?gateway=zarinpal');
+    }
   };
 
   if (isLoading) {
@@ -897,7 +900,7 @@ const ProductDetail = () => {
                       )}>
                         <Button size="lg" onClick={handleBuyNow} className="flex-1 min-w-0 text-sm sm:text-base font-semibold">
                           <ShoppingCart className="ml-1 h-4 w-4 shrink-0" />
-                          <span className="truncate">خرید اکانت در بله</span>
+                          <span className="truncate">خرید</span>
                         </Button>
                       </div>
                     );
@@ -1136,7 +1139,7 @@ const ProductDetail = () => {
                 </div>
                 <Button size="sm" onClick={handleBuyNow} className="flex-1 min-w-0 h-10 text-sm">
                   <ShoppingCart className="ltr:mr-1 rtl:ml-1 h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">خرید اکانت در بله</span>
+                  <span className="truncate">خرید</span>
                 </Button>
               </div>
             </div>
