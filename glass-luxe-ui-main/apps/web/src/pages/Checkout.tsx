@@ -14,8 +14,11 @@ import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { useCart } from "@/contexts/cart-context";
 import { createMedusaCart, initiatePayment } from "@/lib/medusa-cart";
+import { buildZarinpalPaymentLink, generateTransactionReferenceId } from "@/lib/zarinpal-frontend";
 import { PaymentSection } from "@/components/checkout/PaymentSection";
 import { PaymentGateway } from "@/components/checkout/SecurePaymentMethods";
+import { VpnWarningBanner } from "@/components/checkout/VpnWarningBanner";
+import { TransactionReferenceDisplay } from "@/components/checkout/TransactionReferenceDisplay";
 
 const contactSchema = z.object({
   email: z.string().email({ message: "ایمیل معتبر وارد کنید" }),
@@ -29,6 +32,8 @@ export default function Checkout() {
   const [isLoading, setIsLoading] = useState(false);
   const [showItems, setShowItems] = useState(true);
   const [discountCode, setDiscountCode] = useState("");
+  const [transactionReferenceId, setTransactionReferenceId] = useState<string | null>(null);
+  const [medusaCartId, setMedusaCartId] = useState<string | null>(null);
   
   const [contactData, setContactData] = useState({
     email: "",
@@ -91,70 +96,86 @@ export default function Checkout() {
       return;
     }
 
-    try {
-      setIsLoading(true);
-      console.log('[CHECKOUT] Starting cart creation...');
+    // Check if selected gateway is Zarinpal (frontend payment)
+    if (selectedGateway === 'zarinpal') {
+      // Frontend Zarinpal Payment Flow
+      try {
+        setIsLoading(true);
+        console.log('[CHECKOUT] Using frontend Zarinpal payment flow...');
 
-      // Step 1: Create Medusa cart
-      const cartResponse = await createMedusaCart(
-        cartState.items.map(item => ({
-          id: item.id,
-          title: item.title,
-          price: item.price,
-          image: item.image,
-          quantity: item.quantity,
-          selectedOption: item.selectedOption,
-          sanity_slug: item.sanity_slug,
-          variant_id: item.variant_id,
-          option_name: item.option_name,
-        })),
-        contactData.email,
-        contactData.phone
-      );
+        // Generate transaction reference ID
+        const refId = generateTransactionReferenceId();
+        setTransactionReferenceId(refId);
+        console.log('[CHECKOUT] Generated transaction reference ID:', refId);
 
-      if (!cartResponse.success || !cartResponse.cart?.id) {
-        console.error('[CHECKOUT] ❌ Cart creation failed:', cartResponse.error || 'Unknown error');
-        throw new Error(cartResponse.error || 'خطا در ایجاد سبد خرید');
-      }
+        // Step 1: Create Medusa cart for record keeping
+        console.log('[CHECKOUT] Creating Medusa cart for record keeping...');
+        const cartResponse = await createMedusaCart(
+          cartState.items.map(item => ({
+            id: item.id,
+            title: item.title,
+            price: item.price,
+            image: item.image,
+            quantity: item.quantity,
+            selectedOption: item.selectedOption,
+            sanity_slug: item.sanity_slug,
+            variant_id: item.variant_id,
+            option_name: item.option_name,
+          })),
+          contactData.email,
+          contactData.phone
+        );
 
-      const cartId = cartResponse.cart.id;
-      console.log('[CHECKOUT] ✅ Cart created with ID:', cartId);
+        let cartId = 'frontend-payment';
+        if (cartResponse.success && cartResponse.cart?.id) {
+          cartId = cartResponse.cart.id;
+          setMedusaCartId(cartId);
+          console.log('[CHECKOUT] ✅ Cart created with ID:', cartId);
+        } else {
+          console.warn('[CHECKOUT] ⚠️ Cart creation failed, using frontend payment ID');
+        }
 
-      // Step 2: Initiate payment
-      const paymentResponse = await initiatePayment(
-        cartId,
-        contactData.email,
-        contactData.phone
-      );
+        // Step 2: Build Zarinpal payment link on frontend
+        console.log('[CHECKOUT] Building Zarinpal payment link on frontend...');
+        const paymentResult = await buildZarinpalPaymentLink(
+          cartState.total,
+          contactData.email,
+          contactData.phone,
+          cartId,
+          refId
+        );
 
-      if (!paymentResponse.success) {
-        console.error('[CHECKOUT] ❌ Payment initiation failed:', paymentResponse.error || 'Unknown error');
-        throw new Error(paymentResponse.error || 'خطا در شروع پرداخت');
-      }
+        if (!paymentResult.success || !paymentResult.paymentUrl) {
+          console.error('[CHECKOUT] ❌ Payment link creation failed:', paymentResult.error);
+          toast.error(paymentResult.error || 'خطا در ساخت لینک پرداخت');
+          setIsLoading(false);
+          return;
+        }
 
-      // Redirect to payment gateway
-      if (paymentResponse.payment?.payment_url) {
-        // Store cart ID for verification after payment
-        console.log('[CHECKOUT] Storing pending payment data in localStorage...');
-        localStorage.setItem('pending_resource_id', cartId);
-        localStorage.setItem('pending_payment_authority', paymentResponse.payment.authority);
-        localStorage.setItem('pending_payment_session_id', paymentResponse.payment.session_id);
-
-        console.log('[CHECKOUT] Redirecting to payment gateway:', paymentResponse.payment.payment_url);
+        console.log('[CHECKOUT] ✅ Payment link created successfully');
+        console.log('[CHECKOUT] Authority:', paymentResult.authority);
+        console.log('[CHECKOUT] Payment URL:', paymentResult.paymentUrl);
         console.log('[CHECKOUT] =========================================');
 
-        // Redirect to Zarinpal payment gateway
-        window.location.href = paymentResponse.payment.payment_url;
-      } else {
-        console.error('[CHECKOUT] ❌ Payment URL not received');
-        throw new Error('لینک پرداخت دریافت نشد');
-      }
+        // Show toast with reference ID
+        toast.success(`کد تراکنش: ${refId}`);
 
-    } catch (error: any) {
-      console.error('[CHECKOUT] ❌ Checkout error:', error.message);
-      toast.error(error.message || 'خطا در پردازش سفارش');
+        // Redirect to payment gateway after short delay
+        setTimeout(() => {
+          console.log('[CHECKOUT] Redirecting to Zarinpal payment gateway...');
+          window.location.href = paymentResult.paymentUrl!;
+        }, 1500);
+
+      } catch (error: any) {
+        console.error('[CHECKOUT] ❌ Checkout error:', error.message);
+        toast.error(error.message || 'خطا در پردازش سفارش');
+        setIsLoading(false);
+        console.log('[CHECKOUT] =========================================');
+      }
+    } else {
+      // Other payment gateways (Future implementation)
+      toast.error("این روش پرداخت هنوز در دسترس نیست");
       setIsLoading(false);
-      console.log('[CHECKOUT] =========================================');
     }
   };
 
@@ -314,6 +335,17 @@ export default function Checkout() {
                   </div>
                 </div>
               </SurfaceGlass>
+
+              {/* VPN Warning Banner */}
+              <VpnWarningBanner />
+
+              {/* Transaction Reference Display */}
+              {transactionReferenceId && (
+                <TransactionReferenceDisplay 
+                  referenceId={transactionReferenceId}
+                  onClose={() => setTransactionReferenceId(null)}
+                />
+              )}
 
               {/* Payment Section */}
               <PaymentSection
