@@ -35,7 +35,7 @@ export default function Checkout() {
     fullName: "",
     phone: "",
   });
-  const [selectedGateway, setSelectedGateway] = useState<PaymentGateway>("zarinpal");
+  const [selectedGateway, setSelectedGateway] = useState<PaymentGateway>(null);
   const [showGatewayValidation, setShowGatewayValidation] = useState(false);
 
   const subtotal = cartState.total;
