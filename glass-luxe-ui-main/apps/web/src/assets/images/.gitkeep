@@ -1,0 +1,5 @@
+# This directory contains product images
+# Images can be sourced from:
+# 1. Local files in this directory (/assets/images/)
+# 2. Arvan Cloud Storage (https://sharifgptwebsiteimages.s3.ir-thr-at1.arvanstorage.ir/)
+# 3. Sanity CMS (fallback)

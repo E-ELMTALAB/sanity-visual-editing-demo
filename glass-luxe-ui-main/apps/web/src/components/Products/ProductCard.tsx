@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { lazy, Suspense, useMemo } from "react";
 import { toPersianNumber } from "@/lib/medusa-promotions";
 import { useSiteWidePromotion } from "@/contexts/promotion-context";
+import { useImageFallback } from "@/hooks/useImageFallback";
 const CompactCountdownTimer = lazy(() => import("@/components/ui/countdown-timer").then(m => ({ default: m.CompactCountdownTimer })));
 
 interface MedusaVariant {
@@ -55,6 +56,13 @@ export const ProductCard = React.memo(function ProductCard({
 }: ProductCardProps) {
   const navigate = useNavigate();
   const siteWidePromotion = useSiteWidePromotion();
+
+  // THREE-LEVEL IMAGE FALLBACK: Local Assets → Arvan Cloud → Sanity CMS
+  const imageFallback = useImageFallback({
+    productSlug: slug || null,
+    sanitySource: image || null,
+    enableLogging: false, // Set to true for debugging image loading issues
+  });
 
   // Calculate pricing and promotion info
   const pricingInfo = useMemo(() => {
@@ -151,12 +159,13 @@ export const ProductCard = React.memo(function ProductCard({
       {/* Image wrapper */}
       <div className="relative aspect-[3/4] rounded-2xl overflow-hidden">
         <img
-          src={image}
-          srcSet={imageSrcSet || ''}
+          src={imageFallback.src}
+          srcSet={imageFallback.srcSet}
           sizes="(max-width: 768px) 100vw, 560px"
-          alt={title}
+          alt={imageFallback.alt}
           loading="lazy"
           decoding="async"
+          onError={imageFallback.onError}
           className="absolute inset-0 w-full h-full object-cover ring-1 ring-white/12 shadow-none transition-transform duration-200 group-hover:scale-[1.02]"
         />
         

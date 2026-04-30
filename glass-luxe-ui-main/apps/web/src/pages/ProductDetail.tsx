@@ -25,8 +25,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { getProductBySlug } from "@/lib/sanity-cache-direct";
 import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";
-import { fetchProductPrices, type MedusaVariant } from "@/lib/medusa-prices";
-import { toPersianNumber, calculateDiscountedPrice } from "@/lib/medusa-promotions";
+import { calculateDiscountedPrice, toPersianNumber } from "@/lib/medusa-promotions";
 const springTransition = {
   type: "spring" as const,
   stiffness: 220,
@@ -111,42 +110,48 @@ const ProductDetail = () => {
   const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [medusaVariants, setMedusaVariants] = useState<MedusaVariant[]>([]);
-  const [medusaProductId, setMedusaProductId] = useState<string | undefined>(undefined);
-  const [pricesLoading, setPricesLoading] = useState(false);
-  const [pricesError, setPricesError] = useState<string | null>(null);
-  const [relatedProductPrices, setRelatedProductPrices] = useState<Record<string, { variants: MedusaVariant[] }>>({});
   const { addItem, setSingleItem, state: cartState } = useCart();
   const stickyRef = useRef<HTMLDivElement>(null);
 
-  // Get promotion info from context - use Medusa product ID if available
-  const productIdForPromotion = medusaProductId || product?.id; // Prefer Medusa product ID
+  const medusaVariants = (product?.variants || []).map((variant) => ({
+    variant_id: variant.id,
+    name: variant.name,
+    price: variant.price || 0,
+    price_rials: (variant.price ?? 0) * 10,
+    original_price: typeof variant.oldPrice === 'number' ? variant.oldPrice : undefined,
+    original_price_rials: typeof variant.oldPrice === 'number' ? variant.oldPrice * 10 : undefined,
+    sku: undefined,
+    currency: 'IRT',
+    has_promotion: typeof variant.oldPrice === 'number' && variant.price !== undefined && variant.oldPrice > variant.price,
+    discount_percentage:
+      typeof variant.oldPrice === 'number' && variant.price !== undefined && variant.oldPrice > variant.price
+        ? Math.round(((variant.oldPrice - variant.price) / variant.oldPrice) * 100)
+        : undefined,
+    promotion_ends_at: undefined,
+  }));
+
+  // Get promotion info from context - use Sanity product ID for static pricing
+  const productIdForPromotion = product?.id;
 
   // Calculate the price for promotion based on selected variant (not lowest price)
   // This needs to be calculated inline since getCurrentPrice() is defined later
   const getPriceForPromotion = () => {
-    // Priority 1: Medusa variant price (if variant selected)
-    if (medusaVariants.length > 0 && selectedVariant) {
-      const variant = medusaVariants.find(v => v.variant_id === selectedVariant);
-      if (variant?.price) {
-        return variant.price;
-      }
-    }
-    // Priority 2: Lowest Medusa variant price (if no variant selected but Medusa has data)
-    if (medusaVariants.length > 0) {
-      const lowestPrice = Math.min(...medusaVariants.filter(v => v.price > 0).map(v => v.price));
-      if (lowestPrice && lowestPrice !== Infinity) {
-        return lowestPrice;
-      }
-    }
-    // Priority 3: Sanity variant price (fallback)
     if (product?.variants && selectedVariant) {
-      const variant = product.variants.find(v => v.id === selectedVariant);
-      if (variant?.price) {
-        return variant.price;
+      const selected = product.variants.find((v) => v.id === selectedVariant);
+      if (selected?.price) {
+        return selected.price;
       }
     }
-    // Fallback to product price
+
+    if (product?.variants?.length) {
+      const validPrices = product.variants
+        .map((v) => v.price ?? 0)
+        .filter((price) => price > 0);
+      if (validPrices.length > 0) {
+        return Math.min(...validPrices);
+      }
+    }
+
     return product?.price || 0;
   };
 
@@ -279,68 +284,6 @@ const ProductDetail = () => {
     };
   }, [product, slug]); // Added slug dependency for pageUrl
 
-  // Fetch prices from Medusa backend
-  useEffect(() => {
-    const fetchPrices = async () => {
-      if (!product?.handle && !slug) return;
-
-      const productSlug = product?.handle || slug;
-      if (!productSlug) return;
-
-      try {
-        setPricesLoading(true);
-        const prices = await fetchProductPrices([productSlug]);
-        const productPrices = prices[productSlug];
-
-        if (productPrices?.variants?.length > 0) {
-          setMedusaVariants(productPrices.variants);
-          // Store Medusa product ID for promotion matching
-          if (productPrices.product_id) {
-            setMedusaProductId(productPrices.product_id);
-          }
-          setPricesError(null);
-        } else {
-          setPricesError('قیمت‌ها در دسترس نیستند');
-          setMedusaVariants([]);
-        }
-      } catch (error: any) {
-        console.error('[PRODUCT-DETAIL] Price fetch error:', error);
-        setPricesError('خطا در دریافت قیمت‌ها');
-        setMedusaVariants([]);
-      } finally {
-        setPricesLoading(false);
-      }
-    };
-
-    if (product) {
-      fetchPrices();
-    }
-  }, [product?.handle, slug, product]);
-
-  // Fetch prices for related products from Medusa
-  useEffect(() => {
-    const fetchRelatedPrices = async () => {
-      if (!product?.relatedProducts?.length) return;
-
-      const slugs = product.relatedProducts
-        .map(p => p.slug)
-        .filter(Boolean) as string[];
-
-      if (slugs.length === 0) return;
-
-      try {
-        const prices = await fetchProductPrices(slugs);
-        setRelatedProductPrices(prices);
-      } catch (error) {
-        console.error('[PRODUCT-DETAIL] Related products price fetch error:', error);
-      }
-    };
-
-    if (product?.relatedProducts?.length) {
-      fetchRelatedPrices();
-    }
-  }, [product?.relatedProducts]);
-
   // Fire view_item event for GA4 ecommerce tracking
   useEffect(() => {
     if (!product || !product.price) return;
@@ -385,71 +328,43 @@ const ProductDetail = () => {
     if (!product) return;
 
     // Only set default variant if no variant is currently selected (initial load only)
-    // Once user selects a variant, don't override their choice
+    // Once the user selects a variant, don't override their choice
     if (selectedVariant !== null) return;
 
-    // Always prioritize Medusa variants (they're the source of truth)
-    const medusaDefault = getLowestPricedMedusaVariantId();
-    if (medusaDefault) {
-      console.log('[PRODUCT-DETAIL] Setting default variant from Medusa:', medusaDefault);
-      setSelectedVariant(medusaDefault);
-      return;
-    }
-
-    // Fallback to Sanity variants if Medusa variants aren't available yet
     const sanityDefault = getLowestPricedSanityVariantId();
     if (sanityDefault) {
-      console.log('[PRODUCT-DETAIL] Setting default variant from Sanity (fallback):', sanityDefault);
+      console.log('[PRODUCT-DETAIL] Setting default variant from Sanity:', sanityDefault);
       setSelectedVariant(sanityDefault);
     } else {
-      console.log('[PRODUCT-DETAIL] No variants available yet - waiting for Medusa prices...');
+      console.log('[PRODUCT-DETAIL] No variants available yet for this product');
     }
-  }, [medusaVariants, product?.variants, product]);
+  }, [product?.variants, product]);
 
   // Get current price based on selected variant
   const getCurrentPrice = () => {
     console.log('[PRODUCT-DETAIL] getCurrentPrice called:', {
       slug,
-      medusaVariantsCount: medusaVariants.length,
       selectedVariant,
-      pricesLoading,
       productPrice: product?.price,
     });
 
-    // Priority 1: Medusa variant price (if variant selected)
-    if (medusaVariants.length > 0 && selectedVariant) {
-      const variant = medusaVariants.find(v => v.variant_id === selectedVariant);
+    if (product?.variants && selectedVariant) {
+      const variant = product.variants.find(v => v.id === selectedVariant);
       if (variant?.price) {
-        console.log('[PRODUCT-DETAIL] ✅ getCurrentPrice - Using Medusa variant price:', variant.price, 'for variant:', variant.name);
+        console.log('[PRODUCT-DETAIL] ✅ getCurrentPrice - Using selected variant price:', variant.price, 'for variant:', variant.name);
         return variant.price;
       }
     }
 
-    // Priority 2: Lowest Medusa variant price (if no variant selected but Medusa has data)
-    if (medusaVariants.length > 0) {
-      const lowestPrice = Math.min(...medusaVariants.filter(v => v.price > 0).map(v => v.price));
-      if (lowestPrice && lowestPrice !== Infinity) {
-        console.log('[PRODUCT-DETAIL] ✅ getCurrentPrice - Using lowest Medusa price:', lowestPrice);
+    if (product?.variants?.length) {
+      const validPrices = product.variants.map(v => v.price || 0).filter(p => p > 0);
+      if (validPrices.length > 0) {
+        const lowestPrice = Math.min(...validPrices);
+        console.log('[PRODUCT-DETAIL] ✅ getCurrentPrice - Using lowest variant price:', lowestPrice);
         return lowestPrice;
       }
     }
 
-    // Priority 3: Sanity variant price (fallback)
-    if (product?.variants && selectedVariant) {
-      const variant = product.variants.find(v => v.id === selectedVariant);
-      if (variant?.price) {
-        console.log('[PRODUCT-DETAIL] ⚠️ getCurrentPrice - Using Sanity variant price:', variant.price, 'for variant:', variant.name);
-        return variant.price;
-      }
-    }
-
-    // Priority 4: If prices are still loading, show 0 (will update when loaded)
-    if (pricesLoading) {
-      console.log('[PRODUCT-DETAIL] ⏳ getCurrentPrice - Prices loading, showing 0');
-      return 0;
-    }
-
-    // Priority 5: Sanity product price (last resort fallback)
     console.log('[PRODUCT-DETAIL] ⚠️ getCurrentPrice - Using Sanity product price fallback:', product?.price || 0);
     return product?.price || 0;
   };
@@ -1075,7 +990,6 @@ const ProductDetail = () => {
                     image={prod.image}
                     price={prod.price}
                     slug={prod.slug}
-                    medusaVariants={prod.slug ? relatedProductPrices[prod.slug]?.variants : undefined}
                     onAdd={() => handleAddToCart()}
                   />
                 ))}
