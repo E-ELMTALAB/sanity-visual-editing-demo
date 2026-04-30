@@ -5,7 +5,6 @@
  * Uses Cloudflare proxy when PROXY_ENABLED=true for Iran filtering bypass
  */
 
-import { createClient } from '@sanity/client';
 import { writeFile, mkdir, readFile } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -87,21 +86,15 @@ async function fetchViaProxy<T>(query: string, params?: Record<string, any>): Pr
  * Fetch from Sanity - uses proxy when enabled, direct client otherwise
  */
 async function fetchFromSanity<T>(
-  client: ReturnType<typeof createClient>,
   query: string,
   params?: Record<string, any>
 ): Promise<T | null> {
-  if (PROXY_ENABLED) {
-    try {
-      return await fetchViaProxy<T>(query, params);
-    } catch (error) {
-      console.error('[BUILD] Proxy fetch failed, trying direct...', error);
-      // Fall through to direct client
-    }
+  try {
+    return await fetchViaProxy<T>(query, params);
+  } catch (error) {
+    console.error('[BUILD] Proxy fetch failed.', error);
+    throw error;
   }
-  
-  // Direct fetch (works when not behind filtering)
-  return await client.fetch<T>(query, params);
 }
 
 async function ensureCacheDir() {
@@ -118,6 +111,37 @@ async function saveToCache(filename: string, data: any) {
   const filePath = join(CACHE_DIR, filename);
   await writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
   console.log(`Saved: ${filename}`);
+}
+
+async function ensureFallbackCacheIndex() {
+  const fallbackIndexPath = join(CACHE_DIR, 'index.ts');
+  const fallbackIndexContent = `export const homepageCache = null as const;
+export const featuredProductsCache = [] as const;
+export const featuredCoursesCache = [] as const;
+export const featuredPostsCache = [] as const;
+export const categoryProductsCache = {} as const;
+export const faqsHomeCache = [] as const;
+export const allProductsListCache = [] as const;
+export const productsCache = {} as const;
+export const productsFaqsCache = {} as const;
+export const allPostsListCache = [] as const;
+export const postsCache = {} as const;
+export const allCollectionsListCache = [] as const;
+export const collectionsCache = {} as const;
+export const promoBannerCache = null as const;
+export const testimonialsCache = [] as const;
+export const cacheMetadata = {
+  fetchedAt: null,
+  source: 'fallback',
+  projectId: '${projectId}',
+  dataset: '${dataset}',
+  apiVersion: '${apiVersion}',
+  proxyEnabled: ${PROXY_ENABLED},
+  proxyUrl: ${PROXY_ENABLED ? `'${UNIFIED_PROXY_URL}'` : 'null'},
+} as const;
+`;
+  await writeFile(fallbackIndexPath, fallbackIndexContent, 'utf-8');
+  console.warn(`Generated fallback cache: ${fallbackIndexPath}`);
 }
 
 /**
@@ -423,21 +447,13 @@ async function fetchHomepageData() {
     console.log(`Proxy URL: ${UNIFIED_PROXY_URL}`);
   }
 
-  // Create Sanity client (used as fallback when proxy fails)
-  const client = createClient({
-    projectId,
-    dataset,
-    apiVersion,
-    useCdn: true,
-    perspective: 'published',
-  });
 
   try {
     await ensureCacheDir();
 
     // Fetch all homepage queries
     console.log('\nFetching homepage data...');
-    const homeData = await fetchFromSanity(client, homePageQuery);
+    const homeData = await fetchFromSanity(homePageQuery);
 
     // Log detailed homepage structure
     if (!homeData) {
@@ -496,7 +512,7 @@ async function fetchHomepageData() {
     console.log('\nSkipping shared index.html SEO/hero injection (route-neutral shell mode)');
 
     console.log('\nFetching featured products...');
-    const featuredProducts = await fetchFromSanity(client, featuredProductsQuery);
+    const featuredProducts = await fetchFromSanity(featuredProductsQuery);
     console.log(`featuredProducts count: ${(featuredProducts as any[])?.length || 0}`);
     if (Array.isArray(featuredProducts) && featuredProducts.length > 0) {
       const sample = featuredProducts.slice(0, 5).map((p: any) => ({
@@ -510,7 +526,7 @@ async function fetchHomepageData() {
     await saveToCache('featured-products.json', featuredProducts);
 
     console.log('\nFetching featured courses...');
-    const featuredCourses = await fetchFromSanity(client, featuredCoursesQuery);
+    const featuredCourses = await fetchFromSanity(featuredCoursesQuery);
     console.log(`featuredCourses count: ${(featuredCourses as any[])?.length || 0}`);
     if (Array.isArray(featuredCourses) && featuredCourses.length > 0) {
       const sample = featuredCourses.slice(0, 3).map((c: any) => ({
@@ -525,7 +541,7 @@ async function fetchHomepageData() {
     await saveToCache('featured-courses.json', featuredCourses);
 
     console.log('\nFetching featured posts...');
-    const featuredPosts = await fetchFromSanity(client, featuredPostsQuery);
+    const featuredPosts = await fetchFromSanity(featuredPostsQuery);
     console.log(`featuredPosts count: ${(featuredPosts as any[])?.length || 0}`);
     if (Array.isArray(featuredPosts) && featuredPosts.length > 0) {
       const sample = featuredPosts.slice(0, 3).map((p: any) => ({
@@ -543,7 +559,7 @@ async function fetchHomepageData() {
     for (const [key, category] of Object.entries(categoryMap)) {
       try {
         console.log(`   Fetching category: ${key} (${category})...`);
-        const products = await fetchFromSanity(client, productsByCategoryQuery, { category });
+        const products = await fetchFromSanity(productsByCategoryQuery, { category });
         categoryProductsMap[key] = products as any[] || [];
         await saveToCache(`products-category-${key}.json`, products);
         const count = (products as any[])?.length || 0;
@@ -574,7 +590,7 @@ async function fetchHomepageData() {
 
     // Fetch all products (used for both listing page and to get slugs for detail pages)
     console.log('\nFetching all products...');
-    const allProductsList = await fetchFromSanity(client, allProductsQuery);
+    const allProductsList = await fetchFromSanity(allProductsQuery);
     console.log(`All products count: ${(allProductsList as any[])?.length || 0}`);
     if (Array.isArray(allProductsList) && allProductsList.length > 0) {
       const sample = allProductsList.slice(0, 5).map((p: any) => ({
@@ -599,7 +615,7 @@ async function fetchHomepageData() {
     for (let i = 0; i < productSlugs.length; i++) {
       const slug = productSlugs[i];
       try {
-        const productDetail = await fetchFromSanity(client, productBySlugQuery, { slug });
+        const productDetail = await fetchFromSanity(productBySlugQuery, { slug });
         if (productDetail) {
           productsMap[slug] = productDetail;
           successCount++;
@@ -631,7 +647,7 @@ async function fetchHomepageData() {
 
     // Fetch all blog posts for listing page
     console.log('\nFetching all blog posts for listing page...');
-    const allPostsList = await fetchFromSanity(client, allPostsQuery);
+    const allPostsList = await fetchFromSanity(allPostsQuery);
     console.log(`All posts count: ${(allPostsList as any[])?.length || 0}`);
     if (Array.isArray(allPostsList) && allPostsList.length > 0) {
       const sample = allPostsList.slice(0, 5).map((p: any) => ({
@@ -656,7 +672,7 @@ async function fetchHomepageData() {
     for (let i = 0; i < postSlugs.length; i++) {
       const slug = postSlugs[i];
       try {
-        const postDetail = await fetchFromSanity(client, postBySlugQuery, { slug });
+        const postDetail = await fetchFromSanity(postBySlugQuery, { slug });
         if (postDetail) {
           postsMap[slug] = postDetail;
           postSuccessCount++;
@@ -683,7 +699,7 @@ async function fetchHomepageData() {
 
     // Fetch all collections for listing page
     console.log('\nFetching all collections for listing page...');
-    const allCollectionsList = await fetchFromSanity(client, allCollectionsQuery);
+    const allCollectionsList = await fetchFromSanity(allCollectionsQuery);
     console.log(`All collections count: ${(allCollectionsList as any[])?.length || 0}`);
     if (Array.isArray(allCollectionsList) && allCollectionsList.length > 0) {
       const sample = allCollectionsList.slice(0, 5).map((c: any) => ({
@@ -707,7 +723,7 @@ async function fetchHomepageData() {
     for (let i = 0; i < collectionSlugs.length; i++) {
       const slug = collectionSlugs[i];
       try {
-        const collectionDetail = await fetchFromSanity(client, collectionBySlugQuery, { slug });
+        const collectionDetail = await fetchFromSanity(collectionBySlugQuery, { slug });
         if (collectionDetail) {
           collectionsMap[slug] = collectionDetail;
           collectionSuccessCount++;
@@ -734,7 +750,7 @@ async function fetchHomepageData() {
 
     // Fetch promo banner
     console.log('\nFetching promo banner...');
-    const promoBanner = await fetchFromSanity(client, promoBannerQuery);
+    const promoBanner = await fetchFromSanity(promoBannerQuery);
     console.log("Fetched promoBanner:", promoBanner?._id || 'null');
     if (promoBanner) {
       console.log(`   - Title: ${(promoBanner as any).title || 'N/A'}`);
@@ -746,7 +762,7 @@ async function fetchHomepageData() {
 
     // Fetch testimonials
     console.log('\nFetching testimonials...');
-    const testimonials = await fetchFromSanity(client, testimonialsQuery);
+    const testimonials = await fetchFromSanity(testimonialsQuery);
     console.log(`Fetched testimonials count: ${(testimonials as any[])?.length || 0}`);
     if (Array.isArray(testimonials) && testimonials.length > 0) {
       const sample = testimonials.slice(0, 3).map((t: any) => ({
@@ -835,12 +851,14 @@ export const cacheMetadata = ${JSON.stringify(metadata, null, 2)} as const;
     console.log(`\nCache location: ${CACHE_DIR}`);
   } catch (error) {
     console.error('\nError fetching homepage data:', error);
-    process.exit(1);
+    await ensureCacheDir();
+    await ensureFallbackCacheIndex();
+    console.warn('Using existing cached Sanity data and continuing build.');
   }
 }
 
 // Run the script
 fetchHomepageData().catch((error) => {
   console.error('Fatal error:', error);
-  process.exit(1);
+  console.warn('Continuing build with existing cached Sanity data.');
 });

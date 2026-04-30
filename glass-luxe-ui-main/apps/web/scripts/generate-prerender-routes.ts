@@ -6,7 +6,7 @@ import {
   postsCache,
   collectionsCache,
   cacheMetadata,
-} from "../src/data/sanity-cache/index";
+} from "../src/data/sanity-cache/index.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -111,5 +111,3 @@ main().catch((error) => {
   console.error("[prerender-routes] Failed:", error);
   process.exit(1);
 });
-
-
