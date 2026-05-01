@@ -14,6 +14,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   getImageFallbackChain,
   logImageFallbackChain,
+  resolveImageSourceWithChecks,
   ImageSource,
 } from '@/lib/image-fallback'
 
@@ -68,22 +69,36 @@ export function useImageFallback(options: UseImageFallbackOptions): UseImageFall
 
   // Build fallback chain on mount or when inputs change
   useEffect(() => {
-    const chain = getImageFallbackChain(productSlug, sanitySource)
-    setFallbackChain(chain)
-    setCurrentUrlIndex(0)
-    setIsLoaded(false)
-    setFailedAttempts(0)
-    attemptedUrlsRef.current.clear()
+    let isCancelled = false
 
-    if (enableLogging) {
-      console.log('[HOOK] Built fallback chain with', chain.length, 'sources')
-      logImageFallbackChain(productSlug, sanitySource)
+    const initializeFallback = async () => {
+      const chain = getImageFallbackChain(productSlug, sanitySource)
+      const initialResolved = await resolveImageSourceWithChecks(productSlug, sanitySource)
+      const initialIndex = Math.max(chain.indexOf(initialResolved.url), 0)
+
+      if (isCancelled) return
+
+      setFallbackChain(chain)
+      setCurrentUrlIndex(initialIndex)
+      setIsLoaded(false)
+      setFailedAttempts(0)
+      attemptedUrlsRef.current.clear()
+
+      if (enableLogging) {
+        console.log('[HOOK] Built fallback chain with', chain.length, 'sources')
+        console.log('[HOOK] Preflight selected source:', initialResolved.source, initialResolved.url)
+        logImageFallbackChain(productSlug, sanitySource)
+      }
+
+      setCurrentSource(initialResolved.source)
+      onSourceChange?.(initialResolved.source)
     }
 
-    // Determine initial source
-    const initialSource = determineSourceFromIndex(0, productSlug)
-    setCurrentSource(initialSource)
-    onSourceChange?.(initialSource)
+    initializeFallback()
+
+    return () => {
+      isCancelled = true
+    }
   }, [productSlug, sanitySource, enableLogging, onSourceChange])
 
   /**
