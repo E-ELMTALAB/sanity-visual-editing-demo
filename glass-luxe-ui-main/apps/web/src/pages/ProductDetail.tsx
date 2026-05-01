@@ -674,6 +674,7 @@ const ProductDetail = () => {
   const galleryImages = product.images.length > 0 ? product.images : (product.image ? [product.image] : []);
   const currentImage = galleryImages[selectedImage] || galleryImages[0] || "";
   const { src: resolvedCurrentImage, onError: onCurrentImageError } = useImageFallback({
+    imageKey: product.handle || slug,
     sanityUrl: currentImage,
     fallbackSrc: "/placeholder.svg",
   });

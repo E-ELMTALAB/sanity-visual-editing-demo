@@ -2,17 +2,18 @@ import { useMemo, useState } from 'react'
 import { buildImageFallbackCandidates, IMAGE_FALLBACK_DEBUG } from '@/lib/image-fallback'
 
 type UseImageFallbackParams = {
+  imageKey?: string
   filename?: string
   sanityUrl?: string
   fallbackSrc?: string
 }
 
-export function useImageFallback({ filename, sanityUrl, fallbackSrc }: UseImageFallbackParams) {
+export function useImageFallback({ imageKey, filename, sanityUrl, fallbackSrc }: UseImageFallbackParams) {
   const candidates = useMemo(() => {
-    const built = buildImageFallbackCandidates({ filename, sanityUrl })
+    const built = buildImageFallbackCandidates({ imageKey, filename, sanityUrl })
     if (fallbackSrc) built.push(fallbackSrc)
     return Array.from(new Set(built.filter(Boolean)))
-  }, [filename, sanityUrl, fallbackSrc])
+  }, [imageKey, filename, sanityUrl, fallbackSrc])
 
   const [index, setIndex] = useState(0)
   const src = candidates[index] || ''

@@ -56,7 +56,7 @@ export const ProductCard = React.memo(function ProductCard({
 }: ProductCardProps) {
   const navigate = useNavigate();
   const siteWidePromotion = useSiteWidePromotion();
-  const { src: resolvedImageSrc, onError: onImageError } = useImageFallback({ sanityUrl: image });
+  const { src: resolvedImageSrc, onError: onImageError } = useImageFallback({ imageKey: slug, sanityUrl: image });
 
   // Calculate pricing and promotion info
   const pricingInfo = useMemo(() => {

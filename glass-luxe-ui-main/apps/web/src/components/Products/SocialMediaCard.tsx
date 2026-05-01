@@ -17,6 +17,7 @@ interface SocialMediaCardProps {
   platform: "Instagram" | "TikTok" | "Telegram" | "X";
   title: string;
   image: string;
+  slug?: string;
   price: number;
   rating: number;
   onAdd: (id: string) => void;
@@ -63,6 +64,7 @@ export const SocialMediaCard = React.memo(function SocialMediaCard({
   platform,
   title,
   image,
+  slug,
   price,
   rating,
   onAdd,
@@ -70,7 +72,7 @@ export const SocialMediaCard = React.memo(function SocialMediaCard({
 }: SocialMediaCardProps) {
   const config = platformConfig[platform];
   const Icon = config.icon;
-  const { src: resolvedImageSrc, onError: onImageError } = useImageFallback({ sanityUrl: image });
+  const { src: resolvedImageSrc, onError: onImageError } = useImageFallback({ imageKey: slug || title, sanityUrl: image });
 
   return (
     <div

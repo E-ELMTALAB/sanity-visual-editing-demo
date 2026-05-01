@@ -50,7 +50,7 @@ export function BlogCard({ post, className }: BlogCardProps) {
     : dayjs(post.publishedAt).format("MMM DD, YYYY");
 
   const imageUrl = post.image?.asset?.url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&h=400&fit=crop";
-  const { src: resolvedImageUrl, onError: onImageError } = useImageFallback({ sanityUrl: imageUrl });
+  const { src: resolvedImageUrl, onError: onImageError } = useImageFallback({ imageKey: post.slug, sanityUrl: imageUrl });
 
   return (
     <motion.article

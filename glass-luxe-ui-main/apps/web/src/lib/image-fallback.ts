@@ -5,8 +5,20 @@ export const IMAGE_FALLBACK_DEBUG =
   (import.meta.env.VITE_IMAGE_FALLBACK_DEBUG || 'false').toLowerCase() === 'true'
 
 export type ImageFallbackInput = {
+  imageKey?: string
   filename?: string
   sanityUrl?: string
+}
+const IMAGE_EXTENSIONS = ['webp', 'jpg', 'jpeg', 'png']
+
+function normalizeImageKey(value?: string): string {
+  if (!value) return ''
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/\.(webp|jpg|jpeg|png)$/i, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
 }
 
 export function extractFilenameFromUrl(url?: string): string | null {
@@ -24,11 +36,14 @@ export function extractFilenameFromUrl(url?: string): string | null {
 export function buildImageFallbackCandidates(input: ImageFallbackInput): string[] {
   const filename = input.filename || extractFilenameFromUrl(input.sanityUrl) || ''
   const sanitizedFilename = filename.split('?')[0].split('#')[0]
+  const normalizedKey = normalizeImageKey(input.imageKey || sanitizedFilename)
   const candidates: string[] = []
 
-  if (sanitizedFilename) {
-    candidates.push(`/assets/images/${sanitizedFilename}`)
-    candidates.push(`${ARVAN_IMAGE_BASE}/${sanitizedFilename}`)
+  if (normalizedKey) {
+    IMAGE_EXTENSIONS.forEach((ext) => {
+      candidates.push(`/assets/images/${normalizedKey}.${ext}`)
+      candidates.push(`${ARVAN_IMAGE_BASE}/${normalizedKey}.${ext}`)
+    })
   }
 
   if (input.sanityUrl) {
