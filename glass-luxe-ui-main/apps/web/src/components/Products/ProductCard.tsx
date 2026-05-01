@@ -1,9 +1,10 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { lazy, Suspense, useMemo } from "react";
 import { toPersianNumber } from "@/lib/medusa-promotions";
 import { useSiteWidePromotion } from "@/contexts/promotion-context";
+import { useImageFallback } from "@/hooks/use-image-fallback";
 const CompactCountdownTimer = lazy(() => import("@/components/ui/countdown-timer").then(m => ({ default: m.CompactCountdownTimer })));
 
 interface MedusaVariant {
@@ -55,6 +56,7 @@ export const ProductCard = React.memo(function ProductCard({
 }: ProductCardProps) {
   const navigate = useNavigate();
   const siteWidePromotion = useSiteWidePromotion();
+  const { src: resolvedImageSrc, onError: onImageError } = useImageFallback({ imageKey: slug, sanityUrl: image });
 
   // Calculate pricing and promotion info
   const pricingInfo = useMemo(() => {
@@ -151,12 +153,13 @@ export const ProductCard = React.memo(function ProductCard({
       {/* Image wrapper */}
       <div className="relative aspect-[3/4] rounded-2xl overflow-hidden">
         <img
-          src={image}
+          src={resolvedImageSrc}
           srcSet={imageSrcSet || ''}
           sizes="(max-width: 768px) 100vw, 560px"
           alt={title}
           loading="lazy"
           decoding="async"
+          onError={onImageError}
           className="absolute inset-0 w-full h-full object-cover ring-1 ring-white/12 shadow-none transition-transform duration-200 group-hover:scale-[1.02]"
         />
         

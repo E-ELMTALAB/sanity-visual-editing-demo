@@ -190,6 +190,7 @@ export function transformSocialMediaProduct(product: any, index: number) {
 export function transformEducationalProduct(product: any, index: number) {
   return {
     id: product?._key || `edu-${index}`,
+    slug: product?.slug?.current || product?.slug || product?.handle || undefined,
     provider: 'Coursera' as const, // Default, can be enhanced later
     title: product?.name || 'محصول آموزشی',
     image: product?.image ? getImageUrl(product.image, 560, undefined, 70) : '',
@@ -547,4 +548,3 @@ export function transformFeaturedCollection(featuredCollection: any) {
     maxProducts: featuredCollection.maxProducts || 6,
   }
 }
-

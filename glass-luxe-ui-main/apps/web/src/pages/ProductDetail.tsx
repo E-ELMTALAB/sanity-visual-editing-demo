@@ -27,6 +27,7 @@ import { getProductBySlug } from "@/lib/sanity-cache-direct";
 import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";
 import { fetchProductPrices, type MedusaVariant } from "@/lib/medusa-prices";
 import { toPersianNumber, calculateDiscountedPrice } from "@/lib/medusa-promotions";
+import { useImageFallback } from "@/hooks/use-image-fallback";
 const springTransition = {
   type: "spring" as const,
   stiffness: 220,
@@ -672,6 +673,11 @@ const ProductDetail = () => {
   const enforceRTL = true;
   const galleryImages = product.images.length > 0 ? product.images : (product.image ? [product.image] : []);
   const currentImage = galleryImages[selectedImage] || galleryImages[0] || "";
+  const { src: resolvedCurrentImage, onError: onCurrentImageError } = useImageFallback({
+    imageKey: product.handle || slug,
+    sanityUrl: currentImage,
+    fallbackSrc: "/placeholder.svg",
+  });
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -939,7 +945,7 @@ const ProductDetail = () => {
                 }} animate={{
                   opacity: 1
                 }} className="relative aspect-square rounded-2xl overflow-hidden glass w-full">
-                  <img src={currentImage} alt={isRTL ? product.titleFa : product.title} className="w-full h-full object-cover object-top" />
+                  <img src={resolvedCurrentImage || currentImage} onError={onCurrentImageError} alt={isRTL ? product.titleFa : product.title} className="w-full h-full object-cover object-top" />
                   {product.badge && <div className="absolute top-4 ltr:left-4 rtl:right-4">
                     <Badge variant={product.badge as "sale" | "new" | "hot"}>
                       {product.badge === "sale" && "تخفیف"}
