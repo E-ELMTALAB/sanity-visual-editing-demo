@@ -167,6 +167,69 @@ export function getImageFallbackChain(
   return urls
 }
 
+export async function checkImageReachable(url: string): Promise<boolean> {
+  if (!url) return false
+
+  try {
+    const headResponse = await fetch(url, {
+      method: 'HEAD',
+      cache: 'no-store',
+    })
+
+    if (headResponse.ok) return true
+  } catch {
+    // Some providers reject HEAD; fall through to GET probe.
+  }
+
+  try {
+    const getResponse = await fetch(url, {
+      method: 'GET',
+      cache: 'no-store',
+    })
+    return getResponse.ok
+  } catch {
+    return false
+  }
+}
+
+export async function resolveImageSourceWithChecks(
+  productSlug: string | null | undefined,
+  sanitySource: ImageSource | null | undefined
+): Promise<FallbackImageResult> {
+  const fallbackChain: string[] = []
+  const syncChain = getImageFallbackChain(productSlug, sanitySource)
+
+  const localUrl = syncChain.find(url => url.includes('/assets/images/'))
+  if (localUrl) {
+    if (await checkImageReachable(localUrl)) {
+      fallbackChain.push(`✓ Local: ${localUrl}`)
+      return { url: localUrl, source: 'local', fallbackChain }
+    }
+    fallbackChain.push(`✗ Local: Unreachable - ${localUrl}`)
+  }
+
+  const arvanUrl = syncChain.find(url => url.includes('arvanstorage'))
+  if (arvanUrl) {
+    if (await checkImageReachable(arvanUrl)) {
+      fallbackChain.push(`✓ Arvan: ${arvanUrl}`)
+      return { url: arvanUrl, source: 'arvan', fallbackChain }
+    }
+    fallbackChain.push(`✗ Arvan: Unreachable - ${arvanUrl}`)
+  }
+
+  const sanityUrl = syncChain.find(url =>
+    !url.includes('/assets/images/') && !url.includes('arvanstorage') && url !== '/placeholder.svg'
+  )
+  if (sanityUrl) {
+    fallbackChain.push(`✓ Sanity: ${sanityUrl}`)
+    return { url: sanityUrl, source: 'sanity', fallbackChain }
+  }
+
+  const placeholderUrl = '/placeholder.svg'
+  fallbackChain.push(`✓ Placeholder: ${placeholderUrl}`)
+  return { url: placeholderUrl, source: 'sanity', fallbackChain }
+}
+
 /**
  * Debug helper to log fallback chain
  * Use in development to verify fallback behavior
