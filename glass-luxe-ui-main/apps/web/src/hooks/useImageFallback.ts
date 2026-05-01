@@ -14,7 +14,6 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   getImageFallbackChain,
   logImageFallbackChain,
-  resolveImageSourceWithChecks,
   ImageSource,
 } from '@/lib/image-fallback'
 
@@ -69,7 +68,12 @@ export function useImageFallback(options: UseImageFallbackOptions): UseImageFall
 
   // Build fallback chain on mount or when inputs change
   useEffect(() => {
-    let isCancelled = false
+    const chain = getImageFallbackChain(productSlug, sanitySource)
+    setFallbackChain(chain)
+    setCurrentUrlIndex(0)
+    setFailedAttempts(0)
+    setIsLoaded(false)
+    attemptedUrlsRef.current.clear()
 
     if (enableLogging) {
       console.log('[IMG-FALLBACK][CHECK] init inputs', {

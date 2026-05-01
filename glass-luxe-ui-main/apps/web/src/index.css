@@ -112,12 +112,14 @@
   }
 
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
 
   /* SF Pro Typography */
   body {
-    @apply text-foreground antialiased;
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     background: linear-gradient(180deg, hsl(var(--bg-base-top)) 0%, hsl(var(--bg-base-bot)) 100%);
     color-scheme: dark;
     min-height: 100vh;
@@ -342,7 +344,10 @@
 
   /* Focus styles */
   .focus-ring {
-    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+    outline: none;
+    box-shadow:
+      0 0 0 2px hsl(var(--primary)),
+      0 0 0 4px hsl(var(--background));
   }
 
   /* Safe area support */
