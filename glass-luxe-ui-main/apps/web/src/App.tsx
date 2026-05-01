@@ -2,7 +2,6 @@ import { Suspense, lazy, useEffect, useState, useRef } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { DirectionProvider } from "@/contexts/DirectionContext";
 import { CartProvider, useCart } from "@/contexts/cart-context";
@@ -37,8 +36,6 @@ const Collection = lazy(() => import("./pages/Collection"));
 const PaymentCallback = lazy(() => import("./pages/PaymentCallback"));
 const AdminVerify = lazy(() => import("./pages/AdminVerify"));
 const Preview = lazy(() => import("./pages/Preview"));
-
-const queryClient = new QueryClient();
 
 // Defer hydration-heavy toasters until after idle
 const DeferredToasters = () => {
@@ -187,11 +184,10 @@ const GlobalGradientBackground = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-      <DirectionProvider>
-        <CartProvider>
-          <PromotionProvider>
-            <TooltipProvider>
+  <DirectionProvider>
+    <CartProvider>
+      <PromotionProvider>
+        <TooltipProvider>
               {/* Global Hero Gradient Background */}
               <GlobalGradientBackground />
 
@@ -232,11 +228,10 @@ const App = () => (
               <GlobalCustomerSupport />
               {/* Visual Editing - only loads in preview mode */}
               <AppVisualEditing />
-            </TooltipProvider>
-          </PromotionProvider>
-        </CartProvider>
-      </DirectionProvider>
-  </QueryClientProvider>
+        </TooltipProvider>
+      </PromotionProvider>
+    </CartProvider>
+  </DirectionProvider>
 );
 
 export default App;
