@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Price } from "@/components/ui/price";
 import { Instagram, Send, Twitter } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useImageFallback } from "@/hooks/use-image-fallback";
 
 const springTransition = {
   type: "spring" as const,
@@ -69,6 +70,7 @@ export const SocialMediaCard = React.memo(function SocialMediaCard({
 }: SocialMediaCardProps) {
   const config = platformConfig[platform];
   const Icon = config.icon;
+  const { src: resolvedImageSrc, onError: onImageError } = useImageFallback({ sanityUrl: image });
 
   return (
     <div
@@ -81,10 +83,11 @@ export const SocialMediaCard = React.memo(function SocialMediaCard({
       {/* Image wrapper */}
       <div className="relative aspect-[3/4] rounded-2xl overflow-hidden">
         <img
-          src={image}
+          src={resolvedImageSrc}
           alt={title}
           loading="lazy"
           decoding="async"
+          onError={onImageError}
           className="absolute inset-0 w-full h-full object-cover ring-1 ring-white/12 shadow-none transition-transform duration-200 group-hover:scale-[1.02]"
         />
         
