@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { lazy, Suspense, useMemo } from "react";
@@ -56,12 +56,13 @@ export const ProductCard = React.memo(function ProductCard({
 }: ProductCardProps) {
   const navigate = useNavigate();
   const siteWidePromotion = useSiteWidePromotion();
+  const imageFallbackDebug = import.meta.env.VITE_IMAGE_FALLBACK_DEBUG === "true";
 
   // THREE-LEVEL IMAGE FALLBACK: Local Assets → Arvan Cloud → Sanity CMS
   const imageFallback = useImageFallback({
     productSlug: slug || null,
     sanitySource: image || null,
-    enableLogging: false, // Set to true for debugging image loading issues
+    enableLogging: imageFallbackDebug,
   });
 
   // Calculate pricing and promotion info
@@ -162,10 +163,11 @@ export const ProductCard = React.memo(function ProductCard({
           src={imageFallback.src}
           srcSet={imageFallback.srcSet}
           sizes="(max-width: 768px) 100vw, 560px"
-          alt={imageFallback.alt}
+          alt={imageFallbackDebug ? `${imageFallback.alt} [src:${imageFallback.currentSource}]` : imageFallback.alt}
           loading="lazy"
           decoding="async"
           onError={imageFallback.onError}
+          data-image-source={imageFallbackDebug ? imageFallback.currentSource : undefined}
           className="absolute inset-0 w-full h-full object-cover ring-1 ring-white/12 shadow-none transition-transform duration-200 group-hover:scale-[1.02]"
         />
         

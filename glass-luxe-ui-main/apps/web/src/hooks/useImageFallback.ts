@@ -71,34 +71,32 @@ export function useImageFallback(options: UseImageFallbackOptions): UseImageFall
   useEffect(() => {
     let isCancelled = false
 
-    const initializeFallback = async () => {
-      const chain = getImageFallbackChain(productSlug, sanitySource)
-      const initialResolved = await resolveImageSourceWithChecks(productSlug, sanitySource)
-      const initialIndex = Math.max(chain.indexOf(initialResolved.url), 0)
-
-      if (isCancelled) return
-
-      setFallbackChain(chain)
-      setCurrentUrlIndex(initialIndex)
-      setIsLoaded(false)
-      setFailedAttempts(0)
-      attemptedUrlsRef.current.clear()
-
-      if (enableLogging) {
-        console.log('[HOOK] Built fallback chain with', chain.length, 'sources')
-        console.log('[HOOK] Preflight selected source:', initialResolved.source, initialResolved.url)
-        logImageFallbackChain(productSlug, sanitySource)
-      }
-
-      setCurrentSource(initialResolved.source)
-      onSourceChange?.(initialResolved.source)
+    if (enableLogging) {
+      console.log('[IMG-FALLBACK][CHECK] init inputs', {
+        productSlug,
+        hasSanitySource: !!sanitySource,
+      })
+      console.log('[IMG-FALLBACK][CHECK] ordered candidate chain', chain)
+      logImageFallbackChain(productSlug, sanitySource)
+      chain.forEach((url, index) => {
+        console.log('[IMG-FALLBACK][CHECK]', {
+          result: url ? 'PASS' : 'FAIL',
+          index,
+          url,
+        })
+      })
     }
 
-    initializeFallback()
-
-    return () => {
-      isCancelled = true
+    // Determine initial source
+    const initialSource = determineSourceFromIndex(0, productSlug)
+    setCurrentSource(initialSource)
+    if (enableLogging) {
+      console.log('[IMG-FALLBACK][SELECT] initial source selected', {
+        source: initialSource,
+        url: chain[0] ?? '/placeholder.svg',
+      })
     }
+    onSourceChange?.(initialSource)
   }, [productSlug, sanitySource, enableLogging, onSourceChange])
 
   /**
@@ -140,11 +138,12 @@ export function useImageFallback(options: UseImageFallbackOptions): UseImageFall
     attemptedUrlsRef.current.add(currentUrl)
 
     if (enableLogging) {
-      console.warn(
-        `[IMAGE-FALLBACK] Image failed to load (attempt ${failedAttempts + 1}). ` +
-        `Current: ${currentUrl}. ` +
-        `Trying next (${nextIndex}/${fallbackChain.length})`
-      )
+      console.warn('[IMG-FALLBACK][ERROR] runtime onError', {
+        attempt: failedAttempts + 1,
+        failedUrl: currentUrl,
+        nextIndex,
+        chainLength: fallbackChain.length,
+      })
     }
 
     setFailedAttempts(prev => prev + 1)
@@ -158,14 +157,19 @@ export function useImageFallback(options: UseImageFallbackOptions): UseImageFall
       onSourceChange?.(newSource)
 
       if (enableLogging) {
-        console.log(`[IMAGE-FALLBACK] Moving to source: ${newSource}`)
+        console.log('[IMG-FALLBACK][SELECT] runtime transition', {
+          fromIndex: currentUrlIndex,
+          toIndex: nextIndex,
+          toSource: newSource,
+          toUrl: fallbackChain[nextIndex],
+        })
       }
     } else {
       if (enableLogging) {
-        console.error(
-          '[IMAGE-FALLBACK] All image sources exhausted. Using placeholder. ' +
-          `Attempted ${failedAttempts + 1} sources.`
-        )
+        console.error('[IMG-FALLBACK][ERROR] exhausted all runtime candidates', {
+          attempted: failedAttempts + 1,
+          fallbackUrl: '/placeholder.svg',
+        })
       }
       setCurrentSource('sanity')
     }
