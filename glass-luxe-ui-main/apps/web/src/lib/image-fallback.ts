@@ -9,21 +9,36 @@ export type ImageFallbackInput = {
   filename?: string
   sanityUrl?: string
 }
-const IMAGE_EXTENSIONS = ['webp', 'jpg', 'jpeg', 'png']
+const IMAGE_EXTENSION = 'webp'
 
-function normalizeImageKey(value?: unknown): string {
+function coerceImageKey(value?: unknown): string {
   if (!value) return ''
-  const rawValue = typeof value === 'string'
+  return typeof value === 'string'
     ? value
     : (typeof value === 'object' && value && 'current' in (value as Record<string, unknown>) && typeof (value as Record<string, unknown>).current === 'string')
       ? String((value as Record<string, unknown>).current)
       : String(value)
-  return rawValue
+}
+
+function normalizeImageKey(value?: string): string {
+  if (!value) return ''
+  return value
     .toLowerCase()
     .trim()
-    .replace(/\.(webp|jpg|jpeg|png)$/i, '')
+    .replace(/\.(webp)$/i, '')
     .replace(/[\s_]+/g, '-')
     .replace(/[^a-z0-9-]/g, '')
+}
+
+function keyVariants(value?: unknown): string[] {
+  const raw = coerceImageKey(value).toLowerCase().trim().replace(/\.webp$/i, '')
+  const normalized = normalizeImageKey(raw)
+  const dotVariant = raw
+    .replace(/[\s_]+/g, '-')
+    .replace(/[^a-z0-9.-]/g, '')
+    .replace(/-+/g, '-')
+  const dashedVariant = dotVariant.replace(/\./g, '-')
+  return Array.from(new Set([normalized, dotVariant, dashedVariant].filter(Boolean)))
 }
 
 export function extractFilenameFromUrl(url?: string): string | null {
@@ -41,13 +56,13 @@ export function extractFilenameFromUrl(url?: string): string | null {
 export function buildImageFallbackCandidates(input: ImageFallbackInput): string[] {
   const filename = input.filename || extractFilenameFromUrl(input.sanityUrl) || ''
   const sanitizedFilename = filename.split('?')[0].split('#')[0]
-  const normalizedKey = normalizeImageKey(input.imageKey || sanitizedFilename)
+  const normalizedKeys = keyVariants(input.imageKey || sanitizedFilename)
   const candidates: string[] = []
 
-  if (normalizedKey) {
-    IMAGE_EXTENSIONS.forEach((ext) => {
-      candidates.push(`/assets/images/${normalizedKey}.${ext}`)
-      candidates.push(`${ARVAN_IMAGE_BASE}/${normalizedKey}.${ext}`)
+  if (normalizedKeys.length > 0) {
+    normalizedKeys.forEach((key) => {
+      candidates.push(`/assets/images/${key}.${IMAGE_EXTENSION}`)
+      candidates.push(`${ARVAN_IMAGE_BASE}/${key}.${IMAGE_EXTENSION}`)
     })
   }
 
