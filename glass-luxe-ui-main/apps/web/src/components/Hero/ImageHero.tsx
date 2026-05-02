@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Helmet } from "@/components/Helmet";
 import heroBg from "@/assets/hero-ai-cubes.png";
+import { useImageFallback } from "@/hooks/use-image-fallback";
 
 interface HeroSlide {
   title?: string;
@@ -23,12 +24,16 @@ export default function ImageHero({ slide }: ImageHeroProps) {
   const buttonHref = slide?.buttonHref || "https://t.me/SharifGPT";
   const backgroundImage = slide?.image || heroBg;
   const backgroundSrcSet = slide?.imageSrcSet;
+  const { src: resolvedBackgroundImage, onError: onImageError } = useImageFallback({
+    sanityUrl: slide?.image,
+    fallbackSrc: heroBg,
+  });
   const heroSizes = "(max-width: 1024px) 100vw, 1200px";
 
   // Extract the best image for preload based on viewport
   // Use 1200w version for desktop, 768w for mobile
   const getPreloadImage = () => {
-    if (!backgroundSrcSet) return backgroundImage;
+        if (!backgroundSrcSet) return resolvedBackgroundImage || backgroundImage;
     
     const srcSetParts = backgroundSrcSet.split(', ');
     // Find 1200w or closest for desktop preload
@@ -42,7 +47,7 @@ export default function ImageHero({ slide }: ImageHeroProps) {
       }
     }
     // Fallback to last (largest) image
-    return srcSetParts[srcSetParts.length - 1]?.split(' ')[0] || backgroundImage;
+    return srcSetParts[srcSetParts.length - 1]?.split(' ')[0] || resolvedBackgroundImage || backgroundImage;
   };
 
   const preloadImage = getPreloadImage();
@@ -98,7 +103,7 @@ export default function ImageHero({ slide }: ImageHeroProps) {
           />
         )}
       <img
-        src={backgroundImage}
+        src={resolvedBackgroundImage || backgroundImage}
         srcSet={backgroundSrcSet}
         sizes={backgroundSrcSet ? heroSizes : undefined}
         alt={title || "Hero background"}
@@ -109,13 +114,7 @@ export default function ImageHero({ slide }: ImageHeroProps) {
                    object-[20%_50%] md:object-[60%_50%]
                    [filter:brightness(.85)]
                      md:[filter:brightness(1.18)_saturate(1.08)_contrast(1.05)]"
-        onError={(e) => {
-          console.error('[ImageHero] Failed to load image:', backgroundImage)
-          // Fallback to default hero image if Sanity image fails
-          if (backgroundImage !== heroBg) {
-            e.currentTarget.src = heroBg
-          }
-        }}
+        onError={onImageError}
       />
       </picture>
       

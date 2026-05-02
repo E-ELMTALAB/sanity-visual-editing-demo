@@ -18,6 +18,7 @@ interface SocialMediaItem {
   platform: "Instagram" | "TikTok" | "Telegram" | "X";
   title: string;
   image: string;
+  slug?: string;
   price: number;
   rating: number;
 }
@@ -71,6 +72,7 @@ export function SocialMediaSlider({ items, onAdd, rtl = false, onViewAll, classN
                     platform={item.platform}
                     title={item.title}
                     image={item.image}
+                    slug={item.slug}
                     price={item.price}
                     rating={item.rating}
                     onAdd={onAdd}
