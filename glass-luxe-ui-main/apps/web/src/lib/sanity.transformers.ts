@@ -35,7 +35,7 @@ export function transformProductListItem(product: any, index: number) {
 
   return {
     id: product?._id || `product-${index}`,
-    slug: product?.slug || product?.slug?.current || '',
+    slug: product?.slug?.current || product?.slug || '',
     title: product?.name || 'محصول',
     image: product?.image ? getImageUrl(product.image, 600) : '', // Reduced from 800 to 600 for better performance
     imageSrcSet: product?.image ? buildResponsiveImageSet(product.image, [400, 600, 800], { quality: 80 }).srcSet : '',
@@ -99,7 +99,7 @@ export function transformBestSellerProduct(product: any, index: number) {
     price: 0, // Prices come from Medusa
     badge: product?.badge || undefined,
     badges: product?.badges || [],
-    slug: product?.slug || '',
+    slug: product?.slug?.current || product?.slug || '',
   }
 }
 
@@ -171,7 +171,7 @@ export function transformSocialMediaProduct(product: any, index: number) {
 
   return {
     id: product?._id || `social-${index}`,
-    slug: product?.slug || product?.slug?.current || '',
+    slug: product?.slug?.current || product?.slug || '',
     platform: 'Instagram' as const, // Default, can be enhanced later
     title: product?.name || 'محصول سوشیال مدیا',
     image: product?.image ? getImageUrl(product.image, 560, undefined, 70) : '',

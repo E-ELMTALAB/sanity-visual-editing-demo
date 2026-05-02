@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { buildImageFallbackCandidates, IMAGE_FALLBACK_DEBUG } from '@/lib/image-fallback'
 
 type UseImageFallbackParams = {
@@ -16,6 +16,9 @@ export function useImageFallback({ imageKey, filename, sanityUrl, fallbackSrc }:
   }, [imageKey, filename, sanityUrl, fallbackSrc])
 
   const [index, setIndex] = useState(0)
+  useEffect(() => {
+    setIndex(0)
+  }, [candidates])
   const src = candidates[index] || ''
 
   const onError = () => {

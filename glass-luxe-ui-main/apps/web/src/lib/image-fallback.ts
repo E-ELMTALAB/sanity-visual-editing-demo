@@ -11,9 +11,14 @@ export type ImageFallbackInput = {
 }
 const IMAGE_EXTENSIONS = ['webp', 'jpg', 'jpeg', 'png']
 
-function normalizeImageKey(value?: string): string {
+function normalizeImageKey(value?: unknown): string {
   if (!value) return ''
-  return value
+  const rawValue = typeof value === 'string'
+    ? value
+    : (typeof value === 'object' && value && 'current' in (value as Record<string, unknown>) && typeof (value as Record<string, unknown>).current === 'string')
+      ? String((value as Record<string, unknown>).current)
+      : String(value)
+  return rawValue
     .toLowerCase()
     .trim()
     .replace(/\.(webp|jpg|jpeg|png)$/i, '')

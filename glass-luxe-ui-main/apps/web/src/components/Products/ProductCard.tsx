@@ -56,7 +56,7 @@ export const ProductCard = React.memo(function ProductCard({
 }: ProductCardProps) {
   const navigate = useNavigate();
   const siteWidePromotion = useSiteWidePromotion();
-  const { src: resolvedImageSrc, onError: onImageError } = useImageFallback({ imageKey: slug, sanityUrl: image });
+  const { src: resolvedImageSrc, onError: onImageError, currentIndex } = useImageFallback({ imageKey: slug, sanityUrl: image });
 
   // Calculate pricing and promotion info
   const pricingInfo = useMemo(() => {
@@ -154,7 +154,7 @@ export const ProductCard = React.memo(function ProductCard({
       <div className="relative aspect-[3/4] rounded-2xl overflow-hidden">
         <img
           src={resolvedImageSrc}
-          srcSet={imageSrcSet || ''}
+          srcSet={currentIndex === 0 ? (imageSrcSet || '') : undefined}
           sizes="(max-width: 768px) 100vw, 560px"
           alt={title}
           loading="lazy"
