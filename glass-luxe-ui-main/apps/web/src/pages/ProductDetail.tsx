@@ -640,6 +640,18 @@ const ProductDetail = () => {
     window.location.href = 'https://ble.ir/sharifgptadmin';
   };
 
+  const galleryImages = product?.images?.length
+    ? product.images
+    : product?.image
+      ? [product.image]
+      : [];
+  const currentImage = galleryImages[selectedImage] || galleryImages[0] || "";
+  const { src: resolvedCurrentImage, onError: onCurrentImageError } = useImageFallback({
+    imageKey: product?.handle || slug,
+    sanityUrl: currentImage,
+    fallbackSrc: "/placeholder.svg",
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -671,13 +683,6 @@ const ProductDetail = () => {
   // Always force RTL for this Persian product page
   const forceRTL = true;
   const enforceRTL = true;
-  const galleryImages = product.images.length > 0 ? product.images : (product.image ? [product.image] : []);
-  const currentImage = galleryImages[selectedImage] || galleryImages[0] || "";
-  const { src: resolvedCurrentImage, onError: onCurrentImageError } = useImageFallback({
-    imageKey: product.handle || slug,
-    sanityUrl: currentImage,
-    fallbackSrc: "/placeholder.svg",
-  });
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
