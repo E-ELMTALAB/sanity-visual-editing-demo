@@ -16,6 +16,7 @@ interface EduProductItem {
   provider: "Coursera" | "Udemy" | "YouTube Premium" | "Skillshare";
   title: string;
   image: string;
+  slug?: string;
   price: number;
   duration: string;
 }
@@ -65,7 +66,7 @@ export function EduProductsSlider({
               ...springTransition,
               delay: index * 0.05
             }}>
-                  <EduProductCard id={item.id} provider={item.provider} title={item.title} image={item.image} price={item.price} duration={item.duration} onAdd={onAdd} />
+                  <EduProductCard id={item.id} provider={item.provider} title={item.title} image={item.image} slug={item.slug} price={item.price} duration={item.duration} onAdd={onAdd} />
                 </motion.div>)}
             </div>
           </div>
