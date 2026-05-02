@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useDirection } from "@/contexts/DirectionContext";
 import { ArrowRight, Instagram, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useImageFallback } from "@/hooks/use-image-fallback";
 
 // TikTok icon component
 const TikTokIcon = () => (
@@ -50,6 +51,10 @@ export function CollectionsBanner({
   const bannerImageSrcSet = imageSrcSet || fallbackWidths.map((width) => `${buildFallbackUrl(width)} ${width}w`).join(", ");
   const bannerImageSizes = "(max-width: 768px) 100vw, 1100px";
   const bannerCtaText = ctaText || (isRTL ? "کشف همه کلکسیون‌ها" : "Discover All Collections");
+  const { src: resolvedBannerImage, onError: onBannerImageError } = useImageFallback({
+    imageKey: "collections-banner",
+    sanityUrl: bannerImage,
+  });
 
   const platforms = [
     { icon: Instagram, label: "Instagram", color: "text-pink-400" },
@@ -70,12 +75,13 @@ export function CollectionsBanner({
           {/* Background Image */}
           <div className="absolute inset-0">
             <img
-              src={bannerImage}
+              src={resolvedBannerImage || bannerImage}
               srcSet={bannerImageSrcSet}
               sizes={bannerImageSizes}
               alt={bannerTitle}
               loading="lazy"
               decoding="async"
+              onError={onBannerImageError}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
             {/* Dark overlay gradient */}

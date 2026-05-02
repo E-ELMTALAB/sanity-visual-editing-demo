@@ -20,6 +20,7 @@ import { useDirection } from "@/contexts/DirectionContext";
 import { usePromotions } from "@/contexts/promotion-context";
 import { cn } from "@/lib/utils";
 import { toPersianNumber, calculateDiscountedPrice } from "@/lib/medusa-promotions";
+import { useImageFallback } from "@/hooks/use-image-fallback";
 
 const springTransition = {
   type: "spring" as const,
@@ -113,6 +114,11 @@ export function ProductDetailHeroSection({
   const galleryImages =
     product.images.length > 0 ? product.images : product.image ? [product.image] : [];
   const currentImage = galleryImages[selectedImage] || galleryImages[0] || "";
+  const { src: resolvedCurrentImage, onError: onCurrentImageError } = useImageFallback({
+    imageKey: product.slug,
+    sanityUrl: currentImage,
+    fallbackSrc: "/placeholder.svg",
+  });
 
   // Features (prefer Fa, fallback to regular)
   const features = product.featuresFa.length > 0 ? product.featuresFa : product.features;
@@ -309,7 +315,8 @@ export function ProductDetailHeroSection({
                 className="relative aspect-square rounded-2xl overflow-hidden glass w-full"
               >
                 <img
-                  src={currentImage}
+                  src={resolvedCurrentImage || currentImage}
+                  onError={onCurrentImageError}
                   alt={product.titleFa || product.title}
                   className="w-full h-full object-cover object-center"
                   loading="lazy"
@@ -434,4 +441,3 @@ export function ProductDetailHeroSection({
     </section>
   );
 }
-
