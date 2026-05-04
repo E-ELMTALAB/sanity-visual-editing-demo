@@ -72,9 +72,26 @@ const STATIC_FALLBACK_PRICES: Record<string, { name: string; price: number }[]> 
   ],
 };
 
+const SLUG_ALIASES: Record<string, string> = {
+  "gemini-pro": "google-ai-gemini",
+  "google-gemini": "google-ai-gemini",
+  "gemini": "google-ai-gemini",
+  "doulingo-plus-max": "duolingo-plus-max",
+};
+
+function normalizeSlug(slug: string): string {
+  return slug.trim().toLowerCase();
+}
+
+function resolveStaticFallbackSlug(slug: string): string {
+  const normalized = normalizeSlug(slug);
+  return SLUG_ALIASES[normalized] || normalized;
+}
+
 function getStaticFallbackForSlug(slug: string): ProductPrices {
-  const variants: MedusaVariant[] = (STATIC_FALLBACK_PRICES[slug] || []).map((item, index) => ({
-    variant_id: `fallback-${slug}-${index + 1}`,
+  const fallbackSlug = resolveStaticFallbackSlug(slug);
+  const variants: MedusaVariant[] = (STATIC_FALLBACK_PRICES[fallbackSlug] || []).map((item, index) => ({
+    variant_id: `fallback-${fallbackSlug}-${index + 1}`,
     name: item.name,
     sku: undefined,
     price: item.price,
@@ -87,6 +104,33 @@ function getStaticFallbackForSlug(slug: string): ProductPrices {
     promotion_ends_at: undefined,
   }));
   return { product_id: '', variants };
+}
+
+function hasValidVariants(entry?: ProductPrices): boolean {
+  if (!entry || !Array.isArray(entry.variants) || entry.variants.length === 0) return false;
+  return entry.variants.some((variant) => typeof variant.price === 'number' && variant.price > 0);
+}
+
+function normalizePriceMap(slugs: string[], raw: Record<string, ProductPrices>, source: 'batch' | 'cache' | 'fallback'): Record<string, ProductPrices> {
+  const normalized: Record<string, ProductPrices> = { ...raw };
+  for (const slug of slugs) {
+    if (!hasValidVariants(normalized[slug])) {
+      const fallback = getStaticFallbackForSlug(slug);
+      const reason = !normalized[slug]
+        ? 'missing_entry'
+        : (!normalized[slug].variants || normalized[slug].variants.length === 0)
+          ? 'empty_variants'
+          : 'zero_or_invalid_prices';
+      if (fallback.variants.length > 0) {
+        console.warn(`[MEDUSA-PRICES] [${source}] Using static fallback for "${slug}" (${reason})`);
+        normalized[slug] = fallback;
+      } else {
+        console.error(`[MEDUSA-PRICES] [${source}] No static fallback configured for "${slug}" (${reason})`);
+        normalized[slug] = { product_id: '', variants: [] };
+      }
+    }
+  }
+  return normalized;
 }
 
 function getCachedPrices(slugs: string[]): Record<string, ProductPrices> | null {
@@ -106,8 +150,9 @@ function getCachedPrices(slugs: string[]): Record<string, ProductPrices> | null 
     const hasAllSlugs = slugs.every(slug => cache.slugs.includes(slug));
     if (!hasAllSlugs) return null;
 
+    const normalizedCache = normalizePriceMap(slugs, cache.data, 'cache');
     console.log('[MEDUSA-PRICES] Using cached prices for:', slugs.length, 'products');
-    return cache.data;
+    return normalizedCache;
   } catch (error) {
     console.warn('[MEDUSA-PRICES] Cache read error:', error);
     return null;
@@ -179,12 +224,13 @@ export async function fetchProductPrices(slugs: string[]): Promise<Record<string
     console.log('[MEDUSA-PRICES] Results:', Object.keys(result.data || {}));
 
     const pricesData = result.data || {};
+    const normalizedBatchPrices = normalizePriceMap(slugs, pricesData, 'batch');
 
     // PERFORMANCE IMPROVEMENT: Cache the results
-    setCachedPrices(slugs, pricesData);
+    setCachedPrices(slugs, normalizedBatchPrices);
 
     console.log('[MEDUSA-PRICES] =========================================');
-    return pricesData;
+    return normalizedBatchPrices;
 
   } catch (error: any) {
     console.error('[MEDUSA-PRICES] Batch request failed:', error.message);
@@ -262,10 +308,11 @@ export async function fetchProductPrices(slugs: string[]): Promise<Record<string
     }
 
     // PERFORMANCE IMPROVEMENT: Cache fallback results too
-    setCachedPrices(slugs, prices);
+    const normalizedFallbackPrices = normalizePriceMap(slugs, prices, 'fallback');
+    setCachedPrices(slugs, normalizedFallbackPrices);
 
     console.log('[MEDUSA-PRICES] Final prices result (fallback):', Object.keys(prices));
     console.log('[MEDUSA-PRICES] =========================================');
-    return prices;
+    return normalizedFallbackPrices;
   }
 }
