@@ -33,6 +33,62 @@ interface CacheEntry {
   slugs: string[];
 }
 
+const STATIC_FALLBACK_PRICES: Record<string, { name: string; price: number }[]> = {
+  "chatgpt-plus": [
+    { name: "Go اختصاصی", price: 2399000 },
+    { name: "فعالسازی بر روی اکانت شخصی بدون ضمانت", price: 2699000 },
+    { name: "اکانت پیش ساخته یکماهه پلاس اختصاصی بدون ضمانت", price: 1397000 },
+    { name: "اکانت پیش ساخته یکماهه پلاس اختصاصی با ضمانت و جایگزینی", price: 1997000 },
+    { name: "پلن یکماهه دانشجویی اختصاصی", price: 1479000 },
+    { name: "فعالسازی بر روی اکانت شخصی با پشتیبانی و ضمانت", price: 3857000 },
+  ],
+  "chatgpt-plus-shared": [
+    { name: "اشتراکی ۲ نفره", price: 647000 },
+    { name: "اشتراکی ۴ نفره", price: 497000 },
+    { name: "اشتراکی ۶ نفره", price: 397000 },
+  ],
+  "cursor-ai": [
+    { name: "Cursor Pro", price: 3960000 },
+    { name: "Cursor Pro Plus", price: 5400000 },
+  ],
+  "gemini-ultra": [{ name: "pro", price: 4199000 }],
+  "google-ai-gemini": [{ name: "pro", price: 4199000 }],
+  "github-copilot": [{ name: "plus", price: 2197000 }],
+  "capcut-pro": [{ name: "pro", price: 1697000 }],
+  "duolingo-plus-max": [{ name: "اشتراک سوپر دولینگو یکساله", price: 2197000 }],
+  "doulingo-plus-max": [{ name: "اشتراک سوپر دولینگو یکساله", price: 2197000 }],
+  "telegram-premium": [
+    { name: "تلگرام پریمیوم سه ماهه", price: 2550000 },
+    { name: "تلگرام پریمیوم شش ماهه", price: 3459000 },
+    { name: "تلگرام پریمیوم یکساله", price: 5099000 },
+  ],
+  "midjourney-ai": [{ name: "plus", price: 1897000 }],
+  "leonardo-ai": [{ name: "pro", price: 1897000 }],
+  "gamma-account": [{ name: "pro", price: 2197000 }],
+  "claude-pro": [{ name: "Claude Pro", price: 4199000 }],
+  "grok-shared": [
+    { name: "Super Grok اشتراکی", price: 499000 },
+    { name: "Super Grok اختصاصی", price: 3899000 },
+  ],
+};
+
+function getStaticFallbackForSlug(slug: string): ProductPrices {
+  const variants: MedusaVariant[] = (STATIC_FALLBACK_PRICES[slug] || []).map((item, index) => ({
+    variant_id: `fallback-${slug}-${index + 1}`,
+    name: item.name,
+    sku: undefined,
+    price: item.price,
+    price_rials: item.price * 10,
+    original_price: undefined,
+    original_price_rials: undefined,
+    currency: 'IRT',
+    has_promotion: false,
+    discount_percentage: undefined,
+    promotion_ends_at: undefined,
+  }));
+  return { product_id: '', variants };
+}
+
 function getCachedPrices(slugs: string[]): Record<string, ProductPrices> | null {
   try {
     const cached = localStorage.getItem(PRICE_CACHE_KEY);
@@ -152,7 +208,7 @@ export async function fetchProductPrices(slugs: string[]): Promise<Record<string
 
         if (!response.ok) {
           console.warn(`[MEDUSA-PRICES] Product not found: ${slug}`);
-          prices[slug] = { product_id: '', variants: [] };
+          prices[slug] = getStaticFallbackForSlug(slug);
           continue;
         }
 
@@ -160,7 +216,7 @@ export async function fetchProductPrices(slugs: string[]): Promise<Record<string
         const products = data.products || [];
 
         if (products.length === 0) {
-          prices[slug] = { product_id: '', variants: [] };
+          prices[slug] = getStaticFallbackForSlug(slug);
           continue;
         }
 
@@ -201,7 +257,7 @@ export async function fetchProductPrices(slugs: string[]): Promise<Record<string
         console.log(`[MEDUSA-PRICES] Fallback successful for ${slug}`);
       } catch (fallbackError: any) {
         console.error(`[MEDUSA-PRICES] Fallback failed for ${slug}:`, fallbackError.message);
-        prices[slug] = { product_id: '', variants: [] };
+        prices[slug] = getStaticFallbackForSlug(slug);
       }
     }
 

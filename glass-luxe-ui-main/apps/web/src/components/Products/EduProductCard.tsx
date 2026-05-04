@@ -6,6 +6,7 @@ import { Price } from "@/components/ui/price";
 import { GraduationCap, Youtube, BookOpen, Sparkles } from "lucide-react";
 import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useImageFallback } from "@/hooks/use-image-fallback";
 
 const springTransition = {
   type: "spring" as const,
@@ -18,6 +19,7 @@ interface EduProductCardProps {
   provider: "Coursera" | "Udemy" | "YouTube Premium" | "Skillshare";
   title: string;
   image: string;
+  slug?: string;
   price: number;
   duration: string;
   onAdd: (id: string) => void;
@@ -60,6 +62,7 @@ export function EduProductCard({
   provider,
   title,
   image,
+  slug,
   price,
   duration,
   onAdd,
@@ -68,6 +71,7 @@ export function EduProductCard({
   const [isHovered, setIsHovered] = useState(false);
   const config = providerConfig[provider];
   const Icon = config.icon;
+  const { src: resolvedImageSrc, onError: onImageError } = useImageFallback({ imageKey: slug || title, sanityUrl: image });
 
   // Parallax effect for image
   const x = useMotionValue(0);
@@ -105,9 +109,10 @@ export function EduProductCard({
       {/* Image wrapper */}
       <div className="relative aspect-[3/4] rounded-2xl overflow-hidden">
         <motion.img
-          src={image}
+          src={resolvedImageSrc}
           alt={title}
           loading="lazy"
+          onError={onImageError}
           className="absolute inset-0 w-full h-full object-cover ring-1 ring-white/12 shadow-none"
           animate={isHovered ? { scale: 1.02 } : { scale: 1 }}
           transition={{ duration: 0.2 }}
