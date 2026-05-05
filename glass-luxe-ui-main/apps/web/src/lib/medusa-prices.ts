@@ -106,6 +106,16 @@ function getStaticFallbackForSlug(slug: string): ProductPrices {
   return { product_id: '', variants };
 }
 
+export function getFallbackBasePrice(slug?: string): number {
+  if (!slug) return 0
+  const fallback = getStaticFallbackForSlug(slug)
+  const prices = fallback.variants
+    .map((variant) => variant.price)
+    .filter((price) => typeof price === 'number' && price > 0)
+  if (prices.length === 0) return 0
+  return Math.min(...prices)
+}
+
 function hasValidVariants(entry?: ProductPrices): boolean {
   if (!entry || !Array.isArray(entry.variants) || entry.variants.length === 0) return false;
   return entry.variants.some((variant) => typeof variant.price === 'number' && variant.price > 0);

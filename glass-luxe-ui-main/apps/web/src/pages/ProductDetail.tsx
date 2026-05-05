@@ -451,15 +451,24 @@ const ProductDetail = () => {
       }
     }
 
-    // Priority 4: If prices are still loading, show 0 (will update when loaded)
-    if (pricesLoading) {
-      console.log('[PRODUCT-DETAIL] ⏳ getCurrentPrice - Prices loading, showing 0');
-      return 0;
+    // Priority 4: Sanity product price fallback
+    if (product?.price && product.price > 0) {
+      console.log('[PRODUCT-DETAIL] ⚠️ getCurrentPrice - Using Sanity product price fallback:', product.price);
+      return product.price;
     }
 
-    // Priority 5: Sanity product price (last resort fallback)
-    console.log('[PRODUCT-DETAIL] ⚠️ getCurrentPrice - Using Sanity product price fallback:', product?.price || 0);
-    return product?.price || 0;
+    // Priority 5: Static fallback price by slug (never show 0 while loading)
+    const slugForFallback = product?.slug || slug;
+    if (slugForFallback) {
+      const immediate = getImmediateFallbackPrices([slugForFallback])[slugForFallback];
+      const fallbackPrice = immediate?.variants?.find((v) => v.price > 0)?.price;
+      if (fallbackPrice) {
+        console.log('[PRODUCT-DETAIL] ⚠️ getCurrentPrice - Using static fallback price:', fallbackPrice);
+        return fallbackPrice;
+      }
+    }
+
+    return 0;
   };
 
   const hasMedusaPricing = medusaVariants.some(
