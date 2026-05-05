@@ -25,8 +25,9 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { getProductBySlug } from "@/lib/sanity-cache-direct";
 import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";
-import { fetchProductPrices, type MedusaVariant } from "@/lib/medusa-prices";
+import { fetchProductPrices, getImmediateFallbackPrices, type MedusaVariant } from "@/lib/medusa-prices";
 import { toPersianNumber, calculateDiscountedPrice } from "@/lib/medusa-promotions";
+import { useImageFallback } from "@/hooks/use-image-fallback";
 const springTransition = {
   type: "spring" as const,
   stiffness: 220,
@@ -289,6 +290,11 @@ const ProductDetail = () => {
 
       try {
         setPricesLoading(true);
+        const immediatePrices = getImmediateFallbackPrices([productSlug]);
+        const immediateProductPrices = immediatePrices[productSlug];
+        if (immediateProductPrices?.variants?.length > 0) {
+          setMedusaVariants(immediateProductPrices.variants);
+        }
         const prices = await fetchProductPrices([productSlug]);
         const productPrices = prices[productSlug];
 
@@ -329,6 +335,8 @@ const ProductDetail = () => {
       if (slugs.length === 0) return;
 
       try {
+        const immediatePrices = getImmediateFallbackPrices(slugs);
+        setRelatedProductPrices(immediatePrices);
         const prices = await fetchProductPrices(slugs);
         setRelatedProductPrices(prices);
       } catch (error) {
@@ -443,15 +451,24 @@ const ProductDetail = () => {
       }
     }
 
-    // Priority 4: If prices are still loading, show 0 (will update when loaded)
-    if (pricesLoading) {
-      console.log('[PRODUCT-DETAIL] ⏳ getCurrentPrice - Prices loading, showing 0');
-      return 0;
+    // Priority 4: Sanity product price fallback
+    if (product?.price && product.price > 0) {
+      console.log('[PRODUCT-DETAIL] ⚠️ getCurrentPrice - Using Sanity product price fallback:', product.price);
+      return product.price;
     }
 
-    // Priority 5: Sanity product price (last resort fallback)
-    console.log('[PRODUCT-DETAIL] ⚠️ getCurrentPrice - Using Sanity product price fallback:', product?.price || 0);
-    return product?.price || 0;
+    // Priority 5: Static fallback price by slug (never show 0 while loading)
+    const slugForFallback = product?.slug || slug;
+    if (slugForFallback) {
+      const immediate = getImmediateFallbackPrices([slugForFallback])[slugForFallback];
+      const fallbackPrice = immediate?.variants?.find((v) => v.price > 0)?.price;
+      if (fallbackPrice) {
+        console.log('[PRODUCT-DETAIL] ⚠️ getCurrentPrice - Using static fallback price:', fallbackPrice);
+        return fallbackPrice;
+      }
+    }
+
+    return 0;
   };
 
   const hasMedusaPricing = medusaVariants.some(
@@ -639,6 +656,18 @@ const ProductDetail = () => {
     window.location.href = 'https://ble.ir/sharifgptadmin';
   };
 
+  const galleryImages = product?.images?.length
+    ? product.images
+    : product?.image
+      ? [product.image]
+      : [];
+  const currentImage = galleryImages[selectedImage] || galleryImages[0] || "";
+  const { src: resolvedCurrentImage, onError: onCurrentImageError } = useImageFallback({
+    imageKey: product?.handle || slug,
+    sanityUrl: currentImage,
+    fallbackSrc: "/placeholder.svg",
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -670,8 +699,6 @@ const ProductDetail = () => {
   // Always force RTL for this Persian product page
   const forceRTL = true;
   const enforceRTL = true;
-  const galleryImages = product.images.length > 0 ? product.images : (product.image ? [product.image] : []);
-  const currentImage = galleryImages[selectedImage] || galleryImages[0] || "";
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -939,7 +966,7 @@ const ProductDetail = () => {
                 }} animate={{
                   opacity: 1
                 }} className="relative aspect-square rounded-2xl overflow-hidden glass w-full">
-                  <img src={currentImage} alt={isRTL ? product.titleFa : product.title} className="w-full h-full object-cover object-top" />
+                  <img src={resolvedCurrentImage || currentImage} onError={onCurrentImageError} alt={isRTL ? product.titleFa : product.title} className="w-full h-full object-cover object-top" />
                   {product.badge && <div className="absolute top-4 ltr:left-4 rtl:right-4">
                     <Badge variant={product.badge as "sale" | "new" | "hot"}>
                       {product.badge === "sale" && "تخفیف"}
