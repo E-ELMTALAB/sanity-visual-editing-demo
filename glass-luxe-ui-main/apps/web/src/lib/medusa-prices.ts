@@ -133,6 +133,20 @@ function normalizePriceMap(slugs: string[], raw: Record<string, ProductPrices>, 
   return normalized;
 }
 
+export function getImmediateFallbackPrices(slugs: string[]): Record<string, ProductPrices> {
+  const prices: Record<string, ProductPrices> = {}
+  for (const slug of slugs) {
+    prices[slug] = getStaticFallbackForSlug(slug)
+    const variantCount = prices[slug].variants.length
+    if (variantCount > 0) {
+      console.log(`[MEDUSA-PRICES] [immediate] Using static fallback for "${slug}" (${variantCount} variants)`)
+    } else {
+      console.warn(`[MEDUSA-PRICES] [immediate] No static fallback configured for "${slug}"`)
+    }
+  }
+  return prices
+}
+
 function getCachedPrices(slugs: string[]): Record<string, ProductPrices> | null {
   try {
     const cached = localStorage.getItem(PRICE_CACHE_KEY);

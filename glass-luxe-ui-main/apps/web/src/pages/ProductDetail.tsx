@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { getProductBySlug } from "@/lib/sanity-cache-direct";
 import { transformProductDetail, transformFaqItem } from "@/lib/sanity.transformers";
-import { fetchProductPrices, type MedusaVariant } from "@/lib/medusa-prices";
+import { fetchProductPrices, getImmediateFallbackPrices, type MedusaVariant } from "@/lib/medusa-prices";
 import { toPersianNumber, calculateDiscountedPrice } from "@/lib/medusa-promotions";
 import { useImageFallback } from "@/hooks/use-image-fallback";
 const springTransition = {
@@ -290,6 +290,11 @@ const ProductDetail = () => {
 
       try {
         setPricesLoading(true);
+        const immediatePrices = getImmediateFallbackPrices([productSlug]);
+        const immediateProductPrices = immediatePrices[productSlug];
+        if (immediateProductPrices?.variants?.length > 0) {
+          setMedusaVariants(immediateProductPrices.variants);
+        }
         const prices = await fetchProductPrices([productSlug]);
         const productPrices = prices[productSlug];
 
@@ -330,6 +335,8 @@ const ProductDetail = () => {
       if (slugs.length === 0) return;
 
       try {
+        const immediatePrices = getImmediateFallbackPrices(slugs);
+        setRelatedProductPrices(immediatePrices);
         const prices = await fetchProductPrices(slugs);
         setRelatedProductPrices(prices);
       } catch (error) {

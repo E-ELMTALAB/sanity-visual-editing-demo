@@ -801,6 +801,12 @@ const Index = () => {
     let cancelled = false;
     let hasInteracted = false;
 
+    import("@/lib/medusa-prices").then(({ getImmediateFallbackPrices }) => {
+      if (!cancelled) {
+        setMedusaPrices(getImmediateFallbackPrices(medusaSlugs));
+      }
+    });
+
     const loadPrices = async () => {
       if (cancelled) return;
       try {
