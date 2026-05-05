@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock } from "lucide-react";
 import dayjs from "dayjs";
 import jalaliday from "jalaliday";
+import { useImageFallback } from "@/hooks/use-image-fallback";
 
 dayjs.extend(jalaliday);
 
@@ -49,6 +50,7 @@ export function BlogCard({ post, className }: BlogCardProps) {
     : dayjs(post.publishedAt).format("MMM DD, YYYY");
 
   const imageUrl = post.image?.asset?.url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&h=400&fit=crop";
+  const { src: resolvedImageUrl, onError: onImageError } = useImageFallback({ imageKey: post.slug, sanityUrl: imageUrl });
 
   return (
     <motion.article
@@ -73,10 +75,11 @@ export function BlogCard({ post, className }: BlogCardProps) {
         {/* Image wrapper */}
         <div className="relative aspect-[3/4] rounded-2xl overflow-hidden">
           <img
-            src={imageUrl}
+            src={resolvedImageUrl || imageUrl}
             alt={post.title}
             className="absolute inset-0 w-full h-full object-cover ring-1 ring-white/12 shadow-none transition-transform duration-200 group-hover:scale-[1.02]"
             loading="lazy"
+            onError={onImageError}
           />
           
           {/* Fade gradient layer */}
