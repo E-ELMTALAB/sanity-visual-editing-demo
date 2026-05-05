@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { FaqAccordion } from "@/components/Products/FaqAccordion";
 import { getCollectionBySlug } from "@/lib/sanity-cache-direct";
 import { transformCollectionDetail, transformFaqItem } from "@/lib/sanity.transformers";
-import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
+import { fetchProductPrices, getImmediateFallbackPrices, type ProductPrices } from "@/lib/medusa-prices";
 import { usePromotions } from "@/contexts/promotion-context";
 
 export default function Collection() {
@@ -87,8 +87,9 @@ export default function Collection() {
         .filter(Boolean);
       
       if (slugs.length === 0) return;
-      
+
       try {
+        setProductPrices(getImmediateFallbackPrices(slugs));
         const prices = await fetchProductPrices(slugs);
         setProductPrices(prices);
       } catch (error) {
