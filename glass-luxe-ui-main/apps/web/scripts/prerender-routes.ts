@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
-import { join } from "path";
+import { dirname, join } from "path";
 import { CLIENT_DIST_DIR, PROJECT_ROOT } from "./build-paths.js";
 
 const DIST_DIR = CLIENT_DIST_DIR;
