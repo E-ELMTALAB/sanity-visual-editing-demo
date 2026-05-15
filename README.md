@@ -12,7 +12,7 @@ It comes with a native Sanity Studio that offers features like real-time collabo
 
 The Studio connects to Sanity Content Lake, which gives you hosted content APIs with a flexible query language, on-demand image transformations, powerful patching, and more.
 
-You can use this starter to kick-start a personal website to learn more about Visual Editing or other awesome Sanity features.
+You can use this starter to kick-start a personal website to learn more about Visual Editing or other awesome Sanity .
 
 [![Deploy with Vercel](https://vercel.com/button)][vercel-deploy]
 
