@@ -26,7 +26,8 @@ export const urlForImage = (source: Image) => {
 
   // If asset is already dereferenced (has _id), use it directly
   // Otherwise, check for _ref
-  if (!source.asset._ref && !source.asset._id) {
+  const asset = source.asset as { _ref?: string; _id?: string }
+  if (!asset._ref && !asset._id) {
     return undefined
   }
 
@@ -46,7 +47,8 @@ export const getProxiedImageUrl = (source: Image, options?: {
     return undefined
   }
 
-  if (!source.asset._ref && !source.asset._id) {
+  const asset = source.asset as { _ref?: string; _id?: string }
+  if (!asset._ref && !asset._id) {
     return undefined
   }
 
