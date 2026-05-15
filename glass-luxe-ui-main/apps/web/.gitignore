@@ -8,8 +8,6 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
-dist-ssr
 *.local
 
 # Environment variables
@@ -21,6 +19,10 @@ dist-ssr
 
 # Vercel
 .vercel
+
+# Cloudflare Workers
+.wrangler
+.dev.vars*
 
 # Editor directories and files
 .vscode/*
