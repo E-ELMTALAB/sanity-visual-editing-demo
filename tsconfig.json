@@ -38,12 +38,17 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    "medusa-backend",
-    "sharifgpt-website",
-    "ProductDetail_old.tsx",
-    "**/*_old.tsx",
     "**/*.bak",
-    "glass-luxe-ui-main"
+    "**/*_old.tsx",
+    "ProductDetail_old.tsx",
+    "glass-luxe-ui-main",
+    "lib/openaiClient.ts",
+    "medusa-backend",
+    "node_modules",
+    "prev_ProductDetail.tsx",
+    "sanity.config.ts",
+    "sharif-ai-soft-main",
+    "sharifgpt-website",
+    "simple-payment-backend"
   ]
 }

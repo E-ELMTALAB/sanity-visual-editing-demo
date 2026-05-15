@@ -69,7 +69,7 @@ export function getClient(preview?: { token: string }): SanityClient {
     useCdn: false,
     perspective: 'published',
     // Add custom fetch if proxy is enabled
-    ...(customFetch && { fetch: customFetch }),
+    ...(customFetch && { fetch: customFetch as any }),
     stega: {
       enabled:
         process.env.NEXT_PUBLIC_SANITY_VISUAL_EDITING === 'true' ||
@@ -101,7 +101,7 @@ export function getClient(preview?: { token: string }): SanityClient {
       ignoreBrowserTokenWarning: true,
       perspective: 'previewDrafts',
       // Also apply custom fetch to preview client
-      ...(customFetch && { fetch: customFetch }),
+      ...(customFetch && { fetch: customFetch as any }),
     })
   }
   
