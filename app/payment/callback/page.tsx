@@ -74,6 +74,8 @@ export default function PaymentCallbackPage() {
           localStorage.removeItem('pending_resource_id')
           localStorage.removeItem('pending_payment_authority')
           localStorage.removeItem('pending_payment_session_id')
+          localStorage.removeItem('pending_authority')
+          localStorage.removeItem('pending_amount')
           
           console.log('[PAYMENT-CALLBACK] ✅ Payment verified successfully, cart cleared')
           
