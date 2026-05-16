@@ -50,7 +50,7 @@ export const sanityServerClient = createClient({
   useCdn: false,
   token: SANITY_API_TOKEN,
   // Add custom fetch if proxy is enabled
-  ...(customFetch && { fetch: customFetch }),
+  ...(customFetch && { fetch: customFetch as any }),
 })
 
 // Log proxy status on server startup
