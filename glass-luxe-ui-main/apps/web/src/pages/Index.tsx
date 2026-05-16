@@ -10,7 +10,7 @@ import { useDirection } from "@/contexts/DirectionContext";
 import { useCart } from "@/contexts/cart-context";
 import { useSiteWidePromotion } from "@/contexts/promotion-context";
 import { toast } from "@/hooks/use-toast";
-import type { ProductPrices } from "@/lib/medusa-prices";
+import { fetchProductPrices, getImmediateFallbackPrices, type ProductPrices } from "@/lib/medusa-prices";
 import { PromotionBanner } from "@/components/Hero/PromotionBanner";
 import { TrustStatsBar } from "@/components/TrustStatsBar";
 import { QuickSummaryTrustBar } from "@/components/QuickSummaryTrustBar";
@@ -801,10 +801,11 @@ const Index = () => {
     let cancelled = false;
     let hasInteracted = false;
 
+    setMedusaPrices(getImmediateFallbackPrices(medusaSlugs));
+
     const loadPrices = async () => {
       if (cancelled) return;
       try {
-        const { fetchProductPrices } = await import("@/lib/medusa-prices");
         const prices = await fetchProductPrices(medusaSlugs);
         if (!cancelled) {
           setMedusaPrices(prices);
@@ -812,7 +813,7 @@ const Index = () => {
       } catch (error) {
         console.error("[HOMEPAGE] Failed to fetch Medusa prices:", error);
         if (!cancelled) {
-          setMedusaPrices({});
+          setMedusaPrices(getImmediateFallbackPrices(medusaSlugs));
         }
       }
     };
