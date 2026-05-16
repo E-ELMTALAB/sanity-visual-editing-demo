@@ -5,8 +5,10 @@
  */
 
 import { useState, useCallback } from 'react'
-import { MedusaAPIError } from '@/lib/medusa-api'
 import { getMedusaBackendUrl } from '@/lib/proxy.config'
+
+const PAYMENT_PROVIDER_MODE = process.env.NEXT_PUBLIC_PAYMENT_PROVIDER_MODE || 'medusa_legacy'
+const SIMPLE_BACKEND_URL = process.env.NEXT_PUBLIC_SIMPLE_PAYMENT_BACKEND_URL || process.env.VITE_PAYMENT_BACKEND_URL || 'https://backend-sharifgpt-website-production.up.railway.app'
 
 export interface CustomerInfo {
   firstName: string
@@ -92,6 +94,27 @@ export function useZarinpalPayment() {
     }
   }, [])
 
+
+  const initiateSimpleBackendPayment = useCallback(async (
+    items: Array<{ id: number; title: string; price: number; quantity: number }>,
+    customerInfo: CustomerInfo
+  ) => {
+    const response = await fetch(`${SIMPLE_BACKEND_URL}/payment/initiate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        items,
+        customer_email: customerInfo.email,
+        customer_phone: customerInfo.phone,
+      }),
+    })
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok || !data?.success || !data?.payment?.payment_url) {
+      throw new Error(data?.error?.message || data?.error || 'Simple backend initiation failed')
+    }
+    return data
+  }, [])
+
   const initiatePayment = useCallback(async (
     cartItems: Array<{
       id: number
@@ -143,6 +166,13 @@ export function useZarinpalPayment() {
     console.log('Total amount:', totalAmount)
 
     try {
+      if (PAYMENT_PROVIDER_MODE === 'simple_backend') {
+        const simpleResult = await initiateSimpleBackendPayment(items, customerInfo)
+        const simpleResourceId = simpleResult.payment.resource_id as string
+        setStatus({ loading: false, error: null, resourceId: simpleResourceId })
+        return { success: true, paymentUrl: simpleResult.payment.payment_url, resourceId: simpleResourceId }
+      }
+
       const BASE_URL = getMedusaBackendUrl()
       const PK = 'pk_2243c4f7a1f70eb2bb9b354ad7b22be869fca2633214edd7ee70637412a67bd4'
 
@@ -229,7 +259,8 @@ export function useZarinpalPayment() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
+        const normalizedError = typeof errorData.error === 'string' ? errorData.error : errorData.error?.message
+        throw new Error(normalizedError || `HTTP ${response.status}: ${response.statusText}`)
       }
 
       const result = await response.json()
@@ -254,7 +285,11 @@ export function useZarinpalPayment() {
       console.error('Payment initiation failed:', error)
 
       try {
-        console.warn('Backend Zarinpal flow failed, falling back to frontend-only Zarinpal request')
+        if (PAYMENT_PROVIDER_MODE === 'medusa_legacy' || PAYMENT_PROVIDER_MODE === 'frontend_direct_test') {
+          console.warn('Backend Zarinpal flow failed, falling back to frontend-only Zarinpal request')
+        } else {
+          throw error
+        }
         const directResult = await createZarinpalFrontendPaymentUrl(totalAmount, customerInfo)
 
         setStatus({
@@ -294,7 +329,7 @@ export function useZarinpalPayment() {
         error: errorMessage,
       }
     }
-  }, [createZarinpalFrontendPaymentUrl])
+  }, [createZarinpalFrontendPaymentUrl, initiateSimpleBackendPayment])
 
   const checkPaymentStatus = useCallback(async (resourceId: string) => {
     try {
@@ -330,20 +365,17 @@ export function useZarinpalPayment() {
         throw new Error('Resource ID is required for payment verification')
       }
 
-      // Use the exact same Medusa verification endpoint that was tested successfully
-      // Supports Cloudflare proxy for bypassing internet filtering
-      const BASE_URL = getMedusaBackendUrl()
-      
-      const requestBody = {
-        authority: authority,
-        Status: status,
-        cart_id: resourceId
-      }
-      
-      console.log('[VERIFY-PAYMENT] Sending to backend:', `${BASE_URL}/store/zarinpal/verify`)
+      const isSimple = PAYMENT_PROVIDER_MODE === 'simple_backend'
+      const BASE_URL = isSimple ? SIMPLE_BACKEND_URL : getMedusaBackendUrl()
+
+      const requestBody = isSimple
+        ? { authority: authority, Status: status, resource_id: resourceId }
+        : { authority: authority, Status: status, cart_id: resourceId }
+
+      console.log('[VERIFY-PAYMENT] Sending to backend:', isSimple ? `${BASE_URL}/payment/verify` : `${BASE_URL}/store/zarinpal/verify`)
       console.log('[VERIFY-PAYMENT] Request body:', requestBody)
-      
-      const response = await fetch(`${BASE_URL}/store/zarinpal/verify`, {
+
+      const response = await fetch(isSimple ? `${BASE_URL}/payment/verify` : `${BASE_URL}/store/zarinpal/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -355,7 +387,8 @@ export function useZarinpalPayment() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
+        const normalizedError = typeof errorData.error === 'string' ? errorData.error : errorData.error?.message
+        throw new Error(normalizedError || `HTTP ${response.status}: ${response.statusText}`)
       }
 
       const result = await response.json()

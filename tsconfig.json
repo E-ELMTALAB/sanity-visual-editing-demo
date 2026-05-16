@@ -2,10 +2,16 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     },
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -25,6 +31,24 @@
     ],
     "strictNullChecks": false
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "medusa-backend", "sharifgpt-website"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "**/*.bak",
+    "**/*_old.tsx",
+    "ProductDetail_old.tsx",
+    "glass-luxe-ui-main",
+    "lib/openaiClient.ts",
+    "medusa-backend",
+    "node_modules",
+    "prev_ProductDetail.tsx",
+    "sanity.config.ts",
+    "sharif-ai-soft-main",
+    "sharifgpt-website",
+    "simple-payment-backend"
+  ]
 }
