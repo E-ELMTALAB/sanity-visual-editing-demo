@@ -169,8 +169,34 @@ export default function CheckoutPage() {
     setIsProcessingPayment(true)
 
     try {
+      const checkoutItems = [
+        ...state.items,
+        ...selectedCourses.map((courseId) => {
+          const course = relatedCourses.find((c) => c.id === courseId)
+          return {
+            id: 8000 + courseId,
+            title: course?.title || `دوره ${courseId}`,
+            price: course?.price || 0,
+            quantity: 1,
+          }
+        }),
+        ...(selectedPackage
+          ? (() => {
+              const package_ = packageDeals.find((p) => p.id === selectedPackage)
+              return package_
+                ? [{
+                    id: 9000 + selectedPackage,
+                    title: package_.title,
+                    price: package_.packagePrice,
+                    quantity: 1,
+                  }]
+                : []
+            })()
+          : []),
+      ]
+
       const result = await initiatePayment(
-        state.items,
+        checkoutItems,
         {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -183,7 +209,14 @@ export default function CheckoutPage() {
       if (result.success && result.paymentUrl && result.resourceId) {
         // Store Medusa resource ID
         setMedusaCartId(result.resourceId)
-        try { localStorage.setItem('pending_resource_id', result.resourceId) } catch {}
+        try {
+          localStorage.setItem('pending_resource_id', result.resourceId)
+          localStorage.setItem('pending_amount', String(calculateTotal()))
+          if (result.paymentUrl) {
+            const authority = result.paymentUrl.split('/').filter(Boolean).pop() || ''
+            localStorage.setItem('pending_authority', authority)
+          }
+        } catch {}
         
         // Redirect to Zarinpal payment gateway
         window.location.href = result.paymentUrl
