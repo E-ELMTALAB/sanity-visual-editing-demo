@@ -1,11 +1,8 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import { CLIENT_DIST_DIR, PROJECT_ROOT } from "./build-paths.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const PROJECT_ROOT = join(__dirname, "..");
-const DIST_DIR = join(PROJECT_ROOT, "dist");
+const DIST_DIR = CLIENT_DIST_DIR;
 const MANIFEST_PATH = join(PROJECT_ROOT, "src/data/prerender/routes.json");
 const DIST_INDEX = join(DIST_DIR, "index.html");
 const REPORT_PATH = join(PROJECT_ROOT, "src/data/prerender/prerender-report.json");

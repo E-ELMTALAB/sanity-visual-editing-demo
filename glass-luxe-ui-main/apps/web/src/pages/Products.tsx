@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useDirection } from "@/contexts/DirectionContext";
 import { useCart } from "@/contexts/cart-context";
-import { fetchProductPrices, type ProductPrices } from "@/lib/medusa-prices";
+import { fetchProductPrices, getImmediateFallbackPrices, type ProductPrices } from "@/lib/medusa-prices";
 import { usePromotions } from "@/contexts/promotion-context";
 import { getAllProducts, getFaqsByPage, getPageBySlug } from "@/lib/sanity-cache-direct";
 import { transformFaqItem, transformProductListItem } from "@/lib/sanity.transformers";
@@ -157,6 +157,7 @@ export default function Products() {
       if (slugs.length === 0) return;
 
       try {
+        setProductPrices(getImmediateFallbackPrices(slugs));
         const prices = await fetchProductPrices(slugs);
         setProductPrices(prices);
       } catch (error) {
