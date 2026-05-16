@@ -10,7 +10,12 @@ const app = express()
 const store = new PaymentStore(config.storeFile)
 
 app.use(express.json())
-app.use(cors({ origin: config.corsOrigins.includes('*') ? true : config.corsOrigins }))
+app.use(cors({
+  origin: config.corsOrigins.includes('*') ? true : config.corsOrigins,
+  credentials: config.corsCredentials,
+  methods: ['GET','POST','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
+}))
 
 app.use((req: express.Request, _res: express.Response, next: express.NextFunction) => {
   const requestId = makeRequestId()

@@ -20,6 +20,7 @@ npm run dev
 - `PAYMENT_CALLBACK_PATH` callback path (default `/payment/callback`)
 - `STORE_FILE` JSON file persistence path
 - `CORS_ORIGINS` comma-separated origins
+- `CORS_CREDENTIALS=true|false`
 
 ## API
 
@@ -55,7 +56,8 @@ When `PAYMENT_TEST_MODE=true`:
 ## Frontend integration
 Set:
 - `NEXT_PUBLIC_PAYMENT_PROVIDER_MODE=simple_backend`
-- `NEXT_PUBLIC_SIMPLE_PAYMENT_BACKEND_URL=http://localhost:8080`
+- `NEXT_PUBLIC_SIMPLE_PAYMENT_BACKEND_URL=http://localhost:8080` (or Railway URL)
+- `VITE_PAYMENT_BACKEND_URL=http://localhost:8080` (optional alias)
 
 Legacy modes still supported:
 - `medusa_legacy`

@@ -8,7 +8,7 @@ import { useState, useCallback } from 'react'
 import { getMedusaBackendUrl } from '@/lib/proxy.config'
 
 const PAYMENT_PROVIDER_MODE = process.env.NEXT_PUBLIC_PAYMENT_PROVIDER_MODE || 'medusa_legacy'
-const SIMPLE_BACKEND_URL = process.env.NEXT_PUBLIC_SIMPLE_PAYMENT_BACKEND_URL || 'http://localhost:8080'
+const SIMPLE_BACKEND_URL = process.env.NEXT_PUBLIC_SIMPLE_PAYMENT_BACKEND_URL || process.env.VITE_PAYMENT_BACKEND_URL || 'https://backend-sharifgpt-website-production.up.railway.app'
 
 export interface CustomerInfo {
   firstName: string

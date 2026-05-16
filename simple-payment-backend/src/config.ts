@@ -11,6 +11,7 @@ export const config = {
   callbackPath: process.env.PAYMENT_CALLBACK_PATH || '/payment/callback',
   storeFile: process.env.STORE_FILE || './data/payments.json',
   corsOrigins: (process.env.CORS_ORIGINS || '*').split(',').map((s) => s.trim()),
+  corsCredentials: process.env.CORS_CREDENTIALS === 'true',
 }
 
 export const requestUrl = config.sandbox
