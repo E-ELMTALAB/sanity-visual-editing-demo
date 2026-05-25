@@ -1,6 +1,6 @@
 import { type Request, type Response, Router } from 'express'
 import { z } from 'zod'
-import { config, requestUrl, verifyUrl } from '../config.js'
+import { config, requestUrl, startPayUrl, verifyUrl } from '../config.js'
 import { log } from '../logger.js'
 import type { InitiateRequest, PaymentItem, PaymentRecord } from '../types.js'
 import { PaymentStore } from '../store.js'
@@ -22,6 +22,13 @@ const mask = (v?: string) => (v ? `${v.slice(0, 4)}***${v.slice(-2)}` : '')
 const buildDescription = (items: PaymentItem[]) => items.map((i) => `${i.title}${i.quantity > 1 ? ` (${i.quantity})` : ''}`).join('، ')
 const totalAmount = (items: PaymentItem[]) => Math.round(items.reduce((s, i) => s + i.price * i.quantity, 0))
 const resourceId = () => `pay_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+const providerHeaders = { 'Content-Type': 'application/json', Accept: 'application/json' }
+const providerConnectionFailed = (error: unknown) => ({
+  success: false,
+  message: 'Payment provider connection failed',
+  error_code: 'PROVIDER_CONNECTION_FAILED',
+  details: error instanceof Error ? error.message : String(error),
+})
 
 function normalizeInitiateBody(raw: any): InitiateRequest {
   if (raw?.items) {
@@ -123,14 +130,21 @@ export function createPaymentRouter(store: PaymentStore) {
           mobile: body.customer_phone,
         }
         log('info', 'zarinpal.request', { merchant: mask(config.merchantId), amount, callback_url: callbackUrl })
-        const response = await fetch(requestUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(providerBody) })
-        const json = await response.json().catch(() => ({} as any))
+        let response
+        let json: any
+        try {
+          response = await fetch(requestUrl, { method: 'POST', headers: providerHeaders, body: JSON.stringify(providerBody) })
+          json = await response.json().catch(() => ({} as any))
+        } catch (error) {
+          log('error', 'zarinpal.request.connection_failed', { message: error instanceof Error ? error.message : String(error) })
+          return res.status(502).json(providerConnectionFailed(error))
+        }
         log('info', 'zarinpal.request.response', { status: response.status, code: json?.data?.code, hasAuthority: !!json?.data?.authority })
         if (!response.ok || !json?.data?.authority) {
           return res.status(502).json({ success: false, message: 'Provider error', error_code: 'PROVIDER_ERROR', details: json?.errors || json?.data || null })
         }
         authority = json.data.authority
-        payment_url = `${config.sandbox ? 'https://sandbox.zarinpal.com/pg/checkout/start/' : 'https://www.zarinpal.com/pg/checkout/start/'}${authority}`
+        payment_url = `${startPayUrl}${authority}`
       }
 
       const now = new Date().toISOString()
@@ -186,8 +200,15 @@ export function createPaymentRouter(store: PaymentStore) {
       if (!config.testMode) {
         const providerBody = { merchant_id: config.merchantId, authority: normalized.authority, amount: record.amount }
         log('info', 'zarinpal.verify', { merchant: mask(config.merchantId), authority: mask(normalized.authority), amount: record.amount })
-        const response = await fetch(verifyUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(providerBody) })
-        const json = await response.json().catch(() => ({} as any))
+        let response
+        let json: any
+        try {
+          response = await fetch(verifyUrl, { method: 'POST', headers: providerHeaders, body: JSON.stringify(providerBody) })
+          json = await response.json().catch(() => ({} as any))
+        } catch (error) {
+          log('error', 'zarinpal.verify.connection_failed', { message: error instanceof Error ? error.message : String(error) })
+          return res.status(502).json(providerConnectionFailed(error))
+        }
         code = Number(json?.data?.code)
         log('info', 'zarinpal.verify.response', { status: response.status, code })
         if (![100, 101].includes(code)) {

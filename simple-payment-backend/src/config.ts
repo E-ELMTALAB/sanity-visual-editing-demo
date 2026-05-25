@@ -16,8 +16,12 @@ export const config = {
 
 export const requestUrl = config.sandbox
   ? 'https://sandbox.zarinpal.com/pg/v4/payment/request.json'
-  : 'https://api.zarinpal.com/pg/v4/payment/request.json'
+  : 'https://payment.zarinpal.com/pg/v4/payment/request.json'
 
 export const verifyUrl = config.sandbox
   ? 'https://sandbox.zarinpal.com/pg/v4/payment/verify.json'
-  : 'https://api.zarinpal.com/pg/v4/payment/verify.json'
+  : 'https://payment.zarinpal.com/pg/v4/payment/verify.json'
+
+export const startPayUrl = config.sandbox
+  ? 'https://sandbox.zarinpal.com/pg/checkout/start/'
+  : 'https://payment.zarinpal.com/pg/StartPay/'
